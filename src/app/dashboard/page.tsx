@@ -6,6 +6,7 @@ import { SupabaseStudentDashboardRepository } from "@/infrastructure/repositorie
 import { createSupabaseServerClient } from "@/infrastructure/supabase/create-server-client";
 import { DashboardView } from "@/presentation/components/dashboard/dashboard-view";
 
+export const dynamic = "force-dynamic";
 export default async function DashboardPage() {
   const client = await createSupabaseServerClient();
 
