@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useState } from "react";
+import { useState, type FormEvent } from "react";
 
 import type { CertificateVerificationResult } from "@/core/domain/certificate-verification";
 import { useCertificateVerification } from "@/presentation/hooks/use-certificate-verification";

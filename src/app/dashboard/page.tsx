@@ -25,7 +25,5 @@ export default async function DashboardPage() {
   const dashboardData = await getStudentDashboard(repository, user.id);
   const adminAccess = await getAdminAccess(client);
 
-  return (
-    <DashboardView data={dashboardData} isAdmin={adminAccess.authorized && adminAccess.profile.role === "admin"} />
-  );
+  return <DashboardView data={dashboardData} isAdmin={adminAccess.authorized} />;
 }

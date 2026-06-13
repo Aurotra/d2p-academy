@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useEffect, useState } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 
 import type { AdminEventRecord, EventCategoryOption, EventStatus } from "@/core/domain/admin-event";
 import { EVENT_STATUS_LABELS } from "@/core/domain/admin-event";

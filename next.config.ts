@@ -3,7 +3,8 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   reactStrictMode: true,
   output: "standalone",
-  async redirects() {    return [
+  async redirects() {
+    return [
       {
         source: "/:path*",
         has: [{ type: "host", value: "d2p.com.tr" }],
@@ -13,5 +14,4 @@ const nextConfig: NextConfig = {
     ];
   },
 };
-
 export default nextConfig;
