@@ -1,0 +1,47 @@
+import type { Metadata } from "next";
+import { Geist, Geist_Mono } from "next/font/google";
+
+import "./globals.css";
+import { SITE_NAME, SITE_URL } from "@/shared/constants/site";
+import { SiteChrome } from "@/presentation/components/layout/site-chrome";
+const geistSans = Geist({
+  variable: "--font-geist-sans",
+  subsets: ["latin"],
+});
+
+const geistMono = Geist_Mono({
+  variable: "--font-geist-mono",
+  subsets: ["latin"],
+});
+
+export const metadata: Metadata = {
+  metadataBase: new URL(SITE_URL),
+  title: {
+    default: SITE_NAME,
+    template: `%s | ${SITE_NAME}`,
+  },
+  description: "Okullara ve öğrencilere yönelik modern eğitim platformu",
+  openGraph: {
+    type: "website",
+    locale: "tr_TR",
+    url: SITE_URL,
+    siteName: SITE_NAME,
+    title: SITE_NAME,
+    description: "Okullara ve öğrencilere yönelik modern eğitim platformu",
+  },
+  alternates: {
+    canonical: "/",
+  },
+};
+export default function RootLayout({
+  children,
+}: Readonly<{
+  children: React.ReactNode;
+}>) {
+  return (
+    <html lang="tr">
+      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+        <SiteChrome>{children}</SiteChrome>
+      </body>    </html>
+  );
+}
