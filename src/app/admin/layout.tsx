@@ -1,11 +1,13 @@
 import { redirect } from "next/navigation";
+import type { ReactNode } from "react";
 
 import { getAdminAccess } from "@/infrastructure/auth/get-admin-access";
 import { createSupabaseServerClient } from "@/infrastructure/supabase/create-server-client";
 import { AdminShell } from "@/presentation/components/admin/admin-shell";
 
 export const dynamic = "force-dynamic";
-export default async function AdminLayout({ children }: { children: React.ReactNode }) {
+
+export default async function AdminLayout({ children }: { children: ReactNode }) {
   const client = await createSupabaseServerClient();
 
   if (!client) {

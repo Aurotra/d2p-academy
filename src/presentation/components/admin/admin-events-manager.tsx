@@ -2,8 +2,12 @@
 
 import { useEffect, useState, type FormEvent } from "react";
 
-import type { AdminEventRecord, EventCategoryOption, EventStatus } from "@/core/domain/admin-event";
-import { EVENT_STATUS_LABELS } from "@/core/domain/admin-event";
+import {
+  EVENT_STATUS_LABELS,
+  type AdminEventRecord,
+  type EventCategoryOption,
+  type EventStatus,
+} from "@/core/domain/admin-event";
 import { EVENT_TYPE_LABELS, type EventType } from "@/core/domain/event";
 import { Badge } from "@/presentation/components/ui/badge";
 import { Button } from "@/presentation/components/ui/button";
