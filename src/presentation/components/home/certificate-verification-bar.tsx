@@ -71,7 +71,7 @@ export function CertificateVerificationBar() {
 
         <div className="mt-8">
           <p className="mx-auto max-w-3xl text-center text-base font-normal leading-7 text-slate-700 sm:text-lg sm:leading-8">
-            D2P Academy sertifikaları, dijital dünyada benzersiz ve doğrulanabilir bir mühendislik
+            Sertifikalarımız, dijital dünyada benzersiz ve doğrulanabilir bir mühendislik
             yetkinliğinin anahtarıdır. Sertifika kodunuzu girerek eğitimin geçerliliğini ve başarı
             detaylarını saniyeler içinde görüntüleyebilirsiniz.
           </p>
