@@ -95,8 +95,8 @@ export async function EventCalendarPreview() {
             Yaklaşan eğitimler ve maker atölyeleri
           </h2>
           <p className="mt-4 text-base leading-7 text-slate-600">
-            Takvim Supabase veritabanından dinamik olarak beslenir. Öğrenciler kayıt oldukça
-            kontenjan ve durum bilgisi gerçek zamanlı güncellenir.
+            Temel 3D tasarımdan ileri seviye prototiplemeye kadar, uzman mühendisler eşliğinde
+            hazırlanan uygulamalı atölyelerimizi keşfedin.
           </p>
         </div>
 
