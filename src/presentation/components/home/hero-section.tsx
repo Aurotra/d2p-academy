@@ -35,10 +35,7 @@ export function HeroSection() {
               <Button className="w-full sm:w-auto">Hemen Kayıt Ol</Button>
             </Link>
             <a href="#events">
-              <Button
-                variant="secondary"
-                className="w-full border-sky-300 bg-white text-sky-900 hover:bg-sky-50 sm:w-auto"
-              >
+              <Button variant="outline" className="w-full sm:w-auto">
                 Etkinlik Takvimini Gör
               </Button>
             </a>

@@ -1,29 +1,23 @@
 import Link from "next/link";
 
-import {
-  SITE_LOGO_HEIGHT,
-  SITE_LOGO_SRC,
-  SITE_LOGO_WIDTH,
-  SITE_NAME,
-} from "@/shared/constants/site";
+import { SITE_LOGO_SRC, SITE_NAME } from "@/shared/constants/site";
 
 interface BrandLogoProps {
   href?: string;
   className?: string;
-  /** Max logo height in pixels; width scales automatically. */
+  /** Max logo height in pixels; width follows the SVG aspect ratio. */
   height?: number;
 }
 
-export function BrandLogo({ href = "/", className = "", height = 40 }: BrandLogoProps) {
+export function BrandLogo({ href = "/", className = "", height = 48 }: BrandLogoProps) {
   const logo = (
     <span className={`inline-flex shrink-0 items-center ${className}`}>
       <img
         src={SITE_LOGO_SRC}
         alt={SITE_NAME}
-        width={SITE_LOGO_WIDTH}
-        height={SITE_LOGO_HEIGHT}
-        className="block w-auto object-contain object-left"
+        className="block w-auto max-w-none object-contain object-left"
         style={{ height: `${height}px`, maxHeight: `${height}px`, width: "auto" }}
+        decoding="async"
       />
     </span>
   );
