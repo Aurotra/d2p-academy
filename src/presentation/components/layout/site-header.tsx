@@ -4,10 +4,10 @@ import { BRAND_SURFACE_HEADER } from "@/shared/constants/brand-surfaces";
 import { BrandLogo } from "@/presentation/components/layout/brand-logo";
 
 const navItems = [
-  { href: "#hero", label: "Ana Sayfa" },
-  { href: "#certificate", label: "Sertifika Doğrula" },
-  { href: "#events", label: "Etkinlikler" },
-];
+  { href: "/#hero", label: "Ana Sayfa" },
+  { href: "/#certificate", label: "Sertifika Doğrula" },
+  { href: "/#events", label: "Etkinlikler" },
+] as const;
 
 export function SiteHeader() {
   return (
@@ -17,13 +17,13 @@ export function SiteHeader() {
 
         <nav className="hidden items-center gap-8 md:flex">
           {navItems.map((item) => (
-            <a
+            <Link
               key={item.href}
               href={item.href}
               className="text-sm font-medium text-sky-900 transition hover:text-sky-700"
             >
               {item.label}
-            </a>
+            </Link>
           ))}
         </nav>
 
