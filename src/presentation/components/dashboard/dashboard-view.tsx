@@ -2,6 +2,7 @@ import Link from "next/link";
 
 import type { StudentDashboardData } from "@/core/domain/student-dashboard";
 import { EVENT_TYPE_LABELS } from "@/core/domain/event";
+import { BRAND_SURFACE_GRADIENT } from "@/shared/constants/brand-surfaces";
 import { Badge } from "@/presentation/components/ui/badge";
 import { LogoutButton } from "@/presentation/components/dashboard/logout-button";
 
@@ -21,15 +22,17 @@ export function DashboardView({ data, isAdmin }: DashboardViewProps) {
   return (
     <section className="bg-slate-50 px-4 py-10 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-7xl">
-        <div className="flex flex-col gap-4 rounded-[2rem] border border-cyan-200/50 bg-gradient-to-br from-navy-950 via-navy-900 to-navy-800 p-8 text-white shadow-xl sm:flex-row sm:items-center sm:justify-between">
+        <div
+          className={`flex flex-col gap-4 rounded-[2rem] border border-sky-200 ${BRAND_SURFACE_GRADIENT} p-8 text-sky-950 shadow-xl sm:flex-row sm:items-center sm:justify-between`}
+        >
           <div>
-            <p className="text-sm font-semibold uppercase tracking-[0.18em] text-cyan-300">
+            <p className="text-sm font-semibold uppercase tracking-[0.18em] text-sky-700">
               Öğrenci Paneli
             </p>
             <h1 className="mt-2 text-3xl font-black">
               Hoş geldin, {data.profile.fullName.split(" ")[0]}!
             </h1>
-            <p className="mt-2 text-sm text-cyan-100/80">
+            <p className="mt-2 text-sm text-sky-900/80">
               Yaklaşan etkinliklerini ve kazandığın sertifikaları buradan takip edebilirsin.
             </p>
           </div>

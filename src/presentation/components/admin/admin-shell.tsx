@@ -2,7 +2,8 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 
 import type { Profile } from "@/core/domain/auth";
-import { SITE_NAME } from "@/shared/constants/site";
+import { BRAND_SURFACE_HEADER } from "@/shared/constants/brand-surfaces";
+import { BrandLogo } from "@/presentation/components/layout/brand-logo";
 import { LogoutButton } from "@/presentation/components/dashboard/logout-button";
 
 const navItems = [
@@ -19,17 +20,21 @@ interface AdminShellProps {
 export function AdminShell({ profile, children }: AdminShellProps) {
   return (
     <div className="min-h-screen bg-slate-50">
-      <div className="border-b border-navy-800 bg-navy-950 text-white">
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4 sm:px-6 lg:px-8">
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-cyan-300">
-              Admin Paneli
-            </p>
-            <h1 className="text-xl font-bold">{SITE_NAME}</h1>
-            <p className="text-sm text-cyan-100/70">{profile.fullName} · {profile.email}</p>
+      <div className={`${BRAND_SURFACE_HEADER} border-b`}>
+        <div className="mx-auto flex max-w-7xl flex-col gap-4 px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-6 lg:px-8">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+            <BrandLogo href="/admin" height={36} />
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-sky-700">
+                Admin Paneli
+              </p>
+              <p className="text-sm text-sky-800">
+                {profile.fullName} · {profile.email}
+              </p>
+            </div>
           </div>
           <div className="flex items-center gap-3">
-            <Link href="/dashboard" className="text-sm text-cyan-200 hover:text-white">
+            <Link href="/dashboard" className="text-sm text-sky-800 hover:text-sky-950">
               Öğrenci Paneli
             </Link>
             <LogoutButton />

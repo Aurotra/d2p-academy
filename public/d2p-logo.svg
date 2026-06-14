@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 120" role="img" aria-label="D2P Academy">
+  <g fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M18 28 C18 18 26 10 38 10 L58 10 C70 10 78 18 78 28 L78 92 C78 102 70 110 58 110 L38 110 C26 110 18 102 18 92 Z" stroke="#E84C50" stroke-width="7"/>
+    <path d="M28 28 C28 24 31 21 36 21 L52 21 C57 21 60 24 60 28 L60 92 C60 96 57 99 52 99 L36 99 C31 99 28 96 28 92 Z" stroke="#E84C50" stroke-width="4"/>
+    <path d="M98 92 L98 28 L118 28 C132 28 142 38 142 52 C142 66 132 76 118 76 L98 76" stroke="#FDB813" stroke-width="7"/>
+    <path d="M108 92 L108 38 L116 38 C124 38 130 44 130 52 C130 60 124 66 116 66 L108 66" stroke="#FDB813" stroke-width="4"/>
+    <path d="M162 28 C162 18 170 10 182 10 L202 10 C214 10 222 18 222 28 L222 92 C222 102 214 110 202 110 L182 110 C170 110 162 102 162 92 Z" stroke="#38A38E" stroke-width="7"/>
+    <path d="M172 28 C172 24 175 21 180 21 L196 21 C201 21 204 24 204 28 L204 92 C204 96 201 99 196 99 L180 99 C175 99 172 96 172 92 Z" stroke="#38A38E" stroke-width="4"/>
+  </g>
+  <text x="24" y="118" fill="#1B4E5E" font-family="Arial, Helvetica, sans-serif" font-size="28" font-weight="600" letter-spacing="1">academy</text>
+</svg>

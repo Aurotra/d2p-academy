@@ -1,14 +1,18 @@
 import Link from "next/link";
 
+import { BRAND_SURFACE_GRADIENT } from "@/shared/constants/brand-surfaces";
+
 export default function AdminOverviewPage() {
   return (
     <div className="space-y-6">
-      <div className="rounded-[2rem] border border-cyan-200/50 bg-gradient-to-br from-navy-950 via-navy-900 to-navy-800 p-8 text-white">
-        <p className="text-sm font-semibold uppercase tracking-[0.18em] text-cyan-300">
+      <div
+        className={`rounded-[2rem] border border-sky-200 ${BRAND_SURFACE_GRADIENT} p-8 text-sky-950`}
+      >
+        <p className="text-sm font-semibold uppercase tracking-[0.18em] text-sky-700">
           Yönetim Merkezi
         </p>
         <h2 className="mt-2 text-3xl font-black">D2P Academy Admin Paneli</h2>
-        <p className="mt-3 max-w-2xl text-sm text-cyan-100/80">
+        <p className="mt-3 max-w-2xl text-sm text-sky-900/80">
           Etkinlikleri yönetin, sertifikaları oluşturun veya iptal edin. Tüm işlemler Supabase
           veritabanına API üzerinden kaydedilir.
         </p>

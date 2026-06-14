@@ -22,9 +22,9 @@ function EventCard({ event }: { event: AcademyEvent }) {
     <article className="group overflow-hidden rounded-[1.75rem] border border-slate-200 bg-white shadow-sm transition hover:-translate-y-1 hover:border-cyan-300 hover:shadow-xl hover:shadow-cyan-500/10">
       <div className="flex h-full flex-col p-5 sm:p-6">
         <div className="flex items-start gap-4">
-          <div className="flex min-w-16 flex-col items-center rounded-2xl bg-navy-950 px-3 py-3 text-center text-white">
+          <div className="flex min-w-16 flex-col items-center rounded-2xl bg-sky-500 px-3 py-3 text-center text-white">
             <span className="text-2xl font-black leading-none">{start.day}</span>
-            <span className="mt-1 text-xs uppercase tracking-wide text-cyan-200">{start.month}</span>
+            <span className="mt-1 text-xs uppercase tracking-wide text-sky-100">{start.month}</span>
           </div>
 
           <div className="min-w-0 flex-1">
