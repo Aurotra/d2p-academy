@@ -22,7 +22,7 @@ export function BrandLogo({ href = "/", className = "", height = 40 }: BrandLogo
         alt={SITE_NAME}
         width={SITE_LOGO_WIDTH}
         height={SITE_LOGO_HEIGHT}
-        className="block w-auto object-contain"
+        className="block w-auto object-contain object-left"
         style={{ height: `${height}px`, maxHeight: `${height}px`, width: "auto" }}
       />
     </span>

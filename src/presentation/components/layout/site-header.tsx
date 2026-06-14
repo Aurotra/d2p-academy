@@ -14,7 +14,7 @@ export function SiteHeader() {
     <header className={`sticky top-0 z-40 ${BRAND_SURFACE_HEADER}`}>
       <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4 sm:px-6 lg:px-8">
         <div className="flex shrink-0 items-center self-center">
-          <BrandLogo height={40} />
+          <BrandLogo height={48} />
         </div>
 
         <nav className="hidden items-center gap-8 md:flex">

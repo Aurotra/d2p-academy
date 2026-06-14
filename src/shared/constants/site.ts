@@ -4,5 +4,5 @@ export const SITE_NAME = "D2P Academy";
 export const SITE_TAGLINE = "Design to Print";
 /** Public folder logo — use /d2plogo.png after adding the PNG to public/ */
 export const SITE_LOGO_SRC = "/d2p-logo.svg";
-export const SITE_LOGO_WIDTH = 320;
-export const SITE_LOGO_HEIGHT = 120;
+export const SITE_LOGO_WIDTH = 240;
+export const SITE_LOGO_HEIGHT = 96;
