@@ -60,23 +60,26 @@ export function CertificateVerificationBar() {
   return (
     <section id="certificate" className="relative z-10 -mt-16 px-4 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-5xl rounded-[2rem] border border-cyan-200/60 bg-white p-6 shadow-2xl shadow-navy-950/10 sm:p-8">
-        <div className="mb-6 text-center">
-          <p className="text-sm font-semibold uppercase tracking-[0.18em] text-cyan-600">
+        <div className="text-center">
+          <p className="text-sm font-semibold uppercase tracking-[0.18em] text-accent">
             Sertifika Doğrulama
           </p>
           <h2 className="mt-2 text-2xl font-bold text-navy-950 sm:text-3xl">
             Mezuniyet sertifikanızı anında doğrulayın
           </h2>
-          <p className="mx-auto mt-2 max-w-2xl text-sm text-slate-600 sm:text-base">
-            Kurumlar ve işverenler için güvenilir doğrulama. Sertifika kodunuzu girin, sonucu
-            saniyeler içinde görün.
-          </p>
         </div>
 
-        <form
-          onSubmit={handleSubmit}
-          className="flex flex-col gap-3 sm:flex-row sm:items-start"
-        >
+        <div className="mt-8">
+          <p className="mx-auto max-w-3xl text-center text-base font-normal leading-7 text-slate-700 sm:text-lg sm:leading-8">
+            D2P Academy sertifikaları, dijital dünyada benzersiz ve doğrulanabilir bir mühendislik
+            yetkinliğinin anahtarıdır. Sertifika kodunuzu girerek eğitimin geçerliliğini ve başarı
+            detaylarını saniyeler içinde görüntüleyebilirsiniz.
+          </p>
+
+          <form
+            onSubmit={handleSubmit}
+            className="mt-5 flex flex-col gap-3 sm:flex-row sm:items-start"
+          >
           <Input
             name="certificateCode"
             value={certificateCode}
@@ -88,7 +91,8 @@ export function CertificateVerificationBar() {
           <Button type="submit" disabled={isLoading} className="w-full sm:w-auto sm:min-w-40">
             {isLoading ? "Doğrulanıyor..." : "Doğrula"}
           </Button>
-        </form>
+          </form>
+        </div>
 
         {error ? (
           <p className="mt-4 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
