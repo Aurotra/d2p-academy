@@ -1,16 +1,37 @@
 @import "tailwindcss";
+@config "../../tailwind.config.ts";
 
 :root {
   --background: #f8fafc;
   --foreground: #0f172a;
+
+  /* Logo brand palette */
+  --brand-red: #e63946;
+  --brand-red-hover: #f0525e;
+  --brand-green: #2a9d8f;
+  --brand-green-hover: #33b5a5;
+  --brand-yellow: #ffb703;
+  --brand-yellow-dark: #d99b03;
+
+  /* Semantic accents */
+  --primary: var(--brand-red);
+  --primary-hover: var(--brand-red-hover);
+  --secondary: var(--brand-green);
+  --secondary-hover: var(--brand-green-hover);
+  --accent: var(--brand-yellow);
+  --accent-dark: var(--brand-yellow-dark);
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --color-navy-950: #020617;
-  --color-navy-900: #0f172a;
-  --color-navy-800: #1e293b;
+
+  /* Headings — anthracite on light blue surfaces */
+  --color-navy-950: #0f172a;
+  --color-navy-900: #1e293b;
+  --color-navy-800: #334155;
+
+  /* Background palette — unchanged */
   --color-sky-50: #f0f9ff;
   --color-sky-100: #e0f2fe;
   --color-sky-200: #bae6fd;
@@ -22,15 +43,41 @@
   --color-sky-800: #075985;
   --color-sky-900: #0c4a6e;
   --color-sky-950: #082f49;
-  --color-cyan-500: #06b6d4;
-  --color-cyan-400: #22d3ee;
-  --color-cyan-300: #67e8f9;
-  --color-cyan-200: #a5f3fc;
+
+  /* Soft cyan tints — used by decorative blurs / empty states only */
+  --color-cyan-50: #ecfeff;
   --color-cyan-100: #cffafe;
-  --color-cyan-700: #0e7490;
-  --color-cyan-600: #0891b2;
+  --color-cyan-200: #a5f3fc;
+  --color-cyan-300: #67e8f9;
+
+  /*
+   * Vivid cyan slots are remapped to logo accents for existing utility classes
+   * (buttons, labels, links) without touching page bg-sky / bg-slate classes.
+   */
+  --color-cyan-500: var(--primary);
+  --color-cyan-400: var(--primary-hover);
+  --color-cyan-600: var(--accent);
+  --color-cyan-700: var(--secondary);
+
+  /* Explicit semantic tokens */
+  --color-primary: var(--primary);
+  --color-primary-hover: var(--primary-hover);
+  --color-secondary: var(--secondary);
+  --color-secondary-hover: var(--secondary-hover);
+  --color-accent: var(--accent);
+  --color-accent-dark: var(--accent-dark);
+  --color-brand-red: var(--brand-red);
+  --color-brand-green: var(--brand-green);
+  --color-brand-yellow: var(--brand-yellow);
+
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+
+  --shadow-glow-primary: 0 12px 28px -8px rgb(230 57 70 / 0.4),
+    0 4px 12px -4px rgb(230 57 70 / 0.25);
+  --shadow-glow-secondary: 0 12px 28px -8px rgb(42 157 143 / 0.4),
+    0 4px 12px -4px rgb(42 157 143 / 0.25);
+  --shadow-glow-accent: 0 8px 20px -6px rgb(255 183 3 / 0.35);
 }
 
 html {
@@ -40,4 +87,33 @@ html {
 body {
   background: var(--background);
   color: var(--foreground);
+}
+
+@layer components {
+  /* Primary action buttons (Kayıt Ol, CTA) */
+  .bg-cyan-500,
+  .bg-primary {
+    transition:
+      background-color 0.2s ease,
+      box-shadow 0.2s ease,
+      transform 0.2s ease;
+  }
+
+  .bg-cyan-500:hover,
+  .bg-primary:hover {
+    box-shadow: var(--shadow-glow-primary);
+  }
+
+  /* Green secondary actions where bg-secondary is used */
+  .bg-secondary:hover {
+    box-shadow: var(--shadow-glow-secondary);
+  }
+
+  /* Yellow accent badges / chips */
+  .bg-accent-soft,
+  .tone-accent {
+    background-color: rgb(255 183 3 / 0.15);
+    color: var(--accent-dark);
+    box-shadow: inset 0 0 0 1px rgb(255 183 3 / 0.3);
+  }
 }

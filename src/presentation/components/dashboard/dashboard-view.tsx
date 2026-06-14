@@ -40,7 +40,7 @@ export function DashboardView({ data, isAdmin }: DashboardViewProps) {
             {isAdmin ? (
               <Link
                 href="/admin"
-                className="inline-flex items-center justify-center rounded-xl border border-cyan-400/40 bg-cyan-500 px-5 py-3 text-sm font-semibold text-navy-950 transition hover:bg-cyan-400"
+                className="inline-flex items-center justify-center rounded-xl bg-primary px-5 py-3 text-sm font-semibold text-white transition hover:bg-primary-hover hover:shadow-glow-primary"
               >
                 Admin Paneli
               </Link>

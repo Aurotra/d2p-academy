@@ -5,8 +5,8 @@ interface BadgeProps extends HTMLAttributes<HTMLSpanElement> {
 }
 
 const toneClasses = {
-  navy: "bg-navy-900 text-cyan-100",
-  cyan: "bg-cyan-500/15 text-cyan-700 ring-1 ring-cyan-500/30",
+  navy: "bg-navy-900 text-white",
+  cyan: "bg-accent/15 text-accent-dark ring-1 ring-accent/30",
   neutral: "bg-slate-100 text-slate-700",
 };
 

@@ -38,7 +38,7 @@ export function SiteHeader() {
           </Link>
           <Link
             href="/register"
-            className="rounded-xl bg-cyan-500 px-4 py-2 text-sm font-semibold text-navy-950 transition hover:bg-cyan-400"
+            className="rounded-xl bg-secondary px-4 py-2 text-sm font-semibold text-white transition hover:bg-secondary-hover hover:shadow-glow-secondary"
           >
             Kayıt Ol
           </Link>

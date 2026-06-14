@@ -8,7 +8,7 @@ export function LiveSupportWidget() {
     <button
       type="button"
       aria-label="Canlı destek"
-      className="fixed bottom-5 right-5 z-50 flex items-center gap-2 rounded-full bg-cyan-500 px-4 py-3 text-sm font-semibold text-navy-950 shadow-xl shadow-cyan-500/30 transition hover:bg-cyan-400"
+      className="fixed bottom-5 right-5 z-50 flex items-center gap-2 rounded-full bg-primary px-4 py-3 text-sm font-semibold text-white shadow-xl shadow-primary/30 transition hover:bg-primary-hover hover:shadow-glow-primary"
       onClick={() => {
         // Placeholder: Tawk.to / Crisp widget entegrasyonu buraya bağlanacak.
         window.alert(`${providerLabel} canlı destek widget'ı bir sonraki adımda entegre edilecek.`);
