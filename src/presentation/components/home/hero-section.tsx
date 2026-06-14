@@ -15,19 +15,19 @@ export function HeroSection() {
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(56,189,248,0.25),transparent_55%)]" />
       </div>
 
-      <div className="relative mx-auto grid max-w-7xl gap-12 lg:grid-cols-[1.1fr_0.9fr] lg:items-center">
+      <div className="relative mx-auto max-w-7xl">
         <div>
           <p className="mb-4 inline-flex rounded-full border border-sky-300 bg-white/70 px-4 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-sky-800">
-            Geleceğin Maker&apos;ları Burada Yetişiyor
+            Yeni Nesil Mühendislik ve Tasarım Akademisi
           </p>
           <h1 className="max-w-3xl text-4xl font-black leading-tight text-sky-950 sm:text-5xl lg:text-6xl">
-            Robotik, yazılım ve maker atölyeleriyle{" "}
-            <span className="text-sky-700">üretmeyi öğren.</span>
+            Fikirlerini Tasarıma,{" "}
+            <span className="text-sky-700">Tasarımlarını Gerçek Çözümlere Dönüştür!</span>
           </h1>
           <p className="mt-6 max-w-2xl text-base leading-7 text-sky-900/80 sm:text-lg">
-            D2P Academy; okullara, öğrencilere ve girişimcilere yönelik modern bir eğitim
-            platformudur. Canlı etkinlikler, doğrulanabilir sertifikalar ve öğrenci paneli tek
-            ekosistemde.
+            D2P (Düşün-Tasarla-Üret-Test Et) modeliyle; sadece teknolojiyi öğrenen değil,
+            çevrelerindeki problemlere 3D tasarımlarla çözümler geliştiren ve ürettiği çözümleri
+            gerçek hayatta uygulayan geleceğin mühendislerini yetiştiriyoruz.
           </p>
 
           <div className="mt-8 flex flex-col gap-3 sm:flex-row">
@@ -58,33 +58,6 @@ export function HeroSection() {
               <dd className="text-sm text-sky-800/80">Okul İş Birliği</dd>
             </div>
           </dl>
-        </div>
-
-        <div className="relative hidden lg:block">
-          <div className="rounded-[2rem] border border-sky-200 bg-white/80 p-6 shadow-lg shadow-sky-200/50">
-            <div className="rounded-3xl bg-gradient-to-br from-sky-200 to-sky-300 p-8 ring-1 ring-sky-300/60">
-              <p className="text-sm font-semibold uppercase tracking-[0.18em] text-sky-800">
-                Teknoloji Odaklı LMS
-              </p>
-              <p className="mt-4 text-2xl font-bold text-sky-950">
-                Web + mobil uygulama için API-driven altyapı
-              </p>
-              <ul className="mt-6 space-y-3 text-sm text-sky-900/80">
-                <li className="flex items-center gap-3">
-                  <span className="h-2 w-2 rounded-full bg-cyan-500" />
-                  Supabase ile güvenli kimlik doğrulama
-                </li>
-                <li className="flex items-center gap-3">
-                  <span className="h-2 w-2 rounded-full bg-cyan-500" />
-                  Doğrulanabilir sertifika sistemi
-                </li>
-                <li className="flex items-center gap-3">
-                  <span className="h-2 w-2 rounded-full bg-cyan-500" />
-                  Dinamik etkinlik takvimi
-                </li>
-              </ul>
-            </div>
-          </div>
         </div>
       </div>
     </section>
