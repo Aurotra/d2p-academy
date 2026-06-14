@@ -1,9 +1,11 @@
-import Image from "next/image";
 import Link from "next/link";
 
-/** Intrinsic dimensions of public/d2plogo.png — used only for Next.js layout hints. */
-const LOGO_WIDTH = 320;
-const LOGO_HEIGHT = 120;
+import {
+  SITE_LOGO_HEIGHT,
+  SITE_LOGO_SRC,
+  SITE_LOGO_WIDTH,
+  SITE_NAME,
+} from "@/shared/constants/site";
 
 interface BrandLogoProps {
   href?: string;
@@ -15,14 +17,13 @@ interface BrandLogoProps {
 export function BrandLogo({ href = "/", className = "", height = 40 }: BrandLogoProps) {
   const logo = (
     <span className={`inline-flex shrink-0 items-center ${className}`}>
-      <Image
-        src="/d2plogo.png"
-        alt="D2P Academy"
-        width={LOGO_WIDTH}
-        height={LOGO_HEIGHT}
-        className="w-auto object-contain"
-        style={{ height: `${height}px`, width: "auto", maxHeight: `${height}px` }}
-        priority
+      <img
+        src={SITE_LOGO_SRC}
+        alt={SITE_NAME}
+        width={SITE_LOGO_WIDTH}
+        height={SITE_LOGO_HEIGHT}
+        className="block w-auto object-contain"
+        style={{ height: `${height}px`, maxHeight: `${height}px`, width: "auto" }}
       />
     </span>
   );
