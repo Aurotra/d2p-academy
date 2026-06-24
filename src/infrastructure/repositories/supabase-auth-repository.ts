@@ -7,6 +7,7 @@ import type {
   SignUpInput,
 } from "@/core/domain/auth";
 import type { AuthRepository } from "@/core/use-cases/authenticate-user";
+import { SITE_URL } from "@/shared/constants/site";
 
 function mapSession(userId: string, email: string): AuthSession {
   return {
@@ -38,6 +39,7 @@ export class SupabaseAuthRepository implements AuthRepository {
       email: input.email.trim().toLowerCase(),
       password: input.password,
       options: {
+        emailRedirectTo: `${SITE_URL}/auth/callback?next=/dashboard`,
         data: {
           full_name: input.fullName.trim(),
           role: "student",
