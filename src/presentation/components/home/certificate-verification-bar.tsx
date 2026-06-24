@@ -59,7 +59,7 @@ export function CertificateVerificationBar() {
 
   return (
     <section id="certificate" className="relative z-10 -mt-16 px-4 sm:px-6 lg:px-8">
-      <div className="mx-auto max-w-5xl rounded-[2rem] border-2 border-secondary/30 bg-gradient-to-br from-accent/20 via-amber-50 to-secondary/15 p-6 shadow-xl shadow-secondary/15 sm:p-8">
+      <div className="mx-auto max-w-5xl rounded-[2rem] border border-sky-200/90 bg-gradient-to-br from-sky-100 via-sky-50 to-accent/25 p-6 shadow-xl shadow-sky-200/40 sm:p-8">
         <div className="text-center">
           <p className="text-sm font-semibold uppercase tracking-[0.18em] text-accent-dark">
             Sertifika Doğrulama
@@ -91,8 +91,7 @@ export function CertificateVerificationBar() {
           <Button
             type="submit"
             disabled={isLoading}
-            variant="secondary"
-            className="w-full sm:w-auto sm:min-w-40"
+            className="w-full bg-accent text-slate-900 hover:bg-accent-dark hover:shadow-glow-accent sm:w-auto sm:min-w-40"
           >
             {isLoading ? "Doğrulanıyor..." : "Doğrula"}
           </Button>
