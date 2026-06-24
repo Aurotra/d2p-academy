@@ -8,6 +8,7 @@ import { LogoutButton } from "@/presentation/components/dashboard/logout-button"
 
 const navItems = [
   { href: "/admin", label: "Genel Bakış" },
+  { href: "/admin/students", label: "Öğrenciler" },
   { href: "/admin/events", label: "Etkinlikler" },
   { href: "/admin/certificates", label: "Sertifikalar" },
   { href: "/admin/documents", label: "Dökümanlar" },

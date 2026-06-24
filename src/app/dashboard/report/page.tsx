@@ -1,8 +1,10 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
+import { getAdminAccess } from "@/infrastructure/auth/get-admin-access";
 import { createSupabaseServerClient } from "@/infrastructure/supabase/create-server-client";
 import { SupabaseGradeRepository } from "@/infrastructure/repositories/supabase-grade-repository";
+import { SupabaseStudentProfileRepository } from "@/infrastructure/repositories/supabase-student-profile-repository";
 import { ScoreBadge } from "@/presentation/components/grades/score-badge";
 
 export const dynamic = "force-dynamic";
@@ -13,7 +15,12 @@ function formatDate(date: Date): string {
   }).format(date);
 }
 
-export default async function DashboardReportPage() {
+interface DashboardReportPageProps {
+  searchParams: Promise<{ student_id?: string }>;
+}
+
+export default async function DashboardReportPage({ searchParams }: DashboardReportPageProps) {
+  const { student_id: requestedStudentId } = await searchParams;
   const client = await createSupabaseServerClient();
 
   if (!client) {
@@ -28,27 +35,43 @@ export default async function DashboardReportPage() {
     redirect("/login");
   }
 
-  const repository = new SupabaseGradeRepository(client);
-  const grades = await repository.listGradesByStudent(user.id);
+  const adminAccess = await getAdminAccess(client);
+  const targetStudentId =
+    adminAccess.authorized && requestedStudentId ? requestedStudentId : user.id;
+
+  if (targetStudentId !== user.id && !adminAccess.authorized) {
+    redirect("/dashboard/report");
+  }
+
+  const gradeRepository = new SupabaseGradeRepository(client);
+  const profileRepository = new SupabaseStudentProfileRepository(client);
+  const [grades, studentProfile] = await Promise.all([
+    gradeRepository.listGradesByStudent(targetStudentId),
+    profileRepository.getByUserId(targetStudentId),
+  ]);
+
+  const isAdminView = adminAccess.authorized && targetStudentId !== user.id;
 
   return (
     <section className="bg-slate-50 px-4 py-10 sm:px-6 lg:px-8">
-      <div className="mx-auto max-w-4xl">
+      <div className="mx-auto max-w-5xl">
         <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div>
             <p className="text-sm font-semibold uppercase tracking-[0.18em] text-document-primary">
-              Öğrenci / Veli Raporu
+              {isAdminView ? "Admin Görünümü" : "Öğrenci / Veli Raporu"}
             </p>
-            <h1 className="mt-2 text-3xl font-black text-slate-900">Not Raporum</h1>
+            <h1 className="mt-2 text-3xl font-black text-slate-900">
+              {isAdminView ? `${studentProfile?.full_name ?? "Öğrenci"} — Not Raporu` : "Not Raporum"}
+            </h1>
             <p className="mt-2 max-w-2xl text-sm text-slate-600">
-              Ödev ve döküman değerlendirmelerinizi buradan takip edebilirsiniz.
+              Ödev değerlendirmeleri, puanlar ve gelişim yorumları.
             </p>
           </div>
           <Link
-            href="/dashboard/documents"
+            href={isAdminView ? "/admin/students" : "/dashboard/documents"}
             className="text-sm font-semibold text-document-primary transition hover:text-document-primary-hover"
           >
-            ← Dökümanlara Dön
+            {isAdminView ? "← Öğrenci Listesi" : "← Dökümanlara Dön"}
           </Link>
         </div>
 
@@ -60,39 +83,46 @@ export default async function DashboardReportPage() {
             </p>
           </div>
         ) : (
-          <div className="space-y-4">
-            {grades.map((grade) => (
-              <article
-                key={grade.id}
-                className="rounded-[1.75rem] border border-slate-200 bg-white p-6 shadow-sm"
-              >
-                <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                  <div>
-                    <h2 className="text-xl font-bold text-slate-900">{grade.documentTitle}</h2>
-                    <p className="mt-1 text-sm text-slate-500">{formatDate(grade.createdAt)}</p>
-                  </div>
-                  <ScoreBadge score={grade.score} />
-                </div>
-
-                {grade.feedback ? (
-                  <div className="mt-4 rounded-2xl border border-slate-100 bg-slate-50 px-4 py-3">
-                    <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-                      Geri Bildirim
-                    </p>
-                    <p className="mt-2 text-sm leading-6 text-slate-700">{grade.feedback}</p>
-                  </div>
-                ) : null}
-
-                <a
-                  href={grade.documentFileUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="mt-4 inline-flex items-center justify-center rounded-xl border border-document-primary/30 px-4 py-2.5 text-sm font-semibold text-document-primary transition hover:bg-document-primary/5"
-                >
-                  Ödev Dosyasını Aç
-                </a>
-              </article>
-            ))}
+          <div className="overflow-hidden rounded-[1.75rem] border border-slate-200 bg-white shadow-sm">
+            <div className="overflow-x-auto">
+              <table className="min-w-full text-left text-sm">
+                <thead className="border-b border-slate-100 bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
+                  <tr>
+                    <th className="px-5 py-4">Döküman</th>
+                    <th className="px-5 py-4">Tarih</th>
+                    <th className="px-5 py-4">Puan</th>
+                    <th className="px-5 py-4">Durum</th>
+                    <th className="px-5 py-4">Gelişim Yorumu</th>
+                    <th className="px-5 py-4">Dosya</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {grades.map((grade) => (
+                    <tr key={grade.id} className="border-b border-slate-50 align-top last:border-0">
+                      <td className="px-5 py-4 font-semibold text-slate-900">{grade.documentTitle}</td>
+                      <td className="px-5 py-4 text-slate-600">{formatDate(grade.createdAt)}</td>
+                      <td className="px-5 py-4 font-bold text-slate-900">{grade.score}</td>
+                      <td className="px-5 py-4">
+                        <ScoreBadge score={grade.score} />
+                      </td>
+                      <td className="max-w-sm px-5 py-4 text-slate-700">
+                        {grade.feedback || "—"}
+                      </td>
+                      <td className="px-5 py-4">
+                        <a
+                          href={grade.documentFileUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex rounded-lg border border-document-primary/30 px-3 py-1.5 text-xs font-semibold text-document-primary hover:bg-document-primary/5"
+                        >
+                          PDF Aç
+                        </a>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
         )}
       </div>

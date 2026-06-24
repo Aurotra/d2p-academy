@@ -9,37 +9,13 @@ import type { GradeRecord } from "@/core/domain/grade";
 import { createSupabaseBrowserClient } from "@/infrastructure/supabase/create-browser-client";
 import { SupabaseGradeRepository } from "@/infrastructure/repositories/supabase-grade-repository";
 import { Button } from "@/presentation/components/ui/button";
+import { Select } from "@/presentation/components/ui/select";
 import { Textarea } from "@/presentation/components/ui/textarea";
 
 type AlertState =
   | { type: "success"; message: string }
   | { type: "error"; message: string }
   | null;
-
-interface StudentGradeFormState {
-  score: string;
-  feedback: string;
-}
-
-function buildInitialFormState(
-  students: Profile[],
-  grades: GradeRecord[],
-): Record<string, StudentGradeFormState> {
-  const gradeByStudent = new Map(grades.map((grade) => [grade.studentId, grade]));
-
-  return Object.fromEntries(
-    students.map((student) => {
-      const existing = gradeByStudent.get(student.id);
-      return [
-        student.id,
-        {
-          score: existing ? String(existing.score) : "",
-          feedback: existing?.feedback ?? "",
-        },
-      ];
-    }),
-  );
-}
 
 export default function AdminEvaluateDocumentPage() {
   const router = useRouter();
@@ -48,10 +24,13 @@ export default function AdminEvaluateDocumentPage() {
 
   const [isAuthorizing, setIsAuthorizing] = useState(true);
   const [isLoading, setIsLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
   const [documentTitle, setDocumentTitle] = useState("");
   const [students, setStudents] = useState<Profile[]>([]);
-  const [formState, setFormState] = useState<Record<string, StudentGradeFormState>>({});
-  const [savingStudentId, setSavingStudentId] = useState<string | null>(null);
+  const [grades, setGrades] = useState<GradeRecord[]>([]);
+  const [selectedStudentId, setSelectedStudentId] = useState("");
+  const [score, setScore] = useState("");
+  const [feedback, setFeedback] = useState("");
   const [alert, setAlert] = useState<AlertState>(null);
 
   const loadPageData = useCallback(async () => {
@@ -103,7 +82,7 @@ export default function AdminEvaluateDocumentPage() {
 
     setDocumentTitle(document.title);
     setStudents(studentList);
-    setFormState(buildInitialFormState(studentList, gradeList));
+    setGrades(gradeList);
     setIsLoading(false);
   }, [documentId, router]);
 
@@ -111,31 +90,29 @@ export default function AdminEvaluateDocumentPage() {
     void loadPageData();
   }, [loadPageData]);
 
-  function updateStudentField(
-    studentId: string,
-    field: keyof StudentGradeFormState,
-    value: string,
-  ) {
-    setFormState((current) => ({
-      ...current,
-      [studentId]: {
-        ...current[studentId],
-        [field]: value,
-      },
-    }));
-  }
+  useEffect(() => {
+    if (!selectedStudentId) {
+      setScore("");
+      setFeedback("");
+      return;
+    }
 
-  async function handleSaveStudent(studentId: string) {
+    const existing = grades.find((grade) => grade.studentId === selectedStudentId);
+    setScore(existing ? String(existing.score) : "");
+    setFeedback(existing?.feedback ?? "");
+  }, [selectedStudentId, grades]);
+
+  async function handleSubmit() {
     setAlert(null);
 
-    const entry = formState[studentId];
-    const score = Number(entry.score);
+    if (!selectedStudentId) {
+      setAlert({ type: "error", message: "Lütfen bir öğrenci seçin." });
+      return;
+    }
 
-    if (!Number.isInteger(score) || score < 0 || score > 100) {
-      setAlert({
-        type: "error",
-        message: "Puan 0 ile 100 arasında tam sayı olmalıdır.",
-      });
+    const numericScore = Number(score);
+    if (!Number.isInteger(numericScore) || numericScore < 0 || numericScore > 100) {
+      setAlert({ type: "error", message: "Puan 0 ile 100 arasında tam sayı olmalıdır." });
       return;
     }
 
@@ -145,15 +122,20 @@ export default function AdminEvaluateDocumentPage() {
       return;
     }
 
-    setSavingStudentId(studentId);
+    setIsSaving(true);
 
     try {
       const repository = new SupabaseGradeRepository(client);
-      await repository.upsertGrade({
-        studentId,
+      const saved = await repository.upsertGrade({
+        studentId: selectedStudentId,
         documentId,
-        score,
-        feedback: entry.feedback.trim() || null,
+        score: numericScore,
+        feedback: feedback.trim() || null,
+      });
+
+      setGrades((current) => {
+        const others = current.filter((grade) => grade.studentId !== selectedStudentId);
+        return [...others, saved];
       });
 
       setAlert({ type: "success", message: "Not başarıyla kaydedildi." });
@@ -161,14 +143,14 @@ export default function AdminEvaluateDocumentPage() {
       const message = error instanceof Error ? error.message : "Not kaydedilemedi.";
       setAlert({ type: "error", message });
     } finally {
-      setSavingStudentId(null);
+      setIsSaving(false);
     }
   }
 
   if (isAuthorizing || isLoading) {
     return (
       <div className="rounded-[1.75rem] border border-slate-200 bg-white p-8 text-center text-sm text-slate-600">
-        {isAuthorizing ? "Yetki kontrol ediliyor..." : "Öğrenci listesi yükleniyor..."}
+        {isAuthorizing ? "Yetki kontrol ediliyor..." : "Veriler yükleniyor..."}
       </div>
     );
   }
@@ -187,7 +169,7 @@ export default function AdminEvaluateDocumentPage() {
         </p>
         <h1 className="mt-2 text-2xl font-bold text-slate-900">{documentTitle}</h1>
         <p className="mt-2 text-sm text-slate-600">
-          Her öğrenci için puan ve geri bildirim girin. Kayıtlar otomatik olarak güncellenir.
+          Öğrenci seçin, puan ve gelişim yorumunu kaydedin.
         </p>
       </div>
 
@@ -204,75 +186,62 @@ export default function AdminEvaluateDocumentPage() {
         </div>
       ) : null}
 
-      {students.length === 0 ? (
-        <div className="rounded-[1.75rem] border border-dashed border-slate-300 bg-white px-6 py-12 text-center">
-          <p className="text-lg font-semibold text-slate-800">Kayıtlı öğrenci bulunamadı.</p>
-        </div>
-      ) : (
-        <div className="space-y-4">
-          {students.map((student) => {
-            const entry = formState[student.id] ?? { score: "", feedback: "" };
-            const isSaving = savingStudentId === student.id;
+      <div className="rounded-[1.75rem] border border-slate-200 bg-white p-8 shadow-sm">
+        {students.length === 0 ? (
+          <p className="text-center text-slate-500">Kayıtlı öğrenci bulunamadı.</p>
+        ) : (
+          <div className="space-y-5">
+            <Select
+              label="Öğrenci"
+              value={selectedStudentId}
+              disabled={isSaving}
+              onChange={(event) => setSelectedStudentId(event.target.value)}
+            >
+              <option value="">Öğrenci seçin</option>
+              {students.map((student) => (
+                <option key={student.id} value={student.id}>
+                  {student.fullName} ({student.email})
+                </option>
+              ))}
+            </Select>
 
-            return (
-              <article
-                key={student.id}
-                className="rounded-[1.75rem] border border-slate-200 bg-white p-6 shadow-sm"
-              >
-                <div className="mb-4">
-                  <h2 className="text-lg font-bold text-slate-900">{student.fullName}</h2>
-                  <p className="text-sm text-slate-500">{student.email}</p>
-                </div>
+            <div className="grid gap-4 md:grid-cols-[140px_1fr]">
+              <div>
+                <label htmlFor="score" className="mb-2 block text-sm font-medium text-slate-900">
+                  Puan (0-100)
+                </label>
+                <input
+                  id="score"
+                  type="number"
+                  min={0}
+                  max={100}
+                  value={score}
+                  disabled={isSaving || !selectedStudentId}
+                  onChange={(event) => setScore(event.target.value)}
+                  className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 focus:border-document-primary focus:outline-none focus:ring-2 focus:ring-blue-200"
+                />
+              </div>
 
-                <div className="grid gap-4 md:grid-cols-[140px_1fr]">
-                  <div>
-                    <label
-                      htmlFor={`score-${student.id}`}
-                      className="mb-2 block text-sm font-medium text-slate-900"
-                    >
-                      Puan (0-100)
-                    </label>
-                    <input
-                      id={`score-${student.id}`}
-                      type="number"
-                      min={0}
-                      max={100}
-                      value={entry.score}
-                      disabled={isSaving}
-                      onChange={(event) =>
-                        updateStudentField(student.id, "score", event.target.value)
-                      }
-                      className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 focus:border-document-primary focus:outline-none focus:ring-2 focus:ring-blue-200"
-                    />
-                  </div>
+              <Textarea
+                label="Gelişim Yorumu"
+                value={feedback}
+                disabled={isSaving || !selectedStudentId}
+                onChange={(event) => setFeedback(event.target.value)}
+                placeholder="Öğrencinin gelişimine dair geri bildirim yazın..."
+              />
+            </div>
 
-                  <Textarea
-                    id={`feedback-${student.id}`}
-                    label="Geri Bildirim"
-                    value={entry.feedback}
-                    disabled={isSaving}
-                    onChange={(event) =>
-                      updateStudentField(student.id, "feedback", event.target.value)
-                    }
-                    placeholder="Öğrenciye kısa değerlendirme notu yazın..."
-                  />
-                </div>
-
-                <div className="mt-4 flex justify-end">
-                  <Button
-                    type="button"
-                    disabled={isSaving}
-                    onClick={() => void handleSaveStudent(student.id)}
-                    className="bg-document-primary hover:bg-document-primary-hover hover:shadow-glow-document"
-                  >
-                    {isSaving ? "Kaydediliyor..." : "Notu Kaydet"}
-                  </Button>
-                </div>
-              </article>
-            );
-          })}
-        </div>
-      )}
+            <Button
+              type="button"
+              disabled={isSaving || !selectedStudentId}
+              onClick={() => void handleSubmit()}
+              className="bg-document-primary hover:bg-document-primary-hover hover:shadow-glow-document"
+            >
+              {isSaving ? "Kaydediliyor..." : "Notu Kaydet"}
+            </Button>
+          </div>
+        )}
+      </div>
     </div>
   );
 }

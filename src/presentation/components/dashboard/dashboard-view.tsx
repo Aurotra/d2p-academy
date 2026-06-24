@@ -38,6 +38,12 @@ export function DashboardView({ data, isAdmin }: DashboardViewProps) {
           </div>
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
             <Link
+              href="/dashboard/profile"
+              className="inline-flex items-center justify-center rounded-xl border-2 border-document-primary bg-white px-5 py-3 text-sm font-semibold text-document-primary transition hover:bg-document-primary/5"
+            >
+              Profilim
+            </Link>
+            <Link
               href="/dashboard/documents"
               className="inline-flex items-center justify-center rounded-xl bg-document-primary px-5 py-3 text-sm font-semibold text-white transition hover:bg-document-primary-hover hover:shadow-glow-document"
             >
