@@ -59,18 +59,18 @@ export function CertificateVerificationBar() {
 
   return (
     <section id="certificate" className="relative z-10 -mt-16 px-4 sm:px-6 lg:px-8">
-      <div className="mx-auto max-w-5xl rounded-[2rem] border border-cyan-200/60 bg-white p-6 shadow-2xl shadow-navy-950/10 sm:p-8">
+      <div className="mx-auto max-w-5xl rounded-[2rem] border-2 border-secondary/30 bg-gradient-to-br from-accent/20 via-amber-50 to-secondary/15 p-6 shadow-xl shadow-secondary/15 sm:p-8">
         <div className="text-center">
-          <p className="text-sm font-semibold uppercase tracking-[0.18em] text-accent">
+          <p className="text-sm font-semibold uppercase tracking-[0.18em] text-accent-dark">
             Sertifika Doğrulama
           </p>
-          <h2 className="mt-2 text-2xl font-bold text-navy-950 sm:text-3xl">
+          <h2 className="mt-2 text-2xl font-bold text-slate-900 sm:text-3xl">
             Mezuniyet sertifikanızı anında doğrulayın
           </h2>
         </div>
 
         <div className="mt-8">
-          <p className="mx-auto max-w-3xl text-center text-base font-normal leading-7 text-slate-700 sm:text-lg sm:leading-8">
+          <p className="mx-auto max-w-3xl text-center text-base font-normal leading-7 text-slate-800 sm:text-lg sm:leading-8">
             Sertifikalarımız, dijital dünyada benzersiz ve doğrulanabilir bir mühendislik
             yetkinliğinin anahtarıdır. Sertifika kodunuzu girerek eğitimin geçerliliğini ve başarı
             detaylarını saniyeler içinde görüntüleyebilirsiniz.
@@ -86,9 +86,14 @@ export function CertificateVerificationBar() {
             onChange={(event) => setCertificateCode(event.target.value)}
             placeholder="D2P-2026-1045"
             aria-label="Sertifika kodu"
-            className="sm:flex-1"
+            className="border-white/80 bg-white/90 sm:flex-1"
           />
-          <Button type="submit" disabled={isLoading} className="w-full sm:w-auto sm:min-w-40">
+          <Button
+            type="submit"
+            disabled={isLoading}
+            variant="secondary"
+            className="w-full sm:w-auto sm:min-w-40"
+          >
             {isLoading ? "Doğrulanıyor..." : "Doğrula"}
           </Button>
           </form>
