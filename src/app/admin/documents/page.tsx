@@ -1,9 +1,11 @@
 "use client";
 
+import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useRef, useState, type FormEvent } from "react";
+import { useCallback, useEffect, useRef, useState, type FormEvent } from "react";
 
 import { createSupabaseBrowserClient } from "@/infrastructure/supabase/create-browser-client";
+import type { DocumentRecord } from "@/core/domain/document";
 import { SupabaseDocumentRepository } from "@/infrastructure/repositories/supabase-document-repository";
 import { Button } from "@/presentation/components/ui/button";
 import { Input } from "@/presentation/components/ui/input";
@@ -22,7 +24,21 @@ export default function AdminDocumentsPage() {
   const formRef = useRef<HTMLFormElement>(null);
   const [isAuthorizing, setIsAuthorizing] = useState(true);
   const [isUploading, setIsUploading] = useState(false);
+  const [documents, setDocuments] = useState<DocumentRecord[]>([]);
+  const [isLoadingDocuments, setIsLoadingDocuments] = useState(true);
   const [alert, setAlert] = useState<AlertState>(null);
+
+  const loadDocuments = useCallback(async () => {
+    const client = createSupabaseBrowserClient();
+    if (!client) {
+      return;
+    }
+
+    const repository = new SupabaseDocumentRepository(client);
+    const items = await repository.listDocuments();
+    setDocuments(items);
+    setIsLoadingDocuments(false);
+  }, []);
 
   useEffect(() => {
     async function verifyAdminAccess() {
@@ -54,10 +70,11 @@ export default function AdminDocumentsPage() {
       }
 
       setIsAuthorizing(false);
+      void loadDocuments();
     }
 
     void verifyAdminAccess();
-  }, [router]);
+  }, [router, loadDocuments]);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -117,6 +134,7 @@ export default function AdminDocumentsPage() {
 
       formRef.current?.reset();
       setAlert({ type: "success", message: "Doküman başarıyla yüklendi." });
+      await loadDocuments();
     } catch (error) {
       const message = error instanceof Error ? error.message : "Doküman yüklenemedi.";
       setAlert({ type: "error", message });
@@ -194,6 +212,43 @@ export default function AdminDocumentsPage() {
             {isUploading ? "Yükleniyor..." : "Dokümanı Yükle"}
           </Button>
         </form>
+      </div>
+
+      <div className="rounded-[1.75rem] border border-slate-200 bg-white p-8 shadow-sm">
+        <h2 className="text-xl font-bold text-slate-900">Yüklenen Dökümanlar</h2>
+        <p className="mt-2 text-sm text-slate-600">
+          Her döküman için öğrenci notlarını girmek üzere değerlendirme sayfasına gidin.
+        </p>
+
+        {isLoadingDocuments ? (
+          <p className="mt-6 text-sm text-slate-500">Dökümanlar yükleniyor...</p>
+        ) : documents.length === 0 ? (
+          <p className="mt-6 text-sm text-slate-500">Henüz döküman yüklenmedi.</p>
+        ) : (
+          <ul className="mt-6 space-y-3">
+            {documents.map((document) => (
+              <li
+                key={document.id}
+                className="flex flex-col gap-3 rounded-2xl border border-slate-100 bg-slate-50 px-4 py-4 sm:flex-row sm:items-center sm:justify-between"
+              >
+                <div>
+                  <p className="font-semibold text-slate-900">{document.title}</p>
+                  <p className="text-xs text-slate-500">
+                    {new Intl.DateTimeFormat("tr-TR", { dateStyle: "long" }).format(
+                      document.createdAt,
+                    )}
+                  </p>
+                </div>
+                <Link
+                  href={`/admin/evaluate/${document.id}`}
+                  className="inline-flex items-center justify-center rounded-xl bg-document-primary px-4 py-2 text-sm font-semibold text-white transition hover:bg-document-primary-hover hover:shadow-glow-document"
+                >
+                  Not Gir / Değerlendir
+                </Link>
+              </li>
+            ))}
+          </ul>
+        )}
       </div>
     </div>
   );

@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import type { DocumentRecord } from "@/core/domain/document";
 import { createSupabaseServerClient } from "@/infrastructure/supabase/create-server-client";
 import { SupabaseDocumentRepository } from "@/infrastructure/repositories/supabase-document-repository";
+import { SupabaseGradeRepository } from "@/infrastructure/repositories/supabase-grade-repository";
 
 export const dynamic = "force-dynamic";
 
@@ -51,7 +52,11 @@ export default async function DashboardDocumentsPage() {
   }
 
   const repository = new SupabaseDocumentRepository(client);
-  const documents = await repository.listDocuments();
+  const gradeRepository = new SupabaseGradeRepository(client);
+  const [documents, hasGrades] = await Promise.all([
+    repository.listDocuments(),
+    gradeRepository.studentHasGrades(user.id),
+  ]);
 
   return (
     <section className="bg-slate-50 px-4 py-10 sm:px-6 lg:px-8">
@@ -66,12 +71,22 @@ export default async function DashboardDocumentsPage() {
               Eğitmenlerin paylaştığı materyallere buradan ulaşabilirsiniz.
             </p>
           </div>
-          <Link
-            href="/dashboard"
-            className="text-sm font-semibold text-document-primary transition hover:text-document-primary-hover"
-          >
-            ← Panele Dön
-          </Link>
+          <div className="flex flex-col gap-3 sm:items-end">
+            {hasGrades ? (
+              <Link
+                href="/dashboard/report"
+                className="inline-flex items-center justify-center rounded-xl bg-document-primary px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-document-primary-hover hover:shadow-glow-document"
+              >
+                Sonuçları Görüntüle
+              </Link>
+            ) : null}
+            <Link
+              href="/dashboard"
+              className="text-sm font-semibold text-document-primary transition hover:text-document-primary-hover"
+            >
+              ← Panele Dön
+            </Link>
+          </div>
         </div>
 
         {documents.length === 0 ? (

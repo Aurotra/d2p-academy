@@ -43,6 +43,12 @@ export function DashboardView({ data, isAdmin }: DashboardViewProps) {
             >
               Dökümanlar
             </Link>
+            <Link
+              href="/dashboard/report"
+              className="inline-flex items-center justify-center rounded-xl border-2 border-document-primary bg-white px-5 py-3 text-sm font-semibold text-document-primary transition hover:bg-document-primary/5"
+            >
+              Not Raporum
+            </Link>
             {isAdmin ? (
               <Link
                 href="/admin"
