@@ -37,6 +37,12 @@ export function DashboardView({ data, isAdmin }: DashboardViewProps) {
             </p>
           </div>
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+            <Link
+              href="/dashboard/documents"
+              className="inline-flex items-center justify-center rounded-xl bg-document-primary px-5 py-3 text-sm font-semibold text-white transition hover:bg-document-primary-hover hover:shadow-glow-document"
+            >
+              Dökümanlar
+            </Link>
             {isAdmin ? (
               <Link
                 href="/admin"

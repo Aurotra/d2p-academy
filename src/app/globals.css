@@ -70,6 +70,10 @@
   --color-brand-green: var(--brand-green);
   --color-brand-yellow: var(--brand-yellow);
 
+  /* Document module accents (blue-600) */
+  --color-document-primary: #2563eb;
+  --color-document-primary-hover: #1d4ed8;
+
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 
@@ -78,6 +82,8 @@
   --shadow-glow-secondary: 0 12px 28px -8px rgb(42 157 143 / 0.4),
     0 4px 12px -4px rgb(42 157 143 / 0.25);
   --shadow-glow-accent: 0 8px 20px -6px rgb(255 183 3 / 0.35);
+  --shadow-glow-document: 0 12px 28px -8px rgb(37 99 235 / 0.35),
+    0 4px 12px -4px rgb(37 99 235 / 0.2);
 }
 
 html {

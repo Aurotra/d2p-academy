@@ -30,12 +30,18 @@ const config = {
           green: "#2A9D8F",
           yellow: "#FFB703",
         },
+        document: {
+          primary: "#2563eb",
+          "primary-hover": "#1d4ed8",
+        },
       },
       boxShadow: {
         "glow-primary": "0 12px 28px -8px rgb(230 57 70 / 0.4), 0 4px 12px -4px rgb(230 57 70 / 0.25)",
         "glow-secondary":
           "0 12px 28px -8px rgb(42 157 143 / 0.4), 0 4px 12px -4px rgb(42 157 143 / 0.25)",
         "glow-accent": "0 8px 20px -6px rgb(255 183 3 / 0.35)",
+        "glow-document":
+          "0 12px 28px -8px rgb(37 99 235 / 0.35), 0 4px 12px -4px rgb(37 99 235 / 0.2)",
       },
     },
   },

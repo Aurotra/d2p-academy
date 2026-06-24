@@ -18,7 +18,7 @@ export default function AdminOverviewPage() {
         </p>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2">
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         <Link
           href="/admin/events"
           className="rounded-[1.75rem] border border-slate-200 bg-white p-6 shadow-sm transition hover:border-cyan-300 hover:shadow-lg"
@@ -35,6 +35,15 @@ export default function AdminOverviewPage() {
           <h3 className="text-lg font-bold text-navy-950">Sertifika Yönetimi</h3>
           <p className="mt-2 text-sm text-slate-600">
             Tamamlanan kayıtlara sertifika verin veya iptal edin.
+          </p>
+        </Link>
+        <Link
+          href="/admin/documents"
+          className="rounded-[1.75rem] border border-slate-200 bg-white p-6 shadow-sm transition hover:border-document-primary/40 hover:shadow-lg"
+        >
+          <h3 className="text-lg font-bold text-navy-950">Döküman Yönetimi</h3>
+          <p className="mt-2 text-sm text-slate-600">
+            Ödev ve ders materyallerini yükleyin, öğrencilerle paylaşın.
           </p>
         </Link>
       </div>
