@@ -24,7 +24,7 @@ export default async function AdminStudentsPage() {
         </p>
         <h1 className="mt-2 text-2xl font-bold text-slate-900">Kayıtlı Öğrenciler</h1>
         <p className="mt-2 text-sm text-slate-600">
-          Profil tamamlanma oranlarını takip edin ve not raporlarını görüntüleyin.
+          Profil cevaplarını ve ödev not raporlarını buradan görüntüleyin.
         </p>
       </div>
 
@@ -87,12 +87,20 @@ export default async function AdminStudentsPage() {
                         </span>
                       </td>
                       <td className="px-5 py-4">
-                        <Link
-                          href={`/dashboard/report?student_id=${student.id}`}
-                          className="inline-flex rounded-xl bg-document-primary px-3 py-2 text-xs font-semibold text-white transition hover:bg-document-primary-hover"
-                        >
-                          Sonuçları Görüntüle
-                        </Link>
+                        <div className="flex flex-col gap-2 sm:flex-row">
+                          <Link
+                            href={`/admin/students/${student.id}`}
+                            className="inline-flex justify-center rounded-xl border border-document-primary px-3 py-2 text-xs font-semibold text-document-primary transition hover:bg-document-primary/5"
+                          >
+                            Profil Cevapları
+                          </Link>
+                          <Link
+                            href={`/dashboard/report?student_id=${student.id}`}
+                            className="inline-flex justify-center rounded-xl bg-document-primary px-3 py-2 text-xs font-semibold text-white transition hover:bg-document-primary-hover"
+                          >
+                            Not Raporu
+                          </Link>
+                        </div>
                       </td>
                     </tr>
                   );
