@@ -30,9 +30,16 @@ export function HeroSection() {
             gerçek hayatta uygulayan geleceğin mühendislerini yetiştiriyoruz.
           </p>
 
-          <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+          <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+            <Link href="/kayit">
+              <Button className="w-full bg-document-primary hover:bg-document-primary-hover hover:shadow-glow-document sm:w-auto">
+                Ön Kayıt Ol
+              </Button>
+            </Link>
             <Link href="/register">
-              <Button className="w-full sm:w-auto">Hemen Kayıt Ol</Button>
+              <Button variant="outline" className="w-full sm:w-auto">
+                Hemen Kayıt Ol
+              </Button>
             </Link>
             <a href="#events">
               <Button variant="outline" className="w-full sm:w-auto">

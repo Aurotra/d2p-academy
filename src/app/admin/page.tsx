@@ -55,6 +55,15 @@ export default function AdminOverviewPage() {
             Ödev ve ders materyallerini yükleyin, öğrencilerle paylaşın.
           </p>
         </Link>
+        <Link
+          href="/admin/registrations"
+          className="rounded-[1.75rem] border border-slate-200 bg-white p-6 shadow-sm transition hover:border-document-primary/40 hover:shadow-lg"
+        >
+          <h3 className="text-lg font-bold text-navy-950">Ön Kayıtlar</h3>
+          <p className="mt-2 text-sm text-slate-600">
+            Eylül dönemi ön kayıt başvurularını görüntüleyin ve durumlarını güncelleyin.
+          </p>
+        </Link>
       </div>
     </div>
   );

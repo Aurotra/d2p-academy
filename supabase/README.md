@@ -52,3 +52,10 @@ select * from public.issue_certificate('<enrollment_uuid>');
 ```
 
 Generates codes in `D2P-YYYY-####` format.
+
+## Otomatik e-posta bildirimleri (Webhook)
+
+`grades` ve `documents` tablolarına kayıt eklendiğinde Resend ile mail gönderen Edge Function:
+
+- Kod: `supabase/functions/notify-user/`
+- Kurulum: [`WEBHOOK-BILDIRIM-KURULUM.md`](./WEBHOOK-BILDIRIM-KURULUM.md)
