@@ -4,17 +4,12 @@ import { redirect } from "next/navigation";
 import type { EnrollmentStatus } from "@/core/domain/student-dashboard";
 import { getAdminAccess } from "@/infrastructure/auth/get-admin-access";
 import { createSupabaseServerClient } from "@/infrastructure/supabase/create-server-client";
-import { EnrollmentCompleteButton } from "@/presentation/components/admin/enrollment-complete-button";
+import {
+  EventEnrollmentsTable,
+  type EventEnrollmentRow,
+} from "@/presentation/components/admin/event-enrollments-table";
 
 export const dynamic = "force-dynamic";
-
-const ENROLLMENT_STATUS_LABELS: Record<EnrollmentStatus, string> = {
-  registered: "Kayıtlı",
-  attended: "Katıldı",
-  completed: "Tamamlandı",
-  cancelled: "İptal",
-  no_show: "Gelmedi",
-};
 
 interface EnrollmentListRow {
   id: string;
@@ -24,19 +19,11 @@ interface EnrollmentListRow {
   profiles: { id: string; full_name: string; email: string } | { id: string; full_name: string; email: string }[] | null;
 }
 
-interface GroupedEnrollment {
-  id: string;
-  status: EnrollmentStatus;
-  registeredAt: string;
-  studentName: string;
-  studentEmail: string;
-}
-
 interface EventEnrollmentGroup {
   eventId: string;
   eventTitle: string;
   eventStartAt: string | null;
-  enrollments: GroupedEnrollment[];
+  enrollments: EventEnrollmentRow[];
 }
 
 function formatDate(value: string): string {
@@ -160,8 +147,8 @@ export default async function AdminEnrollmentsPage({ searchParams }: AdminEnroll
           {filteredEventTitle ? filteredEventTitle : "Tüm Etkinlik Kayıtları"}
         </h1>
         <p className="mt-2 text-sm text-slate-600">
-          Eğitim bitince öğrenciyi Tamamlandı işaretleyin; ardından Sertifika Yönetimi’nden
-          sertifika verebilirsiniz.
+          Eğitim bitince öğrenciyi Tamamlandı olarak onaylayın (tek tek veya toplu); ardından
+          Sertifika Yönetimi’nden sertifika verebilirsiniz.
         </p>
         <div className="mt-4 flex flex-wrap gap-3">
           <Link
@@ -214,42 +201,10 @@ export default async function AdminEnrollmentsPage({ searchParams }: AdminEnroll
                 </span>
               </div>
 
-              <div className="overflow-x-auto">
-                <table className="min-w-full text-left text-sm">
-                  <thead className="border-b border-slate-100 text-xs uppercase tracking-wide text-slate-500">
-                    <tr>
-                      <th className="px-5 py-3">Öğrenci</th>
-                      <th className="px-5 py-3">Durum</th>
-                      <th className="px-5 py-3">Kayıt Tarihi</th>
-                      <th className="px-5 py-3">İşlem</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {group.enrollments.map((enrollment) => (
-                      <tr key={enrollment.id} className="border-b border-slate-50 last:border-0">
-                        <td className="px-5 py-4">
-                          <p className="font-semibold text-slate-900">{enrollment.studentName}</p>
-                          <p className="text-xs text-slate-500">{enrollment.studentEmail}</p>
-                        </td>
-                        <td className="px-5 py-4">
-                          <span className="inline-flex rounded-full bg-document-primary/10 px-3 py-1 text-xs font-bold text-document-primary">
-                            {ENROLLMENT_STATUS_LABELS[enrollment.status] ?? enrollment.status}
-                          </span>
-                        </td>
-                        <td className="px-5 py-4 text-slate-600">
-                          {formatDate(enrollment.registeredAt)}
-                        </td>
-                        <td className="px-5 py-4">
-                          <EnrollmentCompleteButton
-                            enrollmentId={enrollment.id}
-                            status={enrollment.status}
-                          />
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+              <EventEnrollmentsTable
+                eventTitle={group.eventTitle}
+                enrollments={group.enrollments}
+              />
             </section>
           ))}
         </div>

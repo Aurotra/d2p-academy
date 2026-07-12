@@ -135,7 +135,7 @@ export function AdminCertificatesManager() {
             <a href="/admin/enrollments" className="font-semibold underline">
               Etkinlik Kayıtları
             </a>{" "}
-            sayfasından “Tamamlandı işaretle” kullanın.
+            sayfasından “Tamamlandı” ile onaylayın.
           </p>
         ) : null}
         <form onSubmit={handleIssue} className="mt-4 flex flex-col gap-4 sm:flex-row sm:items-end">

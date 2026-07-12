@@ -13,6 +13,7 @@ const ALLOWED_STATUSES: EnrollmentStatus[] = [
 
 interface UpdateEnrollmentBody {
   enrollmentId?: string;
+  enrollmentIds?: string[];
   status?: EnrollmentStatus;
 }
 
@@ -22,10 +23,20 @@ export async function PATCH(request: Request) {
 
   try {
     const body = (await request.json()) as UpdateEnrollmentBody;
-    const enrollmentId = body.enrollmentId?.trim() ?? "";
     const status = body.status;
 
-    if (!enrollmentId || !status || !ALLOWED_STATUSES.includes(status)) {
+    const enrollmentIds = Array.from(
+      new Set(
+        [
+          ...(body.enrollmentIds ?? []),
+          ...(body.enrollmentId ? [body.enrollmentId] : []),
+        ]
+          .map((id) => id.trim())
+          .filter(Boolean),
+      ),
+    );
+
+    if (enrollmentIds.length === 0 || !status || !ALLOWED_STATUSES.includes(status)) {
       return NextResponse.json({ error: "Geçersiz kayıt veya durum." }, { status: 400 });
     }
 
@@ -40,9 +51,8 @@ export async function PATCH(request: Request) {
     const { data, error } = await access.client
       .from("enrollments")
       .update(payload)
-      .eq("id", enrollmentId)
-      .select("id, status, completed_at")
-      .single();
+      .in("id", enrollmentIds)
+      .select("id, status, completed_at");
 
     if (error) {
       return NextResponse.json({ error: error.message }, { status: 400 });
