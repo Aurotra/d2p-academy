@@ -6,7 +6,7 @@ interface AdminCard {
   href: string;
   title: string;
   description: string;
-  /** Solid-ish card surface + text colors */
+  /** Soft pastel card surface */
   tone: string;
   badge: string;
 }
@@ -26,22 +26,22 @@ const categories: AdminCategory[] = [
         href: "/admin/events",
         title: "Etkinlik Yönetimi",
         description: "Yeni eğitim/atölye ekleyin, yayınlayın veya silin.",
-        tone: "border-sky-400 bg-gradient-to-br from-sky-400 via-sky-500 to-blue-600 text-white shadow-sky-300/50 hover:shadow-sky-400/60",
-        badge: "bg-white/25 text-white",
+        tone: "border-sky-200 bg-sky-100 text-sky-950 hover:bg-sky-50",
+        badge: "bg-sky-200/70 text-sky-800",
       },
       {
         href: "/admin/enrollments",
         title: "Etkinlik Kayıtları",
         description: "Hangi öğrencinin hangi etkinliğe kaydolduğunu görüntüleyin.",
-        tone: "border-cyan-400 bg-gradient-to-br from-cyan-400 via-teal-500 to-emerald-600 text-white shadow-cyan-300/50 hover:shadow-cyan-400/60",
-        badge: "bg-white/25 text-white",
+        tone: "border-teal-200 bg-teal-100 text-teal-950 hover:bg-teal-50",
+        badge: "bg-teal-200/70 text-teal-800",
       },
       {
         href: "/admin/certificates",
         title: "Sertifika Yönetimi",
         description: "Tamamlanan kayıtlara sertifika verin veya iptal edin.",
-        tone: "border-violet-400 bg-gradient-to-br from-violet-500 via-purple-500 to-fuchsia-600 text-white shadow-violet-300/50 hover:shadow-violet-400/60",
-        badge: "bg-white/25 text-white",
+        tone: "border-violet-200 bg-violet-100 text-violet-950 hover:bg-violet-50",
+        badge: "bg-violet-200/70 text-violet-800",
       },
     ],
   },
@@ -53,15 +53,15 @@ const categories: AdminCategory[] = [
         href: "/admin/students",
         title: "Öğrenci Yönetimi",
         description: "Öğrenci profillerini ve tamamlanma oranlarını görüntüleyin.",
-        tone: "border-amber-400 bg-gradient-to-br from-amber-400 via-orange-500 to-rose-500 text-white shadow-amber-300/50 hover:shadow-amber-400/60",
-        badge: "bg-white/25 text-white",
+        tone: "border-amber-200 bg-amber-100 text-amber-950 hover:bg-amber-50",
+        badge: "bg-amber-200/70 text-amber-900",
       },
       {
         href: "/admin/documents",
         title: "Döküman Yönetimi",
         description: "Ödev ve ders materyallerini yükleyin, öğrencilerle paylaşın.",
-        tone: "border-blue-500 bg-gradient-to-br from-blue-500 via-indigo-500 to-blue-700 text-white shadow-blue-300/50 hover:shadow-blue-400/60",
-        badge: "bg-white/25 text-white",
+        tone: "border-indigo-200 bg-indigo-100 text-indigo-950 hover:bg-indigo-50",
+        badge: "bg-indigo-200/70 text-indigo-800",
       },
     ],
   },
@@ -73,15 +73,15 @@ const categories: AdminCategory[] = [
         href: "/admin/registrations",
         title: "Ön Kayıtlar",
         description: "Eylül dönemi ön kayıt başvurularını görüntüleyin ve durumlarını güncelleyin.",
-        tone: "border-lime-400 bg-gradient-to-br from-lime-400 via-green-500 to-emerald-600 text-white shadow-lime-300/50 hover:shadow-lime-400/60",
-        badge: "bg-white/25 text-white",
+        tone: "border-lime-200 bg-lime-100 text-lime-950 hover:bg-lime-50",
+        badge: "bg-lime-200/70 text-lime-900",
       },
       {
         href: "/admin/institution-requests",
         title: "Kurumsal Talepler",
         description: "Okul ve belediye gibi kurumlardan gelen toplu eğitim taleplerini yönetin.",
-        tone: "border-rose-400 bg-gradient-to-br from-rose-500 via-pink-500 to-orange-500 text-white shadow-rose-300/50 hover:shadow-rose-400/60",
-        badge: "bg-white/25 text-white",
+        tone: "border-rose-200 bg-rose-100 text-rose-950 hover:bg-rose-50",
+        badge: "bg-rose-200/70 text-rose-800",
       },
     ],
   },
@@ -113,7 +113,7 @@ export default function AdminOverviewPage() {
               <Link
                 key={card.href}
                 href={card.href}
-                className={`group rounded-[1.75rem] border-2 p-6 shadow-lg transition hover:-translate-y-1 hover:shadow-xl ${card.tone}`}
+                className={`group rounded-[1.75rem] border p-6 transition hover:border-slate-300 ${card.tone}`}
               >
                 <span
                   className={`inline-flex rounded-full px-3 py-1 text-[11px] font-bold uppercase tracking-wide ${card.badge}`}
@@ -121,10 +121,8 @@ export default function AdminOverviewPage() {
                   Aç
                 </span>
                 <h4 className="mt-3 text-xl font-black tracking-tight">{card.title}</h4>
-                <p className="mt-2 text-sm leading-6 text-white/90">{card.description}</p>
-                <p className="mt-4 text-sm font-bold text-white/95 group-hover:underline">
-                  Git →
-                </p>
+                <p className="mt-2 text-sm leading-6 opacity-80">{card.description}</p>
+                <p className="mt-4 text-sm font-bold opacity-90 group-hover:underline">Git →</p>
               </Link>
             ))}
           </div>
