@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useMemo, useState, type FormEvent } from "react";
+import { useEffect, useMemo, useRef, useState, type FormEvent } from "react";
 
 import type { StudentProfileData } from "@/core/domain/student-profile";
 import { SupabaseStudentProfileRepository } from "@/infrastructure/repositories/supabase-student-profile-repository";
@@ -41,10 +41,19 @@ const emptyProfile: StudentProfileData = {
 
 export default function DashboardProfilePage() {
   const router = useRouter();
+  const alertRef = useRef<HTMLDivElement | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [form, setForm] = useState<StudentProfileData>(emptyProfile);
   const [alert, setAlert] = useState<AlertState>(null);
+
+  useEffect(() => {
+    if (!alert) {
+      return;
+    }
+
+    alertRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+  }, [alert]);
 
   useEffect(() => {
     async function loadProfile() {
@@ -193,19 +202,6 @@ export default function DashboardProfilePage() {
         </div>
 
         <ProfileProgressBar data={progressInput} />
-
-        {alert ? (
-          <div
-            className={`rounded-2xl border px-4 py-3 text-sm font-medium ${
-              alert.type === "success"
-                ? "border-emerald-200 bg-emerald-50 text-emerald-800"
-                : "border-red-200 bg-red-50 text-red-700"
-            }`}
-            role="alert"
-          >
-            {alert.message}
-          </div>
-        ) : null}
 
         <form onSubmit={handleSubmit} className="space-y-6">
           <fieldset className="rounded-[1.75rem] border border-slate-200 bg-white p-6 shadow-sm">
@@ -405,6 +401,23 @@ export default function DashboardProfilePage() {
               </label>
             </div>
           </fieldset>
+
+          {alert ? (
+            <div
+              ref={alertRef}
+              className={`rounded-2xl border-2 px-5 py-4 text-sm font-medium leading-6 ${
+                alert.type === "success"
+                  ? "border-emerald-300 bg-emerald-50 text-emerald-900"
+                  : "border-red-300 bg-red-50 text-red-800"
+              }`}
+              role={alert.type === "success" ? "status" : "alert"}
+            >
+              <p className="font-bold">
+                {alert.type === "success" ? "Kaydedildi" : "Kaydedilemedi"}
+              </p>
+              <p className="mt-1">{alert.message}</p>
+            </div>
+          ) : null}
 
           <Button
             type="submit"

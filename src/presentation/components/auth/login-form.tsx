@@ -7,6 +7,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { AuthShell } from "@/presentation/components/auth/auth-shell";
 import { Button } from "@/presentation/components/ui/button";
 import { Input } from "@/presentation/components/ui/input";
+import { mapAuthErrorToTurkish } from "@/shared/utils/auth-errors";
 
 export function LoginForm() {
   const router = useRouter();
@@ -33,7 +34,7 @@ export function LoginForm() {
       const payload = (await response.json()) as { error?: string };
 
       if (!response.ok) {
-        throw new Error(payload.error ?? "Giriş başarısız oldu.");
+        throw new Error(mapAuthErrorToTurkish(payload.error ?? "Giriş başarısız oldu."));
       }
 
       const redirectTo = searchParams.get("redirectTo") ?? "/dashboard";
@@ -42,7 +43,7 @@ export function LoginForm() {
     } catch (loginError) {
       const message =
         loginError instanceof Error ? loginError.message : "Beklenmeyen bir hata oluştu.";
-      setError(message);
+      setError(mapAuthErrorToTurkish(message));
     } finally {
       setIsLoading(false);
     }
@@ -79,9 +80,13 @@ export function LoginForm() {
         />
 
         {error ? (
-          <p className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-            {error}
-          </p>
+          <div
+            className="rounded-2xl border-2 border-red-300 bg-red-50 px-5 py-4 text-sm leading-6 text-red-800"
+            role="alert"
+          >
+            <p className="font-bold text-red-900">Giriş yapılamadı</p>
+            <p className="mt-2">{error}</p>
+          </div>
         ) : null}
 
         <Button type="submit" disabled={isLoading} className="w-full">

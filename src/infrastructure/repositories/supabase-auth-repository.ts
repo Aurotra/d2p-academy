@@ -8,6 +8,7 @@ import type {
 } from "@/core/domain/auth";
 import type { AuthRepository } from "@/core/use-cases/authenticate-user";
 import { SITE_URL } from "@/shared/constants/site";
+import { mapAuthErrorToTurkish } from "@/shared/utils/auth-errors";
 
 function mapSession(userId: string, email: string): AuthSession {
   return {
@@ -26,7 +27,7 @@ export class SupabaseAuthRepository implements AuthRepository {
     });
 
     if (error || !data.user?.email) {
-      throw new Error(error?.message ?? "Giriş başarısız oldu.");
+      throw new Error(mapAuthErrorToTurkish(error?.message ?? "Giriş başarısız oldu."));
     }
 
     return {
@@ -47,8 +48,29 @@ export class SupabaseAuthRepository implements AuthRepository {
       },
     });
 
-    if (error || !data.user?.email) {
-      throw new Error(error?.message ?? "Kayıt işlemi başarısız oldu.");
+    if (error) {
+      throw new Error(mapAuthErrorToTurkish(error.message));
+    }
+
+    if (!data.user?.email) {
+      throw new Error("Kayıt işlemi başarısız oldu.");
+    }
+
+    // Supabase: aynı e-posta ile tekrar kayıtta boş identities dönebilir
+    if (!data.user.identities || data.user.identities.length === 0) {
+      throw new Error(
+        mapAuthErrorToTurkish(
+          "User already registered. Please check your email for the confirmation link.",
+        ),
+      );
+    }
+
+    // E-posta onayı açıkken session null gelir — panele yönlendirme
+    if (!data.session) {
+      return {
+        session: mapSession(data.user.id, data.user.email),
+        needsEmailConfirmation: true,
+      };
     }
 
     await this.client.rpc("ensure_user_profile");
@@ -62,7 +84,7 @@ export class SupabaseAuthRepository implements AuthRepository {
     const { error } = await this.client.auth.signOut();
 
     if (error) {
-      throw new Error(error.message);
+      throw new Error(mapAuthErrorToTurkish(error.message));
     }
   }
 }

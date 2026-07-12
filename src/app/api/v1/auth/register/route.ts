@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { signUpWithEmail } from "@/core/use-cases/authenticate-user";
 import { SupabaseAuthRepository } from "@/infrastructure/repositories/supabase-auth-repository";
 import { createSupabaseServerClient } from "@/infrastructure/supabase/create-server-client";
+import { mapAuthErrorToTurkish } from "@/shared/utils/auth-errors";
 
 interface RegisterRequestBody {
   fullName?: string;
@@ -40,9 +41,14 @@ export async function POST(request: Request) {
     const repository = new SupabaseAuthRepository(client);
     const result = await signUpWithEmail(repository, { fullName, email, password });
 
-    return NextResponse.json({ data: result });
+    return NextResponse.json({
+      data: {
+        session: result.session,
+        needsEmailConfirmation: Boolean(result.needsEmailConfirmation),
+      },
+    });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Kayıt sırasında hata oluştu.";
-    return NextResponse.json({ error: message }, { status: 400 });
+    return NextResponse.json({ error: mapAuthErrorToTurkish(message) }, { status: 400 });
   }
 }

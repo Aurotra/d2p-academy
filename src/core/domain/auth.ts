@@ -23,4 +23,6 @@ export interface AuthSession {
 
 export interface AuthResult {
   session: AuthSession;
+  /** True when signup succeeded but email confirmation is still required. */
+  needsEmailConfirmation?: boolean;
 }

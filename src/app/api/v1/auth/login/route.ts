@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { signInWithEmail } from "@/core/use-cases/authenticate-user";
 import { SupabaseAuthRepository } from "@/infrastructure/repositories/supabase-auth-repository";
 import { createSupabaseServerClient } from "@/infrastructure/supabase/create-server-client";
+import { mapAuthErrorToTurkish } from "@/shared/utils/auth-errors";
 
 interface LoginRequestBody {
   email?: string;
@@ -34,6 +35,6 @@ export async function POST(request: Request) {
     return NextResponse.json({ data: result });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Giriş sırasında hata oluştu.";
-    return NextResponse.json({ error: message }, { status: 401 });
+    return NextResponse.json({ error: mapAuthErrorToTurkish(message) }, { status: 401 });
   }
 }
