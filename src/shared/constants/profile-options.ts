@@ -30,10 +30,14 @@ export const INTEREST_OPTIONS = [
 ] as const;
 
 export const AVATAR_OPTIONS = [
-  { id: "male-1", src: "/avatars/male-1.svg", label: "Erkek Avatar 1" },
-  { id: "male-2", src: "/avatars/male-2.svg", label: "Erkek Avatar 2" },
-  { id: "female-1", src: "/avatars/female-1.svg", label: "Kız Avatar 1" },
-  { id: "female-2", src: "/avatars/female-2.svg", label: "Kız Avatar 2" },
+  { id: "avatar-1", src: "/avatars/avatar-1.png", label: "Yıldız" },
+  { id: "avatar-2", src: "/avatars/avatar-2.png", label: "Robot" },
+  { id: "avatar-3", src: "/avatars/avatar-3.png", label: "Lale" },
+  { id: "avatar-4", src: "/avatars/avatar-4.png", label: "Kelebek" },
+  { id: "avatar-5", src: "/avatars/avatar-5.png", label: "3D Yazıcı" },
+  { id: "avatar-6", src: "/avatars/avatar-6.png", label: "Taç" },
+  { id: "avatar-7", src: "/avatars/avatar-7.png", label: "Araba" },
+  { id: "avatar-8", src: "/avatars/avatar-8.png", label: "Futbol Topu" },
 ] as const;
 
 export const LIKERT_OPTIONS = [
