@@ -23,6 +23,21 @@ interface EnrollmentListRow {
   profiles: { id: string; full_name: string; email: string } | { id: string; full_name: string; email: string }[] | null;
 }
 
+interface GroupedEnrollment {
+  id: string;
+  status: EnrollmentStatus;
+  registeredAt: string;
+  studentName: string;
+  studentEmail: string;
+}
+
+interface EventEnrollmentGroup {
+  eventId: string;
+  eventTitle: string;
+  eventStartAt: string | null;
+  enrollments: GroupedEnrollment[];
+}
+
 function formatDate(value: string): string {
   return new Intl.DateTimeFormat("tr-TR", {
     dateStyle: "medium",
@@ -37,6 +52,44 @@ function unwrapOne<T>(value: T | T[] | null): T | null {
   }
 
   return Array.isArray(value) ? (value[0] ?? null) : value;
+}
+
+function groupByEvent(rows: EnrollmentListRow[]): EventEnrollmentGroup[] {
+  const groups = new Map<string, EventEnrollmentGroup>();
+
+  for (const row of rows) {
+    const event = unwrapOne(row.events);
+    const profile = unwrapOne(row.profiles);
+    const eventId = event?.id ?? "unknown";
+    const eventTitle = event?.title ?? "Etkinlik bulunamadı";
+    const eventStartAt = event?.start_at ?? null;
+
+    const existing = groups.get(eventId);
+    const enrollment: GroupedEnrollment = {
+      id: row.id,
+      status: row.status,
+      registeredAt: row.registered_at,
+      studentName: profile?.full_name ?? "Öğrenci",
+      studentEmail: profile?.email ?? "—",
+    };
+
+    if (existing) {
+      existing.enrollments.push(enrollment);
+    } else {
+      groups.set(eventId, {
+        eventId,
+        eventTitle,
+        eventStartAt,
+        enrollments: [enrollment],
+      });
+    }
+  }
+
+  return Array.from(groups.values()).sort((left, right) => {
+    const leftTime = left.eventStartAt ? new Date(left.eventStartAt).getTime() : 0;
+    const rightTime = right.eventStartAt ? new Date(right.eventStartAt).getTime() : 0;
+    return leftTime - rightTime;
+  });
 }
 
 interface AdminEnrollmentsPageProps {
@@ -85,12 +138,12 @@ export default async function AdminEnrollmentsPage({ searchParams }: AdminEnroll
   }
 
   const { data, error } = await query;
-
   const rows = (data ?? []) as EnrollmentListRow[];
+  const groups = groupByEvent(rows);
 
   let filteredEventTitle: string | null = null;
-  if (eventId && rows.length > 0) {
-    filteredEventTitle = unwrapOne(rows[0].events)?.title ?? null;
+  if (eventId && groups.length > 0) {
+    filteredEventTitle = groups[0].eventTitle;
   } else if (eventId) {
     const { data: event } = await client.from("events").select("title").eq("id", eventId).maybeSingle();
     filteredEventTitle = event?.title ?? null;
@@ -106,7 +159,7 @@ export default async function AdminEnrollmentsPage({ searchParams }: AdminEnroll
           {filteredEventTitle ? filteredEventTitle : "Tüm Etkinlik Kayıtları"}
         </h1>
         <p className="mt-2 text-sm text-slate-600">
-          Öğrencilerin etkinliklere yaptığı kayıtları buradan görüntüleyebilirsiniz.
+          Kayıtlar etkinlik başlıkları altında gruplanmıştır.
         </p>
         <div className="mt-4 flex flex-wrap gap-3">
           <Link
@@ -128,57 +181,64 @@ export default async function AdminEnrollmentsPage({ searchParams }: AdminEnroll
         ) : null}
       </div>
 
-      <div className="overflow-hidden rounded-[1.75rem] border border-slate-200 bg-white shadow-sm">
-        <div className="overflow-x-auto">
-          <table className="min-w-full text-left text-sm">
-            <thead className="border-b border-slate-100 bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
-              <tr>
-                <th className="px-5 py-4">Öğrenci</th>
-                <th className="px-5 py-4">Etkinlik</th>
-                <th className="px-5 py-4">Durum</th>
-                <th className="px-5 py-4">Kayıt Tarihi</th>
-              </tr>
-            </thead>
-            <tbody>
-              {rows.length === 0 ? (
-                <tr>
-                  <td colSpan={4} className="px-5 py-10 text-center text-slate-500">
-                    Henüz etkinlik kaydı yok
-                  </td>
-                </tr>
-              ) : (
-                rows.map((row) => {
-                  const profile = unwrapOne(row.profiles);
-                  const event = unwrapOne(row.events);
-
-                  return (
-                    <tr key={row.id} className="border-b border-slate-50 last:border-0">
-                      <td className="px-5 py-4">
-                        <p className="font-semibold text-slate-900">
-                          {profile?.full_name ?? "Öğrenci"}
-                        </p>
-                        <p className="text-xs text-slate-500">{profile?.email ?? "—"}</p>
-                      </td>
-                      <td className="px-5 py-4">
-                        <p className="font-medium text-slate-800">{event?.title ?? "—"}</p>
-                        {event?.start_at ? (
-                          <p className="text-xs text-slate-500">{formatDate(event.start_at)}</p>
-                        ) : null}
-                      </td>
-                      <td className="px-5 py-4">
-                        <span className="inline-flex rounded-full bg-document-primary/10 px-3 py-1 text-xs font-bold text-document-primary">
-                          {ENROLLMENT_STATUS_LABELS[row.status] ?? row.status}
-                        </span>
-                      </td>
-                      <td className="px-5 py-4 text-slate-600">{formatDate(row.registered_at)}</td>
-                    </tr>
-                  );
-                })
-              )}
-            </tbody>
-          </table>
+      {groups.length === 0 ? (
+        <div className="rounded-[1.75rem] border border-dashed border-slate-200 bg-white px-6 py-12 text-center text-sm text-slate-500">
+          Henüz etkinlik kaydı yok
         </div>
-      </div>
+      ) : (
+        <div className="space-y-6">
+          {groups.map((group) => (
+            <section
+              key={group.eventId}
+              className="overflow-hidden rounded-[1.75rem] border border-slate-200 bg-white shadow-sm"
+            >
+              <div className="flex flex-col gap-2 border-b border-slate-100 bg-slate-50 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                  <h2 className="text-lg font-bold text-slate-900">{group.eventTitle}</h2>
+                  {group.eventStartAt ? (
+                    <p className="mt-1 text-sm text-slate-500">
+                      Etkinlik tarihi: {formatDate(group.eventStartAt)}
+                    </p>
+                  ) : null}
+                </div>
+                <span className="inline-flex w-fit rounded-full bg-document-primary/10 px-3 py-1 text-xs font-bold text-document-primary">
+                  {group.enrollments.length} kayıt
+                </span>
+              </div>
+
+              <div className="overflow-x-auto">
+                <table className="min-w-full text-left text-sm">
+                  <thead className="border-b border-slate-100 text-xs uppercase tracking-wide text-slate-500">
+                    <tr>
+                      <th className="px-5 py-3">Öğrenci</th>
+                      <th className="px-5 py-3">Durum</th>
+                      <th className="px-5 py-3">Kayıt Tarihi</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {group.enrollments.map((enrollment) => (
+                      <tr key={enrollment.id} className="border-b border-slate-50 last:border-0">
+                        <td className="px-5 py-4">
+                          <p className="font-semibold text-slate-900">{enrollment.studentName}</p>
+                          <p className="text-xs text-slate-500">{enrollment.studentEmail}</p>
+                        </td>
+                        <td className="px-5 py-4">
+                          <span className="inline-flex rounded-full bg-document-primary/10 px-3 py-1 text-xs font-bold text-document-primary">
+                            {ENROLLMENT_STATUS_LABELS[enrollment.status] ?? enrollment.status}
+                          </span>
+                        </td>
+                        <td className="px-5 py-4 text-slate-600">
+                          {formatDate(enrollment.registeredAt)}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </section>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
