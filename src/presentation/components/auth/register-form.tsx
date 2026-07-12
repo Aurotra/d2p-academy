@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useState, type FormEvent } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 
 import { AuthShell } from "@/presentation/components/auth/auth-shell";
 import { Button } from "@/presentation/components/ui/button";
@@ -12,8 +12,20 @@ import {
   mapAuthErrorToTurkish,
 } from "@/shared/utils/auth-errors";
 
+function sanitizeRedirectPath(path: string | null): string {
+  if (!path || !path.startsWith("/") || path.startsWith("//")) {
+    return "/dashboard";
+  }
+
+  return path;
+}
+
 export function RegisterForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const redirectTo = sanitizeRedirectPath(searchParams.get("redirectTo"));
+  const loginHref = `/login?redirectTo=${encodeURIComponent(redirectTo)}`;
+
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -33,12 +45,12 @@ export function RegisterForm() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ fullName, email, password }),
+        body: JSON.stringify({ fullName, email, password, redirectTo }),
       });
 
       const payload = (await response.json()) as {
         error?: string;
-        data?: { needsEmailConfirmation?: boolean };
+        data?: { needsEmailConfirmation?: boolean; redirectTo?: string };
       };
 
       if (!response.ok) {
@@ -51,7 +63,7 @@ export function RegisterForm() {
         return;
       }
 
-      router.push("/dashboard");
+      router.push(payload.data?.redirectTo ?? redirectTo);
       router.refresh();
     } catch (registerError) {
       const message =
@@ -64,10 +76,14 @@ export function RegisterForm() {
 
   return (
     <AuthShell
-      title="Kayıt Ol"
-      subtitle="D2P Academy öğrenci hesabınızı birkaç adımda oluşturun."
+      title="Hesap Oluştur"
+      subtitle={
+        redirectTo.includes("enroll=")
+          ? "Hesabınızı oluşturun; ardından seçtiğiniz etkinliğe otomatik kaydolacaksınız."
+          : "D2P Academy öğrenci hesabınızı birkaç adımda oluşturun."
+      }
       footerText="Zaten hesabınız var mı?"
-      footerHref="/login"
+      footerHref={loginHref}
       footerLinkLabel="Giriş Yap"
     >
       {successNotice ? (
@@ -78,7 +94,7 @@ export function RegisterForm() {
           <p className="text-base font-bold text-amber-900">E-posta onayını bekliyoruz</p>
           <p className="mt-2">{successNotice}</p>
           <p className="mt-4">
-            <Link href="/login" className="font-semibold text-document-primary underline">
+            <Link href={loginHref} className="font-semibold text-document-primary underline">
               Onayladıktan sonra giriş yapın →
             </Link>
           </p>
@@ -128,7 +144,7 @@ export function RegisterForm() {
           ) : null}
 
           <Button type="submit" disabled={isLoading} className="w-full">
-            {isLoading ? "Kayıt oluşturuluyor..." : "Kayıt Ol"}
+            {isLoading ? "Kayıt oluşturuluyor..." : "Hesap Oluştur"}
           </Button>
         </form>
       )}

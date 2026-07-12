@@ -9,6 +9,15 @@ interface RegisterRequestBody {
   fullName?: string;
   email?: string;
   password?: string;
+  redirectTo?: string;
+}
+
+function sanitizeRedirectPath(path: string | undefined): string {
+  if (!path || !path.startsWith("/") || path.startsWith("//")) {
+    return "/dashboard";
+  }
+
+  return path;
 }
 
 export async function POST(request: Request) {
@@ -17,6 +26,7 @@ export async function POST(request: Request) {
     const fullName = body.fullName?.trim() ?? "";
     const email = body.email?.trim() ?? "";
     const password = body.password ?? "";
+    const redirectTo = sanitizeRedirectPath(body.redirectTo);
 
     if (!fullName || !email || !password) {
       return NextResponse.json(
@@ -39,12 +49,13 @@ export async function POST(request: Request) {
     }
 
     const repository = new SupabaseAuthRepository(client);
-    const result = await signUpWithEmail(repository, { fullName, email, password });
+    const result = await signUpWithEmail(repository, { fullName, email, password, redirectTo });
 
     return NextResponse.json({
       data: {
         session: result.session,
         needsEmailConfirmation: Boolean(result.needsEmailConfirmation),
+        redirectTo,
       },
     });
   } catch (error) {

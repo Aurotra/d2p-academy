@@ -1,9 +1,11 @@
 import Link from "next/link";
+import { Suspense } from "react";
 
 import type { StudentDashboardData } from "@/core/domain/student-dashboard";
 import { EVENT_TYPE_LABELS } from "@/core/domain/event";
 import { BRAND_SURFACE_GRADIENT } from "@/shared/constants/brand-surfaces";
 import { Badge } from "@/presentation/components/ui/badge";
+import { DashboardEnrollHandler } from "@/presentation/components/dashboard/dashboard-enroll-handler";
 import { LogoutButton } from "@/presentation/components/dashboard/logout-button";
 
 interface DashboardViewProps {
@@ -23,6 +25,10 @@ export function DashboardView({ data, isAdmin }: DashboardViewProps) {
   return (
     <section className="bg-slate-50 px-4 py-10 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-7xl">
+        <Suspense fallback={null}>
+          <DashboardEnrollHandler />
+        </Suspense>
+
         <div
           className={`flex flex-col gap-4 rounded-[2rem] border border-sky-200 ${BRAND_SURFACE_GRADIENT} p-8 text-sky-950 shadow-xl sm:flex-row sm:items-center sm:justify-between`}
         >
@@ -77,8 +83,13 @@ export function DashboardView({ data, isAdmin }: DashboardViewProps) {
 
             {data.upcomingEnrollments.length === 0 ? (
               <div className="rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-4 py-8 text-center text-sm text-slate-600">
-                Yaklaşan etkinlik kaydın bulunmuyor. Ana sayfadaki takvimden yeni etkinliklere
-                kayıt olabilirsin.
+                <p>Yaklaşan etkinlik kaydın bulunmuyor.</p>
+                <Link
+                  href="/#events"
+                  className="mt-3 inline-flex font-semibold text-document-primary hover:underline"
+                >
+                  Ana sayfadaki takvimden etkinliğe kaydol →
+                </Link>
               </div>
             ) : (
               <ul className="space-y-4">

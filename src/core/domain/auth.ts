@@ -14,6 +14,8 @@ export interface AuthCredentials {
 
 export interface SignUpInput extends AuthCredentials {
   fullName: string;
+  /** Path to continue after signup / email confirmation (e.g. /dashboard?enroll=...). */
+  redirectTo?: string;
 }
 
 export interface AuthSession {

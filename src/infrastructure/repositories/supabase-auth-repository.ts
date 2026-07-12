@@ -10,6 +10,14 @@ import type { AuthRepository } from "@/core/use-cases/authenticate-user";
 import { SITE_URL } from "@/shared/constants/site";
 import { mapAuthErrorToTurkish } from "@/shared/utils/auth-errors";
 
+function sanitizeRedirectPath(path: string | undefined): string {
+  if (!path || !path.startsWith("/") || path.startsWith("//")) {
+    return "/dashboard";
+  }
+
+  return path;
+}
+
 function mapSession(userId: string, email: string): AuthSession {
   return {
     userId,
@@ -36,11 +44,12 @@ export class SupabaseAuthRepository implements AuthRepository {
   }
 
   async signUp(input: SignUpInput): Promise<AuthResult> {
+    const nextPath = sanitizeRedirectPath(input.redirectTo);
     const { data, error } = await this.client.auth.signUp({
       email: input.email.trim().toLowerCase(),
       password: input.password,
       options: {
-        emailRedirectTo: `${SITE_URL}/auth/callback?next=/dashboard`,
+        emailRedirectTo: `${SITE_URL}/auth/callback?next=${encodeURIComponent(nextPath)}`,
         data: {
           full_name: input.fullName.trim(),
           role: "student",

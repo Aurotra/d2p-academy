@@ -52,7 +52,12 @@ export async function middleware(request: NextRequest) {
   }
 
   if (user && (pathname === "/login" || pathname === "/register")) {
-    return NextResponse.redirect(new URL("/dashboard", request.url));
+    const redirectTo = request.nextUrl.searchParams.get("redirectTo");
+    const safeRedirect =
+      redirectTo && redirectTo.startsWith("/") && !redirectTo.startsWith("//")
+        ? redirectTo
+        : "/dashboard";
+    return NextResponse.redirect(new URL(safeRedirect, request.url));
   }
 
   return supabaseResponse;
