@@ -2,51 +2,10 @@
 
 import { useState, type FormEvent } from "react";
 
-import type { CertificateVerificationResult } from "@/core/domain/certificate-verification";
+import { CertificatePreview } from "@/presentation/components/home/certificate-preview";
 import { useCertificateVerification } from "@/presentation/hooks/use-certificate-verification";
 import { Button } from "@/presentation/components/ui/button";
 import { Input } from "@/presentation/components/ui/input";
-
-function VerificationResultCard({ result }: { result: CertificateVerificationResult }) {
-  if (!result.isValid) {
-    return (
-      <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-        <p className="font-semibold">Sertifika bulunamadı veya geçersiz.</p>
-        <p className="mt-1">
-          Lütfen kodu kontrol edin. Örnek format: <strong>D2P-2026-1045</strong>
-        </p>
-      </div>
-    );
-  }
-
-  return (
-    <div className="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-900">
-      <p className="font-semibold text-emerald-700">Sertifika doğrulandı</p>
-      <dl className="mt-3 grid gap-2 sm:grid-cols-2">
-        <div>
-          <dt className="text-xs uppercase tracking-wide text-emerald-700/70">Kod</dt>
-          <dd className="font-semibold">{result.certificateCode}</dd>
-        </div>
-        <div>
-          <dt className="text-xs uppercase tracking-wide text-emerald-700/70">Öğrenci</dt>
-          <dd className="font-semibold">{result.holderName}</dd>
-        </div>
-        <div>
-          <dt className="text-xs uppercase tracking-wide text-emerald-700/70">Eğitim</dt>
-          <dd className="font-semibold">{result.eventTitle}</dd>
-        </div>
-        <div>
-          <dt className="text-xs uppercase tracking-wide text-emerald-700/70">Veriliş Tarihi</dt>
-          <dd className="font-semibold">
-            {result.issuedAt
-              ? new Intl.DateTimeFormat("tr-TR", { dateStyle: "long" }).format(result.issuedAt)
-              : "-"}
-          </dd>
-        </div>
-      </dl>
-    </div>
-  );
-}
 
 export function CertificateVerificationBar() {
   const [certificateCode, setCertificateCode] = useState("");
@@ -105,8 +64,8 @@ export function CertificateVerificationBar() {
         ) : null}
 
         {result ? (
-          <div className="mt-4">
-            <VerificationResultCard result={result} />
+          <div className="mt-6">
+            <CertificatePreview result={result} />
           </div>
         ) : null}
       </div>
