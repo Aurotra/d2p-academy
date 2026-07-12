@@ -11,6 +11,7 @@ const navItems = [
   { href: "/#hero", label: "Ana Sayfa" },
   { href: "/#certificate", label: "Sertifika Doğrula" },
   { href: "/#events", label: "Etkinlikler" },
+  { href: "/iletisim", label: "İletişim" },
 ] as const;
 
 function MenuIcon({ open }: { open: boolean }) {
