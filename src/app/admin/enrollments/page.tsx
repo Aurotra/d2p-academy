@@ -52,7 +52,7 @@ function groupByEvent(rows: EnrollmentListRow[]): EventEnrollmentGroup[] {
     const eventTitle = event?.title ?? "Etkinlik bulunamadı";
     const eventStartAt = event?.start_at ?? null;
 
-    const enrollment: GroupedEnrollment = {
+    const enrollment: EventEnrollmentRow = {
       id: row.id,
       status: row.status,
       registeredAt: row.registered_at,
