@@ -1,9 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 
+import { createSupabaseBrowserClient } from "@/infrastructure/supabase/create-browser-client";
 import { BRAND_SURFACE_HEADER } from "@/shared/constants/brand-surfaces";
 import { BrandLogo } from "@/presentation/components/layout/brand-logo";
 
@@ -43,7 +44,10 @@ function MenuIcon({ open }: { open: boolean }) {
 
 export function SiteHeader() {
   const pathname = usePathname();
+  const router = useRouter();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
 
   const closeMobileMenu = useCallback(() => {
     setIsMobileMenuOpen(false);
@@ -52,6 +56,27 @@ export function SiteHeader() {
   useEffect(() => {
     closeMobileMenu();
   }, [pathname, closeMobileMenu]);
+
+  useEffect(() => {
+    const client = createSupabaseBrowserClient();
+    if (!client) {
+      return;
+    }
+
+    void client.auth.getUser().then(({ data }) => {
+      setIsLoggedIn(Boolean(data.user));
+    });
+
+    const {
+      data: { subscription },
+    } = client.auth.onAuthStateChange((_event, session) => {
+      setIsLoggedIn(Boolean(session?.user));
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, []);
 
   useEffect(() => {
     if (!isMobileMenuOpen) {
@@ -75,6 +100,23 @@ export function SiteHeader() {
     };
   }, [isMobileMenuOpen, closeMobileMenu]);
 
+  async function handleLogout() {
+    setIsLoggingOut(true);
+    closeMobileMenu();
+
+    try {
+      const response = await fetch("/api/v1/auth/logout", { method: "POST" });
+      if (!response.ok) {
+        throw new Error("Çıkış yapılamadı.");
+      }
+      setIsLoggedIn(false);
+      router.push("/");
+      router.refresh();
+    } catch {
+      setIsLoggingOut(false);
+    }
+  }
+
   return (
     <header className={`sticky top-0 z-40 ${BRAND_SURFACE_HEADER}`}>
       <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4 sm:px-6 lg:px-8">
@@ -95,18 +137,39 @@ export function SiteHeader() {
         </nav>
 
         <div className="hidden items-center gap-3 md:flex">
-          <Link
-            href="/login"
-            className="rounded-xl px-4 py-2 text-sm font-semibold text-slate-800 transition hover:text-primary"
-          >
-            Giriş Yap
-          </Link>
-          <Link
-            href="/register"
-            className="rounded-xl bg-secondary px-4 py-2 text-sm font-semibold text-white transition hover:bg-secondary-hover hover:shadow-glow-secondary"
-          >
-            Kayıt Ol
-          </Link>
+          {isLoggedIn ? (
+            <>
+              <Link
+                href="/dashboard"
+                className="rounded-xl bg-secondary px-4 py-2 text-sm font-semibold text-white transition hover:bg-secondary-hover hover:shadow-glow-secondary"
+              >
+                Panelim
+              </Link>
+              <button
+                type="button"
+                disabled={isLoggingOut}
+                onClick={() => void handleLogout()}
+                className="rounded-xl px-4 py-2 text-sm font-semibold text-slate-800 transition hover:text-primary disabled:opacity-60"
+              >
+                {isLoggingOut ? "Çıkış..." : "Çıkış Yap"}
+              </button>
+            </>
+          ) : (
+            <>
+              <Link
+                href="/login"
+                className="rounded-xl px-4 py-2 text-sm font-semibold text-slate-800 transition hover:text-primary"
+              >
+                Giriş Yap
+              </Link>
+              <Link
+                href="/register"
+                className="rounded-xl bg-secondary px-4 py-2 text-sm font-semibold text-white transition hover:bg-secondary-hover hover:shadow-glow-secondary"
+              >
+                Kayıt Ol
+              </Link>
+            </>
+          )}
         </div>
 
         <button
@@ -150,20 +213,42 @@ export function SiteHeader() {
             </ul>
 
             <div className="mt-5 flex flex-col gap-3 border-t border-sky-200/80 pt-5">
-              <Link
-                href="/login"
-                className="inline-flex items-center justify-center rounded-xl border-2 border-sky-300 bg-white px-4 py-3 text-sm font-semibold text-slate-800 transition hover:border-primary hover:text-primary"
-                onClick={closeMobileMenu}
-              >
-                Giriş Yap
-              </Link>
-              <Link
-                href="/register"
-                className="inline-flex items-center justify-center rounded-xl bg-secondary px-4 py-3 text-sm font-semibold text-white transition hover:bg-secondary-hover hover:shadow-glow-secondary"
-                onClick={closeMobileMenu}
-              >
-                Kayıt Ol
-              </Link>
+              {isLoggedIn ? (
+                <>
+                  <Link
+                    href="/dashboard"
+                    className="inline-flex items-center justify-center rounded-xl bg-secondary px-4 py-3 text-sm font-semibold text-white transition hover:bg-secondary-hover hover:shadow-glow-secondary"
+                    onClick={closeMobileMenu}
+                  >
+                    Panelim
+                  </Link>
+                  <button
+                    type="button"
+                    disabled={isLoggingOut}
+                    onClick={() => void handleLogout()}
+                    className="inline-flex items-center justify-center rounded-xl border-2 border-sky-300 bg-white px-4 py-3 text-sm font-semibold text-slate-800 transition hover:border-primary hover:text-primary disabled:opacity-60"
+                  >
+                    {isLoggingOut ? "Çıkış..." : "Çıkış Yap"}
+                  </button>
+                </>
+              ) : (
+                <>
+                  <Link
+                    href="/login"
+                    className="inline-flex items-center justify-center rounded-xl border-2 border-sky-300 bg-white px-4 py-3 text-sm font-semibold text-slate-800 transition hover:border-primary hover:text-primary"
+                    onClick={closeMobileMenu}
+                  >
+                    Giriş Yap
+                  </Link>
+                  <Link
+                    href="/register"
+                    className="inline-flex items-center justify-center rounded-xl bg-secondary px-4 py-3 text-sm font-semibold text-white transition hover:bg-secondary-hover hover:shadow-glow-secondary"
+                    onClick={closeMobileMenu}
+                  >
+                    Kayıt Ol
+                  </Link>
+                </>
+              )}
             </div>
           </nav>
         </>

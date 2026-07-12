@@ -1,7 +1,5 @@
-import Link from "next/link";
-
 import { BRAND_SURFACE_GRADIENT } from "@/shared/constants/brand-surfaces";
-import { Button } from "@/presentation/components/ui/button";
+import { HeroCtaButtons } from "@/presentation/components/home/hero-cta-buttons";
 
 export function HeroSection() {
   return (
@@ -30,23 +28,7 @@ export function HeroSection() {
             gerçek hayatta uygulayan geleceğin mühendislerini yetiştiriyoruz.
           </p>
 
-          <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
-            <Link href="/kayit">
-              <Button className="w-full bg-document-primary hover:bg-document-primary-hover hover:shadow-glow-document sm:w-auto">
-                Ön Kayıt Ol
-              </Button>
-            </Link>
-            <Link href="/register">
-              <Button variant="outline" className="w-full sm:w-auto">
-                Hemen Kayıt Ol
-              </Button>
-            </Link>
-            <a href="#events">
-              <Button variant="outline" className="w-full sm:w-auto">
-                Etkinlik Takvimini Gör
-              </Button>
-            </a>
-          </div>
+          <HeroCtaButtons />
 
           <dl className="mt-10 grid grid-cols-3 gap-4 border-t border-sky-300/60 pt-8">
             <div>
