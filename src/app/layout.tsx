@@ -21,14 +21,26 @@ export const metadata: Metadata = {
     default: SITE_NAME,
     template: `%s | ${SITE_NAME}`,
   },
-  description: "Okullara ve öğrencilere yönelik modern eğitim platformu",
+  description:
+    "D2P Academy — 3D tasarım, baskı ve robotik atölyeleri. Okullara ve öğrencilere yönelik modern eğitim platformu.",
+  icons: {
+    icon: [{ url: "/icon", type: "image/png" }],
+    apple: [{ url: "/apple-icon", type: "image/png" }],
+  },
   openGraph: {
     type: "website",
     locale: "tr_TR",
     url: SITE_URL,
     siteName: SITE_NAME,
     title: SITE_NAME,
-    description: "Okullara ve öğrencilere yönelik modern eğitim platformu",
+    description:
+      "D2P Academy — 3D tasarım, baskı ve robotik atölyeleri. Okullara ve öğrencilere yönelik modern eğitim platformu.",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: SITE_NAME,
+    description:
+      "D2P Academy — 3D tasarım, baskı ve robotik atölyeleri. Okullara ve öğrencilere yönelik modern eğitim platformu.",
   },
   alternates: {
     canonical: "/",
