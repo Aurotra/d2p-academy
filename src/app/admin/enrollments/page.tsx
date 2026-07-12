@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import type { EnrollmentStatus } from "@/core/domain/student-dashboard";
 import { getAdminAccess } from "@/infrastructure/auth/get-admin-access";
 import { createSupabaseServerClient } from "@/infrastructure/supabase/create-server-client";
+import { EnrollmentCompleteButton } from "@/presentation/components/admin/enrollment-complete-button";
 
 export const dynamic = "force-dynamic";
 
@@ -60,11 +61,10 @@ function groupByEvent(rows: EnrollmentListRow[]): EventEnrollmentGroup[] {
   for (const row of rows) {
     const event = unwrapOne(row.events);
     const profile = unwrapOne(row.profiles);
-    const eventId = event?.id ?? "unknown";
+    const eventKey = event?.id ?? "unknown";
     const eventTitle = event?.title ?? "Etkinlik bulunamadı";
     const eventStartAt = event?.start_at ?? null;
 
-    const existing = groups.get(eventId);
     const enrollment: GroupedEnrollment = {
       id: row.id,
       status: row.status,
@@ -73,11 +73,12 @@ function groupByEvent(rows: EnrollmentListRow[]): EventEnrollmentGroup[] {
       studentEmail: profile?.email ?? "—",
     };
 
+    const existing = groups.get(eventKey);
     if (existing) {
       existing.enrollments.push(enrollment);
     } else {
-      groups.set(eventId, {
-        eventId,
+      groups.set(eventKey, {
+        eventId: eventKey,
         eventTitle,
         eventStartAt,
         enrollments: [enrollment],
@@ -159,7 +160,8 @@ export default async function AdminEnrollmentsPage({ searchParams }: AdminEnroll
           {filteredEventTitle ? filteredEventTitle : "Tüm Etkinlik Kayıtları"}
         </h1>
         <p className="mt-2 text-sm text-slate-600">
-          Kayıtlar etkinlik başlıkları altında gruplanmıştır.
+          Eğitim bitince öğrenciyi Tamamlandı işaretleyin; ardından Sertifika Yönetimi’nden
+          sertifika verebilirsiniz.
         </p>
         <div className="mt-4 flex flex-wrap gap-3">
           <Link
@@ -167,6 +169,12 @@ export default async function AdminEnrollmentsPage({ searchParams }: AdminEnroll
             className="text-sm font-semibold text-document-primary hover:underline"
           >
             ← Etkinliklere dön
+          </Link>
+          <Link
+            href="/admin/certificates"
+            className="text-sm font-semibold text-document-primary hover:underline"
+          >
+            Sertifika Yönetimi →
           </Link>
           {eventId ? (
             <Link href="/admin/enrollments" className="text-sm font-semibold text-slate-600 hover:underline">
@@ -213,6 +221,7 @@ export default async function AdminEnrollmentsPage({ searchParams }: AdminEnroll
                       <th className="px-5 py-3">Öğrenci</th>
                       <th className="px-5 py-3">Durum</th>
                       <th className="px-5 py-3">Kayıt Tarihi</th>
+                      <th className="px-5 py-3">İşlem</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -229,6 +238,12 @@ export default async function AdminEnrollmentsPage({ searchParams }: AdminEnroll
                         </td>
                         <td className="px-5 py-4 text-slate-600">
                           {formatDate(enrollment.registeredAt)}
+                        </td>
+                        <td className="px-5 py-4">
+                          <EnrollmentCompleteButton
+                            enrollmentId={enrollment.id}
+                            status={enrollment.status}
+                          />
                         </td>
                       </tr>
                     ))}
