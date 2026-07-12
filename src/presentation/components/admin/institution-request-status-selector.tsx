@@ -1,5 +1,6 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 import { createSupabaseBrowserClient } from "@/infrastructure/supabase/create-browser-client";
@@ -23,6 +24,7 @@ export function InstitutionRequestStatusSelector({
   requestId,
   initialStatus,
 }: InstitutionRequestStatusSelectorProps) {
+  const router = useRouter();
   const [status, setStatus] = useState<InstitutionRequestStatus>(initialStatus);
   const [isUpdating, setIsUpdating] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -51,6 +53,8 @@ export function InstitutionRequestStatusSelector({
       if (updateError) {
         setStatus(previousStatus);
         setError(updateError.message);
+      } else {
+        router.refresh();
       }
     } catch (updateError) {
       setStatus(previousStatus);

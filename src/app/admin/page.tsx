@@ -1,14 +1,17 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
 
+import { getAdminPendingCounts } from "@/infrastructure/admin/get-admin-pending-counts";
+import { createSupabaseServerClient } from "@/infrastructure/supabase/create-server-client";
 import { BRAND_SURFACE_GRADIENT } from "@/shared/constants/brand-surfaces";
 
 interface AdminCard {
   href: string;
   title: string;
   description: string;
-  /** Soft pastel card surface */
   tone: string;
   badge: string;
+  pendingKey?: "registrations" | "institutionRequests";
 }
 
 interface AdminCategory {
@@ -75,6 +78,7 @@ const categories: AdminCategory[] = [
         description: "Eylül dönemi ön kayıt başvurularını görüntüleyin ve durumlarını güncelleyin.",
         tone: "border-lime-200 bg-lime-100 text-lime-950 hover:bg-lime-50",
         badge: "bg-lime-200/70 text-lime-900",
+        pendingKey: "registrations",
       },
       {
         href: "/admin/institution-requests",
@@ -82,12 +86,20 @@ const categories: AdminCategory[] = [
         description: "Okul ve belediye gibi kurumlardan gelen toplu eğitim taleplerini yönetin.",
         tone: "border-rose-200 bg-rose-100 text-rose-950 hover:bg-rose-50",
         badge: "bg-rose-200/70 text-rose-800",
+        pendingKey: "institutionRequests",
       },
     ],
   },
 ];
 
-export default function AdminOverviewPage() {
+export default async function AdminOverviewPage() {
+  const client = await createSupabaseServerClient();
+  if (!client) {
+    redirect("/login");
+  }
+
+  const pendingCounts = await getAdminPendingCounts(client);
+
   return (
     <div className="space-y-8">
       <div
@@ -109,22 +121,33 @@ export default function AdminOverviewPage() {
             <p className="mt-1 text-sm text-slate-600">{category.description}</p>
           </div>
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-            {category.cards.map((card) => (
-              <Link
-                key={card.href}
-                href={card.href}
-                className={`group rounded-[1.75rem] border p-6 transition hover:border-slate-300 ${card.tone}`}
-              >
-                <span
-                  className={`inline-flex rounded-full px-3 py-1 text-[11px] font-bold uppercase tracking-wide ${card.badge}`}
+            {category.cards.map((card) => {
+              const pending = card.pendingKey ? pendingCounts[card.pendingKey] : 0;
+
+              return (
+                <Link
+                  key={card.href}
+                  href={card.href}
+                  className={`group rounded-[1.75rem] border p-6 transition hover:border-slate-300 ${card.tone}`}
                 >
-                  Aç
-                </span>
-                <h4 className="mt-3 text-xl font-black tracking-tight">{card.title}</h4>
-                <p className="mt-2 text-sm leading-6 opacity-80">{card.description}</p>
-                <p className="mt-4 text-sm font-bold opacity-90 group-hover:underline">Git →</p>
-              </Link>
-            ))}
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span
+                      className={`inline-flex rounded-full px-3 py-1 text-[11px] font-bold uppercase tracking-wide ${card.badge}`}
+                    >
+                      Aç
+                    </span>
+                    {pending > 0 ? (
+                      <span className="inline-flex rounded-full bg-rose-500 px-3 py-1 text-[11px] font-bold text-white">
+                        {pending} yeni
+                      </span>
+                    ) : null}
+                  </div>
+                  <h4 className="mt-3 text-xl font-black tracking-tight">{card.title}</h4>
+                  <p className="mt-2 text-sm leading-6 opacity-80">{card.description}</p>
+                  <p className="mt-4 text-sm font-bold opacity-90 group-hover:underline">Git →</p>
+                </Link>
+              );
+            })}
           </div>
         </section>
       ))}

@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import type { ReactNode } from "react";
 
+import { getAdminPendingCounts } from "@/infrastructure/admin/get-admin-pending-counts";
 import { getAdminAccess } from "@/infrastructure/auth/get-admin-access";
 import { createSupabaseServerClient } from "@/infrastructure/supabase/create-server-client";
 import { AdminShell } from "@/presentation/components/admin/admin-shell";
@@ -20,5 +21,11 @@ export default async function AdminLayout({ children }: { children: ReactNode })
     redirect(access.reason === "unauthenticated" ? "/login?redirectTo=/admin" : "/dashboard");
   }
 
-  return <AdminShell profile={access.profile}>{children}</AdminShell>;
+  const pendingCounts = await getAdminPendingCounts(client);
+
+  return (
+    <AdminShell profile={access.profile} pendingCounts={pendingCounts}>
+      {children}
+    </AdminShell>
+  );
 }

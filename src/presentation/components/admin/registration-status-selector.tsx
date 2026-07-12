@@ -1,5 +1,6 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 import { createSupabaseBrowserClient } from "@/infrastructure/supabase/create-browser-client";
@@ -22,6 +23,7 @@ export function RegistrationStatusSelector({
   registrationId,
   initialStatus,
 }: RegistrationStatusSelectorProps) {
+  const router = useRouter();
   const [status, setStatus] = useState<RegistrationStatus>(initialStatus);
   const [isUpdating, setIsUpdating] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -50,6 +52,8 @@ export function RegistrationStatusSelector({
       if (updateError) {
         setStatus(previousStatus);
         setError(updateError.message);
+      } else {
+        router.refresh();
       }
     } catch (updateError) {
       setStatus(previousStatus);
