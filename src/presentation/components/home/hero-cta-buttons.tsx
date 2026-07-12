@@ -32,12 +32,12 @@ export function HeroCtaButtons() {
 
   return (
     <div className="mt-8 space-y-5">
-      <div className="grid gap-4 sm:grid-cols-2 sm:gap-5 lg:grid-cols-3">
-        <div className="rounded-2xl border border-sky-200/80 bg-white/70 p-4 backdrop-blur-sm sm:p-5">
+      <div className="grid items-stretch gap-4 sm:grid-cols-2 sm:gap-5 lg:grid-cols-3">
+        <div className="flex h-full flex-col rounded-2xl border border-sky-200/80 bg-white/70 p-4 backdrop-blur-sm sm:p-5">
           <p className="text-xs font-semibold uppercase tracking-[0.16em] text-document-primary">
             Atölye başvurusu
           </p>
-          <p className="mt-2 text-sm leading-6 text-sky-900/80">
+          <p className="mt-2 flex-1 text-sm leading-6 text-sky-900/80">
             Eylül dönemi atölyeleri için hızlı form. Hesap açmaya gerek yok; sizi ararız.
           </p>
           <Link href="/kayit" className="mt-4 inline-flex w-full sm:w-auto">
@@ -47,11 +47,11 @@ export function HeroCtaButtons() {
           </Link>
         </div>
 
-        <div className="rounded-2xl border border-sky-200/80 bg-white/70 p-4 backdrop-blur-sm sm:p-5">
+        <div className="flex h-full flex-col rounded-2xl border border-sky-200/80 bg-white/70 p-4 backdrop-blur-sm sm:p-5">
           <p className="text-xs font-semibold uppercase tracking-[0.16em] text-sky-700">
             Öğrenci paneli
           </p>
-          <p className="mt-2 text-sm leading-6 text-sky-900/80">
+          <p className="mt-2 flex-1 text-sm leading-6 text-sky-900/80">
             {isLoggedIn
               ? "Dökümanlar, notlar ve profiliniz için öğrenci panelinize gidin."
               : "Döküman, not ve profil için e-posta ile üyelik oluşturun."}
@@ -71,11 +71,11 @@ export function HeroCtaButtons() {
           )}
         </div>
 
-        <div className="rounded-2xl border border-sky-200/80 bg-white/70 p-4 backdrop-blur-sm sm:p-5 sm:col-span-2 lg:col-span-1">
+        <div className="flex h-full flex-col rounded-2xl border border-sky-200/80 bg-white/70 p-4 backdrop-blur-sm sm:col-span-2 sm:p-5 lg:col-span-1">
           <p className="text-xs font-semibold uppercase tracking-[0.16em] text-sky-800">
             Kurumlar için
           </p>
-          <p className="mt-2 text-sm leading-6 text-sky-900/80">
+          <p className="mt-2 flex-1 text-sm leading-6 text-sky-900/80">
             Okul, belediye ve kurumlar için toplu eğitim paketi / organizasyon talebi.
           </p>
           <Link href="/kurumsal-talep" className="mt-4 inline-flex w-full sm:w-auto">
