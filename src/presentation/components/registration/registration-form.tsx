@@ -8,7 +8,14 @@ import { Input } from "@/presentation/components/ui/input";
 import { Select } from "@/presentation/components/ui/select";
 
 const GRADE_OPTIONS = ["5", "6", "7", "8", "9", "10", "11", "12"] as const;
-const COURSE_OPTIONS = ["3D Tasarım", "3D Baskı", "Robotik"] as const;
+const COURSE_OPTIONS = [
+  "3D Kalem",
+  "3D Modelleme",
+  "3D Tasarım",
+  "3D Yazıcı",
+  "3D Baskı",
+  "Robotik",
+] as const;
 
 const PHONE_PATTERN = /^05\d{9}$/;
 

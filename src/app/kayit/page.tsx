@@ -18,8 +18,8 @@ export default function PreRegistrationPage() {
             Eylül Dönemi Ön Kayıt
           </h1>
           <p className="mt-4 text-base leading-7 text-slate-600">
-            3D Tasarım, 3D Baskı ve Robotik atölyelerimiz için ön kayıt formunu doldurun. Ekibimiz
-            en kısa sürede sizinle iletişime geçecektir.
+            3D Kalem, 3D Modelleme, 3D Tasarım, 3D Yazıcı, 3D Baskı ve Robotik atölyelerimiz için ön
+            kayıt formunu doldurun. Ekibimiz en kısa sürede sizinle iletişime geçecektir.
           </p>
         </div>
 
