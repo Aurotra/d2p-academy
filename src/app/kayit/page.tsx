@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 import { RegistrationForm } from "@/presentation/components/registration/registration-form";
 
 export const metadata = {
@@ -18,8 +20,15 @@ export default function PreRegistrationPage() {
             Eylül Dönemi Ön Kayıt
           </h1>
           <p className="mt-4 text-base leading-7 text-slate-600">
-            3D Kalem, 3D Modelleme, 3D Tasarım, 3D Yazıcı, 3D Baskı ve Robotik atölyelerimiz için ön
-            kayıt formunu doldurun. Ekibimiz en kısa sürede sizinle iletişime geçecektir.
+            Bu form atölye başvurusudur; site üyeliği açmaz. 3D Kalem, Modelleme, Tasarım, Yazıcı,
+            Baskı ve Robotik için bilgilerinizi bırakın — ekibimiz sizi arayacaktır.
+          </p>
+          <p className="mt-3 text-sm text-slate-500">
+            Öğrenci paneli (ödev, not) için{" "}
+            <Link href="/register" className="font-semibold text-document-primary hover:underline">
+              hesap oluşturun
+            </Link>
+            .
           </p>
         </div>
 
