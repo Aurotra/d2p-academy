@@ -100,7 +100,7 @@ export default function PrivacyPage() {
         <p>
           ATH Eğitim Teknolojileri Mühendislik Danışmanlık Sanayi ve Ticaret Limited Şirketi
           <br />
-          Eknokent, Kınıklı, Hüseyin Yılmaz Cd. No:67, 20160 Pamukkale/Denizli
+          Teknokent, Kınıklı, Hüseyin Yılmaz Cd. No:67, 20160 Pamukkale/Denizli
           <br />
           E-posta: info@athmuhendislik.com.tr
         </p>

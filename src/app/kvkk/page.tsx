@@ -22,7 +22,7 @@ export default function KvkkPage() {
           açıklanan kapsamda kişisel verilerinizi işlemektedir.
         </p>
         <p>
-          Adres: Eknokent, Kınıklı, Hüseyin Yılmaz Cd. No:67, 20160 Pamukkale/Denizli
+          Adres: Teknokent, Kınıklı, Hüseyin Yılmaz Cd. No:67, 20160 Pamukkale/Denizli
           <br />
           MERSİS No: Şu an için beyan edilmemiştir.
         </p>
