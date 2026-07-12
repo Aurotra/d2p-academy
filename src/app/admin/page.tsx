@@ -6,7 +6,9 @@ interface AdminCard {
   href: string;
   title: string;
   description: string;
+  /** Solid-ish card surface + text colors */
   tone: string;
+  badge: string;
 }
 
 interface AdminCategory {
@@ -24,19 +26,22 @@ const categories: AdminCategory[] = [
         href: "/admin/events",
         title: "Etkinlik Yönetimi",
         description: "Yeni eğitim/atölye ekleyin, yayınlayın veya silin.",
-        tone: "border-sky-200 bg-gradient-to-br from-sky-50 to-sky-100 hover:border-sky-400",
+        tone: "border-sky-400 bg-gradient-to-br from-sky-400 via-sky-500 to-blue-600 text-white shadow-sky-300/50 hover:shadow-sky-400/60",
+        badge: "bg-white/25 text-white",
       },
       {
         href: "/admin/enrollments",
         title: "Etkinlik Kayıtları",
         description: "Hangi öğrencinin hangi etkinliğe kaydolduğunu görüntüleyin.",
-        tone: "border-cyan-200 bg-gradient-to-br from-cyan-50 to-cyan-100 hover:border-cyan-400",
+        tone: "border-cyan-400 bg-gradient-to-br from-cyan-400 via-teal-500 to-emerald-600 text-white shadow-cyan-300/50 hover:shadow-cyan-400/60",
+        badge: "bg-white/25 text-white",
       },
       {
         href: "/admin/certificates",
         title: "Sertifika Yönetimi",
         description: "Tamamlanan kayıtlara sertifika verin veya iptal edin.",
-        tone: "border-blue-200 bg-gradient-to-br from-blue-50 to-blue-100 hover:border-blue-400",
+        tone: "border-violet-400 bg-gradient-to-br from-violet-500 via-purple-500 to-fuchsia-600 text-white shadow-violet-300/50 hover:shadow-violet-400/60",
+        badge: "bg-white/25 text-white",
       },
     ],
   },
@@ -48,13 +53,15 @@ const categories: AdminCategory[] = [
         href: "/admin/students",
         title: "Öğrenci Yönetimi",
         description: "Öğrenci profillerini ve tamamlanma oranlarını görüntüleyin.",
-        tone: "border-sky-200 bg-gradient-to-br from-sky-50 via-white to-cyan-50 hover:border-sky-400",
+        tone: "border-amber-400 bg-gradient-to-br from-amber-400 via-orange-500 to-rose-500 text-white shadow-amber-300/50 hover:shadow-amber-400/60",
+        badge: "bg-white/25 text-white",
       },
       {
         href: "/admin/documents",
         title: "Döküman Yönetimi",
         description: "Ödev ve ders materyallerini yükleyin, öğrencilerle paylaşın.",
-        tone: "border-document-primary/25 bg-gradient-to-br from-blue-50 to-sky-100 hover:border-document-primary/50",
+        tone: "border-blue-500 bg-gradient-to-br from-blue-500 via-indigo-500 to-blue-700 text-white shadow-blue-300/50 hover:shadow-blue-400/60",
+        badge: "bg-white/25 text-white",
       },
     ],
   },
@@ -66,13 +73,15 @@ const categories: AdminCategory[] = [
         href: "/admin/registrations",
         title: "Ön Kayıtlar",
         description: "Eylül dönemi ön kayıt başvurularını görüntüleyin ve durumlarını güncelleyin.",
-        tone: "border-cyan-200 bg-gradient-to-br from-cyan-50 to-sky-100 hover:border-cyan-400",
+        tone: "border-lime-400 bg-gradient-to-br from-lime-400 via-green-500 to-emerald-600 text-white shadow-lime-300/50 hover:shadow-lime-400/60",
+        badge: "bg-white/25 text-white",
       },
       {
         href: "/admin/institution-requests",
         title: "Kurumsal Talepler",
         description: "Okul ve belediye gibi kurumlardan gelen toplu eğitim taleplerini yönetin.",
-        tone: "border-sky-300 bg-gradient-to-br from-sky-100 to-blue-50 hover:border-sky-500",
+        tone: "border-rose-400 bg-gradient-to-br from-rose-500 via-pink-500 to-orange-500 text-white shadow-rose-300/50 hover:shadow-rose-400/60",
+        badge: "bg-white/25 text-white",
       },
     ],
   },
@@ -104,10 +113,18 @@ export default function AdminOverviewPage() {
               <Link
                 key={card.href}
                 href={card.href}
-                className={`rounded-[1.75rem] border p-6 shadow-sm transition hover:shadow-lg ${card.tone}`}
+                className={`group rounded-[1.75rem] border-2 p-6 shadow-lg transition hover:-translate-y-1 hover:shadow-xl ${card.tone}`}
               >
-                <h4 className="text-lg font-bold text-navy-950">{card.title}</h4>
-                <p className="mt-2 text-sm text-slate-700">{card.description}</p>
+                <span
+                  className={`inline-flex rounded-full px-3 py-1 text-[11px] font-bold uppercase tracking-wide ${card.badge}`}
+                >
+                  Aç
+                </span>
+                <h4 className="mt-3 text-xl font-black tracking-tight">{card.title}</h4>
+                <p className="mt-2 text-sm leading-6 text-white/90">{card.description}</p>
+                <p className="mt-4 text-sm font-bold text-white/95 group-hover:underline">
+                  Git →
+                </p>
               </Link>
             ))}
           </div>
