@@ -371,21 +371,32 @@ export default function DashboardProfilePage() {
             <legend className="px-2 text-lg font-bold text-slate-900">Bölüm E — Avatar & KVKK</legend>
             <div className="mt-4 space-y-4">
               <p className="text-sm font-medium text-slate-900">Avatar Seçimi</p>
-              <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
-                {AVATAR_OPTIONS.map((avatar) => (
-                  <button
-                    key={avatar.id}
-                    type="button"
-                    onClick={() => setForm({ ...form, profile_avatar_url: avatar.src })}
-                    className={`rounded-2xl border-2 p-2 transition ${
-                      form.profile_avatar_url === avatar.src
-                        ? "border-document-primary bg-document-primary/5"
-                        : "border-slate-200 hover:border-sky-300"
-                    }`}
-                  >
-                    <Image src={avatar.src} alt={avatar.label} width={80} height={80} className="mx-auto" />
-                  </button>
-                ))}
+              <div className="grid grid-cols-4 gap-3 sm:gap-4">
+                {AVATAR_OPTIONS.map((avatar) => {
+                  const selected = form.profile_avatar_url === avatar.src;
+                  return (
+                    <button
+                      key={avatar.id}
+                      type="button"
+                      onClick={() => setForm({ ...form, profile_avatar_url: avatar.src })}
+                      aria-label={avatar.label}
+                      aria-pressed={selected}
+                      className={`relative aspect-square overflow-hidden rounded-2xl border-2 transition ${
+                        selected
+                          ? "border-document-primary ring-2 ring-document-primary/30"
+                          : "border-slate-200 hover:border-sky-300"
+                      }`}
+                    >
+                      <Image
+                        src={avatar.src}
+                        alt={avatar.label}
+                        fill
+                        sizes="(max-width: 640px) 25vw, 120px"
+                        className="object-cover"
+                      />
+                    </button>
+                  );
+                })}
               </div>
               <label className="flex items-start gap-3 rounded-xl border border-slate-100 bg-slate-50 px-4 py-3 text-sm">
                 <input

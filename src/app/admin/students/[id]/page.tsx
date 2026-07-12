@@ -105,7 +105,7 @@ export default async function AdminStudentDetailPage({ params }: AdminStudentDet
                 alt={student.full_name}
                 width={72}
                 height={72}
-                className="rounded-2xl border border-slate-200"
+                className="rounded-2xl border border-slate-200 object-cover"
               />
             ) : null}
             <div>
