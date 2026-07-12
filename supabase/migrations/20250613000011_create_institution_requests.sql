@@ -17,11 +17,11 @@ create table if not exists public.institution_requests (
   created_at timestamptz not null default now(),
   constraint institution_requests_type_check check (
     institution_type in (
-      'özel okul',
-      'devlet okulu',
-      'belediye',
-      'dershane / kurs',
-      'diğer'
+      'Özel okul',
+      'Devlet okulu',
+      'Belediye',
+      'Dershane / kurs',
+      'Diğer'
     )
   ),
   constraint institution_requests_status_check check (

@@ -96,7 +96,7 @@ export default async function AdminInstitutionRequestsPage() {
                   <tr key={request.id} className="border-b border-slate-50 last:border-0 align-top">
                     <td className="px-5 py-4">
                       <p className="font-semibold text-slate-900">{request.institution_name}</p>
-                      <p className="text-xs capitalize text-slate-500">{request.institution_type}</p>
+                      <p className="text-xs text-slate-500">{request.institution_type}</p>
                       <p className="text-xs text-slate-500">{request.city}</p>
                     </td>
                     <td className="px-5 py-4">

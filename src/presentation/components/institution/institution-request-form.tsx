@@ -9,11 +9,11 @@ import { Select } from "@/presentation/components/ui/select";
 import { Textarea } from "@/presentation/components/ui/textarea";
 
 const INSTITUTION_TYPES = [
-  "özel okul",
-  "devlet okulu",
-  "belediye",
-  "dershane / kurs",
-  "diğer",
+  "Özel okul",
+  "Devlet okulu",
+  "Belediye",
+  "Dershane / kurs",
+  "Diğer",
 ] as const;
 
 const PACKAGE_OPTIONS = [
@@ -21,7 +21,7 @@ const PACKAGE_OPTIONS = [
   "Okul içi dönemlik eğitim paketi",
   "Belediye / kurum etkinlik organizasyonu",
   "Öğretmen eğitimi",
-  "Karışık / görüşmek istiyorum",
+  "Diğer / görüşmek istiyorum",
 ] as const;
 
 const STUDENT_COUNT_OPTIONS = [
