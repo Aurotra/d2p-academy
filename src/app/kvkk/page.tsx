@@ -24,7 +24,7 @@ export default function KvkkPage() {
         <p>
           Adres: Teknokent, Kınıklı, Hüseyin Yılmaz Cd. No:67, 20160 Pamukkale/Denizli
           <br />
-          MERSİS No: Şu an için beyan edilmemiştir.
+          MERSİS No: 0101125115300001
         </p>
       </section>
 

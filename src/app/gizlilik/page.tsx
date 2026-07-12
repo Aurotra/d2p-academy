@@ -102,6 +102,8 @@ export default function PrivacyPage() {
           <br />
           Teknokent, Kınıklı, Hüseyin Yılmaz Cd. No:67, 20160 Pamukkale/Denizli
           <br />
+          MERSİS No: 0101125115300001
+          <br />
           E-posta: info@athmuhendislik.com.tr
         </p>
       </section>
