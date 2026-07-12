@@ -6,6 +6,7 @@ interface AdminCard {
   href: string;
   title: string;
   description: string;
+  tone: string;
 }
 
 interface AdminCategory {
@@ -23,16 +24,19 @@ const categories: AdminCategory[] = [
         href: "/admin/events",
         title: "Etkinlik Yönetimi",
         description: "Yeni eğitim/atölye ekleyin, yayınlayın veya silin.",
+        tone: "border-sky-200 bg-gradient-to-br from-sky-50 to-sky-100 hover:border-sky-400",
       },
       {
         href: "/admin/enrollments",
         title: "Etkinlik Kayıtları",
         description: "Hangi öğrencinin hangi etkinliğe kaydolduğunu görüntüleyin.",
+        tone: "border-cyan-200 bg-gradient-to-br from-cyan-50 to-cyan-100 hover:border-cyan-400",
       },
       {
         href: "/admin/certificates",
         title: "Sertifika Yönetimi",
         description: "Tamamlanan kayıtlara sertifika verin veya iptal edin.",
+        tone: "border-blue-200 bg-gradient-to-br from-blue-50 to-blue-100 hover:border-blue-400",
       },
     ],
   },
@@ -44,11 +48,13 @@ const categories: AdminCategory[] = [
         href: "/admin/students",
         title: "Öğrenci Yönetimi",
         description: "Öğrenci profillerini ve tamamlanma oranlarını görüntüleyin.",
+        tone: "border-sky-200 bg-gradient-to-br from-sky-50 via-white to-cyan-50 hover:border-sky-400",
       },
       {
         href: "/admin/documents",
         title: "Döküman Yönetimi",
         description: "Ödev ve ders materyallerini yükleyin, öğrencilerle paylaşın.",
+        tone: "border-document-primary/25 bg-gradient-to-br from-blue-50 to-sky-100 hover:border-document-primary/50",
       },
     ],
   },
@@ -60,11 +66,13 @@ const categories: AdminCategory[] = [
         href: "/admin/registrations",
         title: "Ön Kayıtlar",
         description: "Eylül dönemi ön kayıt başvurularını görüntüleyin ve durumlarını güncelleyin.",
+        tone: "border-cyan-200 bg-gradient-to-br from-cyan-50 to-sky-100 hover:border-cyan-400",
       },
       {
         href: "/admin/institution-requests",
         title: "Kurumsal Talepler",
         description: "Okul ve belediye gibi kurumlardan gelen toplu eğitim taleplerini yönetin.",
+        tone: "border-sky-300 bg-gradient-to-br from-sky-100 to-blue-50 hover:border-sky-500",
       },
     ],
   },
@@ -96,10 +104,10 @@ export default function AdminOverviewPage() {
               <Link
                 key={card.href}
                 href={card.href}
-                className="rounded-[1.75rem] border border-slate-200 bg-white p-6 shadow-sm transition hover:border-document-primary/40 hover:shadow-lg"
+                className={`rounded-[1.75rem] border p-6 shadow-sm transition hover:shadow-lg ${card.tone}`}
               >
                 <h4 className="text-lg font-bold text-navy-950">{card.title}</h4>
-                <p className="mt-2 text-sm text-slate-600">{card.description}</p>
+                <p className="mt-2 text-sm text-slate-700">{card.description}</p>
               </Link>
             ))}
           </div>

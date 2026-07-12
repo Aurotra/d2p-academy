@@ -4,6 +4,7 @@ import type { ReactNode } from "react";
 import type { Profile } from "@/core/domain/auth";
 import { BRAND_SURFACE_HEADER } from "@/shared/constants/brand-surfaces";
 import { BrandLogo } from "@/presentation/components/layout/brand-logo";
+import { AdminBackLink } from "@/presentation/components/admin/admin-back-link";
 import { LogoutButton } from "@/presentation/components/dashboard/logout-button";
 
 const navItems = [
@@ -48,20 +49,23 @@ export function AdminShell({ profile, children }: AdminShellProps) {
       </div>
 
       <div className="mx-auto grid max-w-7xl gap-6 px-4 py-8 lg:grid-cols-[220px_1fr] lg:px-8">
-        <aside className="h-fit rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+        <aside className="h-fit rounded-2xl border border-sky-200 bg-sky-50/80 p-4 shadow-sm">
           <nav className="space-y-1">
             {navItems.map((item) => (
               <Link
                 key={item.href}
                 href={item.href}
-                className="block rounded-xl px-4 py-3 text-sm font-medium text-navy-900 transition hover:bg-cyan-50 hover:text-cyan-700"
+                className="block rounded-xl px-4 py-3 text-sm font-medium text-navy-900 transition hover:bg-white hover:text-document-primary"
               >
                 {item.label}
               </Link>
             ))}
           </nav>
         </aside>
-        <div>{children}</div>
+        <div>
+          <AdminBackLink />
+          {children}
+        </div>
       </div>
     </div>
   );
