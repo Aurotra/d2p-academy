@@ -6,8 +6,8 @@ import { createSupabaseBrowserClient } from "@/infrastructure/supabase/create-br
 import { Button } from "@/presentation/components/ui/button";
 import { Input } from "@/presentation/components/ui/input";
 import { Select } from "@/presentation/components/ui/select";
+import { GRADE_LEVEL_OPTIONS } from "@/shared/constants/profile-options";
 
-const GRADE_OPTIONS = ["5", "6", "7", "8", "9", "10", "11", "12"] as const;
 const COURSE_OPTIONS = [
   "3D Kalem",
   "3D Modelleme",
@@ -64,7 +64,7 @@ export function RegistrationForm() {
     }
 
     if (!grade) {
-      setFieldError("Sınıf düzeyi seçin.");
+      setFieldError("Eğitim düzeyini seçin.");
       return;
     }
 
@@ -153,7 +153,7 @@ export function RegistrationForm() {
       />
 
       <Select
-        label="Sınıf Düzeyi"
+        label="Eğitim Düzeyi"
         name="grade"
         required
         value={grade}
@@ -161,9 +161,9 @@ export function RegistrationForm() {
         className="min-h-[44px] py-3.5 text-base"
       >
         <option value="">Seçiniz</option>
-        {GRADE_OPTIONS.map((option) => (
-          <option key={option} value={option}>
-            {option}. Sınıf
+        {GRADE_LEVEL_OPTIONS.map((option) => (
+          <option key={option.value} value={option.value}>
+            {option.label}
           </option>
         ))}
       </Select>

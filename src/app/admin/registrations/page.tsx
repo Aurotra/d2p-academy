@@ -6,6 +6,7 @@ import {
   RegistrationStatusSelector,
   type RegistrationStatus,
 } from "@/presentation/components/admin/registration-status-selector";
+import { GRADE_LEVEL_OPTIONS } from "@/shared/constants/profile-options";
 
 export const dynamic = "force-dynamic";
 
@@ -24,6 +25,14 @@ function formatDate(value: string): string {
     dateStyle: "medium",
     timeStyle: "short",
   }).format(new Date(value));
+}
+
+function formatGrade(grade: string): string {
+  const match = GRADE_LEVEL_OPTIONS.find((option) => option.value === grade);
+  if (match) return match.label;
+  // Eski kayıtlar: sadece "5" gibi sayı
+  if (/^\d+$/.test(grade)) return `${grade}. Sınıf`;
+  return grade;
 }
 
 export default async function AdminRegistrationsPage() {
@@ -70,7 +79,7 @@ export default async function AdminRegistrationsPage() {
               <tr>
                 <th className="px-5 py-4">Ad Soyad</th>
                 <th className="px-5 py-4">Telefon</th>
-                <th className="px-5 py-4">Sınıf</th>
+                <th className="px-5 py-4">Eğitim Düzeyi</th>
                 <th className="px-5 py-4">Atölye</th>
                 <th className="px-5 py-4">Durum</th>
                 <th className="px-5 py-4">Kayıt Tarihi</th>
@@ -90,7 +99,7 @@ export default async function AdminRegistrationsPage() {
                       {registration.full_name}
                     </td>
                     <td className="px-5 py-4 text-slate-700">{registration.phone}</td>
-                    <td className="px-5 py-4 text-slate-700">{registration.grade}. Sınıf</td>
+                    <td className="px-5 py-4 text-slate-700">{formatGrade(registration.grade)}</td>
                     <td className="px-5 py-4 text-slate-700">{registration.course}</td>
                     <td className="px-5 py-4">
                       <RegistrationStatusSelector

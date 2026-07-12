@@ -3,8 +3,14 @@ import Link from "next/link";
 import { createSupabaseServerClient } from "@/infrastructure/supabase/create-server-client";
 import { SupabaseStudentProfileRepository } from "@/infrastructure/repositories/supabase-student-profile-repository";
 import { calculateProgress } from "@/lib/utils/progress";
+import { GRADE_LEVEL_OPTIONS } from "@/shared/constants/profile-options";
 
 export const dynamic = "force-dynamic";
+
+function formatGradeLevel(value: string | null | undefined): string {
+  if (!value) return "—";
+  return GRADE_LEVEL_OPTIONS.find((option) => option.value === value)?.label ?? value;
+}
 
 export default async function AdminStudentsPage() {
   const client = await createSupabaseServerClient();
@@ -80,7 +86,9 @@ export default async function AdminStudentsPage() {
                         <p className="text-xs text-slate-500">{student.email}</p>
                       </td>
                       <td className="px-5 py-4 text-slate-700">{student.school_name || "—"}</td>
-                      <td className="px-5 py-4 text-slate-700">{student.grade_level || "—"}</td>
+                      <td className="px-5 py-4 text-slate-700">
+                        {formatGradeLevel(student.grade_level)}
+                      </td>
                       <td className="px-5 py-4">
                         <span className="inline-flex rounded-full bg-document-primary/10 px-3 py-1 text-xs font-bold text-document-primary">
                           %{progress}

@@ -237,7 +237,7 @@ export default function DashboardProfilePage() {
                 </div>
               </div>
               <Select
-                label="Sınıf Seviyesi"
+                label="Eğitim Düzeyi"
                 value={form.grade_level}
                 onChange={(e) => setForm({ ...form, grade_level: e.target.value })}
                 required

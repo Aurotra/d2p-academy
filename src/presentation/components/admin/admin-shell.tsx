@@ -51,7 +51,7 @@ export function AdminShell({ profile, pendingCounts, children }: AdminShellProps
       <div className={`${BRAND_SURFACE_HEADER} border-b`}>
         <div className="mx-auto flex max-w-7xl flex-col gap-4 px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-6 lg:px-8">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-            <BrandLogo href="/admin" height={36} />
+            <BrandLogo href="/" height={36} />
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.18em] text-sky-700">
                 Admin Paneli
