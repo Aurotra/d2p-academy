@@ -49,19 +49,29 @@ export default function PrivacyPage() {
         <h2>4. Çerezler ve Benzer Teknolojiler</h2>
         <p>
           Web sitemizde oturum yönetimi, güvenlik ve kullanıcı deneyimini iyileştirmek amacıyla
-          zorunlu çerezler kullanılabilir. Canlı destek hizmeti (Tawk.to gibi) ve barındırma
-          altyapısı (Vercel) kendi çerezlerini kullanabilir. Tarayıcı ayarlarınızdan çerez
+          zorunlu çerezler kullanılabilir. Canlı destek ve barındırma altyapısı gibi hizmet
+          sağlayıcılar da kendi çerezlerini kullanabilir. Tarayıcı ayarlarınızdan çerez
           tercihlerinizi yönetebilirsiniz; bazı çerezlerin kapatılması hizmetin tam çalışmamasına
           neden olabilir.
         </p>
       </section>
 
       <section>
-        <h2>5. Üçüncü Taraf Hizmet Sağlayıcılar</h2>
+        <h2>5. Veri Aktarımı ve Üçüncü Taraflar</h2>
         <p>
-          Verileriniz; Supabase (veritabanı), Vercel (barındırma), Resend (e-posta) ve benzeri
-          hizmet sağlayıcılar aracılığıyla işlenebilir. Bu sağlayıcılar yalnızca hizmetin
-          sunulması için gerekli ölçüde veriye erişir. Detaylı bilgi için{" "}
+          Kişisel verileriniz; kanuni yükümlülüklerimizi yerine getirmek, bilişim altyapımızı yönetmek
+          ve eğitim/danışmanlık faaliyetlerimizi kesintisiz sürdürmek amacıyla, güvenliğini
+          taahhüt ettiğimiz, veri gizliliği politikalarıyla uyumlu, alanında yetkin çözüm
+          ortaklarımız ve bulut bilişim hizmet sağlayıcılarımız ile paylaşılabilir.
+        </p>
+        <p>
+          Kullandığımız bazı bulut hizmet sağlayıcıları yurt dışında (Avrupa Birliği/Amerika
+          Birleşik Devletleri) faaliyet gösterdiğinden, verileriniz KVKK&apos;nın yurt dışına veri
+          aktarımına ilişkin hükümleri çerçevesinde yurt dışında da işlenebilir.
+        </p>
+        <p>
+          Verileriniz hiçbir durumda üçüncü şahıslarla ticari amaçla paylaşılmaz ve yalnızca
+          hizmetin ifası için gerekli olan sınırlı amaçlarla işlenir. Detaylı bilgi için{" "}
           <a href="/kvkk" className="font-semibold text-document-primary underline">
             Aydınlatma Metni
           </a>

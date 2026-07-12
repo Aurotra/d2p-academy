@@ -69,15 +69,21 @@ export default function KvkkPage() {
       </section>
 
       <section>
-        <h2>5. Verilerin Aktarılması</h2>
+        <h2>5. Veri Aktarımı ve Üçüncü Taraflar</h2>
         <p>
-          Kişisel verileriniz; kanuni yükümlülüklerimizi yerine getirmek amacıyla yetkili kamu
-          kurumlarıyla, iş süreçlerimizi yürüten sınırlı çözüm ortaklarımızla (veritabanı ve
-          barındırma hizmeti sağlayıcısı Supabase ve Vercel, e-posta gönderim hizmeti Resend gibi)
-          paylaşılabilir. Bu hizmet sağlayıcılardan bir kısmı yurt dışında (AB/ABD) faaliyet
-          gösterdiğinden, verileriniz KVKK&apos;nın yurt dışına veri aktarımına ilişkin hükümleri
-          çerçevesinde yurt dışında da işlenebilir. Verileriniz hiçbir şekilde üçüncü şahıslarla
-          ticari amaçla paylaşılmaz.
+          Kişisel verileriniz; kanuni yükümlülüklerimizi yerine getirmek, bilişim altyapımızı yönetmek
+          ve eğitim/danışmanlık faaliyetlerimizi kesintisiz sürdürmek amacıyla, güvenliğini
+          taahhüt ettiğimiz, veri gizliliği politikalarıyla uyumlu, alanında yetkin çözüm
+          ortaklarımız ve bulut bilişim hizmet sağlayıcılarımız ile paylaşılabilir.
+        </p>
+        <p>
+          Kullandığımız bazı bulut hizmet sağlayıcıları yurt dışında (Avrupa Birliği/Amerika
+          Birleşik Devletleri) faaliyet gösterdiğinden, verileriniz KVKK&apos;nın yurt dışına veri
+          aktarımına ilişkin hükümleri çerçevesinde yurt dışında da işlenebilir.
+        </p>
+        <p>
+          Verileriniz hiçbir durumda üçüncü şahıslarla ticari amaçla paylaşılmaz ve yalnızca
+          hizmetin ifası için gerekli olan sınırlı amaçlarla işlenir.
         </p>
       </section>
 
