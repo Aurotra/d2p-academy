@@ -56,12 +56,30 @@ export default function AdminOverviewPage() {
           </p>
         </Link>
         <Link
+          href="/admin/enrollments"
+          className="rounded-[1.75rem] border border-slate-200 bg-white p-6 shadow-sm transition hover:border-document-primary/40 hover:shadow-lg"
+        >
+          <h3 className="text-lg font-bold text-navy-950">Etkinlik Kayıtları</h3>
+          <p className="mt-2 text-sm text-slate-600">
+            Hangi öğrencinin hangi etkinliğe kaydolduğunu görüntüleyin.
+          </p>
+        </Link>
+        <Link
           href="/admin/registrations"
           className="rounded-[1.75rem] border border-slate-200 bg-white p-6 shadow-sm transition hover:border-document-primary/40 hover:shadow-lg"
         >
           <h3 className="text-lg font-bold text-navy-950">Ön Kayıtlar</h3>
           <p className="mt-2 text-sm text-slate-600">
             Eylül dönemi ön kayıt başvurularını görüntüleyin ve durumlarını güncelleyin.
+          </p>
+        </Link>
+        <Link
+          href="/admin/institution-requests"
+          className="rounded-[1.75rem] border border-slate-200 bg-white p-6 shadow-sm transition hover:border-document-primary/40 hover:shadow-lg"
+        >
+          <h3 className="text-lg font-bold text-navy-950">Kurumsal Talepler</h3>
+          <p className="mt-2 text-sm text-slate-600">
+            Okul ve belediye gibi kurumlardan gelen toplu eğitim taleplerini yönetin.
           </p>
         </Link>
       </div>

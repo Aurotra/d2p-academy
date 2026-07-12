@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useState, type FormEvent } from "react";
 
 import {
@@ -301,6 +302,12 @@ export function AdminEventsManager() {
                     </p>
                   </div>
                   <div className="flex flex-wrap gap-2">
+                    <Link
+                      href={`/admin/enrollments?event_id=${event.id}`}
+                      className="inline-flex items-center justify-center rounded-xl border-2 border-sky-800 bg-white px-5 py-3 text-sm font-semibold text-sky-950 shadow-md shadow-sky-200/60 transition hover:border-sky-900 hover:bg-sky-50"
+                    >
+                      Kayıtlar
+                    </Link>
                     {event.status !== "published" ? (
                       <Button
                         variant="secondary"

@@ -10,9 +10,11 @@ const navItems = [
   { href: "/admin", label: "Genel Bakış" },
   { href: "/admin/students", label: "Öğrenciler" },
   { href: "/admin/events", label: "Etkinlikler" },
+  { href: "/admin/enrollments", label: "Etkinlik Kayıtları" },
   { href: "/admin/certificates", label: "Sertifikalar" },
   { href: "/admin/documents", label: "Dökümanlar" },
   { href: "/admin/registrations", label: "Ön Kayıtlar" },
+  { href: "/admin/institution-requests", label: "Kurumsal Talepler" },
 ];
 
 interface AdminShellProps {

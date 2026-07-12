@@ -99,19 +99,19 @@ export default function ContactPage() {
 
             <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
               <p className="text-base leading-7 text-slate-700">
-                Eylül dönemi kayıtları için hemen ön kayıt oluşturabilirsiniz.
+                Bireysel ön kayıt veya okul / belediye için kurumsal eğitim talebi oluşturabilirsiniz.
               </p>
               <div className="mt-5 flex flex-col gap-3 sm:flex-row">
                 <Link href="/kayit" className="sm:flex-1">
                   <Button className="min-h-[44px] w-full bg-document-primary hover:bg-document-primary-hover hover:shadow-glow-document">
-                    Ön Kayıt Ol
+                    Ön Kayıt
                   </Button>
                 </Link>
-                <a href={`tel:${CONTACT.phoneTel}`} className="sm:flex-1">
+                <Link href="/kurumsal-talep" className="sm:flex-1">
                   <Button variant="outline" className="min-h-[44px] w-full">
-                    Hemen Ara
+                    Kurumsal Talep
                   </Button>
-                </a>
+                </Link>
               </div>
             </div>
           </div>

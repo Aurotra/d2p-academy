@@ -12,6 +12,7 @@ const navItems = [
   { href: "/#hero", label: "Ana Sayfa" },
   { href: "/#certificate", label: "Sertifika Doğrula" },
   { href: "/#events", label: "Etkinlikler" },
+  { href: "/kurumsal-talep", label: "Kurumsal Talep" },
   { href: "/iletisim", label: "İletişim" },
 ] as const;
 

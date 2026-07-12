@@ -32,7 +32,7 @@ export function HeroCtaButtons() {
 
   return (
     <div className="mt-8 space-y-5">
-      <div className="grid gap-4 sm:grid-cols-2 sm:gap-5">
+      <div className="grid gap-4 sm:grid-cols-2 sm:gap-5 lg:grid-cols-3">
         <div className="rounded-2xl border border-sky-200/80 bg-white/70 p-4 backdrop-blur-sm sm:p-5">
           <p className="text-xs font-semibold uppercase tracking-[0.16em] text-document-primary">
             Atölye başvurusu
@@ -69,6 +69,20 @@ export function HeroCtaButtons() {
               </Button>
             </Link>
           )}
+        </div>
+
+        <div className="rounded-2xl border border-sky-200/80 bg-white/70 p-4 backdrop-blur-sm sm:p-5 sm:col-span-2 lg:col-span-1">
+          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-sky-800">
+            Kurumlar için
+          </p>
+          <p className="mt-2 text-sm leading-6 text-sky-900/80">
+            Okul, belediye ve kurumlar için toplu eğitim paketi / organizasyon talebi.
+          </p>
+          <Link href="/kurumsal-talep" className="mt-4 inline-flex w-full sm:w-auto">
+            <Button variant="outline" className="min-h-[44px] w-full sm:w-auto">
+              Kurumsal Eğitim Talebi
+            </Button>
+          </Link>
         </div>
       </div>
 
