@@ -15,6 +15,7 @@ function formatDate(date: Date): string {
   return new Intl.DateTimeFormat("tr-TR", {
     dateStyle: "long",
     timeStyle: "short",
+    timeZone: "Europe/Istanbul",
   }).format(date);
 }
 

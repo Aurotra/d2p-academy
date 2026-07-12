@@ -4,19 +4,37 @@ import { SupabaseEventRepository } from "@/infrastructure/repositories/supabase-
 import { createSupabaseServerClient } from "@/infrastructure/supabase/create-server-client";
 import { Badge } from "@/presentation/components/ui/badge";
 
-function formatEventDate(date: Date): { day: string; month: string; time: string } {
+const TURKEY_TIME_ZONE = "Europe/Istanbul";
+
+function formatEventDateParts(date: Date): { day: string; month: string } {
   return {
-    day: new Intl.DateTimeFormat("tr-TR", { day: "2-digit" }).format(date),
-    month: new Intl.DateTimeFormat("tr-TR", { month: "short" }).format(date),
-    time: new Intl.DateTimeFormat("tr-TR", {
-      hour: "2-digit",
-      minute: "2-digit",
+    day: new Intl.DateTimeFormat("tr-TR", {
+      day: "2-digit",
+      timeZone: TURKEY_TIME_ZONE,
+    }).format(date),
+    month: new Intl.DateTimeFormat("tr-TR", {
+      month: "short",
+      timeZone: TURKEY_TIME_ZONE,
     }).format(date),
   };
 }
 
+function formatEventTime(date: Date): string {
+  return new Intl.DateTimeFormat("tr-TR", {
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+    timeZone: TURKEY_TIME_ZONE,
+  }).format(date);
+}
+
+function formatEventTimeRange(startAt: Date, endAt: Date): string {
+  return `${formatEventTime(startAt)} – ${formatEventTime(endAt)}`;
+}
+
 function EventCard({ event }: { event: AcademyEvent }) {
-  const start = formatEventDate(event.startAt);
+  const start = formatEventDateParts(event.startAt);
+  const timeRange = formatEventTimeRange(event.startAt, event.endAt);
 
   return (
     <article className="group overflow-hidden rounded-[1.75rem] border border-slate-200 bg-white shadow-sm transition hover:-translate-y-1 hover:border-cyan-300 hover:shadow-xl hover:shadow-cyan-500/10">
@@ -45,7 +63,7 @@ function EventCard({ event }: { event: AcademyEvent }) {
         </div>
 
         <div className="mt-5 flex items-center justify-between border-t border-slate-100 pt-4 text-sm text-slate-500">
-          <span>{start.time}</span>
+          <span>{timeRange}</span>
           <span>{event.isOnline ? "Çevrimiçi" : (event.locationName ?? "Konum belirtilecek")}</span>
         </div>
       </div>
