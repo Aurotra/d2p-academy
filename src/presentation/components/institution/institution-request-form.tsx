@@ -2,7 +2,7 @@
 
 import { FormEvent, useState } from "react";
 
-import { createSupabaseBrowserClient } from "@/infrastructure/supabase/create-browser-client";
+import { KvkkConsentFields } from "@/presentation/components/legal/kvkk-consent-fields";
 import { Button } from "@/presentation/components/ui/button";
 import { Input } from "@/presentation/components/ui/input";
 import { Select } from "@/presentation/components/ui/select";
@@ -49,6 +49,9 @@ export function InstitutionRequestForm() {
   const [studentCount, setStudentCount] = useState("");
   const [packageInterest, setPackageInterest] = useState("");
   const [message, setMessage] = useState("");
+  const [kvkkDisclosureAccepted, setKvkkDisclosureAccepted] = useState(false);
+  const [dataProcessingConsent, setDataProcessingConsent] = useState(false);
+  const [marketingEmailConsent, setMarketingEmailConsent] = useState(false);
   const [fieldError, setFieldError] = useState<string | null>(null);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -106,31 +109,37 @@ export function InstitutionRequestForm() {
       return;
     }
 
-    const client = createSupabaseBrowserClient();
-
-    if (!client) {
-      setSubmitError("Bağlantı kurulamadı. Lütfen daha sonra tekrar deneyin.");
+    if (!kvkkDisclosureAccepted || !dataProcessingConsent) {
+      setFieldError("Zorunlu onay kutularını işaretleyin.");
       return;
     }
 
     setIsSubmitting(true);
 
     try {
-      const { error } = await client.from("institution_requests").insert({
-        institution_name: trimmedInstitution,
-        institution_type: institutionType,
-        contact_name: trimmedContact,
-        phone: normalizedPhone,
-        email: trimmedEmail,
-        city: trimmedCity,
-        student_count: studentCount,
-        package_interest: packageInterest,
-        message: trimmedMessage || null,
-        status: "yeni",
+      const response = await fetch("/api/v1/institution-requests", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          institutionName: trimmedInstitution,
+          institutionType,
+          contactName: trimmedContact,
+          phone: normalizedPhone,
+          email: trimmedEmail,
+          city: trimmedCity,
+          studentCount,
+          packageInterest,
+          message: trimmedMessage,
+          kvkkDisclosureAccepted,
+          dataProcessingConsent,
+          marketingEmailConsent,
+        }),
       });
 
-      if (error) {
-        setSubmitError(error.message);
+      const payload = (await response.json()) as { error?: string };
+
+      if (!response.ok) {
+        setSubmitError(payload.error ?? "Talep oluşturulamadı.");
         return;
       }
 
@@ -271,6 +280,17 @@ export function InstitutionRequestForm() {
         className="min-h-[100px] text-base"
       />
 
+      <KvkkConsentFields
+        idPrefix="institution"
+        kvkkDisclosureAccepted={kvkkDisclosureAccepted}
+        dataProcessingConsent={dataProcessingConsent}
+        marketingEmailConsent={marketingEmailConsent}
+        onKvkkDisclosureChange={setKvkkDisclosureAccepted}
+        onDataProcessingChange={setDataProcessingConsent}
+        onMarketingEmailChange={setMarketingEmailConsent}
+        dataProcessingLabel="Verilerimin eğitim/iletişim süreçlerinde işlenmesine onay veriyorum. Bu formu, temsil ettiğim kurum ve katılımcılar adına, gerekli yasal yetkiye sahip olarak dolduruyorum."
+      />
+
       {fieldError ? (
         <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700" role="alert">
           {fieldError}
@@ -285,7 +305,7 @@ export function InstitutionRequestForm() {
 
       <Button
         type="submit"
-        disabled={isSubmitting}
+        disabled={isSubmitting || !kvkkDisclosureAccepted || !dataProcessingConsent}
         className="min-h-[44px] w-full bg-document-primary hover:bg-document-primary-hover hover:shadow-glow-document"
       >
         {isSubmitting ? "Gönderiliyor..." : "Kurumsal Talep Gönder"}

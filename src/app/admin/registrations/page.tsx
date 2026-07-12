@@ -31,7 +31,9 @@ export default async function AdminRegistrationsPage() {
 
   const { data, error } = await client
     .from("registrations")
-    .select("id, full_name, phone, grade, course, status, created_at")
+    .select(
+      "id, full_name, phone, grade, course, status, created_at, is_minor, guardian_name, guardian_phone",
+    )
     .order("created_at", { ascending: false });
 
   const registrations = (data ?? []) as AdminRegistrationRow[];

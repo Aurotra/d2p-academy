@@ -412,8 +412,11 @@ export default function DashboardProfilePage() {
                   className="mt-1"
                 />
                 <span>
-                  KVKK aydınlatma metnini okudum, kişisel verilerimin D2P Academy tarafından eğitim
-                  süreçlerinde işlenmesini kabul ediyorum.
+                  <Link href="/kvkk" target="_blank" rel="noopener noreferrer" className="font-semibold text-document-primary underline">
+                    KVKK aydınlatma metnini
+                  </Link>{" "}
+                  okudum, kişisel verilerimin D2P Academy tarafından eğitim süreçlerinde
+                  işlenmesini kabul ediyorum.
                 </span>
               </label>
             </div>

@@ -1,8 +1,8 @@
 "use client";
 
-import { FormEvent, useState } from "react";
+import { FormEvent, useMemo, useState } from "react";
 
-import { createSupabaseBrowserClient } from "@/infrastructure/supabase/create-browser-client";
+import { KvkkConsentFields } from "@/presentation/components/legal/kvkk-consent-fields";
 import { Button } from "@/presentation/components/ui/button";
 import { Input } from "@/presentation/components/ui/input";
 import { Select } from "@/presentation/components/ui/select";
@@ -13,15 +13,6 @@ const PHONE_PATTERN = /^05\d{9}$/;
 const DUPLICATE_PHONE_MESSAGE =
   "Bu telefon numarasıyla zaten kayıt oluşturulmuş, en kısa sürede size dönüş yapacağız";
 
-function isDuplicatePhoneError(error: { message?: string; code?: string }): boolean {
-  const message = error.message?.toLowerCase() ?? "";
-  return (
-    error.code === "23505" ||
-    message.includes("duplicate key") ||
-    message.includes("registrations_phone_unique")
-  );
-}
-
 function normalizePhone(value: string): string {
   return value.replace(/\s/g, "");
 }
@@ -31,10 +22,29 @@ export function RegistrationForm() {
   const [phone, setPhone] = useState("");
   const [grade, setGrade] = useState("");
   const [course, setCourse] = useState("");
+  const [isMinor, setIsMinor] = useState<boolean | null>(null);
+  const [guardianName, setGuardianName] = useState("");
+  const [guardianPhone, setGuardianPhone] = useState("");
+  const [kvkkDisclosureAccepted, setKvkkDisclosureAccepted] = useState(false);
+  const [dataProcessingConsent, setDataProcessingConsent] = useState(false);
+  const [marketingEmailConsent, setMarketingEmailConsent] = useState(false);
   const [fieldError, setFieldError] = useState<string | null>(null);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
+
+  const dataProcessingLabel = useMemo(() => {
+    if (isMinor) {
+      return "Veli/Vasi sıfatıyla, katılımcının kişisel verilerinin işlenmesine ve Aydınlatma Metni'ni okuduğuma dair açık rızamı veriyorum.";
+    }
+    return "Verilerimin eğitim/iletişim süreçlerinde işlenmesine onay veriyorum.";
+  }, [isMinor]);
+
+  const canSubmit =
+    kvkkDisclosureAccepted &&
+    dataProcessingConsent &&
+    isMinor !== null &&
+    (!isMinor || (guardianName.trim() !== "" && PHONE_PATTERN.test(normalizePhone(guardianPhone))));
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -64,30 +74,51 @@ export function RegistrationForm() {
       return;
     }
 
-    const client = createSupabaseBrowserClient();
+    if (isMinor === null) {
+      setFieldError("Katılımcının 18 yaşından küçük olup olmadığını belirtin.");
+      return;
+    }
 
-    if (!client) {
-      setSubmitError("Bağlantı kurulamadı. Lütfen daha sonra tekrar deneyin.");
+    if (isMinor) {
+      if (!guardianName.trim()) {
+        setFieldError("Veli/vasi ad soyad zorunludur.");
+        return;
+      }
+      if (!PHONE_PATTERN.test(normalizePhone(guardianPhone))) {
+        setFieldError("Veli/vasi telefonu geçerli formatta olmalıdır (05XXXXXXXXX).");
+        return;
+      }
+    }
+
+    if (!kvkkDisclosureAccepted || !dataProcessingConsent) {
+      setFieldError("Zorunlu onay kutularını işaretleyin.");
       return;
     }
 
     setIsSubmitting(true);
 
     try {
-      const { error } = await client.from("registrations").insert({
-        full_name: trimmedName,
-        phone: normalizedPhone,
-        grade,
-        course,
-        status: "yeni",
+      const response = await fetch("/api/v1/registrations", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          fullName: trimmedName,
+          phone: normalizedPhone,
+          grade,
+          course,
+          isMinor,
+          guardianName: isMinor ? guardianName.trim() : undefined,
+          guardianPhone: isMinor ? normalizePhone(guardianPhone) : undefined,
+          kvkkDisclosureAccepted,
+          dataProcessingConsent,
+          marketingEmailConsent,
+        }),
       });
 
-      if (error) {
-        if (isDuplicatePhoneError(error)) {
-          setSubmitError(DUPLICATE_PHONE_MESSAGE);
-        } else {
-          setSubmitError(error.message);
-        }
+      const payload = (await response.json()) as { error?: string };
+
+      if (!response.ok) {
+        setSubmitError(payload.error ?? "Kayıt oluşturulamadı.");
         return;
       }
 
@@ -131,7 +162,7 @@ export function RegistrationForm() {
       />
 
       <Input
-        label="Veli Telefonu"
+        label="Telefon"
         name="phone"
         type="tel"
         required
@@ -175,6 +206,75 @@ export function RegistrationForm() {
         ))}
       </Select>
 
+      <fieldset className="space-y-3 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-4">
+        <legend className="px-1 text-sm font-semibold text-slate-900">
+          Katılımcı 18 yaşından küçük mü?
+        </legend>
+        <div className="flex flex-wrap gap-4">
+          <label htmlFor="is-minor-yes" className="inline-flex items-center gap-2 text-sm">
+            <input
+              id="is-minor-yes"
+              name="is_minor"
+              type="radio"
+              value="yes"
+              required
+              checked={isMinor === true}
+              onChange={() => setIsMinor(true)}
+            />
+            Evet
+          </label>
+          <label htmlFor="is-minor-no" className="inline-flex items-center gap-2 text-sm">
+            <input
+              id="is-minor-no"
+              name="is_minor"
+              type="radio"
+              value="no"
+              required
+              checked={isMinor === false}
+              onChange={() => setIsMinor(false)}
+            />
+            Hayır
+          </label>
+        </div>
+      </fieldset>
+
+      {isMinor ? (
+        <div className="space-y-4 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-4">
+          <p className="text-sm font-semibold text-amber-950">Veli / Vasi Bilgileri</p>
+          <Input
+            label="Veli/Vasi Ad Soyad"
+            name="guardian_name"
+            required
+            value={guardianName}
+            onChange={(event) => setGuardianName(event.target.value)}
+            placeholder="Veli veya vasi adı"
+            className="min-h-[44px] py-3.5 text-base"
+          />
+          <Input
+            label="Veli/Vasi Telefon"
+            name="guardian_phone"
+            type="tel"
+            required
+            inputMode="numeric"
+            value={guardianPhone}
+            onChange={(event) => setGuardianPhone(event.target.value)}
+            placeholder="05XXXXXXXXX"
+            className="min-h-[44px] py-3.5 text-base"
+          />
+        </div>
+      ) : null}
+
+      <KvkkConsentFields
+        idPrefix="registration"
+        kvkkDisclosureAccepted={kvkkDisclosureAccepted}
+        dataProcessingConsent={dataProcessingConsent}
+        marketingEmailConsent={marketingEmailConsent}
+        onKvkkDisclosureChange={setKvkkDisclosureAccepted}
+        onDataProcessingChange={setDataProcessingConsent}
+        onMarketingEmailChange={setMarketingEmailConsent}
+        dataProcessingLabel={dataProcessingLabel}
+      />
+
       {fieldError ? (
         <div
           className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700"
@@ -195,7 +295,7 @@ export function RegistrationForm() {
 
       <Button
         type="submit"
-        disabled={isSubmitting}
+        disabled={isSubmitting || !canSubmit}
         className="min-h-[44px] w-full bg-document-primary hover:bg-document-primary-hover hover:shadow-glow-document"
       >
         {isSubmitting ? "Gönderiliyor..." : "Ön Kayıt Gönder"}

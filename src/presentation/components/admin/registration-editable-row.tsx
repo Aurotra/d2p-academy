@@ -24,6 +24,9 @@ export interface AdminRegistrationRow {
   course: string;
   status: RegistrationStatus;
   created_at: string;
+  is_minor?: boolean;
+  guardian_name?: string | null;
+  guardian_phone?: string | null;
 }
 
 interface RegistrationEditableRowProps {
@@ -213,7 +216,16 @@ export function RegistrationEditableRow({
 
   return (
     <tr className="border-b border-slate-50 last:border-0">
-      <td className="px-5 py-4 font-semibold text-slate-900">{registration.full_name}</td>
+      <td className="px-5 py-4 font-semibold text-slate-900">
+        {registration.full_name}
+        {registration.is_minor ? (
+          <p className="mt-1 text-xs font-normal text-amber-800">
+            18 yaş altı
+            {registration.guardian_name ? ` · Veli: ${registration.guardian_name}` : ""}
+            {registration.guardian_phone ? ` (${registration.guardian_phone})` : ""}
+          </p>
+        ) : null}
+      </td>
       <td className="px-5 py-4 text-slate-700">{registration.phone}</td>
       <td className="px-5 py-4 text-slate-700">{formatGrade(registration.grade)}</td>
       <td className="px-5 py-4 text-slate-700">{registration.course}</td>

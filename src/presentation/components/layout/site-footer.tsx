@@ -14,12 +14,26 @@ export function SiteFooter() {
           </p>
         </div>
         <div className="flex flex-col gap-2 text-sm sm:items-end">
-          <Link
-            href="/iletisim"
-            className="font-semibold text-sky-900 transition hover:text-document-primary"
-          >
-            İletişim
-          </Link>
+          <div className="flex flex-wrap gap-x-4 gap-y-2">
+            <Link
+              href="/iletisim"
+              className="font-semibold text-sky-900 transition hover:text-document-primary"
+            >
+              İletişim
+            </Link>
+            <Link
+              href="/kvkk"
+              className="font-semibold text-sky-900 transition hover:text-document-primary"
+            >
+              KVKK
+            </Link>
+            <Link
+              href="/gizlilik"
+              className="font-semibold text-sky-900 transition hover:text-document-primary"
+            >
+              Gizlilik
+            </Link>
+          </div>
           <p className="text-sky-700">
             © {new Date().getFullYear()} D2P Academy. Tüm hakları saklıdır.
           </p>
