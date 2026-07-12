@@ -368,7 +368,7 @@ export default function DashboardProfilePage() {
           </fieldset>
 
           <fieldset className="rounded-[1.75rem] border border-slate-200 bg-white p-6 shadow-sm">
-            <legend className="px-2 text-lg font-bold text-slate-900">Bölüm E — Avatar & KVKK</legend>
+            <legend className="px-2 text-lg font-bold text-slate-900">Bölüm E — Avatar</legend>
             <div className="mt-4 space-y-4">
               <p className="text-sm font-medium text-slate-900">Avatar Seçimi</p>
               <div className="grid grid-cols-4 gap-3 sm:gap-4">
@@ -398,6 +398,12 @@ export default function DashboardProfilePage() {
                   );
                 })}
               </div>
+            </div>
+          </fieldset>
+
+          <fieldset className="rounded-[1.75rem] border border-slate-200 bg-white p-6 shadow-sm">
+            <legend className="px-2 text-lg font-bold text-slate-900">Bölüm F — KVKK</legend>
+            <div className="mt-4">
               <label className="flex items-start gap-3 rounded-xl border border-slate-100 bg-slate-50 px-4 py-3 text-sm">
                 <input
                   type="checkbox"

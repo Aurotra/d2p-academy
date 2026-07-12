@@ -11,6 +11,15 @@ export const GRADE_LEVEL_OPTIONS = [
   { value: "other", label: "Diğer" },
 ] as const;
 
+export const REGISTRATION_COURSE_OPTIONS = [
+  "3D Kalem",
+  "3D Modelleme",
+  "3D Tasarım",
+  "3D Yazıcı",
+  "3D Baskı",
+  "Robotik",
+] as const;
+
 export const CODING_EXPERIENCE_OPTIONS = [
   { value: "none", label: "Hiç" },
   { value: "beginner", label: "Başlangıç" },

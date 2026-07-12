@@ -6,16 +6,7 @@ import { createSupabaseBrowserClient } from "@/infrastructure/supabase/create-br
 import { Button } from "@/presentation/components/ui/button";
 import { Input } from "@/presentation/components/ui/input";
 import { Select } from "@/presentation/components/ui/select";
-import { GRADE_LEVEL_OPTIONS } from "@/shared/constants/profile-options";
-
-const COURSE_OPTIONS = [
-  "3D Kalem",
-  "3D Modelleme",
-  "3D Tasarım",
-  "3D Yazıcı",
-  "3D Baskı",
-  "Robotik",
-] as const;
+import { GRADE_LEVEL_OPTIONS, REGISTRATION_COURSE_OPTIONS } from "@/shared/constants/profile-options";
 
 const PHONE_PATTERN = /^05\d{9}$/;
 
@@ -177,7 +168,7 @@ export function RegistrationForm() {
         className="min-h-[44px] py-3.5 text-base"
       >
         <option value="">Seçiniz</option>
-        {COURSE_OPTIONS.map((option) => (
+        {REGISTRATION_COURSE_OPTIONS.map((option) => (
           <option key={option} value={option}>
             {option}
           </option>

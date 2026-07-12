@@ -3,36 +3,17 @@ import { redirect } from "next/navigation";
 import { getAdminAccess } from "@/infrastructure/auth/get-admin-access";
 import { createSupabaseServerClient } from "@/infrastructure/supabase/create-server-client";
 import {
-  RegistrationStatusSelector,
-  type RegistrationStatus,
-} from "@/presentation/components/admin/registration-status-selector";
-import { GRADE_LEVEL_OPTIONS } from "@/shared/constants/profile-options";
+  RegistrationEditableRow,
+  type AdminRegistrationRow,
+} from "@/presentation/components/admin/registration-editable-row";
 
 export const dynamic = "force-dynamic";
-
-interface RegistrationRow {
-  id: string;
-  full_name: string;
-  phone: string;
-  grade: string;
-  course: string;
-  status: RegistrationStatus;
-  created_at: string;
-}
 
 function formatDate(value: string): string {
   return new Intl.DateTimeFormat("tr-TR", {
     dateStyle: "medium",
     timeStyle: "short",
   }).format(new Date(value));
-}
-
-function formatGrade(grade: string): string {
-  const match = GRADE_LEVEL_OPTIONS.find((option) => option.value === grade);
-  if (match) return match.label;
-  // Eski kayıtlar: sadece "5" gibi sayı
-  if (/^\d+$/.test(grade)) return `${grade}. Sınıf`;
-  return grade;
 }
 
 export default async function AdminRegistrationsPage() {
@@ -53,7 +34,7 @@ export default async function AdminRegistrationsPage() {
     .select("id, full_name, phone, grade, course, status, created_at")
     .order("created_at", { ascending: false });
 
-  const registrations = (data ?? []) as RegistrationRow[];
+  const registrations = (data ?? []) as AdminRegistrationRow[];
 
   return (
     <div className="space-y-6">
@@ -63,7 +44,7 @@ export default async function AdminRegistrationsPage() {
         </p>
         <h1 className="mt-2 text-2xl font-bold text-slate-900">Eylül Dönemi Ön Kayıtları</h1>
         <p className="mt-2 text-sm text-slate-600">
-          Web sitesinden gelen ön kayıt başvurularını görüntüleyin ve durumlarını güncelleyin.
+          Web sitesinden gelen ön kayıtları görüntüleyin, düzenleyin ve durumlarını güncelleyin.
         </p>
         {error ? (
           <p className="mt-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
@@ -82,7 +63,7 @@ export default async function AdminRegistrationsPage() {
                 <th className="px-5 py-4">Eğitim Düzeyi</th>
                 <th className="px-5 py-4">Atölye</th>
                 <th className="px-5 py-4">Durum</th>
-                <th className="px-5 py-4">Kayıt Tarihi</th>
+                <th className="px-5 py-4">Kayıt / İşlem</th>
               </tr>
             </thead>
             <tbody>
@@ -94,23 +75,11 @@ export default async function AdminRegistrationsPage() {
                 </tr>
               ) : (
                 registrations.map((registration) => (
-                  <tr key={registration.id} className="border-b border-slate-50 last:border-0">
-                    <td className="px-5 py-4 font-semibold text-slate-900">
-                      {registration.full_name}
-                    </td>
-                    <td className="px-5 py-4 text-slate-700">{registration.phone}</td>
-                    <td className="px-5 py-4 text-slate-700">{formatGrade(registration.grade)}</td>
-                    <td className="px-5 py-4 text-slate-700">{registration.course}</td>
-                    <td className="px-5 py-4">
-                      <RegistrationStatusSelector
-                        registrationId={registration.id}
-                        initialStatus={registration.status}
-                      />
-                    </td>
-                    <td className="px-5 py-4 text-slate-600">
-                      {formatDate(registration.created_at)}
-                    </td>
-                  </tr>
+                  <RegistrationEditableRow
+                    key={registration.id}
+                    registration={registration}
+                    formattedDate={formatDate(registration.created_at)}
+                  />
                 ))
               )}
             </tbody>

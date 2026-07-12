@@ -100,7 +100,7 @@ export default async function AdminStudentsPage() {
                             href={`/admin/students/${student.id}`}
                             className="inline-flex justify-center rounded-xl border border-document-primary px-3 py-2 text-xs font-semibold text-document-primary transition hover:bg-document-primary/5"
                           >
-                            Profil Cevapları
+                            Profili Düzenle
                           </Link>
                           <Link
                             href={`/dashboard/report?student_id=${student.id}`}
