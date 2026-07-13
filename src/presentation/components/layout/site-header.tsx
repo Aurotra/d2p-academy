@@ -48,6 +48,7 @@ export function SiteHeader() {
   const router = useRouter();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [userDisplayName, setUserDisplayName] = useState<string | null>(null);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
 
   const closeMobileMenu = useCallback(() => {
@@ -64,14 +65,45 @@ export function SiteHeader() {
       return;
     }
 
+    async function resolveDisplayName(userId: string, fallback?: string | null) {
+      const { data } = await client!
+        .from("profiles")
+        .select("full_name")
+        .eq("id", userId)
+        .maybeSingle();
+
+      const name = data?.full_name?.trim() || fallback?.trim() || null;
+      setUserDisplayName(name);
+    }
+
     void client.auth.getUser().then(({ data }) => {
-      setIsLoggedIn(Boolean(data.user));
+      const user = data.user;
+      setIsLoggedIn(Boolean(user));
+      if (user) {
+        const metadataName =
+          typeof user.user_metadata?.full_name === "string"
+            ? user.user_metadata.full_name
+            : null;
+        void resolveDisplayName(user.id, metadataName);
+      } else {
+        setUserDisplayName(null);
+      }
     });
 
     const {
       data: { subscription },
     } = client.auth.onAuthStateChange((_event, session) => {
-      setIsLoggedIn(Boolean(session?.user));
+      const user = session?.user ?? null;
+      setIsLoggedIn(Boolean(user));
+      if (user) {
+        const metadataName =
+          typeof user.user_metadata?.full_name === "string"
+            ? user.user_metadata.full_name
+            : null;
+        void resolveDisplayName(user.id, metadataName);
+      } else {
+        setUserDisplayName(null);
+      }
     });
 
     return () => {
@@ -111,6 +143,7 @@ export function SiteHeader() {
         throw new Error("Çıkış yapılamadı.");
       }
       setIsLoggedIn(false);
+      setUserDisplayName(null);
       router.push("/");
       router.refresh();
     } catch {
@@ -140,6 +173,11 @@ export function SiteHeader() {
         <div className="hidden items-center gap-3 md:flex">
           {isLoggedIn ? (
             <>
+              {userDisplayName ? (
+                <span className="max-w-[10rem] truncate text-sm font-medium text-slate-700 lg:max-w-[14rem]">
+                  {userDisplayName}
+                </span>
+              ) : null}
               <Link
                 href="/dashboard"
                 className="rounded-xl bg-secondary px-4 py-2 text-sm font-semibold text-white transition hover:bg-secondary-hover hover:shadow-glow-secondary"
@@ -216,6 +254,11 @@ export function SiteHeader() {
             <div className="mt-5 flex flex-col gap-3 border-t border-sky-200/80 pt-5">
               {isLoggedIn ? (
                 <>
+                  {userDisplayName ? (
+                    <p className="px-1 text-center text-sm font-medium text-slate-700">
+                      {userDisplayName}
+                    </p>
+                  ) : null}
                   <Link
                     href="/dashboard"
                     className="inline-flex items-center justify-center rounded-xl bg-secondary px-4 py-3 text-sm font-semibold text-white transition hover:bg-secondary-hover hover:shadow-glow-secondary"
