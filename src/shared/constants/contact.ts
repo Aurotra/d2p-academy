@@ -14,8 +14,8 @@ export const CONTACT = {
     "https://www.google.com/maps/dir/?api=1&destination=Pamukkale+Teknokent+Denizli",
   mapsUrl:
     "https://www.google.com/maps/search/?api=1&query=Pamukkale+Teknokent+Denizli",
-  phoneDisplay: "0531 574 83 82",
-  phoneTel: "+905315748382",
+  phoneDisplay: "0555 542 04 44",
+  phoneTel: "+905555420444",
   email: "info@athmuhendislik.com",
   workingHours: "Pazartesi–Cuma, 09:00–18:00",
 } as const;
