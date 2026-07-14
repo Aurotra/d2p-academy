@@ -38,7 +38,7 @@ export class SupabaseCertificateRepository implements CertificateRepository {
     });
 
     if (error) {
-      throw new Error(`Certificate verification failed: ${error.message}`);
+      throw new Error(`Sertifika doğrulaması başarısız: ${error.message}`);
     }
 
     const row = Array.isArray(data) ? data[0] : data;

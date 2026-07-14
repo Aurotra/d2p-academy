@@ -8,6 +8,7 @@ import type {
 } from "@/core/domain/admin-certificate";
 import type { CertificateStatus } from "@/core/domain/certificate-verification";
 import type { AdminCertificateRepository } from "@/core/use-cases/manage-admin-certificates";
+import { translateCertificateRpcError } from "@/infrastructure/certificates/translate-certificate-rpc-error";
 
 interface CertificateRow {
   id: string;
@@ -125,7 +126,9 @@ export class SupabaseAdminCertificateRepository implements AdminCertificateRepos
     });
 
     if (error || !data) {
-      throw new Error(`Sertifika oluşturulamadı: ${error?.message ?? "Bilinmeyen hata"}`);
+      throw new Error(
+        `Sertifika oluşturulamadı: ${translateCertificateRpcError(error?.message)}`,
+      );
     }
 
     const issued = data as IssuedCertificateRow;
