@@ -55,7 +55,7 @@ export function CertificatePreview({ result }: { result: CertificateVerification
             Katılım Sertifikası
           </p>
 
-          <p className="mt-5 text-sm text-slate-600">Bu belge ile onaylanır ki</p>
+          <p className="mt-5 text-sm text-slate-600">Bu belgenin sahibi</p>
           <h3 className="mt-2 text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">
             {result.holderName ?? "Öğrenci"}
           </h3>
