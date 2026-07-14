@@ -1,4 +1,4 @@
-import { readFileSync } from "node:fs";
+import { accessSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 
 import QRCode from "qrcode";
@@ -22,6 +22,11 @@ export interface CertificateTemplateData {
 
 const TEMPLATE_PATH = join(process.cwd(), "src/lib/certificates/certificate-template.html");
 
+/** Must match installed @sparticuz/chromium-min major.minor.patch. */
+const CHROMIUM_PACK_URL =
+  process.env.CHROMIUM_PACK_URL ??
+  "https://github.com/Sparticuz/chromium/releases/download/v149.0.0/chromium-v149.0.0-pack.tar";
+
 function escapeHtml(value: string): string {
   return value
     .replaceAll("&", "&amp;")
@@ -38,14 +43,13 @@ function fillTemplate(template: string, values: Record<string, string>): string 
   );
 }
 
-async function resolveChromeExecutablePath(): Promise<string> {
+function isServerlessRuntime(): boolean {
+  return Boolean(process.env.AWS_LAMBDA_FUNCTION_NAME || process.env.VERCEL);
+}
+
+async function resolveLocalChromePath(): Promise<string> {
   if (process.env.CHROME_PATH) {
     return process.env.CHROME_PATH;
-  }
-
-  if (process.env.AWS_LAMBDA_FUNCTION_NAME || process.env.VERCEL) {
-    const chromium = await import("@sparticuz/chromium");
-    return chromium.default.executablePath();
   }
 
   const candidates = [
@@ -58,7 +62,6 @@ async function resolveChromeExecutablePath(): Promise<string> {
 
   for (const candidate of candidates) {
     try {
-      const { accessSync } = await import("node:fs");
       accessSync(candidate);
       return candidate;
     } catch {
@@ -73,20 +76,20 @@ async function resolveChromeExecutablePath(): Promise<string> {
 
 async function launchBrowser() {
   const puppeteer = await import("puppeteer-core");
-  const executablePath = await resolveChromeExecutablePath();
-  const isServerless = Boolean(process.env.AWS_LAMBDA_FUNCTION_NAME || process.env.VERCEL);
 
-  if (isServerless) {
-    const chromium = await import("@sparticuz/chromium");
+  if (isServerlessRuntime()) {
+    const chromium = (await import("@sparticuz/chromium-min")).default;
+    const executablePath = await chromium.executablePath(CHROMIUM_PACK_URL);
+
     return puppeteer.default.launch({
-      args: chromium.default.args,
+      args: chromium.args,
       executablePath,
       headless: true,
     });
   }
 
   return puppeteer.default.launch({
-    executablePath,
+    executablePath: await resolveLocalChromePath(),
     headless: true,
     args: ["--no-sandbox", "--disable-setuid-sandbox"],
   });
@@ -124,6 +127,8 @@ export async function generateCertificatePdfBuffer(data: CertificateTemplateData
   try {
     const page = await browser.newPage();
     await page.setContent(html, { waitUntil: "load" });
+    // Allow CDN fonts/styles a moment before print.
+    await new Promise((resolve) => setTimeout(resolve, 750));
     const pdf = await page.pdf({
       format: "A4",
       printBackground: true,

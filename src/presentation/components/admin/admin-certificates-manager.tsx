@@ -72,16 +72,44 @@ export function AdminCertificatesManager() {
         body: JSON.stringify({ action: "issue", enrollmentId: selectedEnrollmentId }),
       });
 
-      const payload = (await response.json()) as { error?: string };
+      const payload = (await response.json()) as { error?: string; data?: AdminCertificateRecord };
+
+      // Certificate row may exist even when PDF generation fails.
+      if (payload.data) {
+        setSelectedEnrollmentId("");
+        await loadData();
+      }
 
       if (!response.ok) {
         throw new Error(payload.error ?? "Sertifika oluşturulamadı.");
       }
-
-      setSelectedEnrollmentId("");
-      await loadData();
     } catch (issueError) {
       setError(issueError instanceof Error ? issueError.message : "İşlem başarısız.");
+    } finally {
+      setIsSaving(false);
+    }
+  }
+
+  async function handleRegeneratePdf(certificateId: string) {
+    setIsSaving(true);
+    setError(null);
+
+    try {
+      const response = await fetch("/api/v1/admin/certificates", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "regenerate-pdf", certificateId }),
+      });
+
+      const payload = (await response.json()) as { error?: string };
+
+      if (!response.ok) {
+        throw new Error(payload.error ?? "PDF yeniden üretilemedi.");
+      }
+
+      await loadData();
+    } catch (regenerateError) {
+      setError(regenerateError instanceof Error ? regenerateError.message : "İşlem başarısız.");
     } finally {
       setIsSaving(false);
     }
@@ -229,6 +257,15 @@ export function AdminCertificatesManager() {
                     >
                       PDF İndir
                     </a>
+                  ) : certificate.status === "active" ? (
+                    <Button
+                      type="button"
+                      variant="secondary"
+                      disabled={isSaving}
+                      onClick={() => void handleRegeneratePdf(certificate.id)}
+                    >
+                      PDF Oluştur
+                    </Button>
                   ) : null}
                 </div>
               </div>

@@ -35,7 +35,12 @@ export async function POST(request: Request) {
   if (access.response) return access.response;
 
   try {
-    const body = (await request.json()) as { action?: string; enrollmentId?: string; certificateId?: string; revokeReason?: string };
+    const body = (await request.json()) as {
+      action?: string;
+      enrollmentId?: string;
+      certificateId?: string;
+      revokeReason?: string;
+    };
     const repository = new SupabaseAdminCertificateRepository(access.client);
 
     if (body.action === "issue" && body.enrollmentId) {
@@ -57,6 +62,11 @@ export async function POST(request: Request) {
           { status: 500 },
         );
       }
+    }
+
+    if (body.action === "regenerate-pdf" && body.certificateId) {
+      const pdfUrl = await issueCertificatePdf(access.client, body.certificateId);
+      return NextResponse.json({ data: { pdfUrl } });
     }
 
     if (body.action === "revoke" && body.certificateId && body.revokeReason) {
