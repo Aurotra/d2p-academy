@@ -149,6 +149,20 @@ export function DashboardView({ data, isAdmin }: DashboardViewProps) {
                     <p className="mt-2 text-sm text-slate-600">
                       Veriliş: {formatDate(certificate.issuedAt)}
                     </p>
+                    {certificate.status === "active" && certificate.pdfUrl ? (
+                      <a
+                        href={certificate.pdfUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="mt-3 inline-flex text-sm font-semibold text-cyan-700 underline hover:text-cyan-900"
+                      >
+                        PDF İndir
+                      </a>
+                    ) : certificate.status === "active" ? (
+                      <p className="mt-3 text-xs text-slate-500">
+                        PDF henüz hazır değil. Kısa süre sonra tekrar kontrol edin.
+                      </p>
+                    ) : null}
                   </li>
                 ))}
               </ul>

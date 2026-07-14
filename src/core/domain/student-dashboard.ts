@@ -22,6 +22,7 @@ export interface StudentCertificate {
   eventTitle: string;
   issuedAt: Date;
   status: CertificateStatus;
+  pdfUrl: string | null;
 }
 
 export interface StudentDashboardData {

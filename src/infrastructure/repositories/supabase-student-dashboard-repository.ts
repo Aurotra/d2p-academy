@@ -51,6 +51,7 @@ interface CertificateRow {
   certificate_code: string;
   issued_at: string;
   status: CertificateStatus;
+  pdf_url: string | null;
   events: { title: string } | { title: string }[] | null;
 }
 
@@ -150,6 +151,7 @@ export class SupabaseStudentDashboardRepository implements StudentDashboardRepos
           certificate_code,
           issued_at,
           status,
+          pdf_url,
           events ( title )
         `,
         )
@@ -206,6 +208,7 @@ export class SupabaseStudentDashboardRepository implements StudentDashboardRepos
         eventTitle: eventRow?.title ?? "Eğitim",
         issuedAt: new Date(row.issued_at),
         status: row.status,
+        pdfUrl: row.pdf_url ?? null,
       } satisfies StudentCertificate;
     });
 
