@@ -20,6 +20,7 @@ export interface EventEnrollmentRow {
   registeredAt: string;
   studentName: string;
   studentEmail: string;
+  hasActiveCertificate: boolean;
 }
 
 interface EventEnrollmentsTableProps {
@@ -269,9 +270,15 @@ export function EventEnrollmentsTable({
                   </td>
                   <td className="px-5 py-4">
                     {enrollment.status === "completed" ? (
-                      <span className="text-xs font-semibold text-emerald-700">
-                        Sertifikaya hazır
-                      </span>
+                      enrollment.hasActiveCertificate ? (
+                        <span className="text-xs font-semibold text-sky-700">
+                          Sertifika verildi
+                        </span>
+                      ) : (
+                        <span className="text-xs font-semibold text-emerald-700">
+                          Sertifikaya hazır
+                        </span>
+                      )
                     ) : eligible ? (
                       <Button
                         type="button"

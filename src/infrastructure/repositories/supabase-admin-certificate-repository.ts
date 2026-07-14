@@ -87,7 +87,7 @@ export class SupabaseAdminCertificateRepository implements AdminCertificateRepos
         completed_at,
         profiles ( full_name, email ),
         events ( title ),
-        certificates ( id )
+        certificates ( id, status )
       `,
       )
       .eq("status", "completed")
@@ -98,13 +98,20 @@ export class SupabaseAdminCertificateRepository implements AdminCertificateRepos
     }
 
     return (data as Array<
-      PendingEnrollmentRow & { certificates: { id: string } | { id: string }[] | null }
+      PendingEnrollmentRow & {
+        certificates:
+          | { id: string; status: CertificateStatus }
+          | { id: string; status: CertificateStatus }[]
+          | null;
+      }
     >)
       .filter((row) => {
-        const certificate = Array.isArray(row.certificates)
-          ? (row.certificates[0] ?? null)
-          : row.certificates;
-        return !certificate;
+        const certificates = Array.isArray(row.certificates)
+          ? row.certificates
+          : row.certificates
+            ? [row.certificates]
+            : [];
+        return !certificates.some((certificate) => certificate.status === "active");
       })
       .map((row) => {
         const profile = Array.isArray(row.profiles) ? (row.profiles[0] ?? null) : row.profiles;
@@ -157,17 +164,35 @@ export class SupabaseAdminCertificateRepository implements AdminCertificateRepos
   }
 
   async revoke(input: RevokeCertificateInput): Promise<void> {
-    const { error } = await this.client
+    const { data: existing, error: fetchError } = await this.client
       .from("certificates")
-      .update({
-        status: "revoked",
-        revoked_at: new Date().toISOString(),
-        revoke_reason: input.revokeReason.trim(),
-      })
-      .eq("id", input.certificateId);
+      .select("id, pdf_url")
+      .eq("id", input.certificateId)
+      .maybeSingle();
+
+    if (fetchError) {
+      throw new Error(`Sertifika iptal edilemedi: ${fetchError.message}`);
+    }
+
+    const { error } = await this.client.rpc("revoke_certificate", {
+      p_certificate_id: input.certificateId,
+      p_revoke_reason: input.revokeReason.trim(),
+    });
 
     if (error) {
-      throw new Error(`Sertifika iptal edilemedi: ${error.message}`);
+      throw new Error(
+        `Sertifika iptal edilemedi: ${translateCertificateRpcError(error.message)}`,
+      );
+    }
+
+    const pdfUrl = existing?.pdf_url as string | null | undefined;
+    if (pdfUrl) {
+      const marker = "/storage/v1/object/public/certificates/";
+      const index = pdfUrl.indexOf(marker);
+      if (index >= 0) {
+        const storagePath = decodeURIComponent(pdfUrl.slice(index + marker.length));
+        await this.client.storage.from("certificates").remove([storagePath]);
+      }
     }
   }
 }

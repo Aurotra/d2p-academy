@@ -17,6 +17,10 @@ interface EnrollmentListRow {
   registered_at: string;
   events: { id: string; title: string; start_at: string } | { id: string; title: string; start_at: string }[] | null;
   profiles: { id: string; full_name: string; email: string } | { id: string; full_name: string; email: string }[] | null;
+  certificates:
+    | { id: string; status: string }
+    | { id: string; status: string }[]
+    | null;
 }
 
 interface EventEnrollmentGroup {
@@ -52,12 +56,19 @@ function groupByEvent(rows: EnrollmentListRow[]): EventEnrollmentGroup[] {
     const eventTitle = event?.title ?? "Etkinlik bulunamadı";
     const eventStartAt = event?.start_at ?? null;
 
+    const certificates = Array.isArray(row.certificates)
+      ? row.certificates
+      : row.certificates
+        ? [row.certificates]
+        : [];
+
     const enrollment: EventEnrollmentRow = {
       id: row.id,
       status: row.status,
       registeredAt: row.registered_at,
       studentName: profile?.full_name ?? "Öğrenci",
       studentEmail: profile?.email ?? "—",
+      hasActiveCertificate: certificates.some((certificate) => certificate.status === "active"),
     };
 
     const existing = groups.get(eventKey);
@@ -116,6 +127,10 @@ export default async function AdminEnrollmentsPage({ searchParams }: AdminEnroll
         id,
         full_name,
         email
+      ),
+      certificates (
+        id,
+        status
       )
     `,
     )

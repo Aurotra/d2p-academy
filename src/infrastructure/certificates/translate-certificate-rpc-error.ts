@@ -11,6 +11,9 @@ const CERTIFICATE_RPC_ERRORS: Record<string, string> = {
     "Geçersiz program kodu. 2–4 harf kullanın (ör. DC).",
   "Invalid program_code. Only A–Z letters are allowed (e.g. DC).":
     "Geçersiz program kodu. Yalnızca A–Z harflerine izin verilir (ör. DC).",
+  "Sertifika iptal etmek için admin yetkisi gerekli.":
+    "Sertifika iptal etmek için admin yetkisi gerekli.",
+  "Sertifika bulunamadı.": "Sertifika bulunamadı.",
 };
 
 export function translateCertificateRpcError(message: string | null | undefined): string {
