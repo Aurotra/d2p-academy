@@ -126,13 +126,17 @@ export async function generateCertificatePdfBuffer(data: CertificateTemplateData
 
   try {
     const page = await browser.newPage();
+    await page.setViewport({ width: 794, height: 1123, deviceScaleFactor: 1 });
     await page.setContent(html, { waitUntil: "load" });
     // Allow CDN fonts/styles a moment before print.
     await new Promise((resolve) => setTimeout(resolve, 750));
     const pdf = await page.pdf({
-      format: "A4",
+      width: "210mm",
+      height: "297mm",
       printBackground: true,
       preferCSSPageSize: true,
+      margin: { top: "0", right: "0", bottom: "0", left: "0" },
+      pageRanges: "1",
     });
     return Buffer.from(pdf);
   } finally {

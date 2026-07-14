@@ -7,42 +7,66 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&family=Playfair+Display:ital,wght@1,600;1,700&display=swap" rel="stylesheet">
     <style>
+        * { box-sizing: border-box; }
+        html, body {
+            margin: 0;
+            padding: 0;
+            width: 210mm;
+            height: 297mm;
+            overflow: hidden;
+            background: #ffffff;
+        }
         .font-sans { font-family: 'Montserrat', sans-serif; }
         .font-serif-italic { font-family: 'Playfair Display', serif; font-style: italic; }
         .certificate-page {
             width: 210mm;
             height: 297mm;
-            padding: 20mm;
+            max-height: 297mm;
+            padding: 14mm 16mm;
             background-color: #ffffff;
             position: relative;
-            box-sizing: border-box;
+            overflow: hidden;
+            page-break-after: avoid;
+            page-break-inside: avoid;
+        }
+        @page {
+            size: A4 portrait;
+            margin: 0;
         }
         @media print {
-            body { background: none; margin: 0; padding: 0; }
-            .certificate-page { box-shadow: none; }
-            @page { size: 210mm 297mm; margin: 0; }
+            html, body {
+                margin: 0;
+                padding: 0;
+                width: 210mm;
+                height: 297mm;
+                overflow: hidden;
+            }
+            .certificate-page {
+                box-shadow: none;
+                border: none;
+            }
         }
     </style>
 </head>
-<body class="bg-gray-100 flex justify-center items-center py-10">
+<body>
 
-    <div id="certificate" class="certificate-page shadow-2xl border border-gray-200 flex flex-col justify-between">
+    <div id="certificate" class="certificate-page flex flex-col justify-between">
 
         <div class="text-center">
-            <div class="flex justify-center mb-6">
-                <img src="{{logoUrl}}" alt="D2P Academy Logo" class="h-20 object-contain">
+            <div class="flex justify-center mb-3">
+                <img src="{{logoUrl}}" alt="D2P Academy Logo" class="h-14 object-contain">
             </div>
 
-            <h1 class="text-4xl font-extrabold tracking-wider text-black mb-2">{{programName}}</h1>
-            <h2 class="text-2xl font-bold text-black border-b-2 border-black inline-block pb-1">Katılım ve Başarı Sertifikası</h2>
+            <h1 class="text-3xl font-extrabold tracking-wider text-black mb-1">{{programName}}</h1>
+            <h2 class="text-xl font-bold text-black border-b-2 border-black inline-block pb-1">Katılım ve Başarı Sertifikası</h2>
         </div>
 
-        <div class="text-center my-6 px-4">
-            <p class="text-gray-700 text-sm mb-4">Bu belgenin sahibi olan öğrencimiz</p>
+        <div class="text-center my-3 px-2">
+            <p class="text-gray-700 text-sm mb-2">Bu belgenin sahibi olan öğrencimiz</p>
 
-            <h3 class="font-serif-italic text-4xl text-black font-semibold my-6">{{studentName}}</h3>
+            <h3 class="font-serif-italic text-3xl text-black font-semibold my-3">{{studentName}}</h3>
 
-            <p class="text-xs text-gray-800 leading-relaxed max-w-2xl mx-auto mb-4">
+            <p class="text-xs text-gray-800 leading-relaxed max-w-2xl mx-auto mb-3">
                 {{workshopName}} kapsamındaki {{durationHours}} saatlik <strong class="font-bold">{{programName}}</strong>-{{programSubtitle}} programına katılarak tasarım, üretim ve üç boyutlu teknolojiler dünyasına ilk adımını attığını göstermektedir.
             </p>
 
@@ -52,7 +76,7 @@
             </p>
         </div>
 
-        <div class="relative grid grid-cols-12 gap-4 items-end mt-4">
+        <div class="relative grid grid-cols-12 gap-3 items-end">
 
             <div class="col-span-5 text-left text-xs text-gray-800 space-y-1">
                 <div class="flex"><span class="w-24 font-bold">Tarih</span><span>: {{issueDate}}</span></div>
@@ -60,19 +84,19 @@
             </div>
 
             <div class="col-span-4 text-center flex flex-col items-center">
-                <div class="font-serif-italic text-xl text-black mb-1">{{instructorName}}</div>
+                <div class="font-serif-italic text-lg text-black mb-1">{{instructorName}}</div>
                 <div class="w-32 h-[1px] bg-gray-500 mb-1"></div>
                 <div class="text-[10px] text-gray-600">{{instructorTitle}}</div>
             </div>
 
             <div class="col-span-3 flex justify-end">
-                <img src="{{badgeImageUrl}}" alt="{{badgeName}}" class="w-24 h-24 object-contain">
+                <img src="{{badgeImageUrl}}" alt="{{badgeName}}" class="w-20 h-20 object-contain">
             </div>
         </div>
 
-        <div class="text-center border-t border-gray-200 pt-4 mt-4">
-            <div class="flex justify-center mb-2">
-                <img src="{{qrCodeDataUrl}}" alt="Doğrulama QR Kodu" class="w-20 h-20 object-contain">
+        <div class="text-center border-t border-gray-200 pt-3 mt-2">
+            <div class="flex justify-center mb-1">
+                <img src="{{qrCodeDataUrl}}" alt="Doğrulama QR Kodu" class="w-16 h-16 object-contain">
             </div>
             <p class="text-[10px] text-gray-500 tracking-wide font-medium">
                 D2P Academy | <span class="italic">Think. Design. Print.</span> | www.d2p.com.tr
