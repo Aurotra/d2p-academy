@@ -3,6 +3,10 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   reactStrictMode: true,
   output: "standalone",
+  serverExternalPackages: ["@sparticuz/chromium", "puppeteer-core"],
+  outputFileTracingIncludes: {
+    "/api/v1/admin/certificates": ["./src/lib/certificates/**/*"],
+  },
   eslint: {
     ignoreDuringBuilds: true,
   },

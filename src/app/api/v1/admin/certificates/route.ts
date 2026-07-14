@@ -7,7 +7,10 @@ import {
   revokeAdminCertificate,
 } from "@/core/use-cases/manage-admin-certificates";
 import { requireAdminApiAccess } from "@/infrastructure/auth/require-admin-api-access";
+import { issueCertificatePdf } from "@/infrastructure/certificates/issue-certificate-pdf";
 import { SupabaseAdminCertificateRepository } from "@/infrastructure/repositories/supabase-admin-certificate-repository";
+
+export const maxDuration = 60;
 
 export async function GET() {
   const access = await requireAdminApiAccess();
@@ -39,7 +42,21 @@ export async function POST(request: Request) {
       const certificate = await issueAdminCertificate(repository, {
         enrollmentId: body.enrollmentId,
       });
-      return NextResponse.json({ data: certificate }, { status: 201 });
+
+      try {
+        const pdfUrl = await issueCertificatePdf(access.client, certificate.id);
+        return NextResponse.json({ data: { ...certificate, pdfUrl } }, { status: 201 });
+      } catch (pdfError) {
+        const pdfMessage =
+          pdfError instanceof Error ? pdfError.message : "PDF oluşturulamadı.";
+        return NextResponse.json(
+          {
+            error: `Sertifika kaydı oluşturuldu (${certificate.certificateCode}) ancak PDF üretilemedi: ${pdfMessage}`,
+            data: certificate,
+          },
+          { status: 500 },
+        );
+      }
     }
 
     if (body.action === "revoke" && body.certificateId && body.revokeReason) {

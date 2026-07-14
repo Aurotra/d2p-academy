@@ -14,6 +14,7 @@ interface CertificateRow {
   certificate_code: string;
   issued_at: string;
   status: CertificateStatus;
+  pdf_url: string | null;
   profiles: { full_name: string; email: string } | { full_name: string; email: string }[] | null;
   events: { title: string } | { title: string }[] | null;
 }
@@ -46,6 +47,7 @@ function mapCertificate(row: CertificateRow): AdminCertificateRecord {
     eventTitle: event?.title ?? "Eğitim",
     issuedAt: new Date(row.issued_at),
     status: row.status,
+    pdfUrl: row.pdf_url ?? null,
   };
 }
 
@@ -61,6 +63,7 @@ export class SupabaseAdminCertificateRepository implements AdminCertificateRepos
         certificate_code,
         issued_at,
         status,
+        pdf_url,
         profiles ( full_name, email ),
         events ( title )
       `,
@@ -135,6 +138,7 @@ export class SupabaseAdminCertificateRepository implements AdminCertificateRepos
         certificate_code,
         issued_at,
         status,
+        pdf_url,
         profiles ( full_name, email ),
         events ( title )
       `,

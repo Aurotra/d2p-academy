@@ -220,6 +220,16 @@ export function AdminCertificatesManager() {
                   <Badge tone={certificate.status === "active" ? "cyan" : "neutral"}>
                     {certificate.status === "active" ? "Aktif" : "İptal"}
                   </Badge>
+                  {certificate.pdfUrl ? (
+                    <a
+                      href={certificate.pdfUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-sm font-semibold text-cyan-700 underline hover:text-cyan-900"
+                    >
+                      PDF İndir
+                    </a>
+                  ) : null}
                 </div>
               </div>
             ))}

@@ -8,6 +8,7 @@ export interface AdminCertificateRecord {
   eventTitle: string;
   issuedAt: Date;
   status: CertificateStatus;
+  pdfUrl: string | null;
 }
 
 export interface PendingCertificateEnrollment {
