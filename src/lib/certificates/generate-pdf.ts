@@ -22,10 +22,10 @@ export interface CertificateTemplateData {
 
 const TEMPLATE_PATH = join(process.cwd(), "src/lib/certificates/certificate-template.html");
 
-/** Must match installed @sparticuz/chromium-min major.minor.patch. */
+/** Must match installed @sparticuz/chromium-min; Vercel functions are x64. */
 const CHROMIUM_PACK_URL =
   process.env.CHROMIUM_PACK_URL ??
-  "https://github.com/Sparticuz/chromium/releases/download/v149.0.0/chromium-v149.0.0-pack.tar";
+  "https://github.com/Sparticuz/chromium/releases/download/v149.0.0/chromium-v149.0.0-pack.x64.tar";
 
 function escapeHtml(value: string): string {
   return value
