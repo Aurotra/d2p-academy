@@ -14,10 +14,14 @@ interface CertificatePdfSourceRow {
   events:
     | {
         title: string;
+        location_name: string | null;
+        is_online: boolean;
         instructor: { full_name: string } | { full_name: string }[] | null;
       }
     | {
         title: string;
+        location_name: string | null;
+        is_online: boolean;
         instructor: { full_name: string } | { full_name: string }[] | null;
       }[]
     | null;
@@ -32,6 +36,20 @@ function pickOne<T>(value: T | T[] | null | undefined): T | null {
 
 function formatIssueDate(value: string): string {
   return new Intl.DateTimeFormat("tr-TR", { dateStyle: "long" }).format(new Date(value));
+}
+
+function resolveLocationLabel(event: {
+  location_name: string | null;
+  is_online: boolean;
+} | null): string {
+  if (!event) {
+    return "D2P Academy";
+  }
+  if (event.is_online) {
+    return "Çevrimiçi";
+  }
+  const name = event.location_name?.trim();
+  return name && name.length > 0 ? name : "D2P Academy";
 }
 
 function buildTemplateData(row: CertificatePdfSourceRow): CertificateTemplateData {
@@ -50,6 +68,7 @@ function buildTemplateData(row: CertificatePdfSourceRow): CertificateTemplateDat
     programSubtitle: isDiscovery ? "Explorer" : "Program",
     badgeName: isDiscovery ? "Discovery Explorer" : "Katılım Rozeti",
     issueDate: formatIssueDate(row.issued_at),
+    locationName: resolveLocationLabel(event),
     instructorName: instructor?.full_name ?? "D2P Academy",
     instructorTitle: "ATH Mühendislik - D2P Academy",
     badgeImageUrl: `${SITE_URL}/badges/discovery-explorer.png`,
@@ -71,6 +90,8 @@ export async function issueCertificatePdf(
       profiles ( full_name ),
       events (
         title,
+        location_name,
+        is_online,
         instructor:profiles!events_instructor_id_fkey ( full_name )
       )
     `,

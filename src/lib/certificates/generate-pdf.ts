@@ -14,6 +14,7 @@ export interface CertificateTemplateData {
   programSubtitle: string;
   badgeName: string;
   issueDate: string;
+  locationName: string;
   instructorName: string;
   instructorTitle: string;
   badgeImageUrl: string;
@@ -112,6 +113,7 @@ export async function buildCertificateHtml(data: CertificateTemplateData): Promi
     programSubtitle: data.programSubtitle,
     badgeName: data.badgeName,
     issueDate: data.issueDate,
+    locationName: data.locationName,
     certificateNo: data.certificateCode,
     instructorName: data.instructorName,
     instructorTitle: data.instructorTitle,
