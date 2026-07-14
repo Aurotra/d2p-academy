@@ -14,8 +14,8 @@ export function CertificatePreview({ result }: { result: CertificateVerification
       <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
         <p className="font-semibold">Sertifika bulunamadı veya geçersiz.</p>
         <p className="mt-1">
-          Lütfen kodu kontrol edin. Örnek: <strong>D2P-YK-26-00100</strong> veya{" "}
-          <strong>D2P-2026-1045</strong>
+          Lütfen kodu kontrol edin. Örnek format: <strong>D2P-XX-YY-#####</strong> veya{" "}
+          <strong>D2P-YYYY-####</strong>
         </p>
       </div>
     );
