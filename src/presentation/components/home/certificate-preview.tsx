@@ -1,9 +1,11 @@
 import type { CertificateVerificationResult } from "@/core/domain/certificate-verification";
 import { SITE_LOGO_SRC, SITE_NAME, SITE_TAGLINE } from "@/shared/constants/site";
 
-function formatIssuedAt(issuedAt: Date | null): string {
+function formatIssuedAt(issuedAt: Date | string | null): string {
   if (!issuedAt) return "-";
-  return new Intl.DateTimeFormat("tr-TR", { dateStyle: "long" }).format(issuedAt);
+  const date = issuedAt instanceof Date ? issuedAt : new Date(issuedAt);
+  if (Number.isNaN(date.getTime())) return "-";
+  return new Intl.DateTimeFormat("tr-TR", { dateStyle: "long" }).format(date);
 }
 
 export function CertificatePreview({ result }: { result: CertificateVerificationResult }) {
@@ -12,7 +14,8 @@ export function CertificatePreview({ result }: { result: CertificateVerification
       <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
         <p className="font-semibold">Sertifika bulunamadı veya geçersiz.</p>
         <p className="mt-1">
-          Lütfen kodu kontrol edin. Örnek format: <strong>D2P-2026-1045</strong>
+          Lütfen kodu kontrol edin. Örnek: <strong>D2P-YK-26-00100</strong> veya{" "}
+          <strong>D2P-2026-1045</strong>
         </p>
       </div>
     );

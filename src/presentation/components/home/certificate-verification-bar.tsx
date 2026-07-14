@@ -43,7 +43,7 @@ export function CertificateVerificationBar() {
             name="certificateCode"
             value={certificateCode}
             onChange={(event) => setCertificateCode(event.target.value)}
-            placeholder="D2P-2026-1045"
+            placeholder="D2P-YK-26-00100"
             aria-label="Sertifika kodu"
             className="border-white/80 bg-white/90 sm:flex-1"
           />

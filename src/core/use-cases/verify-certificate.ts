@@ -7,14 +7,20 @@ export interface CertificateRepository {
   verify(input: VerifyCertificateInput): Promise<CertificateVerificationResult>;
 }
 
-const CERTIFICATE_CODE_PATTERN = /^D2P-\d{4}-\d{4,}$/i;
+/** Legacy: D2P-YYYY-####(+) and program: D2P-CODE-YY-##### */
+const LEGACY_CERTIFICATE_CODE_PATTERN = /^D2P-\d{4}-\d{4,}$/i;
+const PROGRAM_CERTIFICATE_CODE_PATTERN = /^D2P-[A-Z]{2,4}-\d{2}-\d{5}$/i;
 
 export function normalizeCertificateCode(code: string): string {
   return code.trim().toUpperCase();
 }
 
 export function isValidCertificateCodeFormat(code: string): boolean {
-  return CERTIFICATE_CODE_PATTERN.test(normalizeCertificateCode(code));
+  const normalized = normalizeCertificateCode(code);
+  return (
+    LEGACY_CERTIFICATE_CODE_PATTERN.test(normalized) ||
+    PROGRAM_CERTIFICATE_CODE_PATTERN.test(normalized)
+  );
 }
 
 export async function verifyCertificate(

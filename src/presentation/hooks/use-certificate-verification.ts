@@ -39,7 +39,10 @@ export function useCertificateVerification(): UseCertificateVerificationState {
         throw new Error("error" in payload ? payload.error : "Doğrulama başarısız oldu.");
       }
 
-      setResult(payload.data);
+      setResult({
+        ...payload.data,
+        issuedAt: payload.data.issuedAt ? new Date(payload.data.issuedAt) : null,
+      });
     } catch (verificationError) {
       const message =
         verificationError instanceof Error
