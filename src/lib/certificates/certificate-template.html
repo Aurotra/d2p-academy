@@ -52,59 +52,63 @@
 
     <div id="certificate" class="certificate-page flex flex-col justify-between">
 
-        <div class="text-center">
-            <div class="flex justify-center mb-3">
-                <img src="{{logoUrl}}" alt="D2P Academy Logo" class="h-14 object-contain">
+        <div>
+            <div class="text-center">
+                <div class="flex justify-center mb-4">
+                    <img src="{{logoUrl}}" alt="D2P Academy Logo" class="h-28 object-contain">
+                </div>
+
+                <h1 class="text-3xl font-extrabold tracking-wider text-black mb-1">{{programName}}</h1>
+                <h2 class="text-xl font-bold text-black border-b-2 border-black inline-block pb-1">Katılım ve Başarı Sertifikası</h2>
             </div>
 
-            <h1 class="text-3xl font-extrabold tracking-wider text-black mb-1">{{programName}}</h1>
-            <h2 class="text-xl font-bold text-black border-b-2 border-black inline-block pb-1">Katılım ve Başarı Sertifikası</h2>
-        </div>
+            <div class="text-center mt-5 px-2">
+                <p class="text-gray-700 text-sm mb-2">Bu belgenin sahibi olan öğrencimiz</p>
 
-        <div class="text-center my-3 px-2">
-            <p class="text-gray-700 text-sm mb-2">Bu belgenin sahibi olan öğrencimiz</p>
+                <h3 class="font-serif-italic text-3xl text-black font-semibold my-3">{{studentName}}</h3>
 
-            <h3 class="font-serif-italic text-3xl text-black font-semibold my-3">{{studentName}}</h3>
+                <p class="text-xs text-gray-800 leading-relaxed max-w-2xl mx-auto mb-3">
+                    {{workshopName}} kapsamındaki {{durationHours}} saatlik <strong class="font-bold">{{programName}}</strong>-{{programSubtitle}} programına katılarak tasarım, üretim ve üç boyutlu teknolojiler dünyasına ilk adımını attığını göstermektedir.
+                </p>
 
-            <p class="text-xs text-gray-800 leading-relaxed max-w-2xl mx-auto mb-3">
-                {{workshopName}} kapsamındaki {{durationHours}} saatlik <strong class="font-bold">{{programName}}</strong>-{{programSubtitle}} programına katılarak tasarım, üretim ve üç boyutlu teknolojiler dünyasına ilk adımını attığını göstermektedir.
-            </p>
-
-            <p class="text-xs text-gray-800 leading-relaxed max-w-2xl mx-auto">
-                Bu eğitim boyunca öğrencimiz; <br>
-                Yeni fikirler geliştirmiş, tasarım odaklı düşünme yaklaşımıyla tanışmış, üç boyutlu düşünme becerilerini kullanmış, 3D kalem ile ilk üretim deneyimini yaşamış, ilk dijital tasarımını oluşturmuş, bir tasarımın dijital ortamdan fiziksel ürüne dönüşüm sürecini keşfetmiş, takım çalışması ile bir probleme çözüm geliştirmiştir ve <strong class="font-bold">{{badgeName}}</strong> rozetini almaya hak kazanmıştır.
-            </p>
-        </div>
-
-        <div class="relative grid grid-cols-12 gap-3 items-end">
-
-            <div class="col-span-5 text-left text-xs text-gray-800 space-y-1">
-                <div class="flex"><span class="w-24 font-bold">Tarih</span><span>: {{issueDate}}</span></div>
-                <div class="flex"><span class="w-24 font-bold">Yer</span><span>: {{locationName}}</span></div>
-                <div class="flex"><span class="w-24 font-bold">Sertifika No</span><span>: {{certificateNo}}</span></div>
-            </div>
-
-            <div class="col-span-4 text-center flex flex-col items-center">
-                <div class="font-serif-italic text-lg text-black mb-1">{{instructorName}}</div>
-                <div class="w-32 h-[1px] bg-gray-500 mb-1"></div>
-                <div class="text-[10px] text-gray-600">{{instructorTitle}}</div>
-            </div>
-
-            <div class="col-span-3 flex justify-end">
-                <img src="{{badgeImageUrl}}" alt="{{badgeName}}" class="w-20 h-20 object-contain">
+                <p class="text-xs text-gray-800 leading-relaxed max-w-2xl mx-auto">
+                    Bu eğitim boyunca öğrencimiz; <br>
+                    Yeni fikirler geliştirmiş, tasarım odaklı düşünme yaklaşımıyla tanışmış, üç boyutlu düşünme becerilerini kullanmış, 3D kalem ile ilk üretim deneyimini yaşamış, ilk dijital tasarımını oluşturmuş, bir tasarımın dijital ortamdan fiziksel ürüne dönüşüm sürecini keşfetmiş, takım çalışması ile bir probleme çözüm geliştirmiştir ve <strong class="font-bold">{{badgeName}}</strong> rozetini almaya hak kazanmıştır.
+                </p>
             </div>
         </div>
 
-        <div class="text-center border-t border-gray-200 pt-3 mt-2">
-            <div class="flex justify-center mb-1">
-                <img src="{{qrCodeDataUrl}}" alt="Doğrulama QR Kodu" class="w-16 h-16 object-contain">
+        <div>
+            <div class="relative grid grid-cols-12 gap-3 items-end">
+
+                <div class="col-span-5 text-left text-xs text-gray-800 space-y-1">
+                    <div class="flex"><span class="w-24 font-bold">Tarih</span><span>: {{issueDate}}</span></div>
+                    <div class="flex"><span class="w-24 font-bold">Yer</span><span>: {{locationName}}</span></div>
+                    <div class="flex"><span class="w-24 font-bold">Sertifika No</span><span>: {{certificateNo}}</span></div>
+                </div>
+
+                <div class="col-span-4 text-center flex flex-col items-center">
+                    <div class="font-serif-italic text-lg text-black mb-1">{{instructorName}}</div>
+                    <div class="w-32 h-[1px] bg-gray-500 mb-1"></div>
+                    <div class="text-[10px] text-gray-600">{{instructorTitle}}</div>
+                </div>
+
+                <div class="col-span-3 flex justify-end">
+                    <img src="{{badgeImageUrl}}" alt="{{badgeName}}" class="w-20 h-20 object-contain">
+                </div>
             </div>
-            <p class="text-[10px] text-gray-500 tracking-wide font-medium">
-                D2P Academy | <span class="italic">Think. Design. Print.</span> | www.d2p.com.tr
-            </p>
-            <p class="text-[9px] text-gray-400 mt-1">
-                Sertifikanın doğrulaması <b>d2p.com.tr/dogrula/{{certificateNo}}</b> adresinden yapılabilir.
-            </p>
+
+            <div class="text-center border-t border-gray-200 pt-3 mt-3">
+                <div class="flex justify-center mb-1">
+                    <img src="{{qrCodeDataUrl}}" alt="Doğrulama QR Kodu" class="w-16 h-16 object-contain">
+                </div>
+                <p class="text-[10px] text-gray-500 tracking-wide font-medium">
+                    D2P Academy | <span class="italic">Think. Design. Print.</span> | www.d2p.com.tr
+                </p>
+                <p class="text-[9px] text-gray-400 mt-1">
+                    Sertifikanın doğrulaması <b>d2p.com.tr/dogrula/{{certificateNo}}</b> adresinden yapılabilir.
+                </p>
+            </div>
         </div>
 
     </div>
