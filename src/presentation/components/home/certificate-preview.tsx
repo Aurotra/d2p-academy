@@ -1,5 +1,5 @@
 import type { CertificateVerificationResult } from "@/core/domain/certificate-verification";
-import { SITE_LOGO_SRC, SITE_NAME, SITE_TAGLINE } from "@/shared/constants/site";
+import { SITE_LOGO_SRC, SITE_NAME } from "@/shared/constants/site";
 
 function formatIssuedAt(issuedAt: Date | string | null): string {
   if (!issuedAt) return "-";
@@ -47,8 +47,11 @@ export function CertificatePreview({ result }: { result: CertificateVerification
             className="mx-auto h-12 w-auto object-contain sm:h-14"
             decoding="async"
           />
-          <p className="mt-2 text-xs font-semibold uppercase tracking-[0.22em] text-sky-700">
-            {SITE_TAGLINE}
+          <p
+            className="mt-2 text-xs font-semibold tracking-[0.22em] text-sky-700"
+            lang="en"
+          >
+            DESIGN TO PRINT
           </p>
 
           <p className="mt-6 text-sm font-medium uppercase tracking-[0.18em] text-slate-500">
