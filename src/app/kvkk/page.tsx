@@ -103,7 +103,7 @@ export default function KvkkPage() {
           öğrenme, yurt içinde/yurt dışında aktarıldığı üçüncü kişileri bilme, eksik/yanlış
           işlenmişse düzeltilmesini isteme, KVKK&apos;da öngörülen şartlarda silinmesini veya yok
           edilmesini isteme ve bu işlemlerin aktarıldığı üçüncü kişilere bildirilmesini isteme
-          haklarına sahipsiniz. Taleplerinizi info@athmuhendislik.com.tr adresine veya yukarıdaki
+          haklarına sahipsiniz. Taleplerinizi info@d2p.com.tr adresine veya yukarıdaki
           adrese yazılı olarak iletebilirsiniz.
         </p>
       </section>

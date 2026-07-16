@@ -92,7 +92,7 @@ export default function PrivacyPage() {
         <h2>7. Haklarınız</h2>
         <p>
           KVKK kapsamındaki haklarınız (bilgi talep etme, düzeltme, silme, itiraz vb.) için
-          info@athmuhendislik.com.tr adresine başvurabilirsiniz. Başvurularınız mevzuata uygun
+          info@d2p.com.tr adresine başvurabilirsiniz. Başvurularınız mevzuata uygun
           sürelerde yanıtlanır.
         </p>
       </section>
@@ -114,7 +114,7 @@ export default function PrivacyPage() {
           <br />
           MERSİS No: 0101125115300001
           <br />
-          E-posta: info@athmuhendislik.com.tr
+          E-posta: info@d2p.com.tr
         </p>
       </section>
     </LegalDocumentLayout>
