@@ -264,7 +264,9 @@ export function AdminGalleryManager() {
         </p>
         <h1 className="mt-2 text-2xl font-bold text-slate-900">Eğitim Fotoğrafları</h1>
         <p className="mt-2 text-sm text-slate-600">
-          Albüm oluşturun (ör. Honaz Atölyesi), sonra fotoğrafları yükleyin. Yayınlanan albümler{" "}
+          Albüm oluştururken <strong>tarih</strong> girin; sitede otomatik olarak{" "}
+          <strong>2026 Eğitimlerimiz</strong> gibi yıl başlıklarının altında birikir. Honaz, Muğla
+          vb. her eğitim ayrı albüm olabilir. Yayınlananlar{" "}
           <Link href="/galeri" className="font-semibold text-document-primary underline">
             /galeri
           </Link>{" "}
