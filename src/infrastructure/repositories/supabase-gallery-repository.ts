@@ -5,6 +5,7 @@ import type {
   CreateGalleryPhotoInput,
   GalleryAlbum,
   GalleryAlbumDetail,
+  GalleryHomePhoto,
   GalleryPhoto,
 } from "@/core/domain/gallery";
 
@@ -203,6 +204,85 @@ export class SupabaseGalleryRepository {
         );
       }),
     );
+  }
+
+  async listRecentHomePhotos(limit = 12): Promise<GalleryHomePhoto[]> {
+    const { data, error } = await this.client
+      .from("gallery_photos")
+      .select(
+        `
+        id,
+        album_id,
+        image_url,
+        thumb_url,
+        storage_path,
+        thumb_storage_path,
+        caption,
+        alt_text,
+        sort_order,
+        deleted_at,
+        created_at,
+        gallery_albums!gallery_photos_album_id_fkey (
+          title,
+          slug,
+          location_name,
+          is_published,
+          deleted_at
+        )
+      `,
+      )
+      .is("deleted_at", null)
+      .order("created_at", { ascending: false })
+      .limit(Math.max(limit * 3, limit));
+
+    if (error) {
+      throw new Error(`Ana sayfa galeri fotoğrafları alınamadı: ${error.message}`);
+    }
+
+    type HomeRow = PhotoRow & {
+      gallery_albums:
+        | {
+            title: string;
+            slug: string;
+            location_name: string | null;
+            is_published: boolean;
+            deleted_at: string | null;
+          }
+        | {
+            title: string;
+            slug: string;
+            location_name: string | null;
+            is_published: boolean;
+            deleted_at: string | null;
+          }[]
+        | null;
+    };
+
+    const rows = (data as HomeRow[]).filter((row) => {
+      const album = Array.isArray(row.gallery_albums)
+        ? (row.gallery_albums[0] ?? null)
+        : row.gallery_albums;
+      return album && album.is_published && !album.deleted_at;
+    });
+
+    const signed = await this.withSignedPhotoUrls(rows.map(mapPhoto));
+    const limited = signed.slice(0, limit);
+
+    return limited.map((photo, index) => {
+      const row = rows[index];
+      const album = Array.isArray(row.gallery_albums)
+        ? (row.gallery_albums[0] ?? null)
+        : row.gallery_albums;
+
+      return {
+        id: photo.id,
+        imageUrl: photo.thumbUrl || photo.imageUrl,
+        altText: photo.altText || photo.caption || album?.title || "Eğitim fotoğrafı",
+        albumTitle: album?.title ?? "Albüm",
+        albumSlug: album?.slug ?? "",
+        locationName: album?.location_name ?? null,
+      } satisfies GalleryHomePhoto;
+    });
   }
 
   async listAllAlbums(includeDeleted = false): Promise<GalleryAlbum[]> {

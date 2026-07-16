@@ -28,6 +28,15 @@ export interface GalleryPhoto {
   createdAt: Date;
 }
 
+export interface GalleryHomePhoto {
+  id: string;
+  imageUrl: string;
+  altText: string;
+  albumTitle: string;
+  albumSlug: string;
+  locationName: string | null;
+}
+
 export interface GalleryAlbumDetail extends GalleryAlbum {
   photos: GalleryPhoto[];
 }

@@ -1,5 +1,6 @@
 import { HeroSection } from "@/presentation/components/home/hero-section";
 import { LearningValuesSection } from "@/presentation/components/home/learning-values-section";
+import { GalleryHomePreview } from "@/presentation/components/home/gallery-home-preview";
 import { CertificateVerificationBar } from "@/presentation/components/home/certificate-verification-bar";
 import { EventCalendarPreview } from "@/presentation/components/home/event-calendar-preview";
 
@@ -10,6 +11,7 @@ export default function HomePage() {
     <>
       <HeroSection />
       <LearningValuesSection />
+      <GalleryHomePreview />
       <CertificateVerificationBar />
       <EventCalendarPreview />
     </>
