@@ -16,6 +16,12 @@ export function SiteFooter() {
         <div className="flex flex-col gap-2 text-sm sm:items-end">
           <div className="flex flex-wrap gap-x-4 gap-y-2">
             <Link
+              href="/galeri"
+              className="font-semibold text-sky-900 transition hover:text-document-primary"
+            >
+              Galeri
+            </Link>
+            <Link
               href="/iletisim"
               className="font-semibold text-sky-900 transition hover:text-document-primary"
             >
