@@ -90,7 +90,7 @@ export function GalleryHomeSlider({ photos }: GalleryHomeSliderProps) {
               <li key={photo.id} className="w-[200px] shrink-0 sm:w-[220px]">
                 <Link
                   href={photo.albumSlug ? `/galeri/${photo.albumSlug}` : "/galeri"}
-                  className="group block overflow-hidden rounded-2xl border border-slate-200 bg-slate-50 shadow-sm transition hover:border-sky-300 hover:shadow-md"
+                  className="block overflow-hidden rounded-2xl border border-slate-200 bg-slate-50 shadow-sm transition hover:border-sky-300 hover:shadow-md"
                 >
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
@@ -99,14 +99,6 @@ export function GalleryHomeSlider({ photos }: GalleryHomeSliderProps) {
                     className="h-[150px] w-full object-cover sm:h-[160px]"
                     loading="lazy"
                   />
-                  <div className="px-3 py-2">
-                    <p className="truncate text-xs font-semibold text-slate-800 group-hover:text-sky-800">
-                      {photo.albumTitle}
-                    </p>
-                    {photo.locationName ? (
-                      <p className="truncate text-[11px] text-slate-500">{photo.locationName}</p>
-                    ) : null}
-                  </div>
                 </Link>
               </li>
             ))}
