@@ -63,11 +63,11 @@ export async function optimizeGalleryImage(file: File): Promise<OptimizedGallery
   const safeBase =
     file.name.replace(/\.[^.]+$/, "").replace(/[^a-zA-Z0-9._-]/g, "_").slice(0, 40) || "photo";
 
-  const displayCanvas = drawScaled(image, 1920);
-  const thumbCanvas = drawScaled(image, 400);
+  const displayCanvas = drawScaled(image, 2400);
+  const thumbCanvas = drawScaled(image, 480);
 
-  const display = await canvasToWebpFile(displayCanvas, `${stamp}-${safeBase}.webp`, 0.82);
-  const thumb = await canvasToWebpFile(thumbCanvas, `${stamp}-${safeBase}-thumb.webp`, 0.75);
+  const display = await canvasToWebpFile(displayCanvas, `${stamp}-${safeBase}.webp`, 0.92);
+  const thumb = await canvasToWebpFile(thumbCanvas, `${stamp}-${safeBase}-thumb.webp`, 0.84);
 
   return { display, thumb, baseName: safeBase };
 }
