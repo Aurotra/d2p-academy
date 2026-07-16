@@ -3,7 +3,7 @@ import type { ReactNode } from "react";
 import { Geist, Geist_Mono } from "next/font/google";
 
 import "./globals.css";
-import { SITE_NAME, SITE_URL } from "@/shared/constants/site";
+import { SITE_DESCRIPTION, SITE_NAME, SITE_URL } from "@/shared/constants/site";
 import { SiteChrome } from "@/presentation/components/layout/site-chrome";
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -21,8 +21,7 @@ export const metadata: Metadata = {
     default: SITE_NAME,
     template: `%s | ${SITE_NAME}`,
   },
-  description:
-    "D2P Academy — 3D tasarım, baskı ve robotik atölyeleri. Okullara ve öğrencilere yönelik modern eğitim platformu.",
+  description: SITE_DESCRIPTION,
   icons: {
     icon: [{ url: "/icon", type: "image/png" }],
     apple: [{ url: "/apple-icon", type: "image/png" }],
@@ -33,14 +32,12 @@ export const metadata: Metadata = {
     url: SITE_URL,
     siteName: SITE_NAME,
     title: SITE_NAME,
-    description:
-      "D2P Academy — 3D tasarım, baskı ve robotik atölyeleri. Okullara ve öğrencilere yönelik modern eğitim platformu.",
+    description: SITE_DESCRIPTION,
   },
   twitter: {
     card: "summary_large_image",
     title: SITE_NAME,
-    description:
-      "D2P Academy — 3D tasarım, baskı ve robotik atölyeleri. Okullara ve öğrencilere yönelik modern eğitim platformu.",
+    description: SITE_DESCRIPTION,
   },
   alternates: {
     canonical: "/",

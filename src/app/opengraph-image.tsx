@@ -54,7 +54,7 @@ export default function OpenGraphImage() {
             lineHeight: 1.4,
           }}
         >
-          Design to Print — 3D tasarım, baskı ve robotik atölyeleri
+          Design to Print — 3D tasarım ve baskı eğitimleri
         </div>
       </div>
     ),
