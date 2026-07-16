@@ -8,6 +8,8 @@ import type {
   GalleryPhoto,
 } from "@/core/domain/gallery";
 
+const SIGNED_URL_SECONDS = 60 * 60; // 1 hour
+
 interface AlbumRow {
   id: string;
   title: string;
@@ -15,19 +17,26 @@ interface AlbumRow {
   location_name: string | null;
   event_date: string | null;
   description: string;
+  cover_photo_id: string | null;
   cover_image_url: string | null;
   is_published: boolean;
   sort_order: number;
+  deleted_at: string | null;
   created_at: string;
-  gallery_photos?: { count: number }[] | { id: string }[] | null;
+  gallery_photos?: { count: number }[] | null;
 }
 
 interface PhotoRow {
   id: string;
   album_id: string;
   image_url: string;
+  thumb_url: string | null;
+  storage_path: string | null;
+  thumb_storage_path: string | null;
   caption: string;
+  alt_text: string;
   sort_order: number;
+  deleted_at: string | null;
   created_at: string;
 }
 
@@ -50,12 +59,9 @@ function slugify(value: string): string {
 
 function photoCountFromRow(row: AlbumRow): number {
   const photos = row.gallery_photos;
-  if (!photos) return 0;
-  if (Array.isArray(photos) && photos.length > 0 && "count" in photos[0]) {
-    return Number((photos[0] as { count: number }).count ?? 0);
-  }
-  if (Array.isArray(photos)) {
-    return photos.length;
+  if (!photos?.length) return 0;
+  if ("count" in photos[0]) {
+    return Number(photos[0].count ?? 0);
   }
   return 0;
 }
@@ -68,10 +74,12 @@ function mapAlbum(row: AlbumRow): GalleryAlbum {
     locationName: row.location_name,
     eventDate: row.event_date,
     description: row.description ?? "",
+    coverPhotoId: row.cover_photo_id,
     coverImageUrl: row.cover_image_url,
     isPublished: row.is_published,
     sortOrder: row.sort_order,
     photoCount: photoCountFromRow(row),
+    deletedAt: row.deleted_at ? new Date(row.deleted_at) : null,
     createdAt: new Date(row.created_at),
   };
 }
@@ -81,34 +89,101 @@ function mapPhoto(row: PhotoRow): GalleryPhoto {
     id: row.id,
     albumId: row.album_id,
     imageUrl: row.image_url,
+    thumbUrl: row.thumb_url,
+    storagePath: row.storage_path,
+    thumbStoragePath: row.thumb_storage_path,
     caption: row.caption ?? "",
+    altText: row.alt_text ?? "",
     sortOrder: row.sort_order,
+    deletedAt: row.deleted_at ? new Date(row.deleted_at) : null,
     createdAt: new Date(row.created_at),
   };
 }
 
+const ALBUM_SELECT = `
+  id,
+  title,
+  slug,
+  location_name,
+  event_date,
+  description,
+  cover_photo_id,
+  cover_image_url,
+  is_published,
+  sort_order,
+  deleted_at,
+  created_at,
+  gallery_photos ( count )
+`;
+
+const PHOTO_SELECT =
+  "id, album_id, image_url, thumb_url, storage_path, thumb_storage_path, caption, alt_text, sort_order, deleted_at, created_at";
+
 export class SupabaseGalleryRepository {
   constructor(private readonly client: SupabaseClient) {}
+
+  private async signPath(path: string | null | undefined): Promise<string | null> {
+    if (!path) return null;
+    const { data, error } = await this.client.storage
+      .from("gallery")
+      .createSignedUrl(path, SIGNED_URL_SECONDS);
+    if (error || !data?.signedUrl) {
+      return null;
+    }
+    return data.signedUrl;
+  }
+
+  private async withSignedPhotoUrls(photos: GalleryPhoto[]): Promise<GalleryPhoto[]> {
+    return Promise.all(
+      photos.map(async (photo) => {
+        const signedImage = (await this.signPath(photo.storagePath)) || photo.imageUrl;
+        const signedThumb =
+          (await this.signPath(photo.thumbStoragePath)) ||
+          photo.thumbUrl ||
+          signedImage;
+
+        return {
+          ...photo,
+          imageUrl: signedImage,
+          thumbUrl: signedThumb,
+        };
+      }),
+    );
+  }
+
+  private async resolveAlbumCover(album: GalleryAlbum, photos: GalleryPhoto[]): Promise<GalleryAlbum> {
+    if (album.coverPhotoId) {
+      const cover = photos.find((photo) => photo.id === album.coverPhotoId);
+      if (cover) {
+        return {
+          ...album,
+          coverImageUrl: cover.thumbUrl || cover.imageUrl,
+        };
+      }
+    }
+
+    if (photos[0]) {
+      return {
+        ...album,
+        coverImageUrl: photos[0].thumbUrl || photos[0].imageUrl,
+      };
+    }
+
+    if (album.coverImageUrl?.includes("/storage/v1/object/public/gallery/")) {
+      const path = album.coverImageUrl.split("/storage/v1/object/public/gallery/")[1];
+      const signed = await this.signPath(path);
+      return { ...album, coverImageUrl: signed || album.coverImageUrl };
+    }
+
+    return album;
+  }
 
   async listPublishedAlbums(): Promise<GalleryAlbum[]> {
     const { data, error } = await this.client
       .from("gallery_albums")
-      .select(
-        `
-        id,
-        title,
-        slug,
-        location_name,
-        event_date,
-        description,
-        cover_image_url,
-        is_published,
-        sort_order,
-        created_at,
-        gallery_photos ( count )
-      `,
-      )
+      .select(ALBUM_SELECT)
       .eq("is_published", true)
+      .is("deleted_at", null)
       .order("sort_order", { ascending: false })
       .order("event_date", { ascending: false, nullsFirst: false });
 
@@ -116,27 +191,28 @@ export class SupabaseGalleryRepository {
       throw new Error(`Galeri albümleri alınamadı: ${error.message}`);
     }
 
-    return (data as AlbumRow[]).map(mapAlbum);
+    const albums = (data as AlbumRow[]).map(mapAlbum);
+
+    return Promise.all(
+      albums.map(async (album) => {
+        const photos = await this.listPhotos(album.id, false);
+        const signedPhotos = await this.withSignedPhotoUrls(photos);
+        return this.resolveAlbumCover(
+          { ...album, photoCount: signedPhotos.length },
+          signedPhotos,
+        );
+      }),
+    );
   }
 
-  async listAllAlbums(): Promise<GalleryAlbum[]> {
-    const { data, error } = await this.client
-      .from("gallery_albums")
-      .select(
-        `
-        id,
-        title,
-        slug,
-        location_name,
-        event_date,
-        description,
-        cover_image_url,
-        is_published,
-        sort_order,
-        created_at,
-        gallery_photos ( count )
-      `,
-      )
+  async listAllAlbums(includeDeleted = false): Promise<GalleryAlbum[]> {
+    let query = this.client.from("gallery_albums").select(ALBUM_SELECT);
+
+    if (!includeDeleted) {
+      query = query.is("deleted_at", null);
+    }
+
+    const { data, error } = await query
       .order("sort_order", { ascending: false })
       .order("created_at", { ascending: false });
 
@@ -150,22 +226,10 @@ export class SupabaseGalleryRepository {
   async getPublishedAlbumBySlug(slug: string): Promise<GalleryAlbumDetail | null> {
     const { data: album, error } = await this.client
       .from("gallery_albums")
-      .select(
-        `
-        id,
-        title,
-        slug,
-        location_name,
-        event_date,
-        description,
-        cover_image_url,
-        is_published,
-        sort_order,
-        created_at
-      `,
-      )
+      .select(ALBUM_SELECT)
       .eq("slug", slug)
       .eq("is_published", true)
+      .is("deleted_at", null)
       .maybeSingle();
 
     if (error) {
@@ -176,24 +240,13 @@ export class SupabaseGalleryRepository {
       return null;
     }
 
-    const { data: photos, error: photosError } = await this.client
-      .from("gallery_photos")
-      .select("id, album_id, image_url, caption, sort_order, created_at")
-      .eq("album_id", album.id)
-      .order("sort_order", { ascending: true })
-      .order("created_at", { ascending: true });
-
-    if (photosError) {
-      throw new Error(`Fotoğraflar alınamadı: ${photosError.message}`);
-    }
-
-    const mappedPhotos = (photos as PhotoRow[]).map(mapPhoto);
-    const mappedAlbum = mapAlbum(album as AlbumRow);
+    const photos = await this.withSignedPhotoUrls(await this.listPhotos(album.id, false));
+    const mappedAlbum = await this.resolveAlbumCover(mapAlbum(album as AlbumRow), photos);
 
     return {
       ...mappedAlbum,
-      photoCount: mappedPhotos.length,
-      photos: mappedPhotos,
+      photoCount: photos.length,
+      photos,
     };
   }
 
@@ -225,20 +278,7 @@ export class SupabaseGalleryRepository {
         is_published: input.isPublished ?? true,
         sort_order: Date.now() % 1_000_000_000,
       })
-      .select(
-        `
-        id,
-        title,
-        slug,
-        location_name,
-        event_date,
-        description,
-        cover_image_url,
-        is_published,
-        sort_order,
-        created_at
-      `,
-      )
+      .select(ALBUM_SELECT)
       .single();
 
     if (error || !data) {
@@ -252,17 +292,22 @@ export class SupabaseGalleryRepository {
     const { count } = await this.client
       .from("gallery_photos")
       .select("id", { count: "exact", head: true })
-      .eq("album_id", input.albumId);
+      .eq("album_id", input.albumId)
+      .is("deleted_at", null);
 
     const { data, error } = await this.client
       .from("gallery_photos")
       .insert({
         album_id: input.albumId,
         image_url: input.imageUrl,
+        thumb_url: input.thumbUrl ?? null,
+        storage_path: input.storagePath,
+        thumb_storage_path: input.thumbStoragePath ?? null,
         caption: input.caption?.trim() ?? "",
+        alt_text: input.altText?.trim() ?? "",
         sort_order: count ?? 0,
       })
-      .select("id, album_id, image_url, caption, sort_order, created_at")
+      .select(PHOTO_SELECT)
       .single();
 
     if (error || !data) {
@@ -273,25 +318,32 @@ export class SupabaseGalleryRepository {
 
     const { data: album } = await this.client
       .from("gallery_albums")
-      .select("cover_image_url")
+      .select("cover_photo_id, cover_image_url")
       .eq("id", input.albumId)
       .maybeSingle();
 
-    if (album && !album.cover_image_url) {
+    if (album && !album.cover_photo_id) {
       await this.client
         .from("gallery_albums")
-        .update({ cover_image_url: photo.imageUrl })
+        .update({
+          cover_photo_id: photo.id,
+          cover_image_url: input.thumbUrl || input.imageUrl,
+          updated_at: new Date().toISOString(),
+        })
         .eq("id", input.albumId);
     }
 
     return photo;
   }
 
-  async listPhotos(albumId: string): Promise<GalleryPhoto[]> {
-    const { data, error } = await this.client
-      .from("gallery_photos")
-      .select("id, album_id, image_url, caption, sort_order, created_at")
-      .eq("album_id", albumId)
+  async listPhotos(albumId: string, includeDeleted = false): Promise<GalleryPhoto[]> {
+    let query = this.client.from("gallery_photos").select(PHOTO_SELECT).eq("album_id", albumId);
+
+    if (!includeDeleted) {
+      query = query.is("deleted_at", null);
+    }
+
+    const { data, error } = await query
       .order("sort_order", { ascending: true })
       .order("created_at", { ascending: true });
 
@@ -302,17 +354,39 @@ export class SupabaseGalleryRepository {
     return (data as PhotoRow[]).map(mapPhoto);
   }
 
-  async deletePhoto(photoId: string): Promise<void> {
-    const { error } = await this.client.from("gallery_photos").delete().eq("id", photoId);
+  async softDeletePhoto(photoId: string): Promise<void> {
+    const { error } = await this.client.rpc("soft_delete_gallery_photo", {
+      p_photo_id: photoId,
+    });
     if (error) {
       throw new Error(`Fotoğraf silinemedi: ${error.message}`);
     }
   }
 
-  async deleteAlbum(albumId: string): Promise<void> {
-    const { error } = await this.client.from("gallery_albums").delete().eq("id", albumId);
+  async restorePhoto(photoId: string): Promise<void> {
+    const { error } = await this.client.rpc("restore_gallery_photo", {
+      p_photo_id: photoId,
+    });
+    if (error) {
+      throw new Error(`Fotoğraf geri alınamadı: ${error.message}`);
+    }
+  }
+
+  async softDeleteAlbum(albumId: string): Promise<void> {
+    const { error } = await this.client.rpc("soft_delete_gallery_album", {
+      p_album_id: albumId,
+    });
     if (error) {
       throw new Error(`Albüm silinemedi: ${error.message}`);
+    }
+  }
+
+  async restoreAlbum(albumId: string): Promise<void> {
+    const { error } = await this.client.rpc("restore_gallery_album", {
+      p_album_id: albumId,
+    });
+    if (error) {
+      throw new Error(`Albüm geri alınamadı: ${error.message}`);
     }
   }
 
@@ -324,6 +398,81 @@ export class SupabaseGalleryRepository {
 
     if (error) {
       throw new Error(`Albüm güncellenemedi: ${error.message}`);
+    }
+  }
+
+  async setCoverPhoto(albumId: string, photoId: string): Promise<void> {
+    const { data: photo, error: photoError } = await this.client
+      .from("gallery_photos")
+      .select("id, thumb_url, image_url, thumb_storage_path, storage_path")
+      .eq("id", photoId)
+      .eq("album_id", albumId)
+      .is("deleted_at", null)
+      .maybeSingle();
+
+    if (photoError || !photo) {
+      throw new Error("Kapak fotoğrafı bulunamadı.");
+    }
+
+    const { error } = await this.client
+      .from("gallery_albums")
+      .update({
+        cover_photo_id: photoId,
+        cover_image_url: photo.thumb_url || photo.image_url,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", albumId);
+
+    if (error) {
+      throw new Error(`Kapak güncellenemedi: ${error.message}`);
+    }
+  }
+
+  async reorderAlbums(orderedIds: string[]): Promise<void> {
+    const updates = orderedIds.map((id, index) =>
+      this.client
+        .from("gallery_albums")
+        .update({
+          sort_order: orderedIds.length - index,
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", id),
+    );
+
+    const results = await Promise.all(updates);
+    const failed = results.find((result) => result.error);
+    if (failed?.error) {
+      throw new Error(`Albüm sırası kaydedilemedi: ${failed.error.message}`);
+    }
+  }
+
+  async reorderPhotos(albumId: string, orderedIds: string[]): Promise<void> {
+    const updates = orderedIds.map((id, index) =>
+      this.client
+        .from("gallery_photos")
+        .update({ sort_order: index })
+        .eq("id", id)
+        .eq("album_id", albumId),
+    );
+
+    const results = await Promise.all(updates);
+    const failed = results.find((result) => result.error);
+    if (failed?.error) {
+      throw new Error(`Fotoğraf sırası kaydedilemedi: ${failed.error.message}`);
+    }
+  }
+
+  async updatePhotoMeta(
+    photoId: string,
+    input: { caption?: string; altText?: string },
+  ): Promise<void> {
+    const payload: Record<string, string> = {};
+    if (input.caption !== undefined) payload.caption = input.caption.trim();
+    if (input.altText !== undefined) payload.alt_text = input.altText.trim();
+
+    const { error } = await this.client.from("gallery_photos").update(payload).eq("id", photoId);
+    if (error) {
+      throw new Error(`Fotoğraf güncellenemedi: ${error.message}`);
     }
   }
 }

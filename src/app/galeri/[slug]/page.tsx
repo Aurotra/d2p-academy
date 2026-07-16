@@ -88,7 +88,7 @@ export default async function GalleryAlbumPage({ params }: PageProps) {
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src={photo.imageUrl}
-                    alt={photo.caption || album.title}
+                    alt={photo.altText || photo.caption || album.title}
                     className="w-full object-cover"
                     loading="lazy"
                   />
