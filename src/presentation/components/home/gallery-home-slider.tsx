@@ -122,7 +122,7 @@ export function GalleryHomeSlider({ photos }: GalleryHomeSliderProps) {
                 >
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
-                    src={photo.imageUrl}
+                    src={photo.thumbUrl || photo.imageUrl}
                     alt=""
                     className="h-16 w-24 object-cover sm:h-20 sm:w-28"
                   />

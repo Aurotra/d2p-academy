@@ -276,7 +276,8 @@ export class SupabaseGalleryRepository {
 
       return {
         id: photo.id,
-        imageUrl: photo.thumbUrl || photo.imageUrl,
+        imageUrl: photo.imageUrl,
+        thumbUrl: photo.thumbUrl,
         altText: photo.altText || photo.caption || album?.title || "Eğitim fotoğrafı",
         albumTitle: album?.title ?? "Albüm",
         albumSlug: album?.slug ?? "",

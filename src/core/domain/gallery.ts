@@ -31,6 +31,7 @@ export interface GalleryPhoto {
 export interface GalleryHomePhoto {
   id: string;
   imageUrl: string;
+  thumbUrl: string | null;
   altText: string;
   albumTitle: string;
   albumSlug: string;
