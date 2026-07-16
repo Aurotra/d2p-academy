@@ -103,8 +103,8 @@ export default async function GalleryPage() {
             Eğitimlerimizden kareler
           </h1>
           <p className="mt-4 text-base leading-7 text-slate-600">
-            Her yılın atölye ve eğitim fotoğrafları burada birikir. Honaz, Denizli ve diğer
-            programlar yıllara göre listelenir.
+            Atölyelerimizden seçilmiş kareler. Her eğitim kendi albümünde; yıllar geçtikçe arşiv
+            burada büyür.
           </p>
         </div>
 
