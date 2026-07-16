@@ -113,7 +113,7 @@ const ALBUM_SELECT = `
   sort_order,
   deleted_at,
   created_at,
-  gallery_photos ( count )
+  gallery_photos!gallery_photos_album_id_fkey ( count )
 `;
 
 const PHOTO_SELECT =
