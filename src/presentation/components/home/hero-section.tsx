@@ -32,7 +32,7 @@ export function HeroSection() {
 
           <dl className="mt-10 grid grid-cols-3 gap-4 border-t border-sky-300/60 pt-8">
             <div>
-              <dt className="text-2xl font-bold text-sky-950">100+</dt>
+              <dt className="text-2xl font-bold text-sky-950">250+</dt>
               <dd className="text-sm text-sky-800/80">Öğrenci</dd>
             </div>
             <div>
