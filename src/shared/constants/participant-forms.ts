@@ -19,7 +19,7 @@ export const MEDIA_PERMISSION_LABELS: Record<keyof MediaPermissions, string> = {
   social_media_publish: "Sosyal medya hesaplarında paylaşım",
   print_materials: "Broşür ve tanıtım materyallerinde kullanım",
   academic_anonymous_use: "Bilimsel sunum ve raporlarda anonim kullanım",
-  municipal_reports: "Belediye ve proje raporlarında kullanım",
+  municipal_reports: "Kurum ve proje raporlarında kullanım",
 };
 
 export const EMPTY_MEDIA_PERMISSIONS: MediaPermissions = {
