@@ -195,13 +195,10 @@ export class SupabaseParticipantFormsRepository {
 
     const note = input.healthNote?.trim() ?? "";
     if (note) {
-      const { error: healthError } = await this.client.from("health_notes").upsert(
-        {
-          enrollment_id: enrollmentId,
-          note,
-        },
-        { onConflict: "enrollment_id" },
-      );
+      const { error: healthError } = await this.client.rpc("upsert_own_health_note", {
+        p_enrollment_id: enrollmentId,
+        p_note: note,
+      });
 
       if (healthError) {
         throw new Error(`Sağlık notu yazılamadı: ${healthError.message}`);
