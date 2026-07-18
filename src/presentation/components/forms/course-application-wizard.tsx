@@ -189,14 +189,18 @@ export function CourseApplicationWizard({ enrollmentId }: CourseApplicationWizar
         setMediaPermissions(media.mediaPermissions);
       }
 
-      if (!next.consents.some((item) => item.accepted)) {
+      const intakeReady =
+        Boolean(next.intakeFormCompletedAt) && Boolean(next.preTestCompletedAt);
+      const consentsReady = (["scientific", "media", "participation"] as const).every((type) =>
+        next.consents.some((item) => item.formType === type && item.accepted),
+      );
+
+      if (!intakeReady) {
         setStep(1);
-      } else if (!next.intakeFormCompletedAt || (next.requiresSurveys && !next.preTestCompletedAt)) {
+      } else if (!consentsReady) {
         setStep(2);
       } else if (next.requiresSurveys && !next.postTestCompletedAt) {
         setStep(3);
-      } else if (!next.hasActiveCertificate) {
-        setStep(4);
       } else {
         setStep(4);
       }
@@ -265,8 +269,12 @@ export function CourseApplicationWizard({ enrollmentId }: CourseApplicationWizar
       }
 
       setSuccess("Onaylar kaydedildi.");
-      setStep(2);
       await loadState();
+      if (state?.requiresSurveys) {
+        setStep(3);
+      } else {
+        setStep(4);
+      }
     } catch (saveError) {
       setError(saveError instanceof Error ? saveError.message : "Kayıt başarısız.");
     } finally {
@@ -375,11 +383,7 @@ export function CourseApplicationWizard({ enrollmentId }: CourseApplicationWizar
       );
 
       await loadState();
-      if (requiresSurveys) {
-        setStep(3);
-      } else {
-        setStep(4);
-      }
+      setStep(2);
     } catch (saveError) {
       setError(saveError instanceof Error ? saveError.message : "Kayıt başarısız.");
     } finally {
@@ -471,40 +475,41 @@ export function CourseApplicationWizard({ enrollmentId }: CourseApplicationWizar
   const sonTestDone = Boolean(state.postTestCompletedAt);
   const sertifikaDone = Boolean(state.hasActiveCertificate);
 
-  const onaylarTone: StepTone = onaylarDone ? "done" : "action";
-  const tanismaTone: StepTone = !onaylarDone ? "idle" : tanismaDone ? "done" : "action";
-  const sonTestTone: StepTone = !tanismaDone
+  const tanismaTone: StepTone = tanismaDone ? "done" : "action";
+  const onaylarTone: StepTone = !tanismaDone ? "idle" : onaylarDone ? "done" : "action";
+  const sonTestTone: StepTone = !onaylarDone
     ? "idle"
     : sonTestDone
       ? "done"
       : state.requiresSurveys
         ? "action"
         : "done";
-  const sertifikaTone: StepTone = !sonTestDone ? "idle" : sertifikaDone ? "done" : "action";
+  const sertifikaTone: StepTone =
+    !onaylarDone || !sonTestDone ? "idle" : sertifikaDone ? "done" : "action";
 
   const wizardComplete = onaylarDone && tanismaDone && sonTestDone;
 
   const steps: Array<{ id: WizardStep; label: string; tone: StepTone; enabled: boolean }> = [
-    { id: 1, label: "Onaylar", tone: onaylarTone, enabled: true },
-    { id: 2, label: "Tanışma", tone: tanismaTone, enabled: onaylarDone },
+    { id: 1, label: "Tanışma", tone: tanismaTone, enabled: true },
+    { id: 2, label: "Onaylar", tone: onaylarTone, enabled: tanismaDone },
     {
       id: 3,
       label: "Son test",
       tone: sonTestTone,
-      enabled: tanismaDone && state.requiresSurveys,
+      enabled: onaylarDone && state.requiresSurveys,
     },
     {
       id: 4,
       label: "Sertifika onay",
       tone: sertifikaTone,
-      enabled: sonTestDone || (!state.requiresSurveys && tanismaDone),
+      enabled: onaylarDone && (sonTestDone || !state.requiresSurveys),
     },
   ];
 
-  // For non-survey grades, son test pill still visible but auto-done after tanışma
+  // For non-survey grades, son test pill still visible but auto-done after onaylar
   if (!state.requiresSurveys) {
-    steps[2].enabled = tanismaDone;
-    steps[2].tone = !tanismaDone ? "idle" : "done";
+    steps[2].enabled = onaylarDone;
+    steps[2].tone = !onaylarDone ? "idle" : "done";
   }
 
   return (
@@ -560,7 +565,7 @@ export function CourseApplicationWizard({ enrollmentId }: CourseApplicationWizar
         </p>
       ) : null}
 
-      {step === 1 ? (
+      {step === 2 ? (
         <section className="space-y-4 rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm">
           <h2 className="text-xl font-bold text-navy-950">Onaylar</h2>
           <p className="text-sm text-slate-600">
@@ -636,12 +641,16 @@ export function CourseApplicationWizard({ enrollmentId }: CourseApplicationWizar
           />
 
           <Button type="button" disabled={isSaving} onClick={() => void submitConsents()}>
-            {isSaving ? "Kaydediliyor..." : "Onayları Kaydet ve Devam Et"}
+            {isSaving
+              ? "Kaydediliyor..."
+              : state.requiresSurveys
+                ? "Onayları Kaydet ve Devam Et"
+                : "Onayları Kaydet"}
           </Button>
         </section>
       ) : null}
 
-      {step === 2 ? (
+      {step === 1 ? (
         <section className="space-y-4 rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm">
           <h2 className="text-xl font-bold text-navy-950">
             Tanışma (F01)
