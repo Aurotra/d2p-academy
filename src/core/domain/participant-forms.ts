@@ -9,7 +9,7 @@ export interface MediaPermissions {
   social_media_publish: boolean;
   print_materials: boolean;
   academic_anonymous_use: boolean;
-  municipal_reports: boolean;
+  municipal_reports: boolean; // Kurum ve proje raporlarında kullanım
 }
 
 export const MEDIA_PERMISSION_KEYS = [

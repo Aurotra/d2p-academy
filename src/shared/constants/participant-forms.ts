@@ -1,35 +1,22 @@
 import type { MediaPermissions } from "@/core/domain/participant-forms";
 import { LIKERT_OPTIONS } from "@/shared/constants/profile-options";
 
+/** F04 = uzman görüş formu (kapsam dışı). Öğrenci/veli onayları: F05/F06/F07. */
 export const CONSENT_TEXT_VERSIONS = {
   scientific: "F05-V01",
   media: "F06-V01",
-  participation: "F04-V01",
+  participation: "F07-V01",
 } as const;
 
 export interface ConsentDocument {
-  code: "F04" | "F05" | "F06";
-  formType: "participation" | "scientific" | "media";
+  code: "F05" | "F06" | "F07";
+  formType: "scientific" | "media" | "participation";
   title: string;
   version: string;
   paragraphs: string[];
 }
 
-/** Onay adımında gösterilen tam metinler (sürüm = CONSENT_TEXT_VERSIONS). */
 export const CONSENT_DOCUMENTS: ConsentDocument[] = [
-  {
-    code: "F04",
-    formType: "participation",
-    title: "Katılım ve Güvenlik Onayı",
-    version: CONSENT_TEXT_VERSIONS.participation,
-    paragraphs: [
-      "Bu form, katılımcının D2P Academy eğitim / atölye programına güvenli ve kurallara uygun şekilde katılımını belgelemek içindir.",
-      "Katılımcı (ve 18 yaşından küçükse yasal temsilcisi); eğitim süresince eğitmen ve görevli personelin yönergelerine uyacağını, atölye alanındaki güvenlik kurallarına (makine, 3D yazıcı, kesici aletler, elektrik ve malzeme güvenliği dahil) riayet edeceğini kabul eder.",
-      "Eğitim alanına zarar verecek, diğer katılımcıların güvenliğini tehlikeye atacak veya eğitimi bozacak davranışlarda bulunulmayacaktır. Gerekli görüldüğünde D2P Academy, güvenlik gerekçesiyle katılımı geçici veya kalıcı olarak sonlandırabilir.",
-      "Sağlık açısından özel bir durum, alerji veya dikkat edilmesi gereken bir husus varsa, bu bilgi eğitimden önce sağlık notu alanında veya görevlilere bildirilecektir. Bildirilmeyen durumlardan doğabilecek sonuçlardan D2P Academy sorumlu tutulamaz.",
-      "Bu onayı vererek yukarıdaki katılım ve güvenlik koşullarını okuduğunuzu, anladığınızı ve kabul ettiğinizi beyan edersiniz.",
-    ],
-  },
   {
     code: "F05",
     formType: "scientific",
@@ -54,6 +41,19 @@ export const CONSENT_DOCUMENTS: ConsentDocument[] = [
       "İzin vermediğiniz kalemler için ilgili kullanım yapılmaz. İstediğiniz zaman yazılı başvurunuzla izinlerinizi güncellemenizi talep edebilirsiniz; geçmişte yayımlanmış içeriklerin geri alınması teknik olarak her zaman mümkün olmayabilir.",
       "18 yaşından küçük katılımcılar için bu onayı yasal temsilci (veli/vasi) verir. Aşağıya yazılan ad-soyad, dijital imza yerine geçer ve onay zamanı ile birlikte kayıt altına alınır.",
       "Bu metni ve alttaki izin matrisini okuyarak, işaretlediğiniz kalemler için açık rızanızı verdiğinizi beyan edersiniz.",
+    ],
+  },
+  {
+    code: "F07",
+    formType: "participation",
+    title: "Katılım ve Güvenlik Onayı",
+    version: CONSENT_TEXT_VERSIONS.participation,
+    paragraphs: [
+      "Bu form, katılımcının D2P Academy eğitim / atölye programına güvenli ve kurallara uygun şekilde katılımını belgelemek içindir.",
+      "Katılımcı (ve 18 yaşından küçükse yasal temsilcisi); eğitim süresince eğitmen ve görevli personelin yönergelerine uyacağını, atölye alanındaki güvenlik kurallarına (makine, 3D yazıcı, kesici aletler, elektrik ve malzeme güvenliği dahil) riayet edeceğini kabul eder.",
+      "Eğitim alanına zarar verecek, diğer katılımcıların güvenliğini tehlikeye atacak veya eğitimi bozacak davranışlarda bulunulmayacaktır. Gerekli görüldüğünde D2P Academy, güvenlik gerekçesiyle katılımı geçici veya kalıcı olarak sonlandırabilir.",
+      "Sağlık açısından özel bir durum, alerji veya dikkat edilmesi gereken bir husus varsa, bu bilgi eğitimden önce sağlık notu alanında veya görevlilere bildirilecektir. Bildirilmeyen durumlardan doğabilecek sonuçlardan D2P Academy sorumlu tutulamaz.",
+      "Bu onayı vererek yukarıdaki katılım ve güvenlik koşullarını okuduğunuzu, anladığınızı ve kabul ettiğinizi beyan edersiniz.",
     ],
   },
 ];
@@ -83,7 +83,6 @@ export const EMPTY_MEDIA_PERMISSIONS: MediaPermissions = {
   municipal_reports: false,
 };
 
-/** Re-export shared 1–5 scale used by profile + participant forms. */
 export const PARTICIPANT_LIKERT_OPTIONS = LIKERT_OPTIONS;
 
 export interface LikertQuestion {
@@ -91,88 +90,246 @@ export interface LikertQuestion {
   label: string;
 }
 
-/** F01 — 8 madde (katılımcı tanıma Likert). */
-export const INTAKE_LIKERT_QUESTIONS: LikertQuestion[] = [
-  { id: "i1", label: "Teknolojiyle ilgili yeni konular öğrenmekten keyif alırım." },
-  { id: "i2", label: "Bir problemi çözmek için farklı yollar denemeyi severim." },
-  { id: "i3", label: "Takım çalışmasında fikirlerimi rahatça paylaşırım." },
-  { id: "i4", label: "3D tasarım veya baskı hakkında temel bilgim var." },
-  { id: "i5", label: "Yeni bir yazılım/araç öğrenirken sabırlı olabilirim." },
-  { id: "i6", label: "Gerçek hayattan bir probleme çözüm üretmek isterim." },
-  { id: "i7", label: "Eğitim sırasında yardım istemekten çekinmem." },
-  { id: "i8", label: "Bu eğitime kendi isteğimle katılıyorum." },
+export interface FormOptionGroup {
+  id: string;
+  label: string;
+  options: string[];
+  multiple?: boolean;
+  allowOther?: boolean;
+}
+
+/** F01 Bölüm B */
+export const INTAKE_PREVIOUS_EXPERIENCE_FIELDS: FormOptionGroup[] = [
+  {
+    id: "seen_3d_printer",
+    label: "Daha önce 3D yazıcı gördünüz mü?",
+    options: ["Evet", "Hayır"],
+  },
+  {
+    id: "used_3d_pen",
+    label: "Daha önce 3D kalem kullandınız mı?",
+    options: ["Evet", "Hayır"],
+  },
+  {
+    id: "used_digital_design",
+    label: "Daha önce herhangi bir dijital tasarım programı kullandınız mı?",
+    options: ["Evet", "Hayır"],
+  },
+  {
+    id: "past_events",
+    label: "Daha önce aşağıdaki etkinliklerden hangilerine katıldınız?",
+    options: [
+      "Teknofest",
+      "Robotik Kodlama Eğitimi",
+      "STEM Atölyesi",
+      "Bilim Şenliği",
+      "Maker Atölyesi",
+      "Bilim Merkezi Etkinlikleri",
+      "Hiçbirine katılmadım",
+    ],
+    multiple: true,
+  },
+  {
+    id: "teknofest_participation",
+    label: "Daha önce Teknofest'e katıldınız mı?",
+    options: ["Yarışmacı olarak", "Ziyaretçi olarak", "Hayır"],
+  },
 ];
 
-/** F02 — 30 madde (5 boyut × 6). */
-export const PRE_TEST_DIMENSIONS: Record<string, LikertQuestion[]> = {
-  dimension_1: [
-    { id: "d1_1", label: "Bir tasarımı adım adım planlayabilirim." },
-    { id: "d1_2", label: "Ölçü ve oran kavramlarını temel düzeyde anlarım." },
-    { id: "d1_3", label: "Basit bir 3D modeli zihnimde canlandırabilirim." },
-    { id: "d1_4", label: "Tasarımda hata yaptığımda düzeltme yolunu ararım." },
-    { id: "d1_5", label: "Teknik bir çizimi anlamaya çalışırım." },
-    { id: "d1_6", label: "Tasarım sürecinde sabırlı olabilirim." },
-  ],
-  dimension_2: [
-    { id: "d2_1", label: "3D yazıcının ne işe yaradığını biliyorum." },
-    { id: "d2_2", label: "Filament / malzeme kavramını duymuşumdur." },
-    { id: "d2_3", label: "Bir modelin baskıya hazırlanması gerektiğini bilirim." },
-    { id: "d2_4", label: "Baskı sırasında güvenlik kurallarına dikkat ederim." },
-    { id: "d2_5", label: "Ürettiğim bir nesneyi test etmek isterim." },
-    { id: "d2_6", label: "Üretim sürecindeki adımları sıraya koyabilirim." },
-  ],
-  dimension_3: [
-    { id: "d3_1", label: "Bir problemi net bir cümleyle tanımlayabilirim." },
-    { id: "d3_2", label: "Çözüm için birden fazla fikir üretebilirim." },
-    { id: "d3_3", label: "Fikirlerimi basit bir çizimle anlatabilirim." },
-    { id: "d3_4", label: "En uygun çözümü seçerken gerekçe sunabilirim." },
-    { id: "d3_5", label: "Sonucu değerlendirip iyileştirme öneririm." },
-    { id: "d3_6", label: "Başarısız denemelerden ders çıkarırım." },
-  ],
-  dimension_4: [
-    { id: "d4_1", label: "Grup içinde görev dağılımı yapabilirim." },
-    { id: "d4_2", label: "Arkadaşlarımın fikirlerini dinlerim." },
-    { id: "d4_3", label: "Anlaşmazlıkta yapıcı konuşmaya çalışırım." },
-    { id: "d4_4", label: "Ortak hedefe katkı vermeye özen gösteririm." },
-    { id: "d4_5", label: "Yardım istediğimde net soru sorarım." },
-    { id: "d4_6", label: "Başkasına yardım etmekten memnun olurum." },
-  ],
-  dimension_5: [
-    { id: "d5_1", label: "Teknoloji öğrenmeye kendimi hazır hissediyorum." },
-    { id: "d5_2", label: "Zorlandığımda pes etmeden devam ederim." },
-    { id: "d5_3", label: "Yeni bir araç denemek beni heyecanlandırır." },
-    { id: "d5_4", label: "Hata yapmanın öğrenmenin parçası olduğunu düşünürüm." },
-    { id: "d5_5", label: "Bu alanda daha ileri gitmek isterim." },
-    { id: "d5_6", label: "Öğrendiklerimi başkasına anlatabileceğime inanırım." },
-  ],
-};
+/** F01 Bölüm C */
+export const INTAKE_TECH_ACCESS_FIELDS: FormOptionGroup[] = [
+  {
+    id: "has_computer_tablet",
+    label: "Evinizde bilgisayar/tablet bulunuyor mu?",
+    options: ["Evet", "Hayır"],
+  },
+  {
+    id: "has_internet",
+    label: "Evinizde internet erişimi bulunuyor mu?",
+    options: ["Evet", "Hayır"],
+  },
+];
 
-/** F03 — 16 madde (son test boyutları, kısaltılmış). */
-export const POST_TEST_DIMENSIONS: Record<string, LikertQuestion[]> = {
-  dimension_1: [
-    { id: "p1_1", label: "Eğitim sonrası 3D tasarım adımlarını daha iyi anlıyorum." },
-    { id: "p1_2", label: "Basit bir modeli daha güvenle tasarlayabilirim." },
-    { id: "p1_3", label: "Ölçü ve oran konularında kendimi geliştirdim." },
-    { id: "p1_4", label: "Tasarım hatalarını fark edip düzeltebilirim." },
-  ],
-  dimension_2: [
-    { id: "p2_1", label: "3D baskı sürecinin temel adımlarını biliyorum." },
-    { id: "p2_2", label: "Baskı güvenliği konusunda bilincim arttı." },
-    { id: "p2_3", label: "Ürettiğim modeli test etmenin önemini anladım." },
-    { id: "p2_4", label: "Malzeme seçiminin sonucu etkilediğini gördüm." },
-  ],
-  dimension_3: [
-    { id: "p3_1", label: "Gerçek bir probleme çözüm üretme becerim gelişti." },
-    { id: "p3_2", label: "Fikirlerimi daha net ifade edebiliyorum." },
-    { id: "p3_3", label: "Çözüm seçerken gerekçe sunabiliyorum." },
-    { id: "p3_4", label: "Deneme-yanılma ile ilerlemeyi öğrendim." },
-  ],
-  dimension_4: [
-    { id: "p4_1", label: "Takım çalışmasında daha etkili oldum." },
-    { id: "p4_2", label: "Arkadaşlarımla iş birliği yapabiliyorum." },
-  ],
-  dimension_5: [
-    { id: "p5_1", label: "Bu alanda öğrenmeye devam etmek istiyorum." },
-    { id: "p5_2", label: "Kendime olan güvenim arttı." },
-  ],
-};
+/** F01 Bölüm D */
+export const INTAKE_INTEREST_FIELDS: FormOptionGroup[] = [
+  {
+    id: "interest_areas",
+    label: "En çok ilgi duyduğunuz alan hangisidir?",
+    options: [
+      "Tasarım",
+      "Teknoloji",
+      "Bilim",
+      "Mühendislik",
+      "Yazılım",
+      "Robotik",
+      "Sanat",
+      "Henüz karar vermedim",
+    ],
+    multiple: true,
+  },
+  {
+    id: "career_areas",
+    label: "Gelecekte çalışmak isteyebileceğiniz alanlar hangileridir?",
+    options: [
+      "Mühendislik",
+      "Yazılım",
+      "Tasarım",
+      "Mimarlık",
+      "Sağlık",
+      "Eğitim",
+      "Bilimsel Araştırma",
+      "Henüz karar vermedim",
+    ],
+    multiple: true,
+  },
+];
+
+/** F01 Bölüm E — katılma nedenleri */
+export const INTAKE_MOTIVATION_REASONS = [
+  "Yeni şeyler öğrenmek istiyorum",
+  "3D yazıcıları merak ediyorum",
+  "Tasarım yapmayı seviyorum",
+  "Teknoloji ilgimi çekiyor",
+  "Kendi ürünlerimi tasarlamak istiyorum",
+  "Teknofest projeleri geliştirmek istiyorum",
+  "Öğretmenim önerdi",
+  "Ailem önerdi",
+  "Arkadaşlarım katılıyor",
+  "Diğer",
+] as const;
+
+/** F01 Bölüm E — 8 Likert */
+export const INTAKE_LIKERT_QUESTIONS: LikertQuestion[] = [
+  { id: "a", label: "Yeni teknolojileri öğrenmek hoşuma gider." },
+  { id: "b", label: "Bir şeyler tasarlamayı severim." },
+  { id: "c", label: "Problemlere çözüm üretmekten hoşlanırım." },
+  { id: "d", label: "Bilim ve teknoloji ile ilgili etkinliklere katılmayı severim." },
+  { id: "e", label: "Gelecekte teknoloji alanında çalışmak isterim." },
+  { id: "f", label: "Kendi ürünümü tasarlamak isterim." },
+  { id: "g", label: "Takım çalışması yapmayı severim." },
+  { id: "h", label: "Yeni fikirler üretmeyi severim." },
+];
+
+export const INTAKE_OPEN_ENDED = {
+  learn_most: "Bu eğitimde en çok neyi öğrenmek istiyorsunuz?",
+  design_wish: "Bir şey tasarlayıp üretebilseydiniz ne yapmak isterdiniz?",
+  expectation: "D2P Discovery eğitiminden beklentiniz nedir?",
+} as const;
+
+export const PRE_TEST_OPEN_ENDED =
+  "Bu eğitim başlamadan önce, tasarım ve üretim teknolojileri hakkında düşündüğünüz en önemli şey nedir?";
+
+const DIMENSION_TITLES = [
+  "Problem ve İhtiyaç Farkındalığı",
+  "Tasarım Düşüncesi",
+  "Üretim ve Teknoloji Farkındalığı",
+  "Tasarım ve Üretim Öz Yeterliği",
+  "Proje ve Takım Çalışması Eğilimi",
+] as const;
+
+/** F02 / F03 ortak 30 madde */
+export const TPS_SURVEY_DIMENSIONS: Array<{
+  key: "dimension_1" | "dimension_2" | "dimension_3" | "dimension_4" | "dimension_5";
+  title: string;
+  questions: LikertQuestion[];
+}> = [
+  {
+    key: "dimension_1",
+    title: DIMENSION_TITLES[0],
+    questions: [
+      { id: "d1_a", label: "Günlük hayatta karşılaştığım sorunları fark ederim." },
+      { id: "d1_b", label: "Bir ürünün hangi problemi çözdüğünü düşünürüm." },
+      { id: "d1_c", label: "Kullanışsız bulduğum ürünleri geliştirmek isterim." },
+      { id: "d1_d", label: "İnsanların ihtiyaçlarını anlamaya çalışırım." },
+      { id: "d1_e", label: "Çevremdeki eksiklikleri fark ederim." },
+      { id: "d1_f", label: "İnsanların işini kolaylaştıracak fikirler düşünürüm." },
+    ],
+  },
+  {
+    key: "dimension_2",
+    title: DIMENSION_TITLES[1],
+    questions: [
+      { id: "d2_a", label: "Yeni fikirler üretmeyi severim." },
+      { id: "d2_b", label: "Bir probleme birden fazla çözüm düşünebilirim." },
+      { id: "d2_c", label: "Hayal ettiğim şeyleri çizmeyi veya modellemeyi severim." },
+      { id: "d2_d", label: "Yeni ürünler tasarlamak ilgimi çeker." },
+      { id: "d2_e", label: "Tasarım yaparken yaratıcı olduğumu düşünürüm." },
+      { id: "d2_f", label: "Bir ürünü daha kullanışlı hale getirebilirim." },
+    ],
+  },
+  {
+    key: "dimension_3",
+    title: DIMENSION_TITLES[2],
+    questions: [
+      { id: "d3_a", label: "Ürünlerin nasıl üretildiğini merak ederim." },
+      { id: "d3_b", label: "Yeni üretim teknolojileri ilgimi çeker." },
+      { id: "d3_c", label: "Bir tasarımın ürüne dönüşmesi beni heyecanlandırır." },
+      { id: "d3_d", label: "Dijital tasarım araçlarını öğrenmek isterim." },
+      { id: "d3_e", label: "3D yazıcı teknolojileri ilgimi çekmektedir." },
+      { id: "d3_f", label: "Dijital üretim gelecekte daha önemli olacaktır." },
+    ],
+  },
+  {
+    key: "dimension_4",
+    title: DIMENSION_TITLES[3],
+    questions: [
+      { id: "d4_a", label: "Basit bir ürün tasarlayabileceğime inanıyorum." },
+      { id: "d4_b", label: "Yeni teknolojileri öğrenebilirim." },
+      { id: "d4_c", label: "Yeni şeyler üretmeyi başarabilirim." },
+      { id: "d4_d", label: "Bir fikrimi ürüne dönüştürebilirim." },
+      { id: "d4_e", label: "Karşılaştığım problemlere çözüm üretebilirim." },
+      { id: "d4_f", label: "Bir proje içerisinde görev alabilirim." },
+    ],
+  },
+  {
+    key: "dimension_5",
+    title: DIMENSION_TITLES[4],
+    questions: [
+      { id: "d5_a", label: "Takım halinde çalışmayı severim." },
+      { id: "d5_b", label: "Arkadaşlarımla fikir alışverişi yapabilirim." },
+      { id: "d5_c", label: "Bir proje için sorumluluk alabilirim." },
+      { id: "d5_d", label: "Grup çalışmalarına katkı sağlayabilirim." },
+      { id: "d5_e", label: "Başkalarının fikirlerine saygı duyarım." },
+      { id: "d5_f", label: "Ortak bir hedef için çalışabilirim." },
+    ],
+  },
+];
+
+/** F03 Bölüm B */
+export const TRAINING_IMPACT_QUESTIONS: LikertQuestion[] = [
+  { id: "ti_a", label: "Eğitim beklentilerimi karşıladı." },
+  { id: "ti_b", label: "Eğitim boyunca aktif olarak katılım sağladım." },
+  { id: "ti_c", label: "Takım çalışmaları benim için faydalı oldu." },
+  { id: "ti_d", label: "3D kalem uygulamalarını faydalı buldum." },
+  { id: "ti_e", label: "Dijital tasarım etkinliklerini faydalı buldum." },
+  { id: "ti_f", label: "3D yazıcı teknolojileri hakkında bilgi sahibi oldum." },
+  { id: "ti_g", label: "Tasarım ve üretim süreçlerini daha iyi anladım." },
+  { id: "ti_h", label: "Problem çözme konusunda kendime daha fazla güveniyorum." },
+  { id: "ti_i", label: "Kendi ürünümü tasarlamak istiyorum." },
+  { id: "ti_j", label: "Yeni teknolojiler öğrenmeye devam etmek istiyorum." },
+];
+
+/** F03 Bölüm C */
+export const FUTURE_TRENDS_QUESTIONS: LikertQuestion[] = [
+  { id: "ft_a", label: "D2P Academy'nin diğer eğitimlerine katılmak isterim." },
+  { id: "ft_b", label: "Gelecekte Teknofest projelerinde yer almak isterim." },
+  { id: "ft_c", label: "Gelecekte mühendislik veya teknoloji alanında çalışmak isterim." },
+  { id: "ft_d", label: "Tasarım yapmaya devam etmek istiyorum." },
+  { id: "ft_e", label: "3D yazıcı kullanmayı öğrenmek istiyorum." },
+  { id: "ft_f", label: "Bu eğitimi arkadaşlarıma tavsiye ederim." },
+];
+
+/** F03 Bölüm D */
+export const POST_TEST_OPEN_ENDED = {
+  favorite_activity: "Bu eğitimde en çok hoşunuza giden etkinlik hangisiydi?",
+  most_important_learning: "Bu eğitimde öğrendiğiniz en önemli şey nedir?",
+  next_topics: "Bir sonraki D2P eğitiminde hangi konuları görmek isterdiniz?",
+  product_idea: "Bugün tasarlayabileceğinizi düşündüğünüz bir ürün fikri yazınız.",
+} as const;
+
+/** Geriye dönük import uyumu */
+export const PRE_TEST_DIMENSIONS = Object.fromEntries(
+  TPS_SURVEY_DIMENSIONS.map((dimension) => [dimension.key, dimension.questions]),
+) as Record<string, LikertQuestion[]>;
+
+export const POST_TEST_DIMENSIONS = PRE_TEST_DIMENSIONS;

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 
 import type {
   EnrollmentFormProgress,
@@ -8,9 +8,10 @@ import type {
   SurveyDimensionsInput,
 } from "@/core/domain/participant-forms";
 import { MEDIA_PERMISSION_KEYS } from "@/core/domain/participant-forms";
+import { ConsentDocumentCard } from "@/presentation/components/forms/consent-document-card";
 import { LikertScaleGroup } from "@/presentation/components/forms/likert-scale-group";
 import { MediaConsentMatrix } from "@/presentation/components/forms/media-consent-matrix";
-import { ConsentDocumentCard } from "@/presentation/components/forms/consent-document-card";
+import { OptionChipGroup } from "@/presentation/components/forms/option-chip-group";
 import { Button } from "@/presentation/components/ui/button";
 import { Input } from "@/presentation/components/ui/input";
 import { Textarea } from "@/presentation/components/ui/textarea";
@@ -18,9 +19,17 @@ import {
   CONSENT_DOCUMENTS,
   CONSENT_TEXT_VERSIONS,
   EMPTY_MEDIA_PERMISSIONS,
+  FUTURE_TRENDS_QUESTIONS,
+  INTAKE_INTEREST_FIELDS,
   INTAKE_LIKERT_QUESTIONS,
-  POST_TEST_DIMENSIONS,
-  PRE_TEST_DIMENSIONS,
+  INTAKE_MOTIVATION_REASONS,
+  INTAKE_OPEN_ENDED,
+  INTAKE_PREVIOUS_EXPERIENCE_FIELDS,
+  INTAKE_TECH_ACCESS_FIELDS,
+  POST_TEST_OPEN_ENDED,
+  PRE_TEST_OPEN_ENDED,
+  TPS_SURVEY_DIMENSIONS,
+  TRAINING_IMPACT_QUESTIONS,
 } from "@/shared/constants/participant-forms";
 
 interface CourseApplicationWizardProps {
@@ -37,6 +46,15 @@ function allLikertAnswered(values: Record<string, number>, ids: string[]): boole
   return ids.every((id) => typeof values[id] === "number" && values[id] >= 1 && values[id] <= 5);
 }
 
+function emptyDimensionState(): Record<string, Record<string, number>> {
+  return Object.fromEntries(
+    TPS_SURVEY_DIMENSIONS.map((dimension) => [
+      dimension.key,
+      emptyLikert(dimension.questions.map((question) => question.id)),
+    ]),
+  );
+}
+
 function collectDimensions(
   source: Record<string, Record<string, number>>,
 ): SurveyDimensionsInput {
@@ -47,6 +65,18 @@ function collectDimensions(
     dimension4: source.dimension_4 ?? {},
     dimension5: source.dimension_5 ?? {},
   };
+}
+
+function requireSingle(value: string, label: string) {
+  if (!value.trim()) {
+    throw new Error(`${label} sorusunu yanıtlayın.`);
+  }
+}
+
+function requireMulti(value: string[], label: string) {
+  if (value.length === 0) {
+    throw new Error(`${label} için en az bir seçim yapın.`);
+  }
 }
 
 export function CourseApplicationWizard({ enrollmentId }: CourseApplicationWizardProps) {
@@ -65,45 +95,34 @@ export function CourseApplicationWizard({ enrollmentId }: CourseApplicationWizar
     useState<MediaPermissions>(EMPTY_MEDIA_PERMISSIONS);
   const [healthNote, setHealthNote] = useState("");
 
-  const [codingExperience, setCodingExperience] = useState("");
-  const [hasComputer, setHasComputer] = useState("");
-  const [selectedInterests, setSelectedInterests] = useState<string[]>([]);
-  const [motivationGoal, setMotivationGoal] = useState("");
+  const [previousExperience, setPreviousExperience] = useState<Record<string, string | string[]>>(
+    {},
+  );
+  const [techAccess, setTechAccess] = useState<Record<string, string>>({});
+  const [interests, setInterests] = useState<Record<string, string[]>>({});
+  const [motivationReasons, setMotivationReasons] = useState<string[]>([]);
   const [motivationOther, setMotivationOther] = useState("");
   const [intakeLikert, setIntakeLikert] = useState(() =>
-    emptyLikert(INTAKE_LIKERT_QUESTIONS.map((q) => q.id)),
+    emptyLikert(INTAKE_LIKERT_QUESTIONS.map((question) => question.id)),
   );
-  const [intakeOpenEnded, setIntakeOpenEnded] = useState("");
+  const [learnMost, setLearnMost] = useState("");
+  const [designWish, setDesignWish] = useState("");
+  const [expectation, setExpectation] = useState("");
 
-  const [preDimensions, setPreDimensions] = useState<Record<string, Record<string, number>>>(() => ({
-    dimension_1: emptyLikert(PRE_TEST_DIMENSIONS.dimension_1.map((q) => q.id)),
-    dimension_2: emptyLikert(PRE_TEST_DIMENSIONS.dimension_2.map((q) => q.id)),
-    dimension_3: emptyLikert(PRE_TEST_DIMENSIONS.dimension_3.map((q) => q.id)),
-    dimension_4: emptyLikert(PRE_TEST_DIMENSIONS.dimension_4.map((q) => q.id)),
-    dimension_5: emptyLikert(PRE_TEST_DIMENSIONS.dimension_5.map((q) => q.id)),
-  }));
+  const [preDimensions, setPreDimensions] = useState(emptyDimensionState);
   const [preOpenEnded, setPreOpenEnded] = useState("");
 
-  const [postDimensions, setPostDimensions] = useState<Record<string, Record<string, number>>>(
-    () => ({
-      dimension_1: emptyLikert(POST_TEST_DIMENSIONS.dimension_1.map((q) => q.id)),
-      dimension_2: emptyLikert(POST_TEST_DIMENSIONS.dimension_2.map((q) => q.id)),
-      dimension_3: emptyLikert(POST_TEST_DIMENSIONS.dimension_3.map((q) => q.id)),
-      dimension_4: emptyLikert(POST_TEST_DIMENSIONS.dimension_4.map((q) => q.id)),
-      dimension_5: emptyLikert(POST_TEST_DIMENSIONS.dimension_5.map((q) => q.id)),
-    }),
+  const [postDimensions, setPostDimensions] = useState(emptyDimensionState);
+  const [trainingImpact, setTrainingImpact] = useState(() =>
+    emptyLikert(TRAINING_IMPACT_QUESTIONS.map((question) => question.id)),
   );
-  const [postOpenEnded, setPostOpenEnded] = useState("");
-  const [trainingImpact, setTrainingImpact] = useState("");
-  const [futureTrends, setFutureTrends] = useState("");
-
-  const interestOptions = useMemo(
-    () =>
-      state?.profilePrefill.interests?.length
-        ? state.profilePrefill.interests
-        : ["3D Tasarım", "3D Baskı", "Maker", "Mühendislik", "Kodlama"],
-    [state],
+  const [futureTrends, setFutureTrends] = useState(() =>
+    emptyLikert(FUTURE_TRENDS_QUESTIONS.map((question) => question.id)),
   );
+  const [favoriteActivity, setFavoriteActivity] = useState("");
+  const [mostImportantLearning, setMostImportantLearning] = useState("");
+  const [nextTopics, setNextTopics] = useState("");
+  const [productIdea, setProductIdea] = useState("");
 
   async function loadState() {
     setIsLoading(true);
@@ -140,21 +159,9 @@ export function CourseApplicationWizard({ enrollmentId }: CourseApplicationWizar
         setMediaPermissions(media.mediaPermissions);
       }
 
-      const experience = next.profilePrefill.experienceData;
-      if (typeof experience.coding_experience === "string") {
-        setCodingExperience(experience.coding_experience);
-      }
-      setSelectedInterests(next.profilePrefill.interests ?? []);
-      const motivation = next.profilePrefill.motivationData;
-      if (typeof motivation.hedef === "string") {
-        setMotivationGoal(motivation.hedef);
-      }
-
       if (!next.consents.some((item) => item.accepted)) {
         setStep(1);
-      } else if (!next.intakeFormCompletedAt) {
-        setStep(2);
-      } else if (next.requiresSurveys && !next.preTestCompletedAt) {
+      } else if (!next.intakeFormCompletedAt || (next.requiresSurveys && !next.preTestCompletedAt)) {
         setStep(2);
       } else if (next.requiresSurveys && !next.postTestCompletedAt) {
         setStep(3);
@@ -241,21 +248,46 @@ export function CourseApplicationWizard({ enrollmentId }: CourseApplicationWizar
     setSuccess(null);
 
     try {
+      for (const field of INTAKE_PREVIOUS_EXPERIENCE_FIELDS) {
+        const value = previousExperience[field.id];
+        if (field.multiple) {
+          requireMulti(Array.isArray(value) ? value : [], field.label);
+        } else {
+          requireSingle(typeof value === "string" ? value : "", field.label);
+        }
+      }
+      for (const field of INTAKE_TECH_ACCESS_FIELDS) {
+        requireSingle(techAccess[field.id] ?? "", field.label);
+      }
+      for (const field of INTAKE_INTEREST_FIELDS) {
+        requireMulti(interests[field.id] ?? [], field.label);
+      }
+      requireMulti(motivationReasons, "Bu eğitime katılma nedeniniz");
+      if (motivationReasons.includes("Diğer") && !motivationOther.trim()) {
+        throw new Error("“Diğer” seçildiğinde açıklama yazın.");
+      }
+      requireSingle(learnMost, INTAKE_OPEN_ENDED.learn_most);
       if (!allLikertAnswered(intakeLikert, INTAKE_LIKERT_QUESTIONS.map((q) => q.id))) {
         throw new Error("Tanıma formu Likert maddelerinin tümünü yanıtlayın.");
       }
+      requireSingle(designWish, INTAKE_OPEN_ENDED.design_wish);
+      requireSingle(expectation, INTAKE_OPEN_ENDED.expectation);
 
       const intakeResponse = await fetch(`/api/v1/enrollments/${enrollmentId}/intake`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          previousExperience: { coding_experience: codingExperience },
-          techAccess: { has_computer: hasComputer },
-          interests: { selected: selectedInterests },
-          motivation: { goal: motivationGoal },
-          motivationOther,
+          previousExperience,
+          techAccess,
+          interests,
+          motivation: { reasons: motivationReasons },
+          motivationOther: motivationReasons.includes("Diğer") ? motivationOther : null,
           intakeLikert,
-          openEnded: { note: intakeOpenEnded },
+          openEnded: {
+            learn_most: learnMost,
+            design_wish: designWish,
+            expectation,
+          },
         }),
       });
 
@@ -267,11 +299,17 @@ export function CourseApplicationWizard({ enrollmentId }: CourseApplicationWizar
       const requiresSurveys = state?.requiresSurveys ?? false;
 
       if (requiresSurveys) {
-        for (const [key, questions] of Object.entries(PRE_TEST_DIMENSIONS)) {
-          if (!allLikertAnswered(preDimensions[key] ?? {}, questions.map((q) => q.id))) {
-            throw new Error("Ön testin tüm maddelerini yanıtlayın.");
+        for (const dimension of TPS_SURVEY_DIMENSIONS) {
+          if (
+            !allLikertAnswered(
+              preDimensions[dimension.key] ?? {},
+              dimension.questions.map((question) => question.id),
+            )
+          ) {
+            throw new Error(`Ön test — ${dimension.title} maddelerini yanıtlayın.`);
           }
         }
+        requireSingle(preOpenEnded, PRE_TEST_OPEN_ENDED);
       }
 
       const preResponse = await fetch(`/api/v1/enrollments/${enrollmentId}/pre-test`, {
@@ -321,22 +359,42 @@ export function CourseApplicationWizard({ enrollmentId }: CourseApplicationWizar
     setSuccess(null);
 
     try {
-      for (const [key, questions] of Object.entries(POST_TEST_DIMENSIONS)) {
-        if (!allLikertAnswered(postDimensions[key] ?? {}, questions.map((q) => q.id))) {
-          throw new Error("Son testin tüm maddelerini yanıtlayın.");
+      for (const dimension of TPS_SURVEY_DIMENSIONS) {
+        if (
+          !allLikertAnswered(
+            postDimensions[dimension.key] ?? {},
+            dimension.questions.map((question) => question.id),
+          )
+        ) {
+          throw new Error(`Son test — ${dimension.title} maddelerini yanıtlayın.`);
         }
       }
+      if (!allLikertAnswered(trainingImpact, TRAINING_IMPACT_QUESTIONS.map((q) => q.id))) {
+        throw new Error("Eğitim etkisi maddelerini yanıtlayın.");
+      }
+      if (!allLikertAnswered(futureTrends, FUTURE_TRENDS_QUESTIONS.map((q) => q.id))) {
+        throw new Error("Gelecek eğilim maddelerini yanıtlayın.");
+      }
+      requireSingle(favoriteActivity, POST_TEST_OPEN_ENDED.favorite_activity);
+      requireSingle(mostImportantLearning, POST_TEST_OPEN_ENDED.most_important_learning);
+      requireSingle(nextTopics, POST_TEST_OPEN_ENDED.next_topics);
+      requireSingle(productIdea, POST_TEST_OPEN_ENDED.product_idea);
 
       const response = await fetch(`/api/v1/enrollments/${enrollmentId}/post-test`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           ...collectDimensions(postDimensions),
-          openEnded: postOpenEnded,
+          openEnded: null,
           extra: {
-            trainingImpact: { summary: trainingImpact },
-            futureTrends: { summary: futureTrends },
-            openEnded: { note: postOpenEnded },
+            trainingImpact,
+            futureTrends,
+            openEnded: {
+              favorite_activity: favoriteActivity,
+              most_important_learning: mostImportantLearning,
+              next_topics: nextTopics,
+              product_idea: productIdea,
+            },
           },
         }),
       });
@@ -429,25 +487,13 @@ export function CourseApplicationWizard({ enrollmentId }: CourseApplicationWizar
         <section className="space-y-4 rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm">
           <h2 className="text-xl font-bold text-navy-950">Adım 1 — Onaylar</h2>
           <p className="text-sm text-slate-600">
-            Aşağıdaki F04, F05 ve F06 metinlerini okuyun; ardından ilgili onay kutularını
-            işaretleyin.
+            F05, F06 ve F07 metinlerini okuyun; ardından onay kutularını işaretleyin. (F04 uzman
+            görüş formudur, öğrenci/veli akışında yer almaz.)
           </p>
 
           {CONSENT_DOCUMENTS.map((document) => (
             <ConsentDocumentCard key={document.code} document={document} />
           ))}
-
-          <label className="flex items-start gap-3 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm">
-            <input
-              type="checkbox"
-              checked={participationAccepted}
-              onChange={(e) => setParticipationAccepted(e.target.checked)}
-              className="mt-1"
-            />
-            <span>
-              <strong>F04</strong> Katılım ve güvenlik onay metnini okudum ve kabul ediyorum.
-            </span>
-          </label>
 
           <label className="flex items-start gap-3 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm">
             <input
@@ -477,6 +523,18 @@ export function CourseApplicationWizard({ enrollmentId }: CourseApplicationWizar
 
           <MediaConsentMatrix value={mediaPermissions} onChange={setMediaPermissions} />
 
+          <label className="flex items-start gap-3 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm">
+            <input
+              type="checkbox"
+              checked={participationAccepted}
+              onChange={(e) => setParticipationAccepted(e.target.checked)}
+              className="mt-1"
+            />
+            <span>
+              <strong>F07</strong> Katılım ve güvenlik onay metnini okudum ve kabul ediyorum.
+            </span>
+          </label>
+
           <Input
             label="Veli / yasal temsilci ad soyad (dijital imza)"
             value={parentSignature}
@@ -499,97 +557,134 @@ export function CourseApplicationWizard({ enrollmentId }: CourseApplicationWizar
 
       {step === 2 ? (
         <section className="space-y-4 rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm">
-          <h2 className="text-xl font-bold text-navy-950">Adım 2 — Tanıma Formu {state.requiresSurveys ? "+ Ön Test" : ""}</h2>
+          <h2 className="text-xl font-bold text-navy-950">
+            Adım 2 — Tanıma Formu (F01)
+            {state.requiresSurveys ? " + Ön Test (F02)" : ""}
+          </h2>
 
-          <div className="grid gap-4 sm:grid-cols-2">
-            <Input
-              label="Önceki deneyim (kodlama / tasarım)"
-              value={codingExperience}
-              onChange={(e) => setCodingExperience(e.target.value)}
-              placeholder="none / beginner / intermediate / advanced"
-            />
-            <Input
-              label="Bilgisayar / tablet erişimi"
-              value={hasComputer}
-              onChange={(e) => setHasComputer(e.target.value)}
-              placeholder="evet / hayır / kısmen"
-            />
+          <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700">
+            <p>
+              <strong>Ad Soyad:</strong> {state.profilePrefill.fullName || "—"}
+            </p>
+            <p className="mt-1">
+              <strong>Sınıf / Okul / İl-İlçe:</strong> {state.profilePrefill.gradeLevel || "—"} ·{" "}
+              {state.profilePrefill.schoolName || "—"} · {state.profilePrefill.cityDistrict || "—"}
+            </p>
+            <p className="mt-2 text-xs text-slate-500">
+              Bölüm A profilinizden alınır. Güncellemek için Öğrenci Paneli → Profilim.
+            </p>
           </div>
 
-          <div>
-            <p className="mb-2 text-sm font-medium text-slate-900">İlgi alanları</p>
-            <div className="flex flex-wrap gap-2">
-              {interestOptions.map((interest) => {
-                const selected = selectedInterests.includes(interest);
-                return (
-                  <button
-                    key={interest}
-                    type="button"
-                    className={`rounded-full px-3 py-1.5 text-sm font-semibold ${
-                      selected
-                        ? "bg-document-primary text-white"
-                        : "border border-slate-200 bg-slate-50 text-slate-700"
-                    }`}
-                    onClick={() =>
-                      setSelectedInterests((current) =>
-                        selected
-                          ? current.filter((item) => item !== interest)
-                          : [...current, interest],
-                      )
-                    }
-                  >
-                    {interest}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
+          <h3 className="pt-2 text-lg font-bold text-navy-950">Bölüm B — Önceki deneyim</h3>
+          {INTAKE_PREVIOUS_EXPERIENCE_FIELDS.map((field) => (
+            <OptionChipGroup
+              key={field.id}
+              label={field.label}
+              options={field.options}
+              multiple={field.multiple}
+              value={
+                field.multiple
+                  ? ((previousExperience[field.id] as string[]) ?? [])
+                  : ((previousExperience[field.id] as string) ?? "")
+              }
+              onChange={(value) =>
+                setPreviousExperience((current) => ({ ...current, [field.id]: value }))
+              }
+            />
+          ))}
+
+          <h3 className="pt-2 text-lg font-bold text-navy-950">Bölüm C — Teknoloji erişimi</h3>
+          {INTAKE_TECH_ACCESS_FIELDS.map((field) => (
+            <OptionChipGroup
+              key={field.id}
+              label={field.label}
+              options={field.options}
+              value={techAccess[field.id] ?? ""}
+              onChange={(value) =>
+                setTechAccess((current) => ({ ...current, [field.id]: String(value) }))
+              }
+            />
+          ))}
+
+          <h3 className="pt-2 text-lg font-bold text-navy-950">Bölüm D — İlgi alanları</h3>
+          {INTAKE_INTEREST_FIELDS.map((field) => (
+            <OptionChipGroup
+              key={field.id}
+              label={field.label}
+              options={field.options}
+              multiple
+              value={interests[field.id] ?? []}
+              onChange={(value) =>
+                setInterests((current) => ({
+                  ...current,
+                  [field.id]: Array.isArray(value) ? value : [String(value)],
+                }))
+              }
+            />
+          ))}
+
+          <h3 className="pt-2 text-lg font-bold text-navy-950">Bölüm E — Motivasyon</h3>
+          <OptionChipGroup
+            label="Bu eğitime katılma nedeniniz nedir?"
+            options={[...INTAKE_MOTIVATION_REASONS]}
+            multiple
+            value={motivationReasons}
+            onChange={(value) => setMotivationReasons(Array.isArray(value) ? value : [value])}
+          />
+          {motivationReasons.includes("Diğer") ? (
+            <Input
+              label="Diğer (açıklayın)"
+              value={motivationOther}
+              onChange={(e) => setMotivationOther(e.target.value)}
+            />
+          ) : null}
 
           <Textarea
-            label="Motivasyon / hedef"
-            value={motivationGoal}
-            onChange={(e) => setMotivationGoal(e.target.value)}
+            label={INTAKE_OPEN_ENDED.learn_most}
+            value={learnMost}
+            onChange={(e) => setLearnMost(e.target.value)}
             rows={3}
-          />
-          <Input
-            label="Diğer motivasyon (opsiyonel)"
-            value={motivationOther}
-            onChange={(e) => setMotivationOther(e.target.value)}
           />
 
           <LikertScaleGroup
-            title="Tanıma Likert (F01)"
+            title="Kendinizi değerlendirin (1–5)"
             questions={INTAKE_LIKERT_QUESTIONS}
             values={intakeLikert}
             onChange={(id, value) => setIntakeLikert((current) => ({ ...current, [id]: value }))}
           />
 
           <Textarea
-            label="Açık uçlu not"
-            value={intakeOpenEnded}
-            onChange={(e) => setIntakeOpenEnded(e.target.value)}
+            label={INTAKE_OPEN_ENDED.design_wish}
+            value={designWish}
+            onChange={(e) => setDesignWish(e.target.value)}
+            rows={3}
+          />
+          <Textarea
+            label={INTAKE_OPEN_ENDED.expectation}
+            value={expectation}
+            onChange={(e) => setExpectation(e.target.value)}
             rows={3}
           />
 
           {state.requiresSurveys ? (
             <div className="space-y-4 border-t border-slate-100 pt-6">
               <h3 className="text-lg font-bold text-navy-950">Adım 2.3 — Ön Test (F02)</h3>
-              {Object.entries(PRE_TEST_DIMENSIONS).map(([key, questions], index) => (
+              {TPS_SURVEY_DIMENSIONS.map((dimension) => (
                 <LikertScaleGroup
-                  key={key}
-                  title={`Boyut ${index + 1}`}
-                  questions={questions}
-                  values={preDimensions[key] ?? {}}
+                  key={dimension.key}
+                  title={dimension.title}
+                  questions={dimension.questions}
+                  values={preDimensions[dimension.key] ?? {}}
                   onChange={(id, value) =>
                     setPreDimensions((current) => ({
                       ...current,
-                      [key]: { ...(current[key] ?? {}), [id]: value },
+                      [dimension.key]: { ...(current[dimension.key] ?? {}), [id]: value },
                     }))
                   }
                 />
               ))}
               <Textarea
-                label="Ön test açık uçlu"
+                label={PRE_TEST_OPEN_ENDED}
                 value={preOpenEnded}
                 onChange={(e) => setPreOpenEnded(e.target.value)}
                 rows={3}
@@ -615,37 +710,59 @@ export function CourseApplicationWizard({ enrollmentId }: CourseApplicationWizar
             Eğitim bitiminde doldurun. Tamamlanmadan admin sertifika veremez.
           </p>
 
-          {Object.entries(POST_TEST_DIMENSIONS).map(([key, questions], index) => (
+          <h3 className="text-lg font-bold text-navy-950">Bölüm A — Ölçek maddeleri</h3>
+          {TPS_SURVEY_DIMENSIONS.map((dimension) => (
             <LikertScaleGroup
-              key={key}
-              title={`Boyut ${index + 1}`}
-              questions={questions}
-              values={postDimensions[key] ?? {}}
+              key={dimension.key}
+              title={dimension.title}
+              questions={dimension.questions}
+              values={postDimensions[dimension.key] ?? {}}
               onChange={(id, value) =>
                 setPostDimensions((current) => ({
                   ...current,
-                  [key]: { ...(current[key] ?? {}), [id]: value },
+                  [dimension.key]: { ...(current[dimension.key] ?? {}), [id]: value },
                 }))
               }
             />
           ))}
 
+          <h3 className="text-lg font-bold text-navy-950">Bölüm B — Eğitim etkisi</h3>
+          <LikertScaleGroup
+            questions={TRAINING_IMPACT_QUESTIONS}
+            values={trainingImpact}
+            onChange={(id, value) => setTrainingImpact((current) => ({ ...current, [id]: value }))}
+          />
+
+          <h3 className="text-lg font-bold text-navy-950">Bölüm C — Gelecek eğilimler</h3>
+          <LikertScaleGroup
+            questions={FUTURE_TRENDS_QUESTIONS}
+            values={futureTrends}
+            onChange={(id, value) => setFutureTrends((current) => ({ ...current, [id]: value }))}
+          />
+
+          <h3 className="text-lg font-bold text-navy-950">Bölüm D — Açık uçlu</h3>
           <Textarea
-            label="Eğitimin etkisi"
-            value={trainingImpact}
-            onChange={(e) => setTrainingImpact(e.target.value)}
+            label={POST_TEST_OPEN_ENDED.favorite_activity}
+            value={favoriteActivity}
+            onChange={(e) => setFavoriteActivity(e.target.value)}
             rows={3}
           />
           <Textarea
-            label="Gelecek eğilimler / devam isteği"
-            value={futureTrends}
-            onChange={(e) => setFutureTrends(e.target.value)}
+            label={POST_TEST_OPEN_ENDED.most_important_learning}
+            value={mostImportantLearning}
+            onChange={(e) => setMostImportantLearning(e.target.value)}
             rows={3}
           />
           <Textarea
-            label="Açık uçlu"
-            value={postOpenEnded}
-            onChange={(e) => setPostOpenEnded(e.target.value)}
+            label={POST_TEST_OPEN_ENDED.next_topics}
+            value={nextTopics}
+            onChange={(e) => setNextTopics(e.target.value)}
+            rows={3}
+          />
+          <Textarea
+            label={POST_TEST_OPEN_ENDED.product_idea}
+            value={productIdea}
+            onChange={(e) => setProductIdea(e.target.value)}
             rows={3}
           />
 
