@@ -11,7 +11,9 @@ interface AuditRow {
   actor_email: string | null;
   reason: string | null;
   enrollment_id: string | null;
+  event_id: string | null;
   event_title: string | null;
+  student_id: string | null;
   student_name: string | null;
   student_email: string | null;
   certificate_code: string | null;
@@ -20,14 +22,19 @@ interface AuditRow {
 }
 
 function mapRow(row: AuditRow): AdminAuditLogRecord {
+  const metaName =
+    typeof row.metadata?.student_name === "string" ? row.metadata.student_name : null;
+  const metaEvent =
+    typeof row.metadata?.event_title === "string" ? row.metadata.event_title : null;
+
   return {
     id: row.id,
     action: row.action,
     actorEmail: row.actor_email,
     reason: row.reason,
     enrollmentId: row.enrollment_id,
-    eventTitle: row.event_title,
-    studentName: row.student_name,
+    eventTitle: row.event_title || metaEvent,
+    studentName: row.student_name || metaName,
     studentEmail: row.student_email,
     certificateCode: row.certificate_code,
     createdAt: new Date(row.created_at),
@@ -48,7 +55,9 @@ export class SupabaseAdminAuditLogRepository {
         actor_email,
         reason,
         enrollment_id,
+        event_id,
         event_title,
+        student_id,
         student_name,
         student_email,
         certificate_code,
@@ -69,7 +78,53 @@ export class SupabaseAdminAuditLogRepository {
       throw new Error(`Denetim kayıtları alınamadı: ${error.message}`);
     }
 
-    return ((data ?? []) as AuditRow[]).map(mapRow);
+    const rows = (data ?? []) as AuditRow[];
+    const mapped = rows.map(mapRow);
+
+    const missingStudentIds = Array.from(
+      new Set(
+        rows
+          .filter((row) => !row.student_name && row.student_id)
+          .map((row) => row.student_id as string),
+      ),
+    );
+    const missingEventIds = Array.from(
+      new Set(
+        rows
+          .filter((row) => !row.event_title && row.event_id)
+          .map((row) => row.event_id as string),
+      ),
+    );
+
+    const [profilesResult, eventsResult] = await Promise.all([
+      missingStudentIds.length > 0
+        ? this.client
+            .from("profiles")
+            .select("id, full_name, email")
+            .in("id", missingStudentIds)
+        : Promise.resolve({ data: [] as Array<{ id: string; full_name: string; email: string }> }),
+      missingEventIds.length > 0
+        ? this.client.from("events").select("id, title").in("id", missingEventIds)
+        : Promise.resolve({ data: [] as Array<{ id: string; title: string }> }),
+    ]);
+
+    const profilesById = new Map(
+      (profilesResult.data ?? []).map((profile) => [profile.id, profile]),
+    );
+    const eventsById = new Map((eventsResult.data ?? []).map((event) => [event.id, event]));
+
+    return mapped.map((log, index) => {
+      const row = rows[index];
+      const profile = row.student_id ? profilesById.get(row.student_id) : undefined;
+      const event = row.event_id ? eventsById.get(row.event_id) : undefined;
+
+      return {
+        ...log,
+        studentName: log.studentName || profile?.full_name || null,
+        studentEmail: log.studentEmail || profile?.email || null,
+        eventTitle: log.eventTitle || event?.title || null,
+      };
+    });
   }
 
   async logEnrollmentDeleted(input: {
