@@ -569,48 +569,57 @@ export function CourseApplicationWizard({ enrollmentId }: CourseApplicationWizar
           </p>
 
           {CONSENT_DOCUMENTS.map((document) => (
-            <ConsentDocumentCard key={document.code} document={document} />
+            <div key={document.code} className="space-y-3">
+              <ConsentDocumentCard document={document} />
+
+              {document.code === "F05" ? (
+                <label className="flex items-start gap-3 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm">
+                  <input
+                    type="checkbox"
+                    checked={scientificAccepted}
+                    onChange={(e) => setScientificAccepted(e.target.checked)}
+                    className="mt-1"
+                  />
+                  <span>
+                    <strong>F05</strong> Bilimsel ölçüm / araştırma onay metnini okudum ve kabul
+                    ediyorum.
+                  </span>
+                </label>
+              ) : null}
+
+              {document.code === "F06" ? (
+                <>
+                  <MediaConsentMatrix value={mediaPermissions} onChange={setMediaPermissions} />
+                  <label className="flex items-start gap-3 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm">
+                    <input
+                      type="checkbox"
+                      checked={mediaAccepted}
+                      onChange={(e) => setMediaAccepted(e.target.checked)}
+                      className="mt-1"
+                    />
+                    <span>
+                      <strong>F06</strong> Görsel / medya kullanım onay metnini okudum; yukarıdaki
+                      matriste seçimlerimi yaptım.
+                    </span>
+                  </label>
+                </>
+              ) : null}
+
+              {document.code === "F07" ? (
+                <label className="flex items-start gap-3 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm">
+                  <input
+                    type="checkbox"
+                    checked={participationAccepted}
+                    onChange={(e) => setParticipationAccepted(e.target.checked)}
+                    className="mt-1"
+                  />
+                  <span>
+                    <strong>F07</strong> Katılım ve güvenlik onay metnini okudum ve kabul ediyorum.
+                  </span>
+                </label>
+              ) : null}
+            </div>
           ))}
-
-          <label className="flex items-start gap-3 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm">
-            <input
-              type="checkbox"
-              checked={scientificAccepted}
-              onChange={(e) => setScientificAccepted(e.target.checked)}
-              className="mt-1"
-            />
-            <span>
-              <strong>F05</strong> Bilimsel ölçüm / araştırma onay metnini okudum ve kabul
-              ediyorum.
-            </span>
-          </label>
-
-          <label className="flex items-start gap-3 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm">
-            <input
-              type="checkbox"
-              checked={mediaAccepted}
-              onChange={(e) => setMediaAccepted(e.target.checked)}
-              className="mt-1"
-            />
-            <span>
-              <strong>F06</strong> Görsel / medya kullanım onay metnini okudum; aşağıdaki matriste
-              seçimlerimi yaptım.
-            </span>
-          </label>
-
-          <MediaConsentMatrix value={mediaPermissions} onChange={setMediaPermissions} />
-
-          <label className="flex items-start gap-3 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm">
-            <input
-              type="checkbox"
-              checked={participationAccepted}
-              onChange={(e) => setParticipationAccepted(e.target.checked)}
-              className="mt-1"
-            />
-            <span>
-              <strong>F07</strong> Katılım ve güvenlik onay metnini okudum ve kabul ediyorum.
-            </span>
-          </label>
 
           <Input
             label="Veli / yasal temsilci ad soyad (dijital imza)"
