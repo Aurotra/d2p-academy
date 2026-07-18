@@ -24,6 +24,6 @@ export interface AcademyEvent {
 export const EVENT_TYPE_LABELS: Record<EventType, string> = {
   training: "Eğitim",
   maker_workshop: "Maker Atölyesi",
-  bootcamp: "Bootcamp",
+  bootcamp: "Yoğun Kamp",
   seminar: "Seminer",
 };

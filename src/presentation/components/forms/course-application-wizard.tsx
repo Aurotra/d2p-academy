@@ -31,6 +31,7 @@ import {
   TPS_SURVEY_DIMENSIONS,
   TRAINING_IMPACT_QUESTIONS,
 } from "@/shared/constants/participant-forms";
+import { GRADE_LEVEL_OPTIONS } from "@/shared/constants/profile-options";
 
 interface CourseApplicationWizardProps {
   enrollmentId: string;
@@ -39,6 +40,21 @@ interface CourseApplicationWizardProps {
 type WizardStep = 1 | 2 | 3 | 4;
 type StepTone = "done" | "action" | "idle";
 
+const GENDER_LABELS: Record<string, string> = {
+  male: "Erkek",
+  female: "Kız",
+  prefer_not_to_say: "Belirtmek istemiyorum",
+};
+
+function formatGradeLevel(value: string | null | undefined): string {
+  if (!value) return "belirtilmemiş";
+  return GRADE_LEVEL_OPTIONS.find((option) => option.value === value)?.label ?? value;
+}
+
+function formatGender(value: string | null | undefined): string {
+  if (!value) return "—";
+  return GENDER_LABELS[value] ?? value;
+}
 function stepToneClass(tone: StepTone, isActive: boolean): string {
   const ring = isActive ? " ring-2 ring-offset-2 ring-sky-400" : "";
 
@@ -499,7 +515,7 @@ export function CourseApplicationWizard({ enrollmentId }: CourseApplicationWizar
         </p>
         <h1 className="mt-2 text-2xl font-black text-navy-950">{state.eventTitle}</h1>
         <p className="mt-2 text-sm text-slate-600">
-          Sınıf: {state.gradeLevel || "belirtilmemiş"}
+          Sınıf: {formatGradeLevel(state.gradeLevel)}
           {state.studentCode ? ` · Öğrenci kodu: ${state.studentCode}` : ""}
         </p>
 
@@ -628,7 +644,11 @@ export function CourseApplicationWizard({ enrollmentId }: CourseApplicationWizar
               <strong>Ad Soyad:</strong> {state.profilePrefill.fullName || "—"}
             </p>
             <p className="mt-1">
-              <strong>Sınıf / Okul / İl-İlçe:</strong> {state.profilePrefill.gradeLevel || "—"} ·{" "}
+              <strong>Cinsiyet:</strong> {formatGender(state.profilePrefill.gender)}
+            </p>
+            <p className="mt-1">
+              <strong>Sınıf / Okul / İl-İlçe:</strong>{" "}
+              {formatGradeLevel(state.profilePrefill.gradeLevel)} ·{" "}
               {state.profilePrefill.schoolName || "—"} · {state.profilePrefill.cityDistrict || "—"}
             </p>
             <p className="mt-2 text-xs text-slate-500">
