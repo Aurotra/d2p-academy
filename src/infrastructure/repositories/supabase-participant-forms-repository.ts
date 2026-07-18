@@ -76,7 +76,7 @@ export class SupabaseParticipantFormsRepository {
       throw new Error("Profil bilgisi alınamadı.");
     }
 
-    const [{ data: consents }, { data: health }, { data: intake }, { data: surveys }] =
+    const [{ data: consents }, { data: health }, { data: intake }, { data: surveys }, { data: certificate }] =
       await Promise.all([
         this.client
           .from("consent_records")
@@ -96,6 +96,12 @@ export class SupabaseParticipantFormsRepository {
           .from("survey_responses")
           .select("survey_type")
           .eq("enrollment_id", enrollmentId),
+        this.client
+          .from("certificates")
+          .select("id, status")
+          .eq("enrollment_id", enrollmentId)
+          .eq("status", "active")
+          .maybeSingle(),
       ]);
 
     const event = Array.isArray(enrollment.events) ? enrollment.events[0] : enrollment.events;
@@ -134,6 +140,7 @@ export class SupabaseParticipantFormsRepository {
       hasIntake: Boolean(intake?.id),
       hasPreTest: (surveys ?? []).some((row) => row.survey_type === "pre_test"),
       hasPostTest: (surveys ?? []).some((row) => row.survey_type === "post_test"),
+      hasActiveCertificate: Boolean(certificate?.id),
     };
   }
 

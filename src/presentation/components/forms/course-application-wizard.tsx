@@ -36,7 +36,21 @@ interface CourseApplicationWizardProps {
   enrollmentId: string;
 }
 
-type WizardStep = 1 | 2 | 3;
+type WizardStep = 1 | 2 | 3 | 4;
+type StepTone = "done" | "action" | "idle";
+
+function stepToneClass(tone: StepTone, isActive: boolean): string {
+  const ring = isActive ? " ring-2 ring-offset-2 ring-sky-400" : "";
+
+  if (tone === "done") {
+    return `bg-emerald-600 text-white${ring}`;
+  }
+  if (tone === "action") {
+    return `bg-red-600 text-white${ring}`;
+  }
+  return `border border-slate-200 bg-slate-100/70 text-slate-400${ring}`;
+}
+
 
 function emptyLikert(ids: string[]): Record<string, number> {
   return Object.fromEntries(ids.map((id) => [id, 0]));
@@ -165,8 +179,10 @@ export function CourseApplicationWizard({ enrollmentId }: CourseApplicationWizar
         setStep(2);
       } else if (next.requiresSurveys && !next.postTestCompletedAt) {
         setStep(3);
+      } else if (!next.hasActiveCertificate) {
+        setStep(4);
       } else {
-        setStep(next.requiresSurveys ? 3 : 2);
+        setStep(4);
       }
     } catch (loadError) {
       setError(loadError instanceof Error ? loadError.message : "Yükleme hatası.");
@@ -345,6 +361,8 @@ export function CourseApplicationWizard({ enrollmentId }: CourseApplicationWizar
       await loadState();
       if (requiresSurveys) {
         setStep(3);
+      } else {
+        setStep(4);
       }
     } catch (saveError) {
       setError(saveError instanceof Error ? saveError.message : "Kayıt başarısız.");
@@ -406,6 +424,7 @@ export function CourseApplicationWizard({ enrollmentId }: CourseApplicationWizar
 
       setSuccess("Son test kaydedildi. Sertifika için admin onayı bekleniyor.");
       await loadState();
+      setStep(4);
     } catch (saveError) {
       setError(saveError instanceof Error ? saveError.message : "Kayıt başarısız.");
     } finally {
@@ -429,10 +448,48 @@ export function CourseApplicationWizard({ enrollmentId }: CourseApplicationWizar
     );
   }
 
-  const wizardComplete =
-    Boolean(state.intakeFormCompletedAt) &&
-    Boolean(state.preTestCompletedAt) &&
-    (!state.requiresSurveys || Boolean(state.postTestCompletedAt));
+  const onaylarDone = (["scientific", "media", "participation"] as const).every((type) =>
+    state.consents.some((item) => item.formType === type && item.accepted),
+  );
+  const tanismaDone = Boolean(state.intakeFormCompletedAt) && Boolean(state.preTestCompletedAt);
+  const sonTestDone = Boolean(state.postTestCompletedAt);
+  const sertifikaDone = Boolean(state.hasActiveCertificate);
+
+  const onaylarTone: StepTone = onaylarDone ? "done" : "action";
+  const tanismaTone: StepTone = !onaylarDone ? "idle" : tanismaDone ? "done" : "action";
+  const sonTestTone: StepTone = !tanismaDone
+    ? "idle"
+    : sonTestDone
+      ? "done"
+      : state.requiresSurveys
+        ? "action"
+        : "done";
+  const sertifikaTone: StepTone = !sonTestDone ? "idle" : sertifikaDone ? "done" : "action";
+
+  const wizardComplete = onaylarDone && tanismaDone && sonTestDone;
+
+  const steps: Array<{ id: WizardStep; label: string; tone: StepTone; enabled: boolean }> = [
+    { id: 1, label: "Onaylar", tone: onaylarTone, enabled: true },
+    { id: 2, label: "Tanışma", tone: tanismaTone, enabled: onaylarDone },
+    {
+      id: 3,
+      label: "Son test",
+      tone: sonTestTone,
+      enabled: tanismaDone && state.requiresSurveys,
+    },
+    {
+      id: 4,
+      label: "Sertifika onay",
+      tone: sertifikaTone,
+      enabled: sonTestDone || (!state.requiresSurveys && tanismaDone),
+    },
+  ];
+
+  // For non-survey grades, son test pill still visible but auto-done after tanışma
+  if (!state.requiresSurveys) {
+    steps[2].enabled = tanismaDone;
+    steps[2].tone = !tanismaDone ? "idle" : "done";
+  }
 
   return (
     <div className="space-y-6">
@@ -447,24 +504,28 @@ export function CourseApplicationWizard({ enrollmentId }: CourseApplicationWizar
         </p>
 
         <div className="mt-5 flex flex-wrap gap-2">
-          {[1, 2, 3].map((value) => {
-            if (value === 3 && !state.requiresSurveys) return null;
-            return (
-              <button
-                key={value}
-                type="button"
-                onClick={() => setStep(value as WizardStep)}
-                className={`rounded-full px-4 py-2 text-sm font-semibold ${
-                  step === value
-                    ? "bg-document-primary text-white"
-                    : "border border-slate-200 bg-slate-50 text-slate-700"
-                }`}
-              >
-                Adım {value}
-              </button>
-            );
-          })}
+          {steps.map((item) => (
+            <button
+              key={item.id}
+              type="button"
+              disabled={!item.enabled && item.tone === "idle"}
+              onClick={() => {
+                if (item.enabled || item.tone !== "idle") {
+                  setStep(item.id);
+                }
+              }}
+              className={`rounded-full px-4 py-2 text-sm font-semibold transition disabled:cursor-not-allowed ${stepToneClass(
+                item.tone,
+                step === item.id,
+              )}`}
+            >
+              {item.label}
+            </button>
+          ))}
         </div>
+        <p className="mt-3 text-xs text-slate-500">
+          Yeşil: tamamlandı · Kırmızı: doldurulmalı · Silik: henüz sırası gelmedi
+        </p>
       </div>
 
       {error ? (
@@ -485,7 +546,7 @@ export function CourseApplicationWizard({ enrollmentId }: CourseApplicationWizar
 
       {step === 1 ? (
         <section className="space-y-4 rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm">
-          <h2 className="text-xl font-bold text-navy-950">Adım 1 — Onaylar</h2>
+          <h2 className="text-xl font-bold text-navy-950">Onaylar</h2>
           <p className="text-sm text-slate-600">
             F05, F06 ve F07 metinlerini okuyun; ardından onay kutularını işaretleyin. (F04 uzman
             görüş formudur, öğrenci/veli akışında yer almaz.)
@@ -558,7 +619,7 @@ export function CourseApplicationWizard({ enrollmentId }: CourseApplicationWizar
       {step === 2 ? (
         <section className="space-y-4 rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm">
           <h2 className="text-xl font-bold text-navy-950">
-            Adım 2 — Tanıma Formu (F01)
+            Tanışma (F01)
             {state.requiresSurveys ? " + Ön Test (F02)" : ""}
           </h2>
 
@@ -668,7 +729,7 @@ export function CourseApplicationWizard({ enrollmentId }: CourseApplicationWizar
 
           {state.requiresSurveys ? (
             <div className="space-y-4 border-t border-slate-100 pt-6">
-              <h3 className="text-lg font-bold text-navy-950">Adım 2.3 — Ön Test (F02)</h3>
+              <h3 className="text-lg font-bold text-navy-950">Ön Test (F02)</h3>
               {TPS_SURVEY_DIMENSIONS.map((dimension) => (
                 <LikertScaleGroup
                   key={dimension.key}
@@ -703,9 +764,10 @@ export function CourseApplicationWizard({ enrollmentId }: CourseApplicationWizar
         </section>
       ) : null}
 
-      {step === 3 && state.requiresSurveys ? (
+      {step === 3 ? (
+        state.requiresSurveys ? (
         <section className="space-y-4 rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm">
-          <h2 className="text-xl font-bold text-navy-950">Adım 3 — Son Test (F03)</h2>
+          <h2 className="text-xl font-bold text-navy-950">Son Test (F03)</h2>
           <p className="text-sm text-slate-600">
             Eğitim bitiminde doldurun. Tamamlanmadan admin sertifika veremez.
           </p>
@@ -769,6 +831,44 @@ export function CourseApplicationWizard({ enrollmentId }: CourseApplicationWizar
           <Button type="button" disabled={isSaving} onClick={() => void submitPostTest()}>
             {isSaving ? "Kaydediliyor..." : "Son Testi Kaydet"}
           </Button>
+        </section>
+        ) : (
+          <section className="space-y-3 rounded-[2rem] border border-emerald-200 bg-emerald-50 p-6 shadow-sm">
+            <h2 className="text-xl font-bold text-navy-950">Son Test</h2>
+            <p className="text-sm text-emerald-900">
+              Sınıf düzeyiniz 5–8 dışında olduğu için son test zorunlu değil; bu adım otomatik
+              tamamlandı.
+            </p>
+          </section>
+        )
+      ) : null}
+
+      {step === 4 ? (
+        <section
+          className={`space-y-3 rounded-[2rem] border p-6 shadow-sm ${
+            sertifikaDone
+              ? "border-emerald-200 bg-emerald-50"
+              : sonTestDone
+                ? "border-red-200 bg-red-50"
+                : "border-slate-200 bg-slate-50"
+          }`}
+        >
+          <h2 className="text-xl font-bold text-navy-950">Sertifika onay</h2>
+          {sertifikaDone ? (
+            <p className="text-sm text-emerald-900">
+              Sertifikanız onaylandı ve oluşturuldu. Öğrenci panelindeki Sertifikalarım
+              bölümünden indirebilirsiniz.
+            </p>
+          ) : sonTestDone ? (
+            <p className="text-sm text-red-800">
+              Formlarınız tamam. Sertifika için admin onayı bekleniyor. Onaylanınca burada yeşil
+              görünecek.
+            </p>
+          ) : (
+            <p className="text-sm text-slate-600">
+              Önceki adımları tamamladıktan sonra sertifika onayı burada görünecek.
+            </p>
+          )}
         </section>
       ) : null}
     </div>

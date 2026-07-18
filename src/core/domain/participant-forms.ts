@@ -95,6 +95,7 @@ export interface EnrollmentFormProgress {
   hasIntake: boolean;
   hasPreTest: boolean;
   hasPostTest: boolean;
+  hasActiveCertificate: boolean;
 }
 
 export function requiresD2pTpsSurveys(gradeLevel: string | null | undefined): boolean {
