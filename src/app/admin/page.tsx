@@ -46,6 +46,13 @@ const categories: AdminCategory[] = [
         tone: "border-violet-200 bg-violet-100 text-violet-950 hover:bg-violet-50",
         badge: "bg-violet-200/70 text-violet-800",
       },
+      {
+        href: "/admin/logs",
+        title: "İşlem Logları",
+        description: "Sertifika iptal nedenleri ve silinen kayıtları görüntüleyin.",
+        tone: "border-slate-300 bg-slate-100 text-slate-950 hover:bg-slate-50",
+        badge: "bg-slate-200/80 text-slate-800",
+      },
     ],
   },
   {

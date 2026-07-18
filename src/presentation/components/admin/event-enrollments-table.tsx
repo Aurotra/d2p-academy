@@ -50,6 +50,8 @@ export function EventEnrollmentsTable({
   const [error, setError] = useState<string | null>(null);
   const [pendingSingleId, setPendingSingleId] = useState<string | null>(null);
   const [showBulkConfirm, setShowBulkConfirm] = useState(false);
+  const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
+  const [deleteReason, setDeleteReason] = useState("");
 
   const eligibleIds = useMemo(
     () => enrollments.filter((row) => canMarkCompleted(row.status)).map((row) => row.id),
@@ -118,8 +120,47 @@ export function EventEnrollmentsTable({
     }
   }
 
+  async function deleteEnrollment(id: string) {
+    setIsUpdating(true);
+    setError(null);
+
+    try {
+      const response = await fetch("/api/v1/admin/enrollments", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          enrollmentId: id,
+          reason: deleteReason.trim() || null,
+        }),
+      });
+
+      const payload = (await response.json()) as { error?: string };
+
+      if (!response.ok) {
+        throw new Error(payload.error ?? "Kayıt silinemedi.");
+      }
+
+      setPendingDeleteId(null);
+      setDeleteReason("");
+      setSelectedIds((prev) => {
+        const next = new Set(prev);
+        next.delete(id);
+        return next;
+      });
+      router.refresh();
+    } catch (deleteError) {
+      setError(deleteError instanceof Error ? deleteError.message : "Silme başarısız.");
+    } finally {
+      setIsUpdating(false);
+    }
+  }
+
   const pendingStudent = pendingSingleId
     ? enrollments.find((row) => row.id === pendingSingleId)
+    : null;
+
+  const pendingDeleteStudent = pendingDeleteId
+    ? enrollments.find((row) => row.id === pendingDeleteId)
     : null;
 
   const bulkStudents = enrollments.filter((row) => selectedEligible.includes(row.id));
@@ -214,6 +255,51 @@ export function EventEnrollmentsTable({
         </div>
       ) : null}
 
+      {pendingDeleteStudent ? (
+        <div className="border-b border-red-200 bg-red-50 px-5 py-4 text-sm text-red-950">
+          <p className="font-semibold">
+            {pendingDeleteStudent.studentName} kaydını “{eventTitle}” etkinliğinden silmek
+            istediğinize emin misiniz?
+          </p>
+          <p className="mt-1 text-xs text-red-900/80">
+            Bu işlem geri alınamaz. Aktif sertifikası varsa önce sertifikayı iptal etmelisiniz.
+            Silme işlemi loglara yazılır.
+          </p>
+          <label className="mt-3 block text-xs font-semibold text-red-900">
+            Silme nedeni (opsiyonel)
+            <input
+              value={deleteReason}
+              onChange={(e) => setDeleteReason(e.target.value)}
+              className="mt-1 w-full rounded-xl border border-red-200 bg-white px-3 py-2 text-sm text-slate-900"
+              placeholder="Örn. yanlış kayıt / test kaydı"
+            />
+          </label>
+          <div className="mt-3 flex flex-wrap gap-2">
+            <Button
+              type="button"
+              variant="secondary"
+              disabled={isUpdating}
+              onClick={() => void deleteEnrollment(pendingDeleteStudent.id)}
+              className="min-h-[40px] px-3 py-2 text-xs"
+            >
+              {isUpdating ? "Siliniyor..." : "Evet, sil"}
+            </Button>
+            <Button
+              type="button"
+              variant="ghost"
+              disabled={isUpdating}
+              onClick={() => {
+                setPendingDeleteId(null);
+                setDeleteReason("");
+              }}
+              className="min-h-[40px] px-3 py-2 text-xs"
+            >
+              Vazgeç
+            </Button>
+          </div>
+        </div>
+      ) : null}
+
       {error ? (
         <p className="border-b border-red-200 bg-red-50 px-5 py-3 text-xs text-red-700">{error}</p>
       ) : null}
@@ -269,30 +355,51 @@ export function EventEnrollmentsTable({
                     {formatDate(enrollment.registeredAt)}
                   </td>
                   <td className="px-5 py-4">
-                    {enrollment.status === "completed" ? (
-                      enrollment.hasActiveCertificate ? (
-                        <span className="text-xs font-semibold text-sky-700">
-                          Sertifika verildi
-                        </span>
-                      ) : (
-                        <span className="text-xs font-semibold text-emerald-700">
-                          Sertifikaya hazır
-                        </span>
-                      )
-                    ) : eligible ? (
+                    <div className="flex flex-wrap items-center gap-2">
+                      {enrollment.status === "completed" ? (
+                        enrollment.hasActiveCertificate ? (
+                          <span className="text-xs font-semibold text-sky-700">
+                            Sertifika verildi
+                          </span>
+                        ) : (
+                          <span className="text-xs font-semibold text-emerald-700">
+                            Sertifikaya hazır
+                          </span>
+                        )
+                      ) : eligible ? (
+                        <Button
+                          type="button"
+                          variant="secondary"
+                          disabled={isUpdating}
+                          onClick={() => {
+                            setShowBulkConfirm(false);
+                            setPendingDeleteId(null);
+                            setPendingSingleId(enrollment.id);
+                          }}
+                          className="min-h-[40px] px-3 py-2 text-xs"
+                        >
+                          Tamamlandı
+                        </Button>
+                      ) : null}
                       <Button
                         type="button"
-                        variant="secondary"
-                        disabled={isUpdating}
+                        variant="ghost"
+                        disabled={isUpdating || enrollment.hasActiveCertificate}
                         onClick={() => {
                           setShowBulkConfirm(false);
-                          setPendingSingleId(enrollment.id);
+                          setPendingSingleId(null);
+                          setPendingDeleteId(enrollment.id);
                         }}
-                        className="min-h-[40px] px-3 py-2 text-xs"
+                        className="min-h-[40px] px-3 py-2 text-xs text-red-700 hover:bg-red-50"
+                        title={
+                          enrollment.hasActiveCertificate
+                            ? "Önce sertifikayı iptal edin"
+                            : "Kaydı sil"
+                        }
                       >
-                        Tamamlandı
+                        Sil
                       </Button>
-                    ) : null}
+                    </div>
                   </td>
                 </tr>
               );

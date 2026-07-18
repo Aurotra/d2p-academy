@@ -20,6 +20,7 @@ const navItems: NavItem[] = [
   { href: "/admin/events", label: "Etkinlikler" },
   { href: "/admin/enrollments", label: "Etkinlik Kayıtları" },
   { href: "/admin/certificates", label: "Sertifikalar" },
+  { href: "/admin/logs", label: "İşlem Logları" },
   { href: "/admin/gallery", label: "Galeri" },
   { href: "/admin/documents", label: "Dökümanlar" },
   { href: "/admin/registrations", label: "Ön Kayıtlar", countKey: "registrations" },

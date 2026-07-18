@@ -157,6 +157,13 @@ export function AdminCertificatesManager() {
           Sadece <strong>Tamamlandı</strong> işaretlenen, <strong>son testi tamamlanmış</strong> ve
           henüz sertifikası olmayan kayıtlar burada görünür.
         </p>
+        <p className="mt-2 text-sm text-slate-600">
+          İptal edilen sertifikaların nedenlerini{" "}
+          <a href="/admin/logs?action=certificate_revoked" className="font-semibold underline">
+            İşlem Logları
+          </a>{" "}
+          sayfasında görebilirsiniz.
+        </p>
         {pendingEnrollments.length === 0 && !isLoading ? (
           <p className="mt-4 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
             Sertifika verilecek uygun kayıt yok. Önce Etkinlik Kayıtları’ndan “Tamamlandı” yapın;
