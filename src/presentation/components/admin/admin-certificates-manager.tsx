@@ -154,16 +154,13 @@ export function AdminCertificatesManager() {
       <div className="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm">
         <h2 className="text-xl font-bold text-navy-950">Sertifika Oluştur</h2>
         <p className="mt-2 text-sm text-slate-600">
-          Sadece <strong>Tamamlandı</strong> işaretlenen ve henüz sertifikası olmayan kayıtlar
-          burada görünür. Liste boşsa önce Etkinlik Kayıtları’ndan öğrenciyi tamamlandı yapın.
+          Sadece <strong>Tamamlandı</strong> işaretlenen, <strong>son testi tamamlanmış</strong> ve
+          henüz sertifikası olmayan kayıtlar burada görünür.
         </p>
         {pendingEnrollments.length === 0 && !isLoading ? (
           <p className="mt-4 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
-            Sertifika verilecek tamamlanmış kayıt yok.{" "}
-            <a href="/admin/enrollments" className="font-semibold underline">
-              Etkinlik Kayıtları
-            </a>{" "}
-            sayfasından “Tamamlandı” ile onaylayın.
+            Sertifika verilecek uygun kayıt yok. Önce Etkinlik Kayıtları’ndan “Tamamlandı” yapın;
+            öğrencinin son test formunu da bitirmiş olması gerekir.
           </p>
         ) : null}
         <form onSubmit={handleIssue} className="mt-4 flex flex-col gap-4 sm:flex-row sm:items-end">
@@ -171,6 +168,7 @@ export function AdminCertificatesManager() {
             label="Kayıt Seç"
             value={selectedEnrollmentId}
             onChange={(e) => setSelectedEnrollmentId(e.target.value)}
+            disabled={pendingEnrollments.length === 0}
           >
             <option value="">Kayıt seçin</option>
             {pendingEnrollments.map((enrollment) => (
@@ -179,7 +177,10 @@ export function AdminCertificatesManager() {
               </option>
             ))}
           </Select>
-          <Button type="submit" disabled={isSaving || !selectedEnrollmentId}>
+          <Button
+            type="submit"
+            disabled={isSaving || !selectedEnrollmentId || pendingEnrollments.length === 0}
+          >
             {isSaving ? "Oluşturuluyor..." : "Sertifika Ver"}
           </Button>
         </form>

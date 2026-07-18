@@ -23,6 +23,7 @@ interface CertificateRow {
 interface PendingEnrollmentRow {
   id: string;
   completed_at: string;
+  post_test_completed_at: string | null;
   profiles: { full_name: string; email: string } | { full_name: string; email: string }[] | null;
   events: { title: string } | { title: string }[] | null;
 }
@@ -85,12 +86,14 @@ export class SupabaseAdminCertificateRepository implements AdminCertificateRepos
         `
         id,
         completed_at,
+        post_test_completed_at,
         profiles ( full_name, email ),
         events ( title ),
         certificates ( id, status )
       `,
       )
       .eq("status", "completed")
+      .not("post_test_completed_at", "is", null)
       .order("completed_at", { ascending: false });
 
     if (error) {

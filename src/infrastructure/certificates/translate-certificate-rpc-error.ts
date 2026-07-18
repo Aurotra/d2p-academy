@@ -14,6 +14,8 @@ const CERTIFICATE_RPC_ERRORS: Record<string, string> = {
   "Sertifika iptal etmek için admin yetkisi gerekli.":
     "Sertifika iptal etmek için admin yetkisi gerekli.",
   "Sertifika bulunamadı.": "Sertifika bulunamadı.",
+  "Son test tamamlanmadan sertifika verilemez.":
+    "Son test tamamlanmadan sertifika verilemez.",
 };
 
 export function translateCertificateRpcError(message: string | null | undefined): string {

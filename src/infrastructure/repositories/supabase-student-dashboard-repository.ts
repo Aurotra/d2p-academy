@@ -185,10 +185,6 @@ export class SupabaseStudentDashboardRepository implements StudentDashboardRepos
 
         const event = mapEvent(eventRow);
 
-        if (event.startAt.getTime() < Date.now()) {
-          return null;
-        }
-
         return {
           id: row.id,
           status: row.status,

@@ -79,13 +79,13 @@ export function DashboardView({ data, isAdmin }: DashboardViewProps) {
         <div className="mt-8 grid gap-8 lg:grid-cols-2">
           <div className="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm">
             <div className="mb-6 flex items-center justify-between">
-              <h2 className="text-xl font-bold text-navy-950">Yaklaşan Etkinliklerim</h2>
+              <h2 className="text-xl font-bold text-navy-950">Etkinlik Kayıtlarım</h2>
               <Badge tone="cyan">{data.upcomingEnrollments.length} kayıt</Badge>
             </div>
 
             {data.upcomingEnrollments.length === 0 ? (
               <div className="rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-4 py-8 text-center text-sm text-slate-600">
-                <p>Yaklaşan etkinlik kaydın bulunmuyor.</p>
+                <p>Aktif etkinlik kaydın bulunmuyor.</p>
                 <Link
                   href="/#events"
                   className="mt-3 inline-flex font-semibold text-document-primary hover:underline"
@@ -113,6 +113,12 @@ export function DashboardView({ data, isAdmin }: DashboardViewProps) {
                         ? "Online etkinlik"
                         : (enrollment.event.locationName ?? "Konum belirtilecek")}
                     </p>
+                    <Link
+                      href={`/dashboard/enrollments/${enrollment.id}/forms`}
+                      className="mt-3 inline-flex text-sm font-semibold text-document-primary hover:underline"
+                    >
+                      Katılımcı formlarını doldur →
+                    </Link>
                   </li>
                 ))}
               </ul>
