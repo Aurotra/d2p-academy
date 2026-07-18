@@ -10,10 +10,12 @@ import type {
 import { MEDIA_PERMISSION_KEYS } from "@/core/domain/participant-forms";
 import { LikertScaleGroup } from "@/presentation/components/forms/likert-scale-group";
 import { MediaConsentMatrix } from "@/presentation/components/forms/media-consent-matrix";
+import { ConsentDocumentCard } from "@/presentation/components/forms/consent-document-card";
 import { Button } from "@/presentation/components/ui/button";
 import { Input } from "@/presentation/components/ui/input";
 import { Textarea } from "@/presentation/components/ui/textarea";
 import {
+  CONSENT_DOCUMENTS,
   CONSENT_TEXT_VERSIONS,
   EMPTY_MEDIA_PERMISSIONS,
   INTAKE_LIKERT_QUESTIONS,
@@ -426,16 +428,14 @@ export function CourseApplicationWizard({ enrollmentId }: CourseApplicationWizar
       {step === 1 ? (
         <section className="space-y-4 rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm">
           <h2 className="text-xl font-bold text-navy-950">Adım 1 — Onaylar</h2>
+          <p className="text-sm text-slate-600">
+            Aşağıdaki F04, F05 ve F06 metinlerini okuyun; ardından ilgili onay kutularını
+            işaretleyin.
+          </p>
 
-          <label className="flex items-start gap-3 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm">
-            <input
-              type="checkbox"
-              checked={scientificAccepted}
-              onChange={(e) => setScientificAccepted(e.target.checked)}
-              className="mt-1"
-            />
-            <span>Bilimsel araştırma / ölçüm onayı metnini okudum ve kabul ediyorum (F05).</span>
-          </label>
+          {CONSENT_DOCUMENTS.map((document) => (
+            <ConsentDocumentCard key={document.code} document={document} />
+          ))}
 
           <label className="flex items-start gap-3 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm">
             <input
@@ -444,7 +444,22 @@ export function CourseApplicationWizard({ enrollmentId }: CourseApplicationWizar
               onChange={(e) => setParticipationAccepted(e.target.checked)}
               className="mt-1"
             />
-            <span>Katılım ve güvenlik kurallarını kabul ediyorum (F04).</span>
+            <span>
+              <strong>F04</strong> Katılım ve güvenlik onay metnini okudum ve kabul ediyorum.
+            </span>
+          </label>
+
+          <label className="flex items-start gap-3 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm">
+            <input
+              type="checkbox"
+              checked={scientificAccepted}
+              onChange={(e) => setScientificAccepted(e.target.checked)}
+              className="mt-1"
+            />
+            <span>
+              <strong>F05</strong> Bilimsel ölçüm / araştırma onay metnini okudum ve kabul
+              ediyorum.
+            </span>
           </label>
 
           <label className="flex items-start gap-3 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm">
@@ -454,7 +469,10 @@ export function CourseApplicationWizard({ enrollmentId }: CourseApplicationWizar
               onChange={(e) => setMediaAccepted(e.target.checked)}
               className="mt-1"
             />
-            <span>Görsel / medya kullanım koşullarını okudum (F06).</span>
+            <span>
+              <strong>F06</strong> Görsel / medya kullanım onay metnini okudum; aşağıdaki matriste
+              seçimlerimi yaptım.
+            </span>
           </label>
 
           <MediaConsentMatrix value={mediaPermissions} onChange={setMediaPermissions} />

@@ -7,6 +7,57 @@ export const CONSENT_TEXT_VERSIONS = {
   participation: "F04-V01",
 } as const;
 
+export interface ConsentDocument {
+  code: "F04" | "F05" | "F06";
+  formType: "participation" | "scientific" | "media";
+  title: string;
+  version: string;
+  paragraphs: string[];
+}
+
+/** Onay adımında gösterilen tam metinler (sürüm = CONSENT_TEXT_VERSIONS). */
+export const CONSENT_DOCUMENTS: ConsentDocument[] = [
+  {
+    code: "F04",
+    formType: "participation",
+    title: "Katılım ve Güvenlik Onayı",
+    version: CONSENT_TEXT_VERSIONS.participation,
+    paragraphs: [
+      "Bu form, katılımcının D2P Academy eğitim / atölye programına güvenli ve kurallara uygun şekilde katılımını belgelemek içindir.",
+      "Katılımcı (ve 18 yaşından küçükse yasal temsilcisi); eğitim süresince eğitmen ve görevli personelin yönergelerine uyacağını, atölye alanındaki güvenlik kurallarına (makine, 3D yazıcı, kesici aletler, elektrik ve malzeme güvenliği dahil) riayet edeceğini kabul eder.",
+      "Eğitim alanına zarar verecek, diğer katılımcıların güvenliğini tehlikeye atacak veya eğitimi bozacak davranışlarda bulunulmayacaktır. Gerekli görüldüğünde D2P Academy, güvenlik gerekçesiyle katılımı geçici veya kalıcı olarak sonlandırabilir.",
+      "Sağlık açısından özel bir durum, alerji veya dikkat edilmesi gereken bir husus varsa, bu bilgi eğitimden önce sağlık notu alanında veya görevlilere bildirilecektir. Bildirilmeyen durumlardan doğabilecek sonuçlardan D2P Academy sorumlu tutulamaz.",
+      "Bu onayı vererek yukarıdaki katılım ve güvenlik koşullarını okuduğunuzu, anladığınızı ve kabul ettiğinizi beyan edersiniz.",
+    ],
+  },
+  {
+    code: "F05",
+    formType: "scientific",
+    title: "Bilimsel Ölçüm ve Araştırma Onayı",
+    version: CONSENT_TEXT_VERSIONS.scientific,
+    paragraphs: [
+      "D2P Academy, eğitim etkisini ölçmek ve programı geliştirmek amacıyla katılımcılara ön test / son test ve tanıma formları uygulayabilir.",
+      "Toplanan cevaplar; öğrenme kazanımlarının değerlendirilmesi, anonim veya kimliği maskelenmiş istatistiksel analiz, akademik sunum, raporlama ve eğitim kalitesinin iyileştirilmesi amaçlarıyla işlenebilir.",
+      "Araştırma / ölçüm verileri, ilgili mevzuat (KVKK dahil) çerçevesinde saklanır; ticari reklam amaçlı üçüncü kişilere satılmaz. Raporlarda mümkün olduğunca toplu / anonim sonuçlar kullanılır.",
+      "Katılım gönüllüdür; ancak programa kayıt ve sertifika süreçlerinin bir parçası olarak ilgili formların doldurulması istenebilir. Onay vermemeniz halinde eğitimin bilimsel ölçüm kısmına dahil edilmezsiniz; bu durumun sertifika / tamamlama süreçlerini etkileyebileceğini kabul edersiniz.",
+      "Bu onayı vererek bilimsel ölçüm ve değerlendirme amaçlı form uygulamalarını okuduğunuzu, anladığınızı ve kabul ettiğinizi beyan edersiniz.",
+    ],
+  },
+  {
+    code: "F06",
+    formType: "media",
+    title: "Görsel ve Medya Kullanım Onayı",
+    version: CONSENT_TEXT_VERSIONS.media,
+    paragraphs: [
+      "Eğitim sırasında katılımcının fotoğraf ve/veya videosu çekilebilir. Aşağıdaki izin matrisi, her kullanım alanı için ayrı ayrı açık rıza almayı amaçlar.",
+      "İzin verdiğiniz kalemler kapsamında görseller; D2P Academy web sitesi, sosyal medya hesapları, basılı tanıtım materyalleri, bilimsel / akademik sunumlar (anonim kullanım) ve kurum / proje raporlarında kullanılabilir.",
+      "İzin vermediğiniz kalemler için ilgili kullanım yapılmaz. İstediğiniz zaman yazılı başvurunuzla izinlerinizi güncellemenizi talep edebilirsiniz; geçmişte yayımlanmış içeriklerin geri alınması teknik olarak her zaman mümkün olmayabilir.",
+      "18 yaşından küçük katılımcılar için bu onayı yasal temsilci (veli/vasi) verir. Aşağıya yazılan ad-soyad, dijital imza yerine geçer ve onay zamanı ile birlikte kayıt altına alınır.",
+      "Bu metni ve alttaki izin matrisini okuyarak, işaretlediğiniz kalemler için açık rızanızı verdiğinizi beyan edersiniz.",
+    ],
+  },
+];
+
 export const SURVEY_FORM_VERSIONS = {
   pre_test: "F02-V01",
   post_test: "F03-V01",
