@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { Suspense } from "react";
 
-import type { StudentDashboardData } from "@/core/domain/student-dashboard";
+import type { StudentDashboardData, EnrollmentStatus } from "@/core/domain/student-dashboard";
 import { EVENT_TYPE_LABELS } from "@/core/domain/event";
 import { BRAND_SURFACE_GRADIENT } from "@/shared/constants/brand-surfaces";
 import { Badge } from "@/presentation/components/ui/badge";
@@ -12,6 +12,14 @@ interface DashboardViewProps {
   data: StudentDashboardData;
   isAdmin: boolean;
 }
+
+const ENROLLMENT_STATUS_LABELS: Record<EnrollmentStatus, string> = {
+  registered: "Kayıtlı",
+  attended: "Katıldı",
+  completed: "Tamamlandı",
+  cancelled: "İptal",
+  no_show: "Gelmedi",
+};
 
 function formatDate(date: Date): string {
   return new Intl.DateTimeFormat("tr-TR", {
@@ -102,7 +110,9 @@ export function DashboardView({ data, isAdmin }: DashboardViewProps) {
                   >
                     <div className="flex flex-wrap gap-2">
                       <Badge tone="cyan">{EVENT_TYPE_LABELS[enrollment.event.eventType]}</Badge>
-                      <Badge tone="neutral">{enrollment.status}</Badge>
+                      <Badge tone="neutral">
+                        {ENROLLMENT_STATUS_LABELS[enrollment.status] ?? enrollment.status}
+                      </Badge>
                     </div>
                     <h3 className="mt-3 font-semibold text-navy-950">{enrollment.event.title}</h3>
                     <p className="mt-2 text-sm text-slate-600">
