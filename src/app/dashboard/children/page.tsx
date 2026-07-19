@@ -37,6 +37,17 @@ export default async function DashboardChildrenPage() {
         ...student,
         enrollmentCount: progress?.enrollments?.length ?? 0,
         certificateCount: progress?.certificates?.length ?? 0,
+        progressPreview: {
+          enrollments: (progress?.enrollments ?? []).map((item) => ({
+            title: item.eventTitle,
+            status: item.status,
+            date: item.eventDate,
+          })),
+          certificates: (progress?.certificates ?? []).map((item) => ({
+            code: item.certificateCode,
+            issuedAt: item.issuedAt,
+          })),
+        },
       };
     }),
   );

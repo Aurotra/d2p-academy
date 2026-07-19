@@ -5,6 +5,11 @@ import { useState, type FormEvent, type ReactNode } from "react";
 import { Button } from "@/presentation/components/ui/button";
 import { Input } from "@/presentation/components/ui/input";
 
+export type ChildProgressPreview = {
+  enrollments: Array<{ title: string; status: string; date: string }>;
+  certificates: Array<{ code: string; issuedAt: string }>;
+};
+
 export type ChildStudent = {
   id: string;
   full_name: string;
@@ -12,12 +17,33 @@ export type ChildStudent = {
   created_at: string;
   enrollmentCount?: number;
   certificateCount?: number;
+  progressPreview?: ChildProgressPreview;
 };
+
+const STATUS_LABELS: Record<string, string> = {
+  registered: "Kayıtlı",
+  attended: "Katıldı",
+  completed: "Tamamlandı",
+  cancelled: "İptal",
+  no_show: "Gelmedi",
+};
+
+function formatDate(value: string): string {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return value;
+  }
+  return new Intl.DateTimeFormat("tr-TR", {
+    dateStyle: "medium",
+    timeZone: "Europe/Istanbul",
+  }).format(date);
+}
 
 export function ChildrenStudentsClient({ initialStudents }: { initialStudents: ChildStudent[] }) {
   const [students, setStudents] = useState<ChildStudent[]>(initialStudents);
   const [addOpen, setAddOpen] = useState(false);
   const [resetTarget, setResetTarget] = useState<ChildStudent | null>(null);
+  const [expandedId, setExpandedId] = useState<string | null>(null);
 
   return (
     <div className="space-y-4">
@@ -32,24 +58,82 @@ export function ChildrenStudentsClient({ initialStudents }: { initialStudents: C
           </div>
         ) : (
           <ul className="divide-y divide-slate-100">
-            {students.map((student) => (
-              <li
-                key={student.id}
-                className="flex flex-col gap-3 p-5 sm:flex-row sm:items-center sm:justify-between"
-              >
-                <div>
-                  <p className="font-semibold text-navy-950">{student.full_name}</p>
-                  <p className="text-sm text-slate-500">@{student.username}</p>
-                  <p className="mt-1 text-xs text-slate-500">
-                    {student.enrollmentCount ?? 0} etkinlik · {student.certificateCount ?? 0}{" "}
-                    sertifika
-                  </p>
-                </div>
-                <Button variant="outline" onClick={() => setResetTarget(student)}>
-                  Şifreyi sıfırla
-                </Button>
-              </li>
-            ))}
+            {students.map((student) => {
+              const expanded = expandedId === student.id;
+              const preview = student.progressPreview;
+
+              return (
+                <li key={student.id} className="p-5">
+                  <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                    <div>
+                      <p className="font-semibold text-navy-950">{student.full_name}</p>
+                      <p className="text-sm text-slate-500">@{student.username}</p>
+                      <p className="mt-1 text-xs text-slate-500">
+                        {student.enrollmentCount ?? 0} etkinlik ·{" "}
+                        {student.certificateCount ?? 0} sertifika
+                      </p>
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      <Button
+                        variant="outline"
+                        onClick={() => setExpandedId(expanded ? null : student.id)}
+                      >
+                        {expanded ? "Gizle" : "Detay"}
+                      </Button>
+                      <Button variant="outline" onClick={() => setResetTarget(student)}>
+                        Şifreyi sıfırla
+                      </Button>
+                    </div>
+                  </div>
+
+                  {expanded ? (
+                    <div className="mt-4 grid gap-4 rounded-2xl border border-slate-100 bg-slate-50 p-4 sm:grid-cols-2">
+                      <div>
+                        <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                          Etkinlikler
+                        </p>
+                        {(preview?.enrollments.length ?? 0) === 0 ? (
+                          <p className="mt-2 text-sm text-slate-600">Kayıt yok</p>
+                        ) : (
+                          <ul className="mt-2 space-y-2">
+                            {preview!.enrollments.map((item, index) => (
+                              <li key={`${item.title}-${index}`} className="text-sm text-slate-700">
+                                <span className="font-medium">{item.title}</span>
+                                <span className="text-slate-500">
+                                  {" "}
+                                  · {STATUS_LABELS[item.status] ?? item.status} ·{" "}
+                                  {formatDate(item.date)}
+                                </span>
+                              </li>
+                            ))}
+                          </ul>
+                        )}
+                      </div>
+                      <div>
+                        <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                          Sertifikalar
+                        </p>
+                        {(preview?.certificates.length ?? 0) === 0 ? (
+                          <p className="mt-2 text-sm text-slate-600">Sertifika yok</p>
+                        ) : (
+                          <ul className="mt-2 space-y-2">
+                            {preview!.certificates.map((item) => (
+                              <li key={item.code} className="text-sm text-slate-700">
+                                <span className="font-medium">{item.code}</span>
+                                <span className="text-slate-500">
+                                  {" "}
+                                  · {formatDate(item.issuedAt)}
+                                </span>
+                              </li>
+                            ))}
+                          </ul>
+                        )}
+                      </div>
+                    </div>
+                  ) : null}
+                </li>
+              );
+            })}
           </ul>
         )}
       </div>
@@ -105,7 +189,12 @@ function AddStudentDialog({
         return;
       }
       setSuccess(`${payload.data.student.full_name} eklendi.`);
-      onCreated(payload.data.student);
+      onCreated({
+        ...payload.data.student,
+        enrollmentCount: 0,
+        certificateCount: 0,
+        progressPreview: { enrollments: [], certificates: [] },
+      });
     } catch {
       setError("Bağlantı hatası.");
     } finally {

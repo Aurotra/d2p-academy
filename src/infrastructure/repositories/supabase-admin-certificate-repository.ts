@@ -13,6 +13,7 @@ import {
   isProfileComplete,
   PROFILE_REQUIRED_FOR_CERTIFICATE_MESSAGE,
 } from "@/lib/utils/progress";
+import { formatStudentContact } from "@/shared/utils/format-student-contact";
 
 interface CertificateRow {
   id: string;
@@ -20,13 +21,17 @@ interface CertificateRow {
   issued_at: string;
   status: CertificateStatus;
   pdf_url: string | null;
-  profiles: { full_name: string; email: string } | { full_name: string; email: string }[] | null;
+  profiles:
+    | { full_name: string; email: string | null; username: string | null }
+    | { full_name: string; email: string | null; username: string | null }[]
+    | null;
   events: { title: string } | { title: string }[] | null;
 }
 
 interface PendingProfileRow {
   full_name: string;
-  email: string;
+  email: string | null;
+  username: string | null;
   gender: string | null;
   grade_level: string | null;
   school_name: string | null;
@@ -68,7 +73,7 @@ function mapCertificate(row: CertificateRow): AdminCertificateRecord {
     id: row.id,
     certificateCode: row.certificate_code,
     holderName: profile?.full_name ?? "Öğrenci",
-    holderEmail: profile?.email ?? "",
+    holderEmail: formatStudentContact(profile?.email, profile?.username),
     eventTitle: event?.title ?? "Eğitim",
     issuedAt: new Date(row.issued_at),
     status: row.status,
@@ -89,7 +94,7 @@ export class SupabaseAdminCertificateRepository implements AdminCertificateRepos
         issued_at,
         status,
         pdf_url,
-        profiles ( full_name, email ),
+        profiles ( full_name, email, username ),
         events ( title )
       `,
       )
@@ -114,6 +119,7 @@ export class SupabaseAdminCertificateRepository implements AdminCertificateRepos
         profiles (
           full_name,
           email,
+          username,
           gender,
           grade_level,
           school_name,
@@ -177,7 +183,7 @@ export class SupabaseAdminCertificateRepository implements AdminCertificateRepos
         return {
           id: row.id,
           studentName: profile?.full_name ?? "Öğrenci",
-          studentEmail: profile?.email ?? "",
+          studentEmail: formatStudentContact(profile?.email, profile?.username),
           eventTitle: event?.title ?? "Eğitim",
           completedAt: new Date(readyAt),
         };
@@ -252,7 +258,7 @@ export class SupabaseAdminCertificateRepository implements AdminCertificateRepos
         issued_at,
         status,
         pdf_url,
-        profiles ( full_name, email ),
+        profiles ( full_name, email, username ),
         events ( title )
       `,
       )

@@ -14,6 +14,7 @@ interface UsernameStudentDashboardViewProps {
   username: string;
   fullName?: string | null;
   progress: StudentProgress;
+  loadError?: string | null;
 }
 
 function formatDate(value: string): string {
@@ -145,6 +146,7 @@ export function UsernameStudentDashboardView({
   username,
   fullName,
   progress,
+  loadError = null,
 }: UsernameStudentDashboardViewProps) {
   const greeting = fullName?.trim().split(/\s+/)[0] || username;
 
@@ -174,6 +176,16 @@ export function UsernameStudentDashboardView({
             <StudentLogoutButton />
           </div>
         </div>
+
+        {loadError ? (
+          <div
+            className="mt-6 rounded-2xl border-2 border-amber-300 bg-amber-50 px-5 py-4 text-sm text-amber-950"
+            role="alert"
+          >
+            <p className="font-bold">Panel verileri yüklenemedi</p>
+            <p className="mt-1">{loadError}</p>
+          </div>
+        ) : null}
 
         <div className="mt-8 space-y-8">
           <div className="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm">

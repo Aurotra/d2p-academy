@@ -1,34 +1,23 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 
-import { createServiceRoleClient } from "@/infrastructure/supabase/create-service-role-client";
-import { createSupabaseServerClient } from "@/infrastructure/supabase/create-server-client";
+import {
+  clearAuthRateLimit,
+  isAuthRateLimited,
+} from "@/infrastructure/auth/auth-rate-limit";
 import { verifyStudentPassword } from "@/infrastructure/auth/password";
 import {
   signStudentSession,
   STUDENT_SESSION_COOKIE,
   studentCookieOptions,
 } from "@/infrastructure/auth/student-jwt";
+import { createServiceRoleClient } from "@/infrastructure/supabase/create-service-role-client";
+import { createSupabaseServerClient } from "@/infrastructure/supabase/create-server-client";
 
 const bodySchema = z.object({
   username: z.string().min(1).max(40),
   password: z.string().min(1).max(200),
 });
-
-const attempts = new Map<string, { count: number; resetAt: number }>();
-const MAX_ATTEMPTS = 8;
-const WINDOW_MS = 15 * 60 * 1000;
-
-function isRateLimited(key: string): boolean {
-  const now = Date.now();
-  const entry = attempts.get(key);
-  if (!entry || now > entry.resetAt) {
-    attempts.set(key, { count: 1, resetAt: now + WINDOW_MS });
-    return false;
-  }
-  entry.count += 1;
-  return entry.count > MAX_ATTEMPTS;
-}
 
 export async function POST(request: NextRequest) {
   try {
@@ -42,14 +31,14 @@ export async function POST(request: NextRequest) {
     const username = parsed.data.username.trim().toLowerCase();
     const rateLimitKey = `${ip}:${username}`;
 
-    if (isRateLimited(rateLimitKey)) {
+    const supabase = createServiceRoleClient();
+
+    if (await isAuthRateLimited(supabase, rateLimitKey)) {
       return NextResponse.json(
         { error: "Çok fazla deneme yapıldı. Lütfen 15 dakika sonra tekrar deneyin." },
         { status: 429 },
       );
     }
-
-    const supabase = createServiceRoleClient();
 
     const { data: student, error } = await supabase
       .from("profiles")
@@ -86,6 +75,8 @@ export async function POST(request: NextRequest) {
       return genericError;
     }
 
+    await clearAuthRateLimit(supabase, rateLimitKey);
+
     const token = await signStudentSession({
       studentId: student.id,
       username: student.username,
@@ -93,7 +84,6 @@ export async function POST(request: NextRequest) {
       sessionVersion: student.student_session_version ?? 1,
     });
 
-    // Drop any email Auth session so dual cookies do not confuse the header/panels.
     try {
       const emailClient = await createSupabaseServerClient();
       if (emailClient) {
