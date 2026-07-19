@@ -52,7 +52,9 @@ export default async function AdminStudentDetailPage({ params }: AdminStudentDet
                 Profil Düzenleme
               </p>
               <h1 className="mt-1 text-2xl font-bold text-slate-900">{student.full_name}</h1>
-              <p className="text-sm text-slate-500">{student.email}</p>
+              <p className="text-sm text-slate-500">
+                {student.email ?? (student.username ? `@${student.username}` : "—")}
+              </p>
             </div>
           </div>
           <Link

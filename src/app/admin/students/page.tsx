@@ -83,7 +83,10 @@ export default async function AdminStudentsPage() {
                     <tr key={student.id} className="border-b border-slate-50 last:border-0">
                       <td className="px-5 py-4">
                         <p className="font-semibold text-slate-900">{student.full_name}</p>
-                        <p className="text-xs text-slate-500">{student.email}</p>
+                        <p className="text-xs text-slate-500">
+                          {student.email ??
+                            (student.username ? `@${student.username}` : "—")}
+                        </p>
                       </td>
                       <td className="px-5 py-4 text-slate-700">{student.school_name || "—"}</td>
                       <td className="px-5 py-4 text-slate-700">

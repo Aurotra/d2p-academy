@@ -8,6 +8,7 @@ import {
   EventEnrollmentsTable,
   type EventEnrollmentRow,
 } from "@/presentation/components/admin/event-enrollments-table";
+import { AdminAddEnrollmentForm } from "@/presentation/components/admin/admin-add-enrollment-form";
 
 export const dynamic = "force-dynamic";
 
@@ -16,7 +17,17 @@ interface EnrollmentListRow {
   status: EnrollmentStatus;
   registered_at: string;
   events: { id: string; title: string; start_at: string } | { id: string; title: string; start_at: string }[] | null;
-  profiles: { id: string; full_name: string; email: string } | { id: string; full_name: string; email: string }[] | null;
+  profiles: {
+    id: string;
+    full_name: string;
+    email: string | null;
+    username: string | null;
+  } | {
+    id: string;
+    full_name: string;
+    email: string | null;
+    username: string | null;
+  }[] | null;
   certificates:
     | { id: string; status: string }
     | { id: string; status: string }[]
@@ -67,7 +78,9 @@ function groupByEvent(rows: EnrollmentListRow[]): EventEnrollmentGroup[] {
       status: row.status,
       registeredAt: row.registered_at,
       studentName: profile?.full_name ?? "Öğrenci",
-      studentEmail: profile?.email ?? "—",
+      studentEmail:
+        profile?.email ??
+        (profile?.username ? `@${profile.username}` : "—"),
       hasActiveCertificate: certificates.some((certificate) => certificate.status === "active"),
     };
 
@@ -126,7 +139,8 @@ export default async function AdminEnrollmentsPage({ searchParams }: AdminEnroll
       profiles (
         id,
         full_name,
-        email
+        email,
+        username
       ),
       certificates (
         id,
@@ -191,9 +205,15 @@ export default async function AdminEnrollmentsPage({ searchParams }: AdminEnroll
         ) : null}
       </div>
 
+      {eventId && filteredEventTitle ? (
+        <AdminAddEnrollmentForm eventId={eventId} eventTitle={filteredEventTitle} />
+      ) : null}
+
       {groups.length === 0 ? (
         <div className="rounded-[1.75rem] border border-dashed border-slate-200 bg-white px-6 py-12 text-center text-sm text-slate-500">
-          Henüz etkinlik kaydı yok
+          {eventId
+            ? "Bu etkinlikte henüz kayıt yok. Yukarıdan öğrenci ekleyebilirsiniz."
+            : "Henüz etkinlik kaydı yok"}
         </div>
       ) : (
         <div className="space-y-6">

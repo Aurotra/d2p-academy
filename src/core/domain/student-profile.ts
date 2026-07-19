@@ -27,7 +27,8 @@ export interface StudentProfileData {
 
 export interface StudentProfileRecord extends StudentProfileData {
   id: string;
-  email: string;
+  email: string | null;
+  username?: string | null;
   role: string;
 }
 

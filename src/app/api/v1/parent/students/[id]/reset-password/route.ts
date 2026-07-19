@@ -31,7 +31,7 @@ export async function POST(
 
   const { data: child, error: lookupError } = await supabase
     .from("profiles")
-    .select("id, student_session_version")
+    .select("id")
     .eq("id", studentId)
     .eq("parent_id", auth.user.id)
     .eq("role", "student")
@@ -66,13 +66,11 @@ export async function POST(
     );
   }
 
-  const nextVersion = (child.student_session_version ?? 1) + 1;
-
+  // student_session_version is bumped by DB trigger on hash change
   const { error: updateError } = await serviceClient
     .from("profiles")
     .update({
       student_password_hash: passwordHash,
-      student_session_version: nextVersion,
     })
     .eq("id", studentId)
     .eq("parent_id", auth.user.id);

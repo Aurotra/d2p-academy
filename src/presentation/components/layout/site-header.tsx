@@ -48,9 +48,10 @@ export function SiteHeader() {
   const pathname = usePathname();
   const router = useRouter();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [sessionKind, setSessionKind] = useState<"email" | "student" | null>(null);
   const [userDisplayName, setUserDisplayName] = useState<string | null>(null);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const isLoggedIn = sessionKind !== null;
 
   const closeMobileMenu = useCallback(() => {
     setIsMobileMenuOpen(false);
@@ -77,34 +78,55 @@ export function SiteHeader() {
       setUserDisplayName(name);
     }
 
+    async function probeStudentSession() {
+      try {
+        const response = await fetch("/api/v1/auth/student-session");
+        const payload = (await response.json()) as {
+          data?: { authenticated?: boolean; fullName?: string; username?: string };
+        };
+        if (payload.data?.authenticated) {
+          setSessionKind("student");
+          setUserDisplayName(
+            payload.data.fullName?.trim() ||
+              (payload.data.username ? `@${payload.data.username}` : null),
+          );
+          return;
+        }
+      } catch {
+        // ignore
+      }
+      setSessionKind(null);
+      setUserDisplayName(null);
+    }
+
     void client.auth.getUser().then(({ data }) => {
       const user = data.user;
-      setIsLoggedIn(Boolean(user));
       if (user) {
+        setSessionKind("email");
         const metadataName =
           typeof user.user_metadata?.full_name === "string"
             ? user.user_metadata.full_name
             : null;
         void resolveDisplayName(user.id, metadataName);
-      } else {
-        setUserDisplayName(null);
+        return;
       }
+      void probeStudentSession();
     });
 
     const {
       data: { subscription },
     } = client.auth.onAuthStateChange((_event, session) => {
       const user = session?.user ?? null;
-      setIsLoggedIn(Boolean(user));
       if (user) {
+        setSessionKind("email");
         const metadataName =
           typeof user.user_metadata?.full_name === "string"
             ? user.user_metadata.full_name
             : null;
         void resolveDisplayName(user.id, metadataName);
-      } else {
-        setUserDisplayName(null);
+        return;
       }
+      void probeStudentSession();
     });
 
     return () => {
@@ -139,18 +161,22 @@ export function SiteHeader() {
     closeMobileMenu();
 
     try {
-      const response = await fetch("/api/v1/auth/logout", { method: "POST" });
+      const endpoint =
+        sessionKind === "student" ? "/api/v1/auth/student-logout" : "/api/v1/auth/logout";
+      const response = await fetch(endpoint, { method: "POST" });
       if (!response.ok) {
         throw new Error("Çıkış yapılamadı.");
       }
-      setIsLoggedIn(false);
+      setSessionKind(null);
       setUserDisplayName(null);
-      router.push("/");
+      router.push(sessionKind === "student" ? "/student-login" : "/");
       router.refresh();
     } catch {
       setIsLoggingOut(false);
     }
   }
+
+  const panelHref = sessionKind === "student" ? "/student-dashboard" : "/dashboard";
 
   return (
     <header className={`sticky top-0 z-40 ${BRAND_SURFACE_HEADER}`}>
@@ -180,7 +206,7 @@ export function SiteHeader() {
                 </span>
               ) : null}
               <Link
-                href="/dashboard"
+                href={panelHref}
                 className="rounded-xl bg-secondary px-4 py-2 text-sm font-semibold text-white transition hover:bg-secondary-hover hover:shadow-glow-secondary"
               >
                 Panelim
@@ -267,7 +293,7 @@ export function SiteHeader() {
                     </p>
                   ) : null}
                   <Link
-                    href="/dashboard"
+                    href={panelHref}
                     className="inline-flex items-center justify-center rounded-xl bg-secondary px-4 py-3 text-sm font-semibold text-white transition hover:bg-secondary-hover hover:shadow-glow-secondary"
                     onClick={closeMobileMenu}
                   >

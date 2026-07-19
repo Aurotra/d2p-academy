@@ -37,6 +37,8 @@ import { GRADE_LEVEL_OPTIONS } from "@/shared/constants/profile-options";
 
 interface CourseApplicationWizardProps {
   enrollmentId: string;
+  /** Profile page when incomplete (default email dashboard). */
+  profileHref?: string;
 }
 
 type WizardStep = 1 | 2 | 3 | 4;
@@ -114,7 +116,10 @@ function requireMulti(value: string[], label: string) {
   }
 }
 
-export function CourseApplicationWizard({ enrollmentId }: CourseApplicationWizardProps) {
+export function CourseApplicationWizard({
+  enrollmentId,
+  profileHref = "/dashboard/profile",
+}: CourseApplicationWizardProps) {
   const [step, setStep] = useState<WizardStep>(1);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
@@ -592,7 +597,7 @@ export function CourseApplicationWizard({ enrollmentId }: CourseApplicationWizar
       {formsDone && !profileReady ? (
         <p className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
           {profileCertificateBlockMessage(state.profileProgressPercent)}{" "}
-          <Link href="/dashboard/profile" className="font-bold underline">
+          <Link href={profileHref} className="font-bold underline">
             Profil sayfasına git →
           </Link>
         </p>
@@ -942,7 +947,7 @@ export function CourseApplicationWizard({ enrollmentId }: CourseApplicationWizar
                 düşmez. Tamamlanan proje sayısı isteğe bağlıdır.
               </p>
               <Link
-                href="/dashboard/profile"
+                href={profileHref}
                 className="inline-flex font-bold text-document-primary underline"
               >
                 Profil / kendini tanıtma adımını tamamla →

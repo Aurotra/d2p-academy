@@ -10,6 +10,8 @@ export type ChildStudent = {
   full_name: string;
   username: string;
   created_at: string;
+  enrollmentCount?: number;
+  certificateCount?: number;
 };
 
 export function ChildrenStudentsClient({ initialStudents }: { initialStudents: ChildStudent[] }) {
@@ -38,6 +40,10 @@ export function ChildrenStudentsClient({ initialStudents }: { initialStudents: C
                 <div>
                   <p className="font-semibold text-navy-950">{student.full_name}</p>
                   <p className="text-sm text-slate-500">@{student.username}</p>
+                  <p className="mt-1 text-xs text-slate-500">
+                    {student.enrollmentCount ?? 0} etkinlik · {student.certificateCount ?? 0}{" "}
+                    sertifika
+                  </p>
                 </div>
                 <Button variant="outline" onClick={() => setResetTarget(student)}>
                   Şifreyi sıfırla

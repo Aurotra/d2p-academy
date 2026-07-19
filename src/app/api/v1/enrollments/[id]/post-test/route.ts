@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 
 import type { SubmitPostTestInput } from "@/core/domain/participant-forms";
-import { createSupabaseServerClient } from "@/infrastructure/supabase/create-server-client";
+import { resolveEnrollmentActor } from "@/infrastructure/auth/resolve-enrollment-actor";
 import { SupabaseParticipantFormsRepository } from "@/infrastructure/repositories/supabase-participant-forms-repository";
 
 export async function POST(
@@ -10,23 +10,14 @@ export async function POST(
 ) {
   try {
     const { id: enrollmentId } = await context.params;
-    const client = await createSupabaseServerClient();
-
-    if (!client) {
-      return NextResponse.json({ error: "Supabase yapılandırması bulunamadı." }, { status: 500 });
-    }
-
-    const {
-      data: { user },
-    } = await client.auth.getUser();
-
-    if (!user) {
-      return NextResponse.json({ error: "Giriş yapmalısınız." }, { status: 401 });
+    const actor = await resolveEnrollmentActor();
+    if (!actor.ok) {
+      return actor.response;
     }
 
     const body = (await request.json()) as SubmitPostTestInput;
-    const repository = new SupabaseParticipantFormsRepository(client);
-    await repository.submitPostTest(enrollmentId, user.id, body);
+    const repository = new SupabaseParticipantFormsRepository(actor.client);
+    await repository.submitPostTest(enrollmentId, actor.actorId, body);
 
     return NextResponse.json({ data: { ok: true } });
   } catch (error) {

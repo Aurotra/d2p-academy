@@ -58,6 +58,12 @@ function EnrollmentsSection({ enrollments }: { enrollments: EnrollmentSummary[] 
           </div>
           <h3 className="mt-2 font-semibold text-navy-950">{item.eventTitle}</h3>
           <p className="mt-1 text-sm text-slate-600">{formatDate(item.eventDate)}</p>
+          <Link
+            href={`/student-dashboard/enrollments/${item.enrollmentId}/forms`}
+            className="mt-3 inline-flex text-sm font-semibold text-document-primary hover:underline"
+          >
+            Formları doldur →
+          </Link>
         </li>
       ))}
     </ul>
@@ -158,7 +164,15 @@ export function UsernameStudentDashboardView({
             </p>
             <p className="mt-1 text-xs text-sky-800/70">@{username}</p>
           </div>
-          <StudentLogoutButton />
+          <div className="flex flex-col gap-3 sm:flex-row">
+            <Link
+              href="/student-dashboard/profile"
+              className="inline-flex items-center justify-center rounded-xl border-2 border-document-primary bg-white px-5 py-3 text-sm font-semibold text-document-primary transition hover:bg-document-primary/5"
+            >
+              Profilim
+            </Link>
+            <StudentLogoutButton />
+          </div>
         </div>
 
         <div className="mt-8 space-y-8">

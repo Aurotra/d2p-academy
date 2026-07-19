@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
+import { fetchChildProgress } from "@/infrastructure/repositories/fetch-child-progress";
 import { createSupabaseServerClient } from "@/infrastructure/supabase/create-server-client";
 import {
   ChildrenStudentsClient,
@@ -27,7 +28,18 @@ export default async function DashboardChildrenPage() {
     .not("username", "is", null)
     .order("created_at", { ascending: false });
 
-  const students = (data ?? []) as ChildStudent[];
+  const baseStudents = (data ?? []) as ChildStudent[];
+
+  const students: ChildStudent[] = await Promise.all(
+    baseStudents.map(async (student) => {
+      const progress = await fetchChildProgress(student.id);
+      return {
+        ...student,
+        enrollmentCount: progress?.enrollments?.length ?? 0,
+        certificateCount: progress?.certificates?.length ?? 0,
+      };
+    }),
+  );
 
   return (
     <section className="bg-slate-50 px-4 py-10 sm:px-6 lg:px-8">

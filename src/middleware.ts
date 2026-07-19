@@ -1,23 +1,30 @@
-import { createServerClient, type SetAllCookies } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
+import { createServerClient, type SetAllCookies } from "@supabase/ssr";
 
 import {
   STUDENT_SESSION_COOKIE,
   verifyStudentSession,
 } from "@/infrastructure/auth/student-jwt";
+import {
+  clearStudentSessionCookie,
+  validateStudentSessionAgainstDb,
+} from "@/infrastructure/auth/validate-student-session-edge";
 
 export async function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
 
   if (pathname.startsWith("/student-dashboard")) {
     const token = request.cookies.get(STUDENT_SESSION_COOKIE)?.value;
-    const session = token ? await verifyStudentSession(token) : null;
+    const payload = token ? await verifyStudentSession(token) : null;
+    const valid = payload ? await validateStudentSessionAgainstDb(payload) : false;
 
-    if (!session) {
+    if (!valid) {
       const loginUrl = request.nextUrl.clone();
       loginUrl.pathname = "/student-login";
       loginUrl.searchParams.set("redirectTo", pathname);
-      return NextResponse.redirect(loginUrl);
+      const response = NextResponse.redirect(loginUrl);
+      clearStudentSessionCookie(response);
+      return response;
     }
 
     return NextResponse.next();

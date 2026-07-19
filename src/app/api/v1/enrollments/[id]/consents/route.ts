@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 
 import type { ConsentFormType, MediaPermissions } from "@/core/domain/participant-forms";
-import { createSupabaseServerClient } from "@/infrastructure/supabase/create-server-client";
+import { resolveEnrollmentActor } from "@/infrastructure/auth/resolve-enrollment-actor";
 import { SupabaseParticipantFormsRepository } from "@/infrastructure/repositories/supabase-participant-forms-repository";
 import { getClientIp } from "@/lib/utils/request-ip";
 
@@ -22,26 +22,17 @@ export async function POST(
 ) {
   try {
     const { id: enrollmentId } = await context.params;
-    const client = await createSupabaseServerClient();
-
-    if (!client) {
-      return NextResponse.json({ error: "Supabase yapılandırması bulunamadı." }, { status: 500 });
-    }
-
-    const {
-      data: { user },
-    } = await client.auth.getUser();
-
-    if (!user) {
-      return NextResponse.json({ error: "Giriş yapmalısınız." }, { status: 401 });
+    const actor = await resolveEnrollmentActor();
+    if (!actor.ok) {
+      return actor.response;
     }
 
     const body = (await request.json()) as ConsentsBody;
-    const repository = new SupabaseParticipantFormsRepository(client);
+    const repository = new SupabaseParticipantFormsRepository(actor.client);
 
     await repository.submitConsents(
       enrollmentId,
-      user.id,
+      actor.actorId,
       {
         consents: (body.consents ?? []).map((item) => ({
           formType: item.formType as ConsentFormType,

@@ -182,7 +182,10 @@ export function AdminStudentProfileEditor({ student }: AdminStudentProfileEditor
               value={form.city_district}
               onChange={(e) => setForm({ ...form, city_district: e.target.value })}
             />
-            <p className="text-xs text-slate-500">E-posta (değiştirilemez): {student.email}</p>
+            <p className="text-xs text-slate-500">
+              E-posta / kullanıcı adı:{" "}
+              {student.email ?? (student.username ? `@${student.username}` : "—")}
+            </p>
           </div>
         </fieldset>
 

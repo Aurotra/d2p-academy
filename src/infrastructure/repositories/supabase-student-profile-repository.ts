@@ -3,7 +3,8 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 
 interface ProfileRow {
   id: string;
-  email: string;
+  email: string | null;
+  username: string | null;
   role: string;
   full_name: string;
   gender: string | null;
@@ -27,6 +28,7 @@ function mapProfile(row: ProfileRow): StudentProfileRecord {
   return {
     id: row.id,
     email: row.email,
+    username: row.username,
     role: row.role,
     full_name: row.full_name,
     gender: (row.gender ?? "") as StudentProfileRecord["gender"],
@@ -49,7 +51,7 @@ function mapProfile(row: ProfileRow): StudentProfileRecord {
 }
 
 const PROFILE_SELECT =
-  "id, email, role, full_name, gender, grade_level, school_name, city_district, experience_data, interests, motivation_data, profile_avatar_url, kvkk_accepted";
+  "id, email, username, role, full_name, gender, grade_level, school_name, city_district, experience_data, interests, motivation_data, profile_avatar_url, kvkk_accepted";
 
 export class SupabaseStudentProfileRepository {
   constructor(private readonly client: SupabaseClient) {}

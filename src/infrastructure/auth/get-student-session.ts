@@ -7,7 +7,7 @@ import {
   verifyStudentSession,
   type StudentSessionPayload,
 } from "@/infrastructure/auth/student-jwt";
-import { tryCreateServiceRoleClient } from "@/infrastructure/supabase/create-service-role-client";
+import { createServiceRoleClient } from "@/infrastructure/supabase/create-service-role-client";
 
 export async function getStudentSession(): Promise<StudentSessionPayload | null> {
   const cookieStore = await cookies();
@@ -21,9 +21,11 @@ export async function getStudentSession(): Promise<StudentSessionPayload | null>
     return null;
   }
 
-  const service = tryCreateServiceRoleClient();
-  if (!service) {
-    return payload;
+  let service;
+  try {
+    service = createServiceRoleClient();
+  } catch {
+    return null;
   }
 
   const { data, error } = await service
