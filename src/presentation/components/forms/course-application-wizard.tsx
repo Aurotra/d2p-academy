@@ -15,6 +15,8 @@ import { OptionChipGroup } from "@/presentation/components/forms/option-chip-gro
 import { Button } from "@/presentation/components/ui/button";
 import { Input } from "@/presentation/components/ui/input";
 import { Textarea } from "@/presentation/components/ui/textarea";
+import { profileCertificateBlockMessage } from "@/lib/utils/progress";
+import Link from "next/link";
 import {
   CONSENT_DOCUMENTS,
   CONSENT_TEXT_VERSIONS,
@@ -157,7 +159,7 @@ export function CourseApplicationWizard({ enrollmentId }: CourseApplicationWizar
   const [nextTopics, setNextTopics] = useState("");
   const [productIdea, setProductIdea] = useState("");
 
-  async function loadState() {
+  async function loadState(): Promise<EnrollmentFormProgress | null> {
     setIsLoading(true);
     setError(null);
 
@@ -207,8 +209,11 @@ export function CourseApplicationWizard({ enrollmentId }: CourseApplicationWizar
       } else {
         setStep(4);
       }
+
+      return next;
     } catch (loadError) {
       setError(loadError instanceof Error ? loadError.message : "Yükleme hatası.");
+      return null;
     } finally {
       setIsLoading(false);
     }
@@ -272,11 +277,14 @@ export function CourseApplicationWizard({ enrollmentId }: CourseApplicationWizar
       }
 
       setSuccess("Onaylar kaydedildi.");
-      await loadState();
-      if (state?.requiresSurveys) {
+      const next = await loadState();
+      if (next?.requiresSurveys) {
         setStep(3);
       } else {
         setStep(4);
+        if (next && !next.profileComplete) {
+          setError(profileCertificateBlockMessage(next.profileProgressPercent));
+        }
       }
     } catch (saveError) {
       setError(saveError instanceof Error ? saveError.message : "Kayıt başarısız.");
@@ -445,9 +453,14 @@ export function CourseApplicationWizard({ enrollmentId }: CourseApplicationWizar
         throw new Error(payload.error ?? "Son test kaydedilemedi.");
       }
 
-      setSuccess("Son test kaydedildi. Sertifika için admin onayı bekleniyor.");
-      await loadState();
+      setSuccess("Son test kaydedildi.");
+      const next = await loadState();
       setStep(4);
+      if (next && !next.profileComplete) {
+        setError(profileCertificateBlockMessage(next.profileProgressPercent));
+      } else {
+        setSuccess("Son test kaydedildi. Sertifika için admin onayı bekleniyor.");
+      }
     } catch (saveError) {
       setError(saveError instanceof Error ? saveError.message : "Kayıt başarısız.");
     } finally {
@@ -477,6 +490,9 @@ export function CourseApplicationWizard({ enrollmentId }: CourseApplicationWizar
   const tanismaDone = Boolean(state.intakeFormCompletedAt) && Boolean(state.preTestCompletedAt);
   const sonTestDone = Boolean(state.postTestCompletedAt);
   const sertifikaDone = Boolean(state.hasActiveCertificate);
+  const formsDone = onaylarDone && tanismaDone && sonTestDone;
+  const profileReady = state.profileComplete;
+  const readyForCertificateQueue = formsDone && profileReady;
 
   const tanismaTone: StepTone = tanismaDone ? "done" : "action";
   const onaylarTone: StepTone = !tanismaDone ? "idle" : onaylarDone ? "done" : "action";
@@ -487,10 +503,15 @@ export function CourseApplicationWizard({ enrollmentId }: CourseApplicationWizar
       : state.requiresSurveys
         ? "action"
         : "done";
-  const sertifikaTone: StepTone =
-    !onaylarDone || !sonTestDone ? "idle" : sertifikaDone ? "done" : "pending";
+  const sertifikaTone: StepTone = !formsDone
+    ? "idle"
+    : sertifikaDone
+      ? "done"
+      : profileReady
+        ? "pending"
+        : "action";
 
-  const wizardComplete = onaylarDone && tanismaDone && sonTestDone;
+  const wizardComplete = readyForCertificateQueue;
 
   const steps: Array<{ id: WizardStep; label: string; tone: StepTone; enabled: boolean }> = [
     { id: 1, label: "Tanışma", tone: tanismaTone, enabled: true },
@@ -505,7 +526,7 @@ export function CourseApplicationWizard({ enrollmentId }: CourseApplicationWizar
       id: 4,
       label: "Sertifika onay",
       tone: sertifikaTone,
-      enabled: onaylarDone && (sonTestDone || !state.requiresSurveys),
+      enabled: onaylarDone && sonTestDone,
     },
   ];
 
@@ -565,7 +586,15 @@ export function CourseApplicationWizard({ enrollmentId }: CourseApplicationWizar
       ) : null}
       {wizardComplete ? (
         <p className="rounded-xl border border-sky-200 bg-sky-50 px-4 py-3 text-sm text-sky-900">
-          Bu kayıt için zorunlu formlar tamamlandı.
+          Bu kayıt için zorunlu formlar ve profil tamamlandı.
+        </p>
+      ) : null}
+      {formsDone && !profileReady ? (
+        <p className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
+          {profileCertificateBlockMessage(state.profileProgressPercent)}{" "}
+          <Link href="/dashboard/profile" className="font-bold underline">
+            Profil sayfasına git →
+          </Link>
         </p>
       ) : null}
 
@@ -890,9 +919,11 @@ export function CourseApplicationWizard({ enrollmentId }: CourseApplicationWizar
           className={`space-y-3 rounded-[2rem] border p-6 shadow-sm ${
             sertifikaDone
               ? "border-emerald-200 bg-emerald-50"
-              : sonTestDone
-                ? "border-amber-200 bg-amber-50"
-                : "border-slate-200 bg-slate-50"
+              : formsDone && !profileReady
+                ? "border-red-200 bg-red-50"
+                : readyForCertificateQueue
+                  ? "border-amber-200 bg-amber-50"
+                  : "border-slate-200 bg-slate-50"
           }`}
         >
           <h2 className="text-xl font-bold text-navy-950">Sertifika onay</h2>
@@ -901,7 +932,23 @@ export function CourseApplicationWizard({ enrollmentId }: CourseApplicationWizar
               Sertifikanız onaylandı ve oluşturuldu. Öğrenci panelindeki Sertifikalarım
               bölümünden indirebilirsiniz.
             </p>
-          ) : sonTestDone ? (
+          ) : formsDone && !profileReady ? (
+            <div className="space-y-2 text-sm text-red-900">
+              <p className="font-semibold">
+                {profileCertificateBlockMessage(state.profileProgressPercent)}
+              </p>
+              <p>
+                Formlarınız kayıtlı; ancak profiliniz %100 olmadan sertifika onay listesine
+                düşmez. Tamamlanan proje sayısı isteğe bağlıdır.
+              </p>
+              <Link
+                href="/dashboard/profile"
+                className="inline-flex font-bold text-document-primary underline"
+              >
+                Profil / kendini tanıtma adımını tamamla →
+              </Link>
+            </div>
+          ) : readyForCertificateQueue ? (
             <p className="text-sm text-amber-950">
               Formlarınız tamam. Kayıt sertifika onay listesine düştü; admin onaylayınca burada
               yeşil görünecek.

@@ -9,6 +9,10 @@ import type {
 import type { CertificateStatus } from "@/core/domain/certificate-verification";
 import type { AdminCertificateRepository } from "@/core/use-cases/manage-admin-certificates";
 import { translateCertificateRpcError } from "@/infrastructure/certificates/translate-certificate-rpc-error";
+import {
+  isProfileComplete,
+  PROFILE_REQUIRED_FOR_CERTIFICATE_MESSAGE,
+} from "@/lib/utils/progress";
 
 interface CertificateRow {
   id: string;
@@ -20,11 +24,30 @@ interface CertificateRow {
   events: { title: string } | { title: string }[] | null;
 }
 
+interface PendingProfileRow {
+  full_name: string;
+  email: string;
+  gender: string | null;
+  grade_level: string | null;
+  school_name: string | null;
+  city_district: string | null;
+  experience_data: {
+    coding_experience?: string | null;
+    proje_sayisi?: number | null;
+  } | null;
+  interests: string[] | null;
+  motivation_data: {
+    hedef?: string | null;
+    beklenti?: number | null;
+  } | null;
+  profile_avatar_url: string | null;
+}
+
 interface PendingEnrollmentRow {
   id: string;
   completed_at: string | null;
   post_test_completed_at: string | null;
-  profiles: { full_name: string; email: string } | { full_name: string; email: string }[] | null;
+  profiles: PendingProfileRow | PendingProfileRow[] | null;
   events: { title: string } | { title: string }[] | null;
 }
 
@@ -88,7 +111,18 @@ export class SupabaseAdminCertificateRepository implements AdminCertificateRepos
         completed_at,
         post_test_completed_at,
         status,
-        profiles ( full_name, email ),
+        profiles (
+          full_name,
+          email,
+          gender,
+          grade_level,
+          school_name,
+          city_district,
+          experience_data,
+          interests,
+          motivation_data,
+          profile_avatar_url
+        ),
         events ( title ),
         certificates ( id, status )
       `,
@@ -116,7 +150,24 @@ export class SupabaseAdminCertificateRepository implements AdminCertificateRepos
           : row.certificates
             ? [row.certificates]
             : [];
-        return !certificates.some((certificate) => certificate.status === "active");
+        if (certificates.some((certificate) => certificate.status === "active")) {
+          return false;
+        }
+
+        const profile = Array.isArray(row.profiles) ? (row.profiles[0] ?? null) : row.profiles;
+        if (!profile) return false;
+
+        return isProfileComplete({
+          full_name: profile.full_name,
+          gender: profile.gender,
+          grade_level: profile.grade_level,
+          school_name: profile.school_name,
+          city_district: profile.city_district,
+          experience_data: profile.experience_data,
+          interests: profile.interests,
+          motivation_data: profile.motivation_data,
+          profile_avatar_url: profile.profile_avatar_url,
+        });
       })
       .map((row) => {
         const profile = Array.isArray(row.profiles) ? (row.profiles[0] ?? null) : row.profiles;
@@ -134,6 +185,52 @@ export class SupabaseAdminCertificateRepository implements AdminCertificateRepos
   }
 
   async issue(input: IssueCertificateInput): Promise<AdminCertificateRecord> {
+    const { data: enrollment, error: enrollmentError } = await this.client
+      .from("enrollments")
+      .select(
+        `
+        id,
+        profiles (
+          full_name,
+          gender,
+          grade_level,
+          school_name,
+          city_district,
+          experience_data,
+          interests,
+          motivation_data,
+          profile_avatar_url
+        )
+      `,
+      )
+      .eq("id", input.enrollmentId)
+      .maybeSingle();
+
+    if (enrollmentError || !enrollment) {
+      throw new Error("Sertifika oluşturulamadı: Kayıt bulunamadı.");
+    }
+
+    const profile = Array.isArray(enrollment.profiles)
+      ? (enrollment.profiles[0] ?? null)
+      : enrollment.profiles;
+
+    if (
+      !profile ||
+      !isProfileComplete({
+        full_name: profile.full_name,
+        gender: profile.gender,
+        grade_level: profile.grade_level,
+        school_name: profile.school_name,
+        city_district: profile.city_district,
+        experience_data: profile.experience_data,
+        interests: profile.interests,
+        motivation_data: profile.motivation_data,
+        profile_avatar_url: profile.profile_avatar_url,
+      })
+    ) {
+      throw new Error(`Sertifika oluşturulamadı: ${PROFILE_REQUIRED_FOR_CERTIFICATE_MESSAGE}`);
+    }
+
     const { data, error } = await this.client.rpc("issue_certificate", {
       p_enrollment_id: input.enrollmentId,
     });

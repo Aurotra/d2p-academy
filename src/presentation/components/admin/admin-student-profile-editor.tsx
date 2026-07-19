@@ -215,7 +215,7 @@ export function AdminStudentProfileEditor({ student }: AdminStudentProfileEditor
               </div>
             </div>
             <Input
-              label="Tamamlanan Proje Sayısı"
+              label="Tamamlanan Proje Sayısı (opsiyonel)"
               type="number"
               min={0}
               value={form.experience_data.proje_sayisi}
@@ -229,6 +229,9 @@ export function AdminStudentProfileEditor({ student }: AdminStudentProfileEditor
                 })
               }
             />
+            <p className="text-xs text-slate-500">
+              Bu alan isteğe bağlıdır; profil tamamlanma yüzdesini etkilemez.
+            </p>
           </div>
         </fieldset>
 

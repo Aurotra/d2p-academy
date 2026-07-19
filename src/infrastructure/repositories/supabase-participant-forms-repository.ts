@@ -17,6 +17,7 @@ import {
   requiresD2pTpsSurveys,
 } from "@/core/domain/participant-forms";
 import { SURVEY_FORM_VERSIONS } from "@/shared/constants/participant-forms";
+import { calculateProgress, isProfileComplete } from "@/lib/utils/progress";
 
 function asRecord(value: unknown): Record<string, unknown> {
   if (!value || typeof value !== "object" || Array.isArray(value)) {
@@ -106,7 +107,7 @@ export class SupabaseParticipantFormsRepository {
     const { data: profile, error: profileError } = await this.client
       .from("profiles")
       .select(
-        "full_name, gender, grade_level, school_name, city_district, experience_data, interests, motivation_data",
+        "full_name, gender, grade_level, school_name, city_district, experience_data, interests, motivation_data, profile_avatar_url",
       )
       .eq("id", userId)
       .single();
@@ -145,6 +146,24 @@ export class SupabaseParticipantFormsRepository {
 
     const event = Array.isArray(enrollment.events) ? enrollment.events[0] : enrollment.events;
     const gradeLevel = profile.grade_level ?? "";
+    const profileProgressInput = {
+      full_name: profile.full_name,
+      gender: profile.gender,
+      grade_level: profile.grade_level,
+      school_name: profile.school_name,
+      city_district: profile.city_district,
+      experience_data: profile.experience_data as {
+        coding_experience?: string | null;
+        proje_sayisi?: number | null;
+      } | null,
+      interests: (profile.interests as string[] | null) ?? null,
+      motivation_data: profile.motivation_data as {
+        hedef?: string | null;
+        beklenti?: number | null;
+      } | null,
+      profile_avatar_url: profile.profile_avatar_url,
+    };
+    const profileProgressPercent = calculateProgress(profileProgressInput);
 
     return {
       id: enrollment.id,
@@ -180,6 +199,8 @@ export class SupabaseParticipantFormsRepository {
       hasPreTest: (surveys ?? []).some((row) => row.survey_type === "pre_test"),
       hasPostTest: (surveys ?? []).some((row) => row.survey_type === "post_test"),
       hasActiveCertificate: Boolean(certificate?.id),
+      profileProgressPercent,
+      profileComplete: isProfileComplete(profileProgressInput),
     };
   }
 

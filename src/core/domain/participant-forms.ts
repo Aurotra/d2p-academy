@@ -96,6 +96,8 @@ export interface EnrollmentFormProgress {
   hasPreTest: boolean;
   hasPostTest: boolean;
   hasActiveCertificate: boolean;
+  profileProgressPercent: number;
+  profileComplete: boolean;
 }
 
 export interface SurveyAnswerSnapshot {

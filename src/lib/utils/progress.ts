@@ -2,6 +2,9 @@ import type { ProfileProgressInput } from "@/core/domain/student-profile";
 
 const TOTAL_PROFILE_FIELDS = 9;
 
+export const PROFILE_REQUIRED_FOR_CERTIFICATE_MESSAGE =
+  "Öncelikle profilinizdeki kendini tanıtma adımını %100 tamamlayın. Tamamlanan proje sayısı isteğe bağlıdır.";
+
 function isFilledText(value: string | null | undefined): boolean {
   return Boolean(value?.trim());
 }
@@ -23,4 +26,12 @@ export function calculateProgress(data: ProfileProgressInput): number {
   ].filter(Boolean).length;
 
   return Math.round((filledCount / TOTAL_PROFILE_FIELDS) * 100);
+}
+
+export function isProfileComplete(data: ProfileProgressInput): boolean {
+  return calculateProgress(data) === 100;
+}
+
+export function profileCertificateBlockMessage(progressPercent: number): string {
+  return `${PROFILE_REQUIRED_FOR_CERTIFICATE_MESSAGE} Şu an profiliniz %${progressPercent} dolu.`;
 }
