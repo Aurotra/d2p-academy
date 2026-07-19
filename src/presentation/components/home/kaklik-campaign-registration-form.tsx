@@ -5,11 +5,7 @@ import { FormEvent, useState } from "react";
 import { KvkkConsentFields } from "@/presentation/components/legal/kvkk-consent-fields";
 import { Button } from "@/presentation/components/ui/button";
 import { Input } from "@/presentation/components/ui/input";
-import {
-  KAKLIK_CAMPAIGN_NOTE,
-  KAKLIK_CAMPAIGN_TITLE,
-  KAKLIK_TIME_GROUPS,
-} from "@/shared/constants/kaklik-campaign";
+import { KAKLIK_TIME_GROUPS } from "@/shared/constants/kaklik-campaign";
 
 const PHONE_PATTERN = /^05\d{9}$/;
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -18,7 +14,15 @@ function normalizePhone(value: string): string {
   return value.replace(/\s/g, "");
 }
 
-export function KaklikCampaignRegistrationForm() {
+interface KaklikCampaignRegistrationFormProps {
+  campaignTitle: string;
+  campaignNote: string;
+}
+
+export function KaklikCampaignRegistrationForm({
+  campaignTitle,
+  campaignNote,
+}: KaklikCampaignRegistrationFormProps) {
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
@@ -106,7 +110,7 @@ export function KaklikCampaignRegistrationForm() {
       <div className="rounded-2xl border border-emerald-300 bg-emerald-50 px-5 py-6 text-center">
         <p className="text-lg font-black text-emerald-950">Kaydınız alındı!</p>
         <p className="mt-2 text-sm font-medium text-emerald-900">
-          {KAKLIK_CAMPAIGN_TITLE} için yerinizi ayırttınız. En kısa sürede sizinle iletişime
+          {campaignTitle} için yerinizi ayırttınız. En kısa sürede sizinle iletişime
           geçeceğiz.
         </p>
         <Button
@@ -189,7 +193,7 @@ export function KaklikCampaignRegistrationForm() {
           })}
         </div>
         <p className="rounded-xl border border-amber-300 bg-amber-50 px-4 py-3 text-sm font-medium leading-relaxed text-amber-950">
-          {KAKLIK_CAMPAIGN_NOTE}
+          {campaignNote}
         </p>
       </fieldset>
 

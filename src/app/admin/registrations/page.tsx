@@ -2,7 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 
 import { getAdminAccess } from "@/infrastructure/auth/get-admin-access";
-import { isKaklikCampaignEnabled } from "@/infrastructure/settings/site-settings";
+import { getKaklikCampaignSettings } from "@/infrastructure/settings/site-settings";
 import { createSupabaseServerClient } from "@/infrastructure/supabase/create-server-client";
 import { KaklikCampaignToggleCard } from "@/presentation/components/admin/kaklik-campaign-toggle-card";
 import {
@@ -48,7 +48,7 @@ export default async function AdminRegistrationsPage({
     redirect("/login");
   }
 
-  const campaignEnabled = await isKaklikCampaignEnabled(client);
+  const campaignSettings = await getKaklikCampaignSettings(client);
 
   let query = client
     .from("registrations")
@@ -132,7 +132,7 @@ export default async function AdminRegistrationsPage({
         ) : null}
       </div>
 
-      <KaklikCampaignToggleCard initialEnabled={campaignEnabled} />
+      <KaklikCampaignToggleCard initialSettings={campaignSettings} />
 
       <div className="overflow-hidden rounded-[1.75rem] border border-slate-200 bg-white shadow-sm">
         <div className="overflow-x-auto">

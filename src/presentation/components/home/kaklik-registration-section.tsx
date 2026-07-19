@@ -1,12 +1,18 @@
-import { BRAND_SURFACE_GRADIENT } from "@/shared/constants/brand-surfaces";
-import {
-  KAKLIK_CAMPAIGN_NOTE,
-  KAKLIK_CAMPAIGN_TITLE,
-  KAKLIK_TIME_GROUPS,
-} from "@/shared/constants/kaklik-campaign";
 import { KaklikCampaignRegistrationForm } from "@/presentation/components/home/kaklik-campaign-registration-form";
+import { BRAND_SURFACE_GRADIENT } from "@/shared/constants/brand-surfaces";
+import { KAKLIK_TIME_GROUPS } from "@/shared/constants/kaklik-campaign";
 
-export function KaklikRegistrationSection() {
+interface KaklikRegistrationSectionProps {
+  title: string;
+  description: string;
+  note: string;
+}
+
+export function KaklikRegistrationSection({
+  title,
+  description,
+  note,
+}: KaklikRegistrationSectionProps) {
   return (
     <section
       id="kaklik-kayit"
@@ -18,11 +24,10 @@ export function KaklikRegistrationSection() {
             Acil Kayıt
           </p>
           <h2 className="mt-4 text-3xl font-black tracking-tight text-navy-950 sm:text-4xl">
-            {KAKLIK_CAMPAIGN_TITLE}
+            {title}
           </h2>
           <p className="mt-4 max-w-xl text-base font-medium leading-relaxed text-sky-950/85">
-            20 Temmuz Pazartesi başlıyoruz. Grubunuzu seçin, yerinizi ayırtın — kontenjan
-            sınırlıdır.
+            {description}
           </p>
 
           <ul className="mt-6 space-y-2">
@@ -37,7 +42,7 @@ export function KaklikRegistrationSection() {
           </ul>
 
           <p className="mt-5 rounded-xl border border-amber-300 bg-amber-50/90 px-4 py-3 text-sm font-medium leading-relaxed text-amber-950">
-            {KAKLIK_CAMPAIGN_NOTE}
+            {note}
           </p>
         </div>
 
@@ -47,7 +52,7 @@ export function KaklikRegistrationSection() {
             Ad soyad, e-posta, telefon ve eğitim saatinizi girin.
           </p>
           <div className="mt-6">
-            <KaklikCampaignRegistrationForm />
+            <KaklikCampaignRegistrationForm campaignTitle={title} campaignNote={note} />
           </div>
         </div>
       </div>

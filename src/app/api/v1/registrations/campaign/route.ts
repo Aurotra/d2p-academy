@@ -3,10 +3,10 @@ import { NextResponse } from "next/server";
 import { buildConsentAudit, mapConsentToColumns } from "@/lib/utils/consent-audit";
 import { getClientIp } from "@/lib/utils/request-ip";
 import { isKaklikCampaignEnabled } from "@/infrastructure/settings/site-settings";
+import { getKaklikCampaignSettings } from "@/infrastructure/settings/site-settings";
 import { createSupabaseServerClient } from "@/infrastructure/supabase/create-server-client";
 import {
   KAKLIK_CAMPAIGN_ID,
-  KAKLIK_CAMPAIGN_TITLE,
   KAKLIK_TIME_GROUPS,
   type KaklikTimeGroupValue,
 } from "@/shared/constants/kaklik-campaign";
@@ -48,6 +48,8 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Bu kampanya şu an kapalı." }, { status: 403 });
     }
 
+    const campaignSettings = await getKaklikCampaignSettings(client);
+
     const body = (await request.json()) as CampaignRegistrationBody;
     const fullName = body.fullName?.trim() ?? "";
     const email = body.email?.trim().toLowerCase() ?? "";
@@ -87,7 +89,7 @@ export async function POST(request: Request) {
       email,
       phone,
       grade: "other",
-      course: KAKLIK_CAMPAIGN_TITLE,
+      course: campaignSettings.title,
       status: "yeni",
       campaign: KAKLIK_CAMPAIGN_ID,
       time_group: timeGroup,

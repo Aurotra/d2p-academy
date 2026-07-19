@@ -2,8 +2,9 @@ import { NextResponse } from "next/server";
 
 import { requireAdminApiAccess } from "@/infrastructure/auth/require-admin-api-access";
 import {
-  isKaklikCampaignEnabled,
-  setKaklikCampaignEnabled,
+  getKaklikCampaignSettings,
+  saveKaklikCampaignSettings,
+  type KaklikCampaignSettings,
 } from "@/infrastructure/settings/site-settings";
 import { createSupabaseServerClient } from "@/infrastructure/supabase/create-server-client";
 
@@ -13,8 +14,8 @@ export async function GET() {
     return NextResponse.json({ error: "Bağlantı kurulamadı." }, { status: 500 });
   }
 
-  const enabled = await isKaklikCampaignEnabled(client);
-  return NextResponse.json({ data: { enabled } });
+  const settings = await getKaklikCampaignSettings(client);
+  return NextResponse.json({ data: settings });
 }
 
 export async function PATCH(request: Request) {
@@ -22,20 +23,42 @@ export async function PATCH(request: Request) {
   if (access.response) return access.response;
 
   try {
-    const body = (await request.json()) as { enabled?: unknown };
-    if (typeof body.enabled !== "boolean") {
-      return NextResponse.json({ error: "enabled alanı true/false olmalıdır." }, { status: 400 });
+    const body = (await request.json()) as Partial<KaklikCampaignSettings>;
+    const patch: Partial<KaklikCampaignSettings> = {};
+
+    if (typeof body.enabled === "boolean") {
+      patch.enabled = body.enabled;
+    }
+    if (typeof body.title === "string") {
+      patch.title = body.title;
+    }
+    if (typeof body.bannerText === "string") {
+      patch.bannerText = body.bannerText;
+    }
+    if (typeof body.description === "string") {
+      patch.description = body.description;
+    }
+    if (typeof body.note === "string") {
+      patch.note = body.note;
+    }
+
+    if (Object.keys(patch).length === 0) {
+      return NextResponse.json({ error: "Güncellenecek alan yok." }, { status: 400 });
     }
 
     const {
       data: { user },
     } = await access.client.auth.getUser();
 
-    await setKaklikCampaignEnabled(access.client, body.enabled, user?.id ?? null);
+    const settings = await saveKaklikCampaignSettings(
+      access.client,
+      patch,
+      user?.id ?? null,
+    );
 
-    return NextResponse.json({ data: { enabled: body.enabled } });
+    return NextResponse.json({ data: settings });
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Kampanya durumu güncellenemedi.";
+    const message = error instanceof Error ? error.message : "Kampanya ayarları güncellenemedi.";
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }
