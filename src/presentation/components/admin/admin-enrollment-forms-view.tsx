@@ -11,10 +11,12 @@ import {
   FUTURE_TRENDS_QUESTIONS,
   INTAKE_INTEREST_FIELDS,
   INTAKE_LIKERT_QUESTIONS,
+  INTAKE_MOTIVATION_REASONS,
   INTAKE_OPEN_ENDED,
   INTAKE_PREVIOUS_EXPERIENCE_FIELDS,
   INTAKE_TECH_ACCESS_FIELDS,
   MEDIA_PERMISSION_LABELS,
+  PARTICIPANT_LIKERT_OPTIONS,
   POST_TEST_OPEN_ENDED,
   PRE_TEST_OPEN_ENDED,
   TPS_SURVEY_DIMENSIONS,
@@ -46,20 +48,14 @@ function formatGradeLevel(value: string | null | undefined): string {
   return GRADE_LEVEL_OPTIONS.find((option) => option.value === value)?.label ?? value;
 }
 
-function formatAnswer(value: unknown): string {
-  if (value == null || value === "") return "—";
-  if (Array.isArray(value)) {
-    return value.length > 0 ? value.map(String).join(", ") : "—";
-  }
-  if (typeof value === "boolean") return value ? "Evet" : "Hayır";
+function toSelectedList(value: unknown): string[] {
+  if (value == null || value === "") return [];
+  if (Array.isArray(value)) return value.map(String).filter(Boolean);
   if (typeof value === "object") {
     const reasons = (value as { reasons?: unknown }).reasons;
-    if (Array.isArray(reasons)) {
-      return reasons.length > 0 ? reasons.map(String).join(", ") : "—";
-    }
-    return JSON.stringify(value);
+    if (Array.isArray(reasons)) return reasons.map(String).filter(Boolean);
   }
-  return String(value);
+  return [String(value)];
 }
 
 function dimensionValues(
@@ -117,7 +113,10 @@ function FormSection({
   children: ReactNode;
 }) {
   return (
-    <section id={id} className="scroll-mt-24 overflow-hidden rounded-2xl border border-slate-300 bg-white shadow-sm">
+    <section
+      id={id}
+      className="scroll-mt-24 overflow-hidden rounded-2xl border border-slate-300 bg-white shadow-sm"
+    >
       <header className="border-b border-slate-300 bg-navy-950 px-5 py-4 text-white sm:px-6">
         <div className="flex flex-wrap items-end justify-between gap-3">
           <div>
@@ -139,51 +138,98 @@ function Subsection({ title, children }: { title: string; children: ReactNode })
         <span className="h-5 w-1.5 rounded-full bg-document-primary" aria-hidden />
         <h3 className="text-base font-black text-navy-950">{title}</h3>
       </div>
-      <div className="space-y-2">{children}</div>
+      <div className="space-y-3">{children}</div>
     </div>
   );
 }
 
-function QaRow({ question, answer }: { question: string; answer: ReactNode }) {
-  return (
-    <div className="grid gap-2 rounded-xl border border-slate-200 bg-white px-4 py-3 sm:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)] sm:gap-4">
-      <p className="text-sm font-medium leading-snug text-slate-700">{question}</p>
-      <div className="text-base font-bold leading-snug text-navy-950 sm:text-right">{answer}</div>
-    </div>
-  );
-}
-
-function LikertScore({ value }: { value: number | undefined }) {
-  if (typeof value !== "number" || value < 1 || value > 5) {
-    return <span className="text-slate-400">—</span>;
-  }
-
-  return (
-    <div className="inline-flex items-center gap-2 sm:justify-end">
-      <div className="flex gap-1" aria-hidden>
-        {[1, 2, 3, 4, 5].map((step) => (
-          <span
-            key={step}
-            className={`h-2.5 w-2.5 rounded-sm ${
-              step <= value ? "bg-document-primary" : "bg-slate-200"
-            }`}
-          />
-        ))}
-      </div>
-      <span className="tabular-nums text-document-primary">{value}/5</span>
-    </div>
-  );
-}
-
-function YesNoBadge({ yes }: { yes: boolean }) {
+function OptionChip({ label, selected }: { label: string; selected: boolean }) {
   return (
     <span
-      className={`inline-flex rounded-md px-2.5 py-1 text-sm font-bold ${
-        yes ? "bg-emerald-100 text-emerald-900" : "bg-rose-100 text-rose-900"
+      className={`inline-flex items-center gap-1.5 rounded-lg border px-2.5 py-1.5 text-sm font-bold ${
+        selected
+          ? "border-emerald-600 bg-emerald-100 text-emerald-950"
+          : "border-rose-300 bg-rose-100 text-rose-900"
       }`}
     >
-      {yes ? "Evet" : "Hayır"}
+      <span aria-hidden>{selected ? "✓" : "×"}</span>
+      {label}
     </span>
+  );
+}
+
+function ChoiceOptions({
+  options,
+  selected,
+}: {
+  options: readonly string[];
+  selected: string | string[] | unknown;
+}) {
+  const selectedSet = new Set(toSelectedList(selected));
+  const known = new Set(options);
+  const extras = toSelectedList(selected).filter((item) => !known.has(item));
+
+  return (
+    <div className="flex flex-wrap gap-2">
+      {options.map((option) => (
+        <OptionChip key={option} label={option} selected={selectedSet.has(option)} />
+      ))}
+      {extras.map((option) => (
+        <OptionChip key={`extra-${option}`} label={option} selected />
+      ))}
+      {selectedSet.size === 0 ? (
+        <span className="text-sm font-semibold text-slate-500">Cevap seçilmemiş</span>
+      ) : null}
+    </div>
+  );
+}
+
+function LikertOptions({ value }: { value: number | undefined }) {
+  const selected = typeof value === "number" && value >= 1 && value <= 5 ? value : null;
+
+  return (
+    <div className="flex flex-wrap gap-2">
+      {PARTICIPANT_LIKERT_OPTIONS.map((option) => (
+        <OptionChip
+          key={option.value}
+          label={option.label}
+          selected={selected === option.value}
+        />
+      ))}
+      {selected == null ? (
+        <span className="text-sm font-semibold text-slate-500">Cevap seçilmemiş</span>
+      ) : null}
+    </div>
+  );
+}
+
+function QuestionBlock({
+  question,
+  children,
+}: {
+  question: string;
+  children: ReactNode;
+}) {
+  return (
+    <div className="rounded-xl border border-slate-200 bg-slate-50/80 px-4 py-3">
+      <p className="text-sm font-semibold leading-snug text-navy-950">{question}</p>
+      <div className="mt-3">{children}</div>
+    </div>
+  );
+}
+
+function TextAnswer({ value }: { value: string }) {
+  const text = value.trim();
+  if (!text) {
+    return <p className="text-sm font-semibold text-slate-500">Cevap yok</p>;
+  }
+  return (
+    <p className="rounded-lg border border-emerald-300 bg-emerald-50 px-3 py-2 text-sm font-bold whitespace-pre-wrap text-emerald-950">
+      <span className="mr-1.5" aria-hidden>
+        ✓
+      </span>
+      {text}
+    </p>
   );
 }
 
@@ -209,18 +255,18 @@ function SurveyScaleAnswers({
         return (
           <Subsection key={dimension.key} title={dimension.title}>
             {dimension.questions.map((question) => (
-              <QaRow
-                key={question.id}
-                question={question.label}
-                answer={<LikertScore value={values[question.id]} />}
-              />
+              <QuestionBlock key={question.id} question={question.label}>
+                <LikertOptions value={values[question.id]} />
+              </QuestionBlock>
             ))}
           </Subsection>
         );
       })}
       {openEndedLabel ? (
         <Subsection title="Açık uçlu">
-          <QaRow question={openEndedLabel} answer={formatAnswer(survey.openEnded)} />
+          <QuestionBlock question={openEndedLabel}>
+            <TextAnswer value={survey.openEnded ?? ""} />
+          </QuestionBlock>
         </Subsection>
       ) : null}
     </div>
@@ -272,7 +318,10 @@ export function AdminEnrollmentFormsView({ answers }: AdminEnrollmentFormsViewPr
           ) : null}
         </div>
 
-        <nav className="mt-5 flex flex-wrap gap-2 border-t border-slate-200 pt-4" aria-label="Form bölümleri">
+        <nav
+          className="mt-5 flex flex-wrap gap-2 border-t border-slate-200 pt-4"
+          aria-label="Form bölümleri"
+        >
           {navItems.map((item) => (
             <a
               key={item.id}
@@ -307,34 +356,32 @@ export function AdminEnrollmentFormsView({ answers }: AdminEnrollmentFormsViewPr
 
               return (
                 <Subsection key={type} title={heading}>
-                  <QaRow
-                    question="Durum"
-                    answer={
-                      consent.accepted ? (
-                        <span className="text-emerald-800">
-                          Kabul edildi
-                          <span className="mt-1 block text-sm font-semibold text-slate-600 sm:text-right">
-                            {formatDate(consent.acceptedAt)}
-                          </span>
-                        </span>
-                      ) : (
-                        <span className="text-rose-800">Kabul edilmedi</span>
-                      )
-                    }
-                  />
-                  <QaRow
-                    question="Veli / yasal temsilci imzası"
-                    answer={formatAnswer(consent.parentSignature)}
-                  />
+                  <QuestionBlock question="Durum">
+                    <ChoiceOptions
+                      options={["Kabul edildi", "Kabul edilmedi"]}
+                      selected={consent.accepted ? "Kabul edildi" : "Kabul edilmedi"}
+                    />
+                    {consent.accepted ? (
+                      <p className="mt-2 text-sm font-semibold text-slate-600">
+                        Tarih: {formatDate(consent.acceptedAt)}
+                      </p>
+                    ) : null}
+                  </QuestionBlock>
+                  <QuestionBlock question="Veli / yasal temsilci imzası">
+                    <TextAnswer value={consent.parentSignature?.trim() || ""} />
+                  </QuestionBlock>
                   {consent.formType === "media" && consent.mediaPermissions ? (
-                    <div className="mt-3 space-y-2 rounded-xl border border-slate-200 bg-slate-50 p-3">
+                    <div className="space-y-3 rounded-xl border border-slate-200 bg-white p-3">
                       <p className="text-sm font-black text-navy-950">Medya izin matrisi</p>
                       {MEDIA_PERMISSION_KEYS.map((key) => (
-                        <QaRow
-                          key={key}
-                          question={MEDIA_PERMISSION_LABELS[key]}
-                          answer={<YesNoBadge yes={Boolean(consent.mediaPermissions?.[key])} />}
-                        />
+                        <QuestionBlock key={key} question={MEDIA_PERMISSION_LABELS[key]}>
+                          <ChoiceOptions
+                            options={["İzin verildi", "İzin yok"]}
+                            selected={
+                              consent.mediaPermissions?.[key] ? "İzin verildi" : "İzin yok"
+                            }
+                          />
+                        </QuestionBlock>
                       ))}
                     </div>
                   ) : null}
@@ -343,10 +390,9 @@ export function AdminEnrollmentFormsView({ answers }: AdminEnrollmentFormsViewPr
             })}
 
             <Subsection title="Sağlık / özel durum">
-              <QaRow
-                question="Not"
-                answer={answers.healthNote?.trim() ? answers.healthNote : "Belirtilmemiş"}
-              />
+              <QuestionBlock question="Not">
+                <TextAnswer value={answers.healthNote?.trim() || ""} />
+              </QuestionBlock>
             </Subsection>
           </div>
         )}
@@ -364,67 +410,69 @@ export function AdminEnrollmentFormsView({ answers }: AdminEnrollmentFormsViewPr
           <div className="space-y-6">
             <Subsection title="Önceki deneyim">
               {INTAKE_PREVIOUS_EXPERIENCE_FIELDS.map((field) => (
-                <QaRow
-                  key={field.id}
-                  question={field.label}
-                  answer={formatAnswer(answers.intake?.previousExperience[field.id])}
-                />
+                <QuestionBlock key={field.id} question={field.label}>
+                  <ChoiceOptions
+                    options={field.options}
+                    selected={answers.intake?.previousExperience[field.id]}
+                  />
+                </QuestionBlock>
               ))}
             </Subsection>
 
             <Subsection title="Teknoloji erişimi">
               {INTAKE_TECH_ACCESS_FIELDS.map((field) => (
-                <QaRow
-                  key={field.id}
-                  question={field.label}
-                  answer={formatAnswer(answers.intake?.techAccess[field.id])}
-                />
+                <QuestionBlock key={field.id} question={field.label}>
+                  <ChoiceOptions
+                    options={field.options}
+                    selected={answers.intake?.techAccess[field.id]}
+                  />
+                </QuestionBlock>
               ))}
             </Subsection>
 
             <Subsection title="İlgi alanları">
               {INTAKE_INTEREST_FIELDS.map((field) => (
-                <QaRow
-                  key={field.id}
-                  question={field.label}
-                  answer={formatAnswer(answers.intake?.interests[field.id])}
-                />
+                <QuestionBlock key={field.id} question={field.label}>
+                  <ChoiceOptions
+                    options={field.options}
+                    selected={answers.intake?.interests[field.id]}
+                  />
+                </QuestionBlock>
               ))}
             </Subsection>
 
             <Subsection title="Motivasyon">
-              <QaRow
-                question="Bu eğitime katılma nedeniniz"
-                answer={formatAnswer(answers.intake.motivation)}
-              />
+              <QuestionBlock question="Bu eğitime katılma nedeniniz">
+                <ChoiceOptions
+                  options={[...INTAKE_MOTIVATION_REASONS]}
+                  selected={answers.intake.motivation}
+                />
+              </QuestionBlock>
               {answers.intake.motivationOther ? (
-                <QaRow question="Diğer (açıklama)" answer={answers.intake.motivationOther} />
+                <QuestionBlock question="Diğer (açıklama)">
+                  <TextAnswer value={answers.intake.motivationOther} />
+                </QuestionBlock>
               ) : null}
             </Subsection>
 
             <Subsection title="Likert maddeleri">
               {INTAKE_LIKERT_QUESTIONS.map((question) => (
-                <QaRow
-                  key={question.id}
-                  question={question.label}
-                  answer={<LikertScore value={answers.intake?.intakeLikert[question.id]} />}
-                />
+                <QuestionBlock key={question.id} question={question.label}>
+                  <LikertOptions value={answers.intake?.intakeLikert[question.id]} />
+                </QuestionBlock>
               ))}
             </Subsection>
 
             <Subsection title="Açık uçlu">
-              <QaRow
-                question={INTAKE_OPEN_ENDED.learn_most}
-                answer={formatAnswer(answers.intake.openEnded.learn_most)}
-              />
-              <QaRow
-                question={INTAKE_OPEN_ENDED.design_wish}
-                answer={formatAnswer(answers.intake.openEnded.design_wish)}
-              />
-              <QaRow
-                question={INTAKE_OPEN_ENDED.expectation}
-                answer={formatAnswer(answers.intake.openEnded.expectation)}
-              />
+              <QuestionBlock question={INTAKE_OPEN_ENDED.learn_most}>
+                <TextAnswer value={String(answers.intake.openEnded.learn_most ?? "")} />
+              </QuestionBlock>
+              <QuestionBlock question={INTAKE_OPEN_ENDED.design_wish}>
+                <TextAnswer value={String(answers.intake.openEnded.design_wish ?? "")} />
+              </QuestionBlock>
+              <QuestionBlock question={INTAKE_OPEN_ENDED.expectation}>
+                <TextAnswer value={String(answers.intake.openEnded.expectation ?? "")} />
+              </QuestionBlock>
             </Subsection>
           </div>
         )}
@@ -468,45 +516,43 @@ export function AdminEnrollmentFormsView({ answers }: AdminEnrollmentFormsViewPr
               <>
                 <Subsection title="Eğitim etkisi">
                   {TRAINING_IMPACT_QUESTIONS.map((question) => (
-                    <QaRow
-                      key={question.id}
-                      question={question.label}
-                      answer={
-                        <LikertScore value={answers.postTestExtra?.trainingImpact[question.id]} />
-                      }
-                    />
+                    <QuestionBlock key={question.id} question={question.label}>
+                      <LikertOptions
+                        value={answers.postTestExtra?.trainingImpact[question.id]}
+                      />
+                    </QuestionBlock>
                   ))}
                 </Subsection>
                 <Subsection title="Gelecek eğilimler">
                   {FUTURE_TRENDS_QUESTIONS.map((question) => (
-                    <QaRow
-                      key={question.id}
-                      question={question.label}
-                      answer={
-                        <LikertScore value={answers.postTestExtra?.futureTrends[question.id]} />
-                      }
-                    />
+                    <QuestionBlock key={question.id} question={question.label}>
+                      <LikertOptions value={answers.postTestExtra?.futureTrends[question.id]} />
+                    </QuestionBlock>
                   ))}
                 </Subsection>
                 <Subsection title="Açık uçlu">
-                  <QaRow
-                    question={POST_TEST_OPEN_ENDED.favorite_activity}
-                    answer={formatAnswer(answers.postTestExtra.openEnded.favorite_activity)}
-                  />
-                  <QaRow
-                    question={POST_TEST_OPEN_ENDED.most_important_learning}
-                    answer={formatAnswer(
-                      answers.postTestExtra.openEnded.most_important_learning,
-                    )}
-                  />
-                  <QaRow
-                    question={POST_TEST_OPEN_ENDED.next_topics}
-                    answer={formatAnswer(answers.postTestExtra.openEnded.next_topics)}
-                  />
-                  <QaRow
-                    question={POST_TEST_OPEN_ENDED.product_idea}
-                    answer={formatAnswer(answers.postTestExtra.openEnded.product_idea)}
-                  />
+                  <QuestionBlock question={POST_TEST_OPEN_ENDED.favorite_activity}>
+                    <TextAnswer
+                      value={String(answers.postTestExtra.openEnded.favorite_activity ?? "")}
+                    />
+                  </QuestionBlock>
+                  <QuestionBlock question={POST_TEST_OPEN_ENDED.most_important_learning}>
+                    <TextAnswer
+                      value={String(
+                        answers.postTestExtra.openEnded.most_important_learning ?? "",
+                      )}
+                    />
+                  </QuestionBlock>
+                  <QuestionBlock question={POST_TEST_OPEN_ENDED.next_topics}>
+                    <TextAnswer
+                      value={String(answers.postTestExtra.openEnded.next_topics ?? "")}
+                    />
+                  </QuestionBlock>
+                  <QuestionBlock question={POST_TEST_OPEN_ENDED.product_idea}>
+                    <TextAnswer
+                      value={String(answers.postTestExtra.openEnded.product_idea ?? "")}
+                    />
+                  </QuestionBlock>
                 </Subsection>
               </>
             ) : null}

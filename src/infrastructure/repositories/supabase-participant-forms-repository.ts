@@ -31,6 +31,13 @@ function asNumberRecord(value: unknown): Record<string, number> {
   for (const [key, entry] of Object.entries(source)) {
     if (typeof entry === "number" && Number.isFinite(entry)) {
       result[key] = entry;
+      continue;
+    }
+    if (typeof entry === "string" && entry.trim() !== "") {
+      const parsed = Number(entry);
+      if (Number.isFinite(parsed)) {
+        result[key] = parsed;
+      }
     }
   }
   return result;
