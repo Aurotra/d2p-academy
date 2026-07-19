@@ -22,7 +22,7 @@ interface CertificateRow {
 
 interface PendingEnrollmentRow {
   id: string;
-  completed_at: string;
+  completed_at: string | null;
   post_test_completed_at: string | null;
   profiles: { full_name: string; email: string } | { full_name: string; email: string }[] | null;
   events: { title: string } | { title: string }[] | null;
@@ -87,14 +87,15 @@ export class SupabaseAdminCertificateRepository implements AdminCertificateRepos
         id,
         completed_at,
         post_test_completed_at,
+        status,
         profiles ( full_name, email ),
         events ( title ),
         certificates ( id, status )
       `,
       )
-      .eq("status", "completed")
       .not("post_test_completed_at", "is", null)
-      .order("completed_at", { ascending: false });
+      .in("status", ["registered", "attended", "completed"])
+      .order("post_test_completed_at", { ascending: false });
 
     if (error) {
       throw new Error(`Tamamlanan kayıtlar alınamadı: ${error.message}`);
@@ -102,6 +103,7 @@ export class SupabaseAdminCertificateRepository implements AdminCertificateRepos
 
     return (data as Array<
       PendingEnrollmentRow & {
+        status: string;
         certificates:
           | { id: string; status: CertificateStatus }
           | { id: string; status: CertificateStatus }[]
@@ -119,13 +121,14 @@ export class SupabaseAdminCertificateRepository implements AdminCertificateRepos
       .map((row) => {
         const profile = Array.isArray(row.profiles) ? (row.profiles[0] ?? null) : row.profiles;
         const event = Array.isArray(row.events) ? (row.events[0] ?? null) : row.events;
+        const readyAt = row.post_test_completed_at ?? row.completed_at ?? new Date().toISOString();
 
         return {
           id: row.id,
           studentName: profile?.full_name ?? "Öğrenci",
           studentEmail: profile?.email ?? "",
           eventTitle: event?.title ?? "Eğitim",
-          completedAt: new Date(row.completed_at),
+          completedAt: new Date(readyAt),
         };
       });
   }

@@ -38,7 +38,7 @@ interface CourseApplicationWizardProps {
 }
 
 type WizardStep = 1 | 2 | 3 | 4;
-type StepTone = "done" | "action" | "idle";
+type StepTone = "done" | "action" | "idle" | "pending";
 
 const GENDER_LABELS: Record<string, string> = {
   male: "Erkek",
@@ -63,6 +63,9 @@ function stepToneClass(tone: StepTone, isActive: boolean): string {
   }
   if (tone === "action") {
     return `bg-red-600 text-white${ring}`;
+  }
+  if (tone === "pending") {
+    return `bg-amber-500 text-white${ring}`;
   }
   return `border border-slate-200 bg-slate-100/70 text-slate-400${ring}`;
 }
@@ -485,7 +488,7 @@ export function CourseApplicationWizard({ enrollmentId }: CourseApplicationWizar
         ? "action"
         : "done";
   const sertifikaTone: StepTone =
-    !onaylarDone || !sonTestDone ? "idle" : sertifikaDone ? "done" : "action";
+    !onaylarDone || !sonTestDone ? "idle" : sertifikaDone ? "done" : "pending";
 
   const wizardComplete = onaylarDone && tanismaDone && sonTestDone;
 
@@ -545,7 +548,8 @@ export function CourseApplicationWizard({ enrollmentId }: CourseApplicationWizar
           ))}
         </div>
         <p className="mt-3 text-xs text-slate-500">
-          Yeşil: tamamlandı · Kırmızı: doldurulmalı · Silik: henüz sırası gelmedi
+          Yeşil: tamamlandı · Kırmızı: doldurulmalı · Turuncu: admin onayı bekleniyor · Silik: henüz
+          sırası gelmedi
         </p>
       </div>
 
@@ -887,7 +891,7 @@ export function CourseApplicationWizard({ enrollmentId }: CourseApplicationWizar
             sertifikaDone
               ? "border-emerald-200 bg-emerald-50"
               : sonTestDone
-                ? "border-red-200 bg-red-50"
+                ? "border-amber-200 bg-amber-50"
                 : "border-slate-200 bg-slate-50"
           }`}
         >
@@ -898,9 +902,9 @@ export function CourseApplicationWizard({ enrollmentId }: CourseApplicationWizar
               bölümünden indirebilirsiniz.
             </p>
           ) : sonTestDone ? (
-            <p className="text-sm text-red-800">
-              Formlarınız tamam. Sertifika için admin onayı bekleniyor. Onaylanınca burada yeşil
-              görünecek.
+            <p className="text-sm text-amber-950">
+              Formlarınız tamam. Kayıt sertifika onay listesine düştü; admin onaylayınca burada
+              yeşil görünecek.
             </p>
           ) : (
             <p className="text-sm text-slate-600">

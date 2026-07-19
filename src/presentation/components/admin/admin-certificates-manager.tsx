@@ -154,8 +154,8 @@ export function AdminCertificatesManager() {
       <div className="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm">
         <h2 className="text-xl font-bold text-navy-950">Sertifika Oluştur</h2>
         <p className="mt-2 text-sm text-slate-600">
-          Sadece <strong>Tamamlandı</strong> işaretlenen, <strong>son testi tamamlanmış</strong> ve
-          henüz sertifikası olmayan kayıtlar burada görünür.
+          Sadece <strong>zorunlu formları tamamlanmış</strong> ve henüz sertifikası olmayan
+          kayıtlar burada görünür. Sertifika verirken kayıt otomatik Tamamlandı olur.
         </p>
         <p className="mt-2 text-sm text-slate-600">
           İptal edilen sertifikaların nedenlerini{" "}
@@ -166,8 +166,8 @@ export function AdminCertificatesManager() {
         </p>
         {pendingEnrollments.length === 0 && !isLoading ? (
           <p className="mt-4 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
-            Sertifika verilecek uygun kayıt yok. Önce Etkinlik Kayıtları’ndan “Tamamlandı” yapın;
-            öğrencinin son test formunu da bitirmiş olması gerekir.
+            Sertifika verilecek uygun kayıt yok. Öğrencinin katılımcı formlarını (özellikle son
+            testi) bitirmiş olması gerekir.
           </p>
         ) : null}
         <form onSubmit={handleIssue} className="mt-4 flex flex-col gap-4 sm:flex-row sm:items-end">
