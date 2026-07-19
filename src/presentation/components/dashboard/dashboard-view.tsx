@@ -61,12 +61,18 @@ export function DashboardView({ data, isAdmin }: DashboardViewProps) {
               Yaklaşan etkinliklerini ve kazandığın sertifikaları buradan takip edebilirsin.
             </p>
           </div>
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:flex-wrap">
             <Link
               href="/dashboard/profile"
               className="inline-flex items-center justify-center rounded-xl border-2 border-document-primary bg-white px-5 py-3 text-sm font-semibold text-document-primary transition hover:bg-document-primary/5"
             >
               Profilim
+            </Link>
+            <Link
+              href="/dashboard/children"
+              className="inline-flex items-center justify-center rounded-xl border-2 border-document-primary bg-white px-5 py-3 text-sm font-semibold text-document-primary transition hover:bg-document-primary/5"
+            >
+              Çocuklarım
             </Link>
             <Link
               href="/dashboard/documents"

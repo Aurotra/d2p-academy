@@ -197,6 +197,12 @@ export function SiteHeader() {
           ) : (
             <>
               <Link
+                href="/student-login"
+                className="rounded-xl px-4 py-2 text-sm font-semibold text-slate-800 transition hover:text-primary"
+              >
+                Öğrenci Girişi
+              </Link>
+              <Link
                 href="/login"
                 className="rounded-xl px-4 py-2 text-sm font-semibold text-slate-800 transition hover:text-primary"
               >
@@ -278,6 +284,13 @@ export function SiteHeader() {
                 </>
               ) : (
                 <>
+                  <Link
+                    href="/student-login"
+                    className="inline-flex items-center justify-center rounded-xl border-2 border-sky-300 bg-white px-4 py-3 text-sm font-semibold text-slate-800 transition hover:border-primary hover:text-primary"
+                    onClick={closeMobileMenu}
+                  >
+                    Öğrenci Girişi
+                  </Link>
                   <Link
                     href="/login"
                     className="inline-flex items-center justify-center rounded-xl border-2 border-sky-300 bg-white px-4 py-3 text-sm font-semibold text-slate-800 transition hover:border-primary hover:text-primary"

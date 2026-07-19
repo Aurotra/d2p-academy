@@ -1,7 +1,28 @@
 import { createServerClient, type SetAllCookies } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
+import {
+  STUDENT_SESSION_COOKIE,
+  verifyStudentSession,
+} from "@/infrastructure/auth/student-jwt";
+
 export async function middleware(request: NextRequest) {
+  const pathname = request.nextUrl.pathname;
+
+  if (pathname.startsWith("/student-dashboard")) {
+    const token = request.cookies.get(STUDENT_SESSION_COOKIE)?.value;
+    const session = token ? await verifyStudentSession(token) : null;
+
+    if (!session) {
+      const loginUrl = request.nextUrl.clone();
+      loginUrl.pathname = "/student-login";
+      loginUrl.searchParams.set("redirectTo", pathname);
+      return NextResponse.redirect(loginUrl);
+    }
+
+    return NextResponse.next();
+  }
+
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
@@ -29,8 +50,6 @@ export async function middleware(request: NextRequest) {
   const {
     data: { user },
   } = await supabase.auth.getUser();
-
-  const pathname = request.nextUrl.pathname;
 
   if (!user && (pathname.startsWith("/dashboard") || pathname.startsWith("/admin"))) {
     const loginUrl = request.nextUrl.clone();
@@ -64,5 +83,13 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/dashboard/:path*", "/admin", "/admin/:path*", "/login", "/register"],
+  matcher: [
+    "/dashboard/:path*",
+    "/admin",
+    "/admin/:path*",
+    "/login",
+    "/register",
+    "/student-dashboard",
+    "/student-dashboard/:path*",
+  ],
 };

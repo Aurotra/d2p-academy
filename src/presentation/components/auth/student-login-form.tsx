@@ -7,12 +7,11 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { AuthShell } from "@/presentation/components/auth/auth-shell";
 import { Button } from "@/presentation/components/ui/button";
 import { Input } from "@/presentation/components/ui/input";
-import { mapAuthErrorToTurkish } from "@/shared/utils/auth-errors";
 
-export function LoginForm() {
+export function StudentLoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [email, setEmail] = useState("");
+  const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -23,27 +22,34 @@ export function LoginForm() {
     setError(null);
 
     try {
-      const response = await fetch("/api/v1/auth/login", {
+      const response = await fetch("/api/v1/auth/student-login", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ email, password }),
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username, password }),
       });
 
-      const payload = (await response.json()) as { error?: string };
+      const payload = (await response.json()) as {
+        error?: string;
+        data?: { redirectTo?: string };
+      };
 
       if (!response.ok) {
-        throw new Error(mapAuthErrorToTurkish(payload.error ?? "Giriş başarısız oldu."));
+        throw new Error(payload.error ?? "Giriş başarısız oldu.");
       }
 
-      const redirectTo = searchParams.get("redirectTo") ?? "/dashboard";
-      router.push(redirectTo);
+      const redirectTo =
+        searchParams.get("redirectTo") ?? payload.data?.redirectTo ?? "/student-dashboard";
+      const safeRedirect =
+        redirectTo.startsWith("/") && !redirectTo.startsWith("//")
+          ? redirectTo
+          : "/student-dashboard";
+
+      router.push(safeRedirect);
       router.refresh();
     } catch (loginError) {
       const message =
         loginError instanceof Error ? loginError.message : "Beklenmeyen bir hata oluştu.";
-      setError(mapAuthErrorToTurkish(message));
+      setError(message);
     } finally {
       setIsLoading(false);
     }
@@ -51,21 +57,21 @@ export function LoginForm() {
 
   return (
     <AuthShell
-      title="Giriş Yap"
-      subtitle="Öğrenci panelinize erişmek için hesabınıza giriş yapın."
-      footerText="Hesabınız yok mu?"
-      footerHref="/register"
-      footerLinkLabel="Kayıt Ol"
+      title="Öğrenci Girişi"
+      subtitle="Kullanıcı adın ve şifren ile rozetlerine ve sertifikalarına ulaş."
+      footerText="E-posta hesabın mı var?"
+      footerHref="/login"
+      footerLinkLabel="E-posta ile giriş"
     >
       <form onSubmit={handleSubmit} className="space-y-4">
         <Input
-          label="E-posta"
-          name="email"
-          type="email"
-          autoComplete="email"
-          value={email}
-          onChange={(event) => setEmail(event.target.value)}
-          placeholder="ornek@okul.com"
+          label="Kullanıcı adı"
+          name="username"
+          type="text"
+          autoComplete="username"
+          value={username}
+          onChange={(event) => setUsername(event.target.value)}
+          placeholder="orn: ayse_2015"
           required
         />
         <Input
@@ -94,10 +100,8 @@ export function LoginForm() {
         </Button>
       </form>
 
-      <p className="mt-4 text-center text-sm">
-        <Link href="/student-login" className="font-semibold text-cyan-700 hover:text-cyan-600">
-          Öğrenci girişi (kullanıcı adı)
-        </Link>
+      <p className="mt-4 text-center text-xs text-slate-500">
+        Kullanıcı adını veya şifreni unuttuysan velinden yardım iste.
       </p>
 
       <p className="mt-3 text-center text-sm">
