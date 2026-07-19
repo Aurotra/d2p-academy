@@ -13,6 +13,7 @@ import {
   GRADE_LEVEL_OPTIONS,
   REGISTRATION_COURSE_OPTIONS,
 } from "@/shared/constants/profile-options";
+import { formatKaklikTimeGroup } from "@/shared/constants/kaklik-campaign";
 
 const PHONE_PATTERN = /^05\d{9}$/;
 
@@ -20,6 +21,7 @@ export interface AdminRegistrationRow {
   id: string;
   full_name: string;
   phone: string;
+  email?: string | null;
   grade: string;
   course: string;
   status: RegistrationStatus;
@@ -27,6 +29,8 @@ export interface AdminRegistrationRow {
   is_minor?: boolean;
   guardian_name?: string | null;
   guardian_phone?: string | null;
+  campaign?: string | null;
+  time_group?: string | null;
 }
 
 interface RegistrationEditableRowProps {
@@ -225,9 +229,20 @@ export function RegistrationEditableRow({
             {registration.guardian_phone ? ` (${registration.guardian_phone})` : ""}
           </p>
         ) : null}
+        {registration.email ? (
+          <p className="mt-1 text-xs font-normal text-slate-500">{registration.email}</p>
+        ) : null}
       </td>
       <td className="px-5 py-4 text-slate-700">{registration.phone}</td>
-      <td className="px-5 py-4 text-slate-700">{formatGrade(registration.grade)}</td>
+      <td className="px-5 py-4 text-slate-700">
+        {registration.time_group ? (
+          <span className="inline-flex rounded-lg bg-sky-50 px-2.5 py-1 text-xs font-bold text-sky-900">
+            {formatKaklikTimeGroup(registration.time_group)}
+          </span>
+        ) : (
+          formatGrade(registration.grade)
+        )}
+      </td>
       <td className="px-5 py-4 text-slate-700">{registration.course}</td>
       <td className="px-5 py-4">
         <RegistrationStatusSelector
