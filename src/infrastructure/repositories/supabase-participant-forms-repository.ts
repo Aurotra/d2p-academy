@@ -2,18 +2,50 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 
 import type {
   ConsentFormType,
+  EnrollmentFormAnswers,
   EnrollmentFormProgress,
   IntakeFormInput,
   MediaPermissions,
   SubmitConsentsInput,
   SubmitPostTestInput,
+  SurveyAnswerSnapshot,
   SurveyDimensionsInput,
+  SurveyType,
 } from "@/core/domain/participant-forms";
 import {
   isCompleteMediaPermissions,
   requiresD2pTpsSurveys,
 } from "@/core/domain/participant-forms";
 import { SURVEY_FORM_VERSIONS } from "@/shared/constants/participant-forms";
+
+function asRecord(value: unknown): Record<string, unknown> {
+  if (!value || typeof value !== "object" || Array.isArray(value)) {
+    return {};
+  }
+  return value as Record<string, unknown>;
+}
+
+function asNumberRecord(value: unknown): Record<string, number> {
+  const source = asRecord(value);
+  const result: Record<string, number> = {};
+  for (const [key, entry] of Object.entries(source)) {
+    if (typeof entry === "number" && Number.isFinite(entry)) {
+      result[key] = entry;
+    }
+  }
+  return result;
+}
+
+function asStringRecord(value: unknown): Record<string, string> {
+  const source = asRecord(value);
+  const result: Record<string, string> = {};
+  for (const [key, entry] of Object.entries(source)) {
+    if (typeof entry === "string") {
+      result[key] = entry;
+    }
+  }
+  return result;
+}
 
 interface EnrollmentOwnerRow {
   id: string;
@@ -141,6 +173,148 @@ export class SupabaseParticipantFormsRepository {
       hasPreTest: (surveys ?? []).some((row) => row.survey_type === "pre_test"),
       hasPostTest: (surveys ?? []).some((row) => row.survey_type === "post_test"),
       hasActiveCertificate: Boolean(certificate?.id),
+    };
+  }
+
+  async getEnrollmentFormAnswers(enrollmentId: string): Promise<EnrollmentFormAnswers> {
+    const { data: enrollment, error: enrollmentError } = await this.client
+      .from("enrollments")
+      .select(
+        `
+        id,
+        user_id,
+        event_id,
+        student_code,
+        intake_form_completed_at,
+        pre_test_completed_at,
+        post_test_completed_at,
+        events ( id, title ),
+        profiles ( full_name, email, grade_level )
+      `,
+      )
+      .eq("id", enrollmentId)
+      .maybeSingle();
+
+    if (enrollmentError || !enrollment) {
+      throw new Error("Kayıt bulunamadı.");
+    }
+
+    const event = Array.isArray(enrollment.events) ? enrollment.events[0] : enrollment.events;
+    const profile = Array.isArray(enrollment.profiles)
+      ? enrollment.profiles[0]
+      : enrollment.profiles;
+    const gradeLevel = profile?.grade_level ?? "";
+
+    const [
+      { data: consents },
+      { data: health },
+      { data: intake },
+      { data: surveys },
+      { data: postExtra },
+    ] = await Promise.all([
+      this.client
+        .from("consent_records")
+        .select(
+          "form_type, accepted, accepted_at, parent_signature, media_permissions, consent_text_version",
+        )
+        .eq("enrollment_id", enrollmentId),
+      this.client
+        .from("health_notes")
+        .select("note")
+        .eq("enrollment_id", enrollmentId)
+        .maybeSingle(),
+      this.client
+        .from("intake_responses")
+        .select(
+          "previous_experience, tech_access, interests, motivation, motivation_other, intake_likert, open_ended, updated_at",
+        )
+        .eq("enrollment_id", enrollmentId)
+        .maybeSingle(),
+      this.client
+        .from("survey_responses")
+        .select(
+          "survey_type, form_version, submitted_at, dimension_1, dimension_2, dimension_3, dimension_4, dimension_5, open_ended",
+        )
+        .eq("enrollment_id", enrollmentId),
+      this.client
+        .from("post_test_extra")
+        .select("training_impact, future_trends, open_ended")
+        .eq("enrollment_id", enrollmentId)
+        .maybeSingle(),
+    ]);
+
+    const mapSurvey = (row: {
+      survey_type: string;
+      form_version: string | null;
+      submitted_at: string | null;
+      dimension_1: unknown;
+      dimension_2: unknown;
+      dimension_3: unknown;
+      dimension_4: unknown;
+      dimension_5: unknown;
+      open_ended: string | null;
+    }): SurveyAnswerSnapshot => ({
+      surveyType: row.survey_type as SurveyType,
+      formVersion: row.form_version,
+      submittedAt: row.submitted_at,
+      dimensions: {
+        dimension1: asNumberRecord(row.dimension_1),
+        dimension2: asNumberRecord(row.dimension_2),
+        dimension3: asNumberRecord(row.dimension_3),
+        dimension4: asNumberRecord(row.dimension_4),
+        dimension5: asNumberRecord(row.dimension_5),
+      },
+      openEnded: row.open_ended,
+    });
+
+    const surveyRows = surveys ?? [];
+    const preTestRow = surveyRows.find((row) => row.survey_type === "pre_test");
+    const postTestRow = surveyRows.find((row) => row.survey_type === "post_test");
+
+    return {
+      enrollmentId: enrollment.id,
+      eventId: enrollment.event_id,
+      eventTitle: event?.title ?? "Eğitim",
+      studentName: profile?.full_name ?? "Öğrenci",
+      studentEmail: profile?.email ?? "—",
+      studentCode: enrollment.student_code,
+      gradeLevel,
+      requiresSurveys: requiresD2pTpsSurveys(gradeLevel),
+      intakeFormCompletedAt: enrollment.intake_form_completed_at,
+      preTestCompletedAt: enrollment.pre_test_completed_at,
+      postTestCompletedAt: enrollment.post_test_completed_at,
+      healthNote: health?.note ?? null,
+      consents: (consents ?? []).map((row) => ({
+        formType: row.form_type as ConsentFormType,
+        accepted: Boolean(row.accepted),
+        acceptedAt: row.accepted_at,
+        parentSignature: row.parent_signature,
+        mediaPermissions: isCompleteMediaPermissions(row.media_permissions)
+          ? (row.media_permissions as MediaPermissions)
+          : null,
+        consentTextVersion: row.consent_text_version,
+      })),
+      intake: intake
+        ? {
+            previousExperience: asRecord(intake.previous_experience),
+            techAccess: asRecord(intake.tech_access),
+            interests: asRecord(intake.interests),
+            motivation: asRecord(intake.motivation),
+            motivationOther: intake.motivation_other,
+            intakeLikert: asNumberRecord(intake.intake_likert),
+            openEnded: asStringRecord(intake.open_ended),
+            submittedAt: intake.updated_at,
+          }
+        : null,
+      preTest: preTestRow ? mapSurvey(preTestRow) : null,
+      postTest: postTestRow ? mapSurvey(postTestRow) : null,
+      postTestExtra: postExtra
+        ? {
+            trainingImpact: asNumberRecord(postExtra.training_impact),
+            futureTrends: asNumberRecord(postExtra.future_trends),
+            openEnded: asStringRecord(postExtra.open_ended),
+          }
+        : null,
     };
   }
 

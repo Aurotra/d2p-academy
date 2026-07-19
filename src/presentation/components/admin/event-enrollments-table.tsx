@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 
@@ -356,6 +357,12 @@ export function EventEnrollmentsTable({
                   </td>
                   <td className="px-5 py-4">
                     <div className="flex flex-wrap items-center gap-2">
+                      <Link
+                        href={`/admin/enrollments/${enrollment.id}/forms`}
+                        className="inline-flex min-h-[40px] items-center rounded-xl px-3 py-2 text-xs font-semibold text-document-primary hover:bg-document-primary/5"
+                      >
+                        Formlar
+                      </Link>
                       {enrollment.status === "completed" ? (
                         enrollment.hasActiveCertificate ? (
                           <span className="text-xs font-semibold text-sky-700">

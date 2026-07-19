@@ -98,6 +98,60 @@ export interface EnrollmentFormProgress {
   hasActiveCertificate: boolean;
 }
 
+export interface SurveyAnswerSnapshot {
+  surveyType: SurveyType;
+  formVersion: string | null;
+  submittedAt: string | null;
+  dimensions: {
+    dimension1: Record<string, number>;
+    dimension2: Record<string, number>;
+    dimension3: Record<string, number>;
+    dimension4: Record<string, number>;
+    dimension5: Record<string, number>;
+  };
+  openEnded: string | null;
+}
+
+export interface EnrollmentFormAnswers {
+  enrollmentId: string;
+  eventId: string;
+  eventTitle: string;
+  studentName: string;
+  studentEmail: string;
+  studentCode: string | null;
+  gradeLevel: string;
+  requiresSurveys: boolean;
+  intakeFormCompletedAt: string | null;
+  preTestCompletedAt: string | null;
+  postTestCompletedAt: string | null;
+  healthNote: string | null;
+  consents: Array<{
+    formType: ConsentFormType;
+    accepted: boolean;
+    acceptedAt: string | null;
+    parentSignature: string | null;
+    mediaPermissions: MediaPermissions | null;
+    consentTextVersion: string | null;
+  }>;
+  intake: {
+    previousExperience: Record<string, unknown>;
+    techAccess: Record<string, unknown>;
+    interests: Record<string, unknown>;
+    motivation: Record<string, unknown>;
+    motivationOther: string | null;
+    intakeLikert: Record<string, number>;
+    openEnded: Record<string, string>;
+    submittedAt: string | null;
+  } | null;
+  preTest: SurveyAnswerSnapshot | null;
+  postTest: SurveyAnswerSnapshot | null;
+  postTestExtra: {
+    trainingImpact: Record<string, number>;
+    futureTrends: Record<string, number>;
+    openEnded: Record<string, string>;
+  } | null;
+}
+
 export function requiresD2pTpsSurveys(gradeLevel: string | null | undefined): boolean {
   const value = (gradeLevel ?? "").trim();
   return value === "5" || value === "6" || value === "7" || value === "8";
