@@ -38,19 +38,21 @@ export default async function AdminEnrollmentFormsPage({
 
   return (
     <div className="space-y-6">
-      <div className="rounded-[1.75rem] border border-slate-200 bg-white p-8 shadow-sm">
+      <div className="rounded-2xl border border-slate-300 bg-gradient-to-br from-slate-50 via-white to-sky-50 p-6 shadow-sm sm:p-8">
         <Link
           href={`/admin/enrollments?event_id=${answers.eventId}`}
-          className="text-sm font-semibold text-document-primary hover:underline"
+          className="text-sm font-bold text-document-primary hover:underline"
         >
           ← Etkinlik kayıtlarına dön
         </Link>
-        <p className="mt-4 text-sm font-semibold uppercase tracking-[0.18em] text-document-primary">
+        <p className="mt-4 text-xs font-bold uppercase tracking-[0.2em] text-document-primary">
           Katılımcı Form Cevapları
         </p>
-        <h1 className="mt-2 text-2xl font-bold text-slate-900">{answers.studentName}</h1>
-        <p className="mt-1 text-sm text-slate-600">{answers.studentEmail}</p>
-        <p className="mt-2 text-sm text-slate-500">{answers.eventTitle}</p>
+        <h1 className="mt-2 text-3xl font-black tracking-tight text-navy-950">
+          {answers.studentName}
+        </h1>
+        <p className="mt-2 text-base font-semibold text-slate-800">{answers.studentEmail}</p>
+        <p className="mt-1 text-sm font-medium text-slate-600">{answers.eventTitle}</p>
       </div>
 
       <AdminEnrollmentFormsView answers={answers} />
