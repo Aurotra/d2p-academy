@@ -13,6 +13,10 @@ interface KvkkConsentFieldsProps {
   onMarketingEmailChange: (value: boolean) => void;
   dataProcessingLabel: string;
   idPrefix?: string;
+  /** Optional dedicated legal-authority attestation (kurumsal talep). */
+  legalAuthorityConfirmed?: boolean;
+  onLegalAuthorityChange?: (value: boolean) => void;
+  legalAuthorityLabel?: string;
 }
 
 export function KvkkConsentFields({
@@ -24,10 +28,18 @@ export function KvkkConsentFields({
   onMarketingEmailChange,
   dataProcessingLabel,
   idPrefix = "consent",
+  legalAuthorityConfirmed,
+  onLegalAuthorityChange,
+  legalAuthorityLabel,
 }: KvkkConsentFieldsProps) {
   const kvkkId = `${idPrefix}-kvkk-disclosure`;
   const dataId = `${idPrefix}-data-processing`;
+  const legalId = `${idPrefix}-legal-authority`;
   const marketingId = `${idPrefix}-marketing-email`;
+  const showLegalAuthority =
+    typeof legalAuthorityConfirmed === "boolean" &&
+    typeof onLegalAuthorityChange === "function" &&
+    Boolean(legalAuthorityLabel);
 
   return (
     <fieldset className="space-y-3 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-4">
@@ -69,6 +81,21 @@ export function KvkkConsentFields({
         />
         <span>{dataProcessingLabel}</span>
       </label>
+
+      {showLegalAuthority ? (
+        <label htmlFor={legalId} className="flex items-start gap-3 text-sm leading-6 text-slate-800">
+          <input
+            id={legalId}
+            name="legal_authority_confirmed"
+            type="checkbox"
+            required
+            checked={legalAuthorityConfirmed}
+            onChange={(event) => onLegalAuthorityChange(event.target.checked)}
+            className="mt-1 size-4 rounded border-slate-300 text-document-primary"
+          />
+          <span>{legalAuthorityLabel}</span>
+        </label>
+      ) : null}
 
       <label htmlFor={marketingId} className="flex items-start gap-3 text-sm leading-6 text-slate-700">
         <input

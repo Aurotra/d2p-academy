@@ -51,6 +51,7 @@ export function InstitutionRequestForm() {
   const [message, setMessage] = useState("");
   const [kvkkDisclosureAccepted, setKvkkDisclosureAccepted] = useState(false);
   const [dataProcessingConsent, setDataProcessingConsent] = useState(false);
+  const [legalAuthorityConfirmed, setLegalAuthorityConfirmed] = useState(false);
   const [marketingEmailConsent, setMarketingEmailConsent] = useState(false);
   const [fieldError, setFieldError] = useState<string | null>(null);
   const [submitError, setSubmitError] = useState<string | null>(null);
@@ -109,7 +110,7 @@ export function InstitutionRequestForm() {
       return;
     }
 
-    if (!kvkkDisclosureAccepted || !dataProcessingConsent) {
+    if (!kvkkDisclosureAccepted || !dataProcessingConsent || !legalAuthorityConfirmed) {
       setFieldError("Zorunlu onay kutularını işaretleyin.");
       return;
     }
@@ -132,6 +133,7 @@ export function InstitutionRequestForm() {
           message: trimmedMessage,
           kvkkDisclosureAccepted,
           dataProcessingConsent,
+          legalAuthorityConfirmed,
           marketingEmailConsent,
         }),
       });
@@ -288,7 +290,10 @@ export function InstitutionRequestForm() {
         onKvkkDisclosureChange={setKvkkDisclosureAccepted}
         onDataProcessingChange={setDataProcessingConsent}
         onMarketingEmailChange={setMarketingEmailConsent}
-        dataProcessingLabel="Verilerimin eğitim/iletişim süreçlerinde işlenmesine onay veriyorum. Bu formu, temsil ettiğim kurum ve katılımcılar adına, gerekli yasal yetkiye sahip olarak dolduruyorum."
+        dataProcessingLabel="Verilerimin eğitim/iletişim süreçlerinde işlenmesine onay veriyorum."
+        legalAuthorityConfirmed={legalAuthorityConfirmed}
+        onLegalAuthorityChange={setLegalAuthorityConfirmed}
+        legalAuthorityLabel="Bu formu, temsil ettiğim kurum ve katılımcılar adına, gerekli yasal yetkiye sahip olarak doldurduğumu beyan ederim."
       />
 
       {fieldError ? (
@@ -305,7 +310,12 @@ export function InstitutionRequestForm() {
 
       <Button
         type="submit"
-        disabled={isSubmitting || !kvkkDisclosureAccepted || !dataProcessingConsent}
+        disabled={
+          isSubmitting ||
+          !kvkkDisclosureAccepted ||
+          !dataProcessingConsent ||
+          !legalAuthorityConfirmed
+        }
         className="min-h-[44px] w-full bg-document-primary hover:bg-document-primary-hover hover:shadow-glow-document"
       >
         {isSubmitting ? "Gönderiliyor..." : "Kurumsal Talep Gönder"}

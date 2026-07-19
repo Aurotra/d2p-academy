@@ -37,6 +37,7 @@ interface InstitutionRequestBody {
   message?: string;
   kvkkDisclosureAccepted?: boolean;
   dataProcessingConsent?: boolean;
+  legalAuthorityConfirmed?: boolean;
   marketingEmailConsent?: boolean;
 }
 
@@ -88,7 +89,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Geçerli bir eğitim paketi seçin." }, { status: 400 });
     }
 
-    if (!body.kvkkDisclosureAccepted || !body.dataProcessingConsent) {
+    if (!body.kvkkDisclosureAccepted || !body.dataProcessingConsent || !body.legalAuthorityConfirmed) {
       return NextResponse.json({ error: "Zorunlu onay kutularını işaretleyin." }, { status: 400 });
     }
 

@@ -407,6 +407,7 @@ export class SupabaseParticipantFormsRepository {
       const { error: healthError } = await this.client.rpc("upsert_own_health_note", {
         p_enrollment_id: enrollmentId,
         p_note: note,
+        p_actor_id: userId,
       });
 
       if (healthError) {
@@ -447,6 +448,7 @@ export class SupabaseParticipantFormsRepository {
       p_intake: true,
       p_pre_test: false,
       p_post_test: false,
+      p_actor_id: userId,
     });
 
     if (stampError) {
@@ -504,7 +506,7 @@ export class SupabaseParticipantFormsRepository {
 
     const { data: studentCode, error: codeError } = await this.client.rpc(
       "assign_enrollment_student_code",
-      { p_enrollment_id: enrollmentId },
+      { p_enrollment_id: enrollmentId, p_actor_id: userId },
     );
 
     if (codeError || !studentCode) {
@@ -519,6 +521,7 @@ export class SupabaseParticipantFormsRepository {
       p_pre_test: true,
       // Non 5–8 skip both surveys → unlock certificate gate as well.
       p_post_test: skippedSurvey,
+      p_actor_id: userId,
     });
 
     if (stampError) {
@@ -587,6 +590,7 @@ export class SupabaseParticipantFormsRepository {
       p_intake: false,
       p_pre_test: false,
       p_post_test: true,
+      p_actor_id: userId,
     });
 
     if (stampError) {
