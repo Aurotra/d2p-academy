@@ -94,10 +94,10 @@ export function KaklikCampaignToggleCard({ initialSettings }: KaklikCampaignTogg
           <p className="text-xs font-bold uppercase tracking-[0.18em] text-document-primary">
             Anasayfa Kampanyası
           </p>
-          <h2 className="mt-1 text-lg font-bold text-slate-900">{title || "Kampanya"}</h2>
+          <h2 className="mt-1 text-lg font-bold text-slate-900">Kampanya ayarları</h2>
           <p className="mt-2 text-sm text-slate-600">
-            Açıkken anasayfada duyuru bandı ve kayıt formu görünür. İsim ve açıklamaları buradan
-            güncelleyebilirsiniz.
+            Açıkken anasayfada duyuru bandı ve kayıt formu görünür. Kampanya adını ve açıklamaları
+            aşağıdaki alanlardan güncelleyebilirsiniz.
           </p>
           <p className="mt-2 text-sm font-bold">
             Durum:{" "}
