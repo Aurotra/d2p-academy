@@ -2,9 +2,9 @@ import { NextResponse } from "next/server";
 
 import { buildConsentAudit, mapConsentToColumns } from "@/lib/utils/consent-audit";
 import { getClientIp } from "@/lib/utils/request-ip";
+import { isKaklikCampaignEnabled } from "@/infrastructure/settings/site-settings";
 import { createSupabaseServerClient } from "@/infrastructure/supabase/create-server-client";
 import {
-  KAKLIK_CAMPAIGN_ENABLED,
   KAKLIK_CAMPAIGN_ID,
   KAKLIK_CAMPAIGN_TITLE,
   KAKLIK_TIME_GROUPS,
@@ -38,11 +38,16 @@ function isValidTimeGroup(value: string): value is KaklikTimeGroupValue {
 }
 
 export async function POST(request: Request) {
-  if (!KAKLIK_CAMPAIGN_ENABLED) {
-    return NextResponse.json({ error: "Bu kampanya şu an kapalı." }, { status: 403 });
-  }
-
   try {
+    const client = await createSupabaseServerClient();
+    if (!client) {
+      return NextResponse.json({ error: "Bağlantı kurulamadı." }, { status: 500 });
+    }
+
+    if (!(await isKaklikCampaignEnabled(client))) {
+      return NextResponse.json({ error: "Bu kampanya şu an kapalı." }, { status: 403 });
+    }
+
     const body = (await request.json()) as CampaignRegistrationBody;
     const fullName = body.fullName?.trim() ?? "";
     const email = body.email?.trim().toLowerCase() ?? "";
@@ -70,11 +75,6 @@ export async function POST(request: Request) {
 
     if (!body.kvkkDisclosureAccepted || !body.dataProcessingConsent) {
       return NextResponse.json({ error: "Zorunlu onay kutularını işaretleyin." }, { status: 400 });
-    }
-
-    const client = await createSupabaseServerClient();
-    if (!client) {
-      return NextResponse.json({ error: "Bağlantı kurulamadı." }, { status: 500 });
     }
 
     const ip = getClientIp(request);

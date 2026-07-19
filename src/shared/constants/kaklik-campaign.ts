@@ -1,6 +1,4 @@
-/** Kaklık 3D Yaz Kursu — homepage campaign (toggle when event is live). */
-export const KAKLIK_CAMPAIGN_ENABLED = true;
-
+/** Kaklık 3D Yaz Kursu — homepage campaign copy & groups. */
 export const KAKLIK_CAMPAIGN_ID = "kaklik-3d-yaz-kursu" as const;
 
 export const KAKLIK_CAMPAIGN_TITLE = "Kaklık 3D Yaz Kursu";

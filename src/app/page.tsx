@@ -5,16 +5,20 @@ import { HeroSection } from "@/presentation/components/home/hero-section";
 import { KaklikCampaignBanner } from "@/presentation/components/home/kaklik-campaign-banner";
 import { KaklikRegistrationSection } from "@/presentation/components/home/kaklik-registration-section";
 import { LearningValuesSection } from "@/presentation/components/home/learning-values-section";
-import { KAKLIK_CAMPAIGN_ENABLED } from "@/shared/constants/kaklik-campaign";
+import { isKaklikCampaignEnabled } from "@/infrastructure/settings/site-settings";
+import { createSupabaseServerClient } from "@/infrastructure/supabase/create-server-client";
 
 export const dynamic = "force-dynamic";
 
-export default function HomePage() {
+export default async function HomePage() {
+  const client = await createSupabaseServerClient();
+  const campaignEnabled = client ? await isKaklikCampaignEnabled(client) : false;
+
   return (
     <>
-      {KAKLIK_CAMPAIGN_ENABLED ? <KaklikCampaignBanner /> : null}
+      {campaignEnabled ? <KaklikCampaignBanner /> : null}
       <HeroSection />
-      {KAKLIK_CAMPAIGN_ENABLED ? <KaklikRegistrationSection /> : null}
+      {campaignEnabled ? <KaklikRegistrationSection /> : null}
       <LearningValuesSection />
       <GalleryHomePreview />
       <CertificateVerificationBar />
