@@ -1,13 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 
+import { createServiceRoleClient } from "@/infrastructure/supabase/create-service-role-client";
+import { createSupabaseServerClient } from "@/infrastructure/supabase/create-server-client";
 import { verifyStudentPassword } from "@/infrastructure/auth/password";
 import {
   signStudentSession,
   STUDENT_SESSION_COOKIE,
   studentCookieOptions,
 } from "@/infrastructure/auth/student-jwt";
-import { createServiceRoleClient } from "@/infrastructure/supabase/create-service-role-client";
 
 const bodySchema = z.object({
   username: z.string().min(1).max(40),
@@ -91,6 +92,16 @@ export async function POST(request: NextRequest) {
       parentId: student.parent_id,
       sessionVersion: student.student_session_version ?? 1,
     });
+
+    // Drop any email Auth session so dual cookies do not confuse the header/panels.
+    try {
+      const emailClient = await createSupabaseServerClient();
+      if (emailClient) {
+        await emailClient.auth.signOut();
+      }
+    } catch {
+      // ignore
+    }
 
     const response = NextResponse.json({
       data: {

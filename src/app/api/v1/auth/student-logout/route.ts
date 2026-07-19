@@ -1,15 +1,19 @@
 import { NextResponse } from "next/server";
 
-import {
-  STUDENT_SESSION_COOKIE,
-  studentCookieOptions,
-} from "@/infrastructure/auth/student-jwt";
+import { clearStudentSessionCookie } from "@/infrastructure/auth/clear-student-session-cookie";
+import { createSupabaseServerClient } from "@/infrastructure/supabase/create-server-client";
 
 export async function POST() {
+  try {
+    const client = await createSupabaseServerClient();
+    if (client) {
+      await client.auth.signOut();
+    }
+  } catch {
+    // Still clear student cookie even if email sign-out fails.
+  }
+
   const response = NextResponse.json({ success: true });
-  response.cookies.set(STUDENT_SESSION_COOKIE, "", {
-    ...studentCookieOptions,
-    maxAge: 0,
-  });
+  clearStudentSessionCookie(response);
   return response;
 }

@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState, type FormEvent } from "react";
 
@@ -8,6 +9,7 @@ import { Input } from "@/presentation/components/ui/input";
 import { Select } from "@/presentation/components/ui/select";
 import { Textarea } from "@/presentation/components/ui/textarea";
 import {
+  AVATAR_OPTIONS,
   CODING_EXPERIENCE_OPTIONS,
   GRADE_LEVEL_OPTIONS,
   INTEREST_OPTIONS,
@@ -26,6 +28,7 @@ type ProfileForm = {
   interests: string[];
   hedef: string;
   beklenti: string;
+  profile_avatar_url: string;
   kvkk_accepted: boolean;
 };
 
@@ -40,6 +43,7 @@ const emptyForm: ProfileForm = {
   interests: [],
   hedef: "",
   beklenti: "",
+  profile_avatar_url: "",
   kvkk_accepted: false,
 };
 
@@ -82,6 +86,7 @@ export function UsernameStudentProfileForm() {
             motivation.beklenti === null || motivation.beklenti === undefined
               ? ""
               : String(motivation.beklenti),
+          profile_avatar_url: String(p.profile_avatar_url ?? ""),
           kvkk_accepted: Boolean(p.kvkk_accepted),
         });
         setProgress(payload.data.progress);
@@ -118,6 +123,7 @@ export function UsernameStudentProfileForm() {
             hedef: form.hedef,
             beklenti: form.beklenti === "" ? null : Number(form.beklenti),
           },
+          profile_avatar_url: form.profile_avatar_url || null,
           kvkk_accepted: form.kvkk_accepted,
         }),
       });
@@ -144,7 +150,7 @@ export function UsernameStudentProfileForm() {
           hedef: form.hedef,
           beklenti: form.beklenti === "" ? null : Number(form.beklenti),
         },
-        profile_avatar_url: null,
+        profile_avatar_url: form.profile_avatar_url || null,
       });
       setProgress(nextProgress);
       setSuccess("Profil kaydedildi.");
@@ -275,6 +281,38 @@ export function UsernameStudentProfileForm() {
           </option>
         ))}
       </Select>
+
+      <fieldset>
+        <legend className="mb-2 text-sm font-medium text-navy-900">Avatar</legend>
+        <div className="grid grid-cols-4 gap-3 sm:gap-4">
+          {AVATAR_OPTIONS.map((avatar) => {
+            const selected = form.profile_avatar_url === avatar.src;
+            return (
+              <button
+                key={avatar.id}
+                type="button"
+                onClick={() => setForm((f) => ({ ...f, profile_avatar_url: avatar.src }))}
+                aria-label={avatar.label}
+                aria-pressed={selected}
+                className={`relative aspect-square overflow-hidden rounded-2xl border-2 transition ${
+                  selected
+                    ? "border-document-primary ring-2 ring-document-primary/30"
+                    : "border-slate-200 hover:border-sky-300"
+                }`}
+              >
+                <Image
+                  src={avatar.src}
+                  alt={avatar.label}
+                  fill
+                  sizes="(max-width: 640px) 25vw, 120px"
+                  className="object-cover"
+                />
+              </button>
+            );
+          })}
+        </div>
+      </fieldset>
+
       <label className="flex items-start gap-2 text-sm text-slate-700">
         <input
           type="checkbox"
