@@ -12,6 +12,7 @@ import { BrandLogo } from "@/presentation/components/layout/brand-logo";
 const navItems = [
   { href: "/#hero", label: "Ana Sayfa" },
   { href: "/#events", label: "Etkinlikler" },
+  { href: "/#veli-rehberi", label: "Veli Rehberi" },
   { href: "/#certificate", label: "Sertifika Doğrula" },
   { href: "/galeri", label: "Galeri" },
   { href: "/kurumsal-talep", label: "Kurumsal Talep" },

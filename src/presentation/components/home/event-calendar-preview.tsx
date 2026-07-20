@@ -3,6 +3,7 @@ import { listUpcomingEvents } from "@/core/use-cases/list-upcoming-events";
 import { SupabaseEventRepository } from "@/infrastructure/repositories/supabase-event-repository";
 import { createSupabaseServerClient } from "@/infrastructure/supabase/create-server-client";
 import { EventCard } from "@/presentation/components/home/event-card";
+import { ParentGuidePromo } from "@/presentation/components/home/parent-guide-promo";
 
 function EmptyEventsState() {
   return (
@@ -53,14 +54,24 @@ export async function EventCalendarPreview() {
         </div>
 
         {events.length === 0 ? (
-          <div className="mt-10">
-            <EmptyEventsState />
+          <div className="mt-10 grid grid-cols-1 gap-8 lg:grid-cols-[minmax(0,1fr)_320px] lg:items-start">
+            <div className="order-2 lg:order-1">
+              <EmptyEventsState />
+            </div>
+            <div className="order-1 lg:order-2">
+              <ParentGuidePromo />
+            </div>
           </div>
         ) : (
-          <div className="mt-10 grid gap-6 md:grid-cols-2 xl:grid-cols-3">
-            {events.map((event) => (
-              <EventCard key={event.id} event={event} />
-            ))}
+          <div className="mt-10 grid grid-cols-1 gap-8 lg:grid-cols-[minmax(0,1fr)_320px] lg:items-start">
+            <div className="order-2 lg:order-1 grid gap-6 md:grid-cols-2 xl:grid-cols-2">
+              {events.map((event) => (
+                <EventCard key={event.id} event={event} />
+              ))}
+            </div>
+            <div className="order-1 lg:order-2">
+              <ParentGuidePromo />
+            </div>
           </div>
         )}
       </div>
