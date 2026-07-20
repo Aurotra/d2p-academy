@@ -8,6 +8,7 @@ import { createSupabaseBrowserClient } from "@/infrastructure/supabase/create-br
 import { AuthPortalLink } from "@/presentation/components/auth/auth-portal-link";
 import { BRAND_SURFACE_HEADER } from "@/shared/constants/brand-surfaces";
 import { BrandLogo } from "@/presentation/components/layout/brand-logo";
+import { scrollToHash } from "@/shared/utils/scroll-to-hash";
 
 const navItems = [
   { href: "/#hero", label: "Ana Sayfa" },
@@ -18,6 +19,28 @@ const navItems = [
   { href: "/kurumsal-talep", label: "Kurumsal Talep" },
   { href: "/iletisim", label: "İletişim" },
 ] as const;
+
+function handleSamePageHashNav(
+  event: React.MouseEvent<HTMLAnchorElement>,
+  href: string,
+  pathname: string,
+) {
+  const hashIndex = href.indexOf("#");
+  if (hashIndex === -1) {
+    return;
+  }
+
+  const targetPath = href.slice(0, hashIndex) || "/";
+  const hash = href.slice(hashIndex);
+
+  if (targetPath !== pathname) {
+    return;
+  }
+
+  event.preventDefault();
+  scrollToHash(hash);
+  window.history.pushState(null, "", `${targetPath}${hash}`);
+}
 
 function MenuIcon({ open }: { open: boolean }) {
   return (
@@ -193,6 +216,7 @@ export function SiteHeader() {
               key={item.href}
               href={item.href}
               className="text-sm font-medium text-slate-800 transition hover:text-primary"
+              onClick={(event) => handleSamePageHashNav(event, item.href, pathname)}
             >
               {item.label}
             </Link>
@@ -271,7 +295,10 @@ export function SiteHeader() {
                   <Link
                     href={item.href}
                     className="flex items-center rounded-xl px-4 py-3 text-base font-semibold text-slate-800 transition hover:bg-white/70 hover:text-primary"
-                    onClick={closeMobileMenu}
+                    onClick={(event) => {
+                      handleSamePageHashNav(event, item.href, pathname);
+                      closeMobileMenu();
+                    }}
                   >
                     <span className="mr-3 h-2 w-2 shrink-0 rounded-full bg-accent" />
                     {item.label}

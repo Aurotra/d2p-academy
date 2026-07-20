@@ -11,7 +11,7 @@ const quickSteps = [
 
 export function ParentGuidePromo() {
   return (
-    <div id="veli-rehberi" className="flex h-full flex-col">
+    <div id="veli-rehberi" className="flex h-full scroll-mt-24 flex-col">
       <p className="text-xs font-semibold uppercase tracking-[0.18em] text-secondary">
         Veli kaydı
       </p>
