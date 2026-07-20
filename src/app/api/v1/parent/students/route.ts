@@ -12,7 +12,7 @@ import { createSupabaseServerClient } from "@/infrastructure/supabase/create-ser
 
 const createSchema = z.object({
   fullName: z.string().trim().min(2).max(80),
-  username: z.string().min(3).max(20),
+  username: z.string().trim().min(1).max(40),
   password: z.string().min(6).max(72),
 });
 

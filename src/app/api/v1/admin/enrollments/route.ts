@@ -5,6 +5,7 @@ import type { EnrollmentStatus } from "@/core/domain/student-dashboard";
 import { requireAdminApiAccess } from "@/infrastructure/auth/require-admin-api-access";
 import { getEventCapacityBlockReason } from "@/infrastructure/enrollments/event-capacity";
 import { SupabaseAdminAuditLogRepository } from "@/infrastructure/repositories/supabase-admin-audit-log-repository";
+import { tryNormalizeUsername } from "@/shared/utils/student-username";
 
 const ALLOWED_STATUSES: EnrollmentStatus[] = [
   "registered",
@@ -101,7 +102,8 @@ export async function POST(request: Request) {
       }
       student = data;
     } else if (username || (query && !query.includes("@"))) {
-      const lookup = username ?? query!;
+      const raw = (username ?? query!).trim().toLowerCase();
+      const lookup = tryNormalizeUsername(raw) ?? raw;
       const { data, error } = await access.client
         .from("profiles")
         .select("id, full_name, email, username")

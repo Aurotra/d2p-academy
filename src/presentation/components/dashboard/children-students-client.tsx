@@ -7,6 +7,7 @@ import { useState, type FormEvent, type ReactNode } from "react";
 import { Button } from "@/presentation/components/ui/button";
 import { Input } from "@/presentation/components/ui/input";
 import { Select } from "@/presentation/components/ui/select";
+import { tryNormalizeUsername } from "@/shared/utils/student-username";
 
 export type ChildProgressPreview = {
   enrollments: Array<{
@@ -420,6 +421,7 @@ function AddStudentDialog({
 }) {
   const [fullName, setFullName] = useState("");
   const [username, setUsername] = useState("");
+  const [usernameHint, setUsernameHint] = useState<string | null>(null);
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
@@ -471,10 +473,26 @@ function AddStudentDialog({
         <Input
           label="Kullanıcı adı"
           value={username}
-          onChange={(e) => setUsername(e.target.value)}
-          placeholder="orn: ayse_2015"
+          onChange={(e) => {
+            setUsername(e.target.value);
+            setUsernameHint(null);
+          }}
+          onBlur={() => {
+            const normalized = tryNormalizeUsername(username);
+            if (normalized && normalized !== username.trim().toLowerCase()) {
+              setUsernameHint(`Kayıtta şu şekilde kullanılacak: ${normalized}`);
+            } else if (normalized) {
+              setUsernameHint(null);
+            } else if (username.trim()) {
+              setUsernameHint(
+                "3-32 karakter, harf ile başlamalı. Türkçe harfler otomatik dönüşür (ör. emre84, ayse2015).",
+              );
+            }
+          }}
+          placeholder="örn: emre84"
           required
         />
+        {usernameHint ? <p className="text-xs text-slate-500">{usernameHint}</p> : null}
         <Input
           label="Şifre"
           type="password"

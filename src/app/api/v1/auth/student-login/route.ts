@@ -6,6 +6,7 @@ import {
   isAuthRateLimited,
 } from "@/infrastructure/auth/auth-rate-limit";
 import { verifyStudentPassword } from "@/infrastructure/auth/password";
+import { tryNormalizeUsername } from "@/shared/utils/student-username";
 import {
   signStudentSession,
   STUDENT_SESSION_COOKIE,
@@ -28,7 +29,8 @@ export async function POST(request: NextRequest) {
     }
 
     const ip = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "unknown";
-    const username = parsed.data.username.trim().toLowerCase();
+    const rawUsername = parsed.data.username.trim().toLowerCase();
+    const username = tryNormalizeUsername(parsed.data.username) ?? rawUsername;
     const rateLimitKey = `${ip}:${username}`;
 
     const supabase = createServiceRoleClient();
