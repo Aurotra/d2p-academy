@@ -166,7 +166,19 @@ export function UsernameStudentDashboardView({
             </p>
             <p className="mt-1 text-xs text-sky-800/70">@{username}</p>
           </div>
-          <div className="flex flex-col gap-3 sm:flex-row">
+          <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:justify-end">
+            <Link
+              href="/student-dashboard/documents"
+              className="inline-flex items-center justify-center rounded-xl border-2 border-document-primary bg-white px-5 py-3 text-sm font-semibold text-document-primary transition hover:bg-document-primary/5"
+            >
+              Dökümanlar
+            </Link>
+            <Link
+              href="/student-dashboard/report"
+              className="inline-flex items-center justify-center rounded-xl border-2 border-document-primary bg-white px-5 py-3 text-sm font-semibold text-document-primary transition hover:bg-document-primary/5"
+            >
+              Not Raporum
+            </Link>
             <Link
               href="/student-dashboard/profile"
               className="inline-flex items-center justify-center rounded-xl border-2 border-document-primary bg-white px-5 py-3 text-sm font-semibold text-document-primary transition hover:bg-document-primary/5"
