@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, type FormEvent, type ReactNode } from "react";
 
@@ -9,6 +10,7 @@ import { Select } from "@/presentation/components/ui/select";
 
 export type ChildProgressPreview = {
   enrollments: Array<{
+    enrollmentId: string;
     title: string;
     status: string;
     date: string;
@@ -174,8 +176,8 @@ export function ChildrenStudentsClient({
                             <p className="text-sm text-slate-600">Kayıt yok</p>
                           ) : (
                             <ul className="space-y-3">
-                              {preview.enrollments.map((item, index) => (
-                                <li key={`${item.title}-${index}`} className="text-sm text-slate-700">
+                              {preview.enrollments.map((item) => (
+                                <li key={item.enrollmentId} className="text-sm text-slate-700">
                                   <p>
                                     <span className="font-medium">{item.title}</span>
                                     <span className="text-slate-500">
@@ -187,6 +189,15 @@ export function ChildrenStudentsClient({
                                   <p className="mt-0.5 text-xs text-slate-500">
                                     {formStatusLabel(item)}
                                   </p>
+                                  {item.status !== "cancelled" &&
+                                  !item.enrollmentId.startsWith("temp-") ? (
+                                    <Link
+                                      href={`/dashboard/children/${student.id}/enrollments/${item.enrollmentId}/forms`}
+                                      className="mt-1 inline-flex text-xs font-semibold text-document-primary hover:underline"
+                                    >
+                                      Formları doldur →
+                                    </Link>
+                                  ) : null}
                                 </li>
                               ))}
                             </ul>
@@ -302,11 +313,11 @@ export function ChildrenStudentsClient({
                       </div>
 
                       <p className="text-xs text-slate-500">
-                        Katılımcı formlarını ve profili çocuk kendi öğrenci girişi ile tamamlar.
-                        Profil %{profileProgress}
-                        {profileProgress < 100
-                          ? " — sertifika için profilin %100 olması gerekir."
-                          : " — sertifika için profil hazır."}
+        Katılımcı formlarını bu panelden çocuğunuz adına doldurabilirsiniz. Profili çocuk kendi
+        öğrenci girişi ile tamamlar. Profil %{profileProgress}
+        {profileProgress < 100
+          ? " — sertifika için profilin %100 olması gerekir."
+          : " — sertifika için profil hazır."}
                       </p>
                     </div>
                   ) : null}
@@ -355,6 +366,7 @@ export function ChildrenStudentsClient({
                       ...preview,
                       enrollments: [
                         {
+                          enrollmentId: `temp-${Date.now()}`,
                           title: eventTitle,
                           status: "registered",
                           date: new Date().toISOString(),

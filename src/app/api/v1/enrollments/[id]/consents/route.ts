@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 
 import type { ConsentFormType, MediaPermissions } from "@/core/domain/participant-forms";
-import { resolveEnrollmentActor } from "@/infrastructure/auth/resolve-enrollment-actor";
+import { resolveEnrollmentActorForEnrollment } from "@/infrastructure/auth/resolve-enrollment-actor";
 import { SupabaseParticipantFormsRepository } from "@/infrastructure/repositories/supabase-participant-forms-repository";
 import { getClientIp } from "@/lib/utils/request-ip";
 
@@ -22,7 +22,7 @@ export async function POST(
 ) {
   try {
     const { id: enrollmentId } = await context.params;
-    const actor = await resolveEnrollmentActor();
+    const actor = await resolveEnrollmentActorForEnrollment(enrollmentId);
     if (!actor.ok) {
       return actor.response;
     }

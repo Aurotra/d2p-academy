@@ -78,6 +78,7 @@ export default async function DashboardChildrenPage() {
         certificateCount: progress?.certificates?.length ?? 0,
         progressPreview: {
           enrollments: (progress?.enrollments ?? []).map((item) => ({
+            enrollmentId: item.enrollmentId,
             title: item.eventTitle,
             status: item.status,
             date: item.eventDate,

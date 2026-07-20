@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 
-import { resolveEnrollmentActor } from "@/infrastructure/auth/resolve-enrollment-actor";
+import { resolveEnrollmentActorForEnrollment } from "@/infrastructure/auth/resolve-enrollment-actor";
 import { SupabaseParticipantFormsRepository } from "@/infrastructure/repositories/supabase-participant-forms-repository";
 
 export async function GET(
@@ -9,7 +9,7 @@ export async function GET(
 ) {
   try {
     const { id: enrollmentId } = await context.params;
-    const actor = await resolveEnrollmentActor();
+    const actor = await resolveEnrollmentActorForEnrollment(enrollmentId);
     if (!actor.ok) {
       return actor.response;
     }
