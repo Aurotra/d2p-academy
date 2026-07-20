@@ -30,7 +30,7 @@ export async function POST(
     const body = (await request.json()) as ConsentsBody;
     const repository = new SupabaseParticipantFormsRepository(actor.client);
 
-    await repository.submitConsents(
+    const data = await repository.submitConsents(
       enrollmentId,
       actor.actorId,
       {
@@ -46,7 +46,7 @@ export async function POST(
       getClientIp(request),
     );
 
-    return NextResponse.json({ data: { ok: true } });
+    return NextResponse.json({ data });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Onaylar kaydedilemedi.";
     return NextResponse.json({ error: message }, { status: 400 });

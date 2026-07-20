@@ -352,7 +352,7 @@ export class SupabaseParticipantFormsRepository {
     userId: string,
     input: SubmitConsentsInput,
     ipAddress: string | null,
-  ): Promise<{ ok: true }> {
+  ): Promise<{ ok: true; studentCode: string }> {
     await this.requireOwnedEnrollment(enrollmentId, userId);
 
     if (input.consents.length !== 3) {
@@ -419,7 +419,18 @@ export class SupabaseParticipantFormsRepository {
       }
     }
 
-    return { ok: true };
+    const { data: studentCode, error: codeError } = await this.client.rpc(
+      "assign_enrollment_student_code",
+      { p_enrollment_id: enrollmentId, p_actor_id: userId },
+    );
+
+    if (codeError || !studentCode) {
+      throw new Error(
+        `Öğrenci kodu oluşturulamadı: ${codeError?.message ?? "Bilinmeyen hata"}`,
+      );
+    }
+
+    return { ok: true, studentCode: String(studentCode) };
   }
 
   async submitIntake(
@@ -466,7 +477,7 @@ export class SupabaseParticipantFormsRepository {
     enrollmentId: string,
     userId: string,
     input: SurveyDimensionsInput | null,
-  ): Promise<{ studentCode: string; skippedSurvey: boolean }> {
+  ): Promise<{ skippedSurvey: boolean }> {
     await this.requireOwnedEnrollment(enrollmentId, userId);
 
     const { data: profile, error: profileError } = await this.client
@@ -508,17 +519,6 @@ export class SupabaseParticipantFormsRepository {
       }
     }
 
-    const { data: studentCode, error: codeError } = await this.client.rpc(
-      "assign_enrollment_student_code",
-      { p_enrollment_id: enrollmentId, p_actor_id: userId },
-    );
-
-    if (codeError || !studentCode) {
-      throw new Error(
-        `Öğrenci kodu oluşturulamadı: ${codeError?.message ?? "Bilinmeyen hata"}`,
-      );
-    }
-
     const { error: stampError } = await this.client.rpc("mark_enrollment_form_timestamps", {
       p_enrollment_id: enrollmentId,
       p_intake: false,
@@ -532,10 +532,7 @@ export class SupabaseParticipantFormsRepository {
       throw new Error(`İlerleme güncellenemedi: ${stampError.message}`);
     }
 
-    return {
-      studentCode: String(studentCode),
-      skippedSurvey,
-    };
+    return { skippedSurvey };
   }
 
   async submitPostTest(

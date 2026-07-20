@@ -324,12 +324,15 @@ export function CourseApplicationWizard({
         }),
       });
 
-      const payload = (await response.json()) as { error?: string };
-      if (!response.ok) {
+      const payload = (await response.json()) as {
+        error?: string;
+        data?: { studentCode?: string };
+      };
+      if (!response.ok || !payload.data?.studentCode) {
         throw new Error(payload.error ?? "Onaylar kaydedilemedi.");
       }
 
-      setSuccess("Onaylar kaydedildi.");
+      setSuccess(`Onaylar kaydedildi. D2P öğrenci kodunuz: ${payload.data.studentCode}`);
       const next = await loadState();
       if (next?.requiresSurveys) {
         setStep(3);
@@ -433,17 +436,17 @@ export function CourseApplicationWizard({
 
       const prePayload = (await preResponse.json()) as {
         error?: string;
-        data?: { studentCode: string; skippedSurvey: boolean };
+        data?: { skippedSurvey: boolean };
       };
 
       if (!preResponse.ok || !prePayload.data) {
-        throw new Error(prePayload.error ?? "Ön test / öğrenci kodu işlemi başarısız.");
+        throw new Error(prePayload.error ?? "Ön test kaydedilemedi.");
       }
 
       setSuccess(
         requiresSurveys
-          ? `Ön test kaydedildi. Öğrenci kodunuz: ${prePayload.data.studentCode}`
-          : `Formlar tamamlandı. Öğrenci kodunuz: ${prePayload.data.studentCode}`,
+          ? "Tanıma formu ve ön test kaydedildi. Devam etmek için Onaylar adımına geçin."
+          : "Tanıma formu kaydedildi. Devam etmek için Onaylar adımına geçin; D2P kodunuz orada oluşturulur.",
       );
 
       await loadState();
@@ -633,7 +636,8 @@ export function CourseApplicationWizard({
         <section className="space-y-4 rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm">
           <h2 className="text-xl font-bold text-navy-950">Onaylar</h2>
           <p className="text-sm text-slate-600">
-            F05, F06 ve F07 metinlerini okuyun; ardından onay kutularını işaretleyin. (F04 uzman
+            F05, F06 ve F07 metinlerini okuyun; ardından onay kutularını işaretleyin. Onaylar
+            başarıyla kaydedildiğinde D2P öğrenci kodunuz otomatik oluşturulur. (F04 uzman
             görüş formudur, öğrenci/veli akışında yer almaz.)
           </p>
 
@@ -857,8 +861,8 @@ export function CourseApplicationWizard({
             </div>
           ) : (
             <p className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
-              Sınıf düzeyiniz 5–8 dışında olduğu için ön test / son test atlanır; öğrenci kodu bu
-              adımda üretilir.
+              Sınıf düzeyiniz 5–8 dışında olduğu için ön test / son test atlanır. D2P öğrenci
+              kodunuz Onaylar adımını tamamladıktan sonra oluşturulur.
             </p>
           )}
 
