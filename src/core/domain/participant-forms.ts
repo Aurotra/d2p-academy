@@ -169,3 +169,14 @@ export function isCompleteMediaPermissions(
   const record = value as Record<string, unknown>;
   return MEDIA_PERMISSION_KEYS.every((key) => typeof record[key] === "boolean");
 }
+
+/** F06 — tüm kalemlerde “İzin veriyorum” seçilmiş olmalı. */
+export function isFullMediaConsentGranted(
+  value: MediaPermissions | null | undefined,
+): boolean {
+  if (!value) {
+    return false;
+  }
+
+  return MEDIA_PERMISSION_KEYS.every((key) => value[key] === true);
+}

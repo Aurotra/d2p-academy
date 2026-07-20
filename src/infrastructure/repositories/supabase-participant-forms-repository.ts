@@ -14,9 +14,10 @@ import type {
 } from "@/core/domain/participant-forms";
 import {
   isCompleteMediaPermissions,
+  isFullMediaConsentGranted,
   requiresD2pTpsSurveys,
 } from "@/core/domain/participant-forms";
-import { SURVEY_FORM_VERSIONS } from "@/shared/constants/participant-forms";
+import { MEDIA_CONSENT_BLOCK_MESSAGE, SURVEY_FORM_VERSIONS } from "@/shared/constants/participant-forms";
 import { calculateProgress, isProfileComplete } from "@/lib/utils/progress";
 
 function asRecord(value: unknown): Record<string, unknown> {
@@ -379,6 +380,9 @@ export class SupabaseParticipantFormsRepository {
       if (consent.formType === "media") {
         if (!isCompleteMediaPermissions(consent.mediaPermissions)) {
           throw new Error("Görsel izin matrisinin 7 kalemi de doldurulmalıdır.");
+        }
+        if (!isFullMediaConsentGranted(consent.mediaPermissions)) {
+          throw new Error(MEDIA_CONSENT_BLOCK_MESSAGE);
         }
         mediaPermissions = consent.mediaPermissions;
       }

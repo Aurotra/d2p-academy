@@ -7,7 +7,7 @@ import type {
   MediaPermissions,
   SurveyDimensionsInput,
 } from "@/core/domain/participant-forms";
-import { MEDIA_PERMISSION_KEYS } from "@/core/domain/participant-forms";
+import { isFullMediaConsentGranted, MEDIA_PERMISSION_KEYS } from "@/core/domain/participant-forms";
 import { ConsentDocumentCard } from "@/presentation/components/forms/consent-document-card";
 import { LikertScaleGroup } from "@/presentation/components/forms/likert-scale-group";
 import { MediaConsentMatrix } from "@/presentation/components/forms/media-consent-matrix";
@@ -21,6 +21,7 @@ import {
   CONSENT_DOCUMENTS,
   CONSENT_TEXT_VERSIONS,
   EMPTY_MEDIA_PERMISSIONS,
+  MEDIA_CONSENT_BLOCK_MESSAGE,
   FUTURE_TRENDS_QUESTIONS,
   INTAKE_INTEREST_FIELDS,
   INTAKE_LIKERT_QUESTIONS,
@@ -116,6 +117,52 @@ function requireMulti(value: string[], label: string) {
   }
 }
 
+function FormStepAlert({
+  error,
+  success,
+}: {
+  error: string | null;
+  success: string | null;
+}) {
+  if (!error && !success) {
+    return null;
+  }
+
+  return (
+    <div className="space-y-3">
+      {error ? (
+        <p className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+          {error}
+        </p>
+      ) : null}
+      {success ? (
+        <p className="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">
+          {success}
+        </p>
+      ) : null}
+    </div>
+  );
+}
+
+function areCoreConsentsAccepted(state: EnrollmentFormProgress): boolean {
+  return (["scientific", "media", "participation"] as const).every((type) =>
+    state.consents.some((item) => item.formType === type && item.accepted),
+  );
+}
+
+function getSavedMediaPermissions(state: EnrollmentFormProgress): MediaPermissions | null {
+  const media = state.consents.find((item) => item.formType === "media");
+  return media?.mediaPermissions ?? null;
+}
+
+function isOnaylarComplete(state: EnrollmentFormProgress): boolean {
+  if (!areCoreConsentsAccepted(state)) {
+    return false;
+  }
+
+  return isFullMediaConsentGranted(getSavedMediaPermissions(state));
+}
+
 export function CourseApplicationWizard({
   enrollmentId,
   profileHref = "/dashboard/profile",
@@ -201,9 +248,7 @@ export function CourseApplicationWizard({
 
       const intakeReady =
         Boolean(next.intakeFormCompletedAt) && Boolean(next.preTestCompletedAt);
-      const consentsReady = (["scientific", "media", "participation"] as const).every((type) =>
-        next.consents.some((item) => item.formType === type && item.accepted),
-      );
+      const consentsReady = isOnaylarComplete(next);
 
       if (!intakeReady) {
         setStep(1);
@@ -245,6 +290,9 @@ export function CourseApplicationWizard({
         if (typeof mediaPermissions[key] !== "boolean") {
           throw new Error("Görsel izin matrisinin tüm kalemlerini doldurun.");
         }
+      }
+      if (!isFullMediaConsentGranted(mediaPermissions)) {
+        throw new Error(MEDIA_CONSENT_BLOCK_MESSAGE);
       }
 
       const response = await fetch(`/api/v1/enrollments/${enrollmentId}/consents`, {
@@ -489,9 +537,9 @@ export function CourseApplicationWizard({
     );
   }
 
-  const onaylarDone = (["scientific", "media", "participation"] as const).every((type) =>
-    state.consents.some((item) => item.formType === type && item.accepted),
-  );
+  const onaylarDone = isOnaylarComplete(state);
+  const mediaConsentGranted = isFullMediaConsentGranted(getSavedMediaPermissions(state));
+  const coreConsentsAccepted = areCoreConsentsAccepted(state);
   const tanismaDone = Boolean(state.intakeFormCompletedAt) && Boolean(state.preTestCompletedAt);
   const sonTestDone = Boolean(state.postTestCompletedAt);
   const sertifikaDone = Boolean(state.hasActiveCertificate);
@@ -561,6 +609,8 @@ export function CourseApplicationWizard({
               disabled={!item.enabled && item.tone === "idle"}
               onClick={() => {
                 if (item.enabled || item.tone !== "idle") {
+                  setError(null);
+                  setSuccess(null);
                   setStep(item.id);
                 }
               }}
@@ -578,30 +628,6 @@ export function CourseApplicationWizard({
           sırası gelmedi
         </p>
       </div>
-
-      {error ? (
-        <p className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-          {error}
-        </p>
-      ) : null}
-      {success ? (
-        <p className="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">
-          {success}
-        </p>
-      ) : null}
-      {wizardComplete ? (
-        <p className="rounded-xl border border-sky-200 bg-sky-50 px-4 py-3 text-sm text-sky-900">
-          Bu kayıt için zorunlu formlar ve profil tamamlandı.
-        </p>
-      ) : null}
-      {formsDone && !profileReady ? (
-        <p className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
-          {profileCertificateBlockMessage(state.profileProgressPercent)}{" "}
-          <Link href={profileHref} className="font-bold underline">
-            Profil sayfasına git →
-          </Link>
-        </p>
-      ) : null}
 
       {step === 2 ? (
         <section className="space-y-4 rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm">
@@ -677,6 +703,8 @@ export function CourseApplicationWizard({
             onChange={(e) => setHealthNote(e.target.value)}
             rows={3}
           />
+
+          <FormStepAlert error={error} success={success} />
 
           <Button type="button" disabled={isSaving} onClick={() => void submitConsents()}>
             {isSaving
@@ -834,6 +862,8 @@ export function CourseApplicationWizard({
             </p>
           )}
 
+          <FormStepAlert error={error} success={success} />
+
           <Button type="button" disabled={isSaving} onClick={() => void submitIntakeAndMaybePreTest()}>
             {isSaving ? "Kaydediliyor..." : "Kaydet ve Devam Et"}
           </Button>
@@ -904,6 +934,8 @@ export function CourseApplicationWizard({
             rows={3}
           />
 
+          <FormStepAlert error={error} success={success} />
+
           <Button type="button" disabled={isSaving} onClick={() => void submitPostTest()}>
             {isSaving ? "Kaydediliyor..." : "Son Testi Kaydet"}
           </Button>
@@ -924,6 +956,8 @@ export function CourseApplicationWizard({
           className={`space-y-3 rounded-[2rem] border p-6 shadow-sm ${
             sertifikaDone
               ? "border-emerald-200 bg-emerald-50"
+              : coreConsentsAccepted && !mediaConsentGranted
+                ? "border-red-200 bg-red-50"
               : formsDone && !profileReady
                 ? "border-red-200 bg-red-50"
                 : readyForCertificateQueue
@@ -937,6 +971,26 @@ export function CourseApplicationWizard({
               Sertifikanız onaylandı ve oluşturuldu. Öğrenci panelindeki Sertifikalarım
               bölümünden indirebilirsiniz.
             </p>
+          ) : coreConsentsAccepted && !mediaConsentGranted ? (
+            <div className="space-y-2 text-sm text-red-900">
+              <p className="font-semibold">{MEDIA_CONSENT_BLOCK_MESSAGE}</p>
+              <p>
+                Eğitimlerimizde güvenlik, proje kaydı ve kurumsal raporlama için görsel / medya
+                izinleri zorunludur. Lütfen Onaylar adımına dönüp F06 matrisinde tüm kalemlerde
+                “İzin veriyorum” seçeneğini işaretleyin.
+              </p>
+              <button
+                type="button"
+                className="font-bold text-document-primary underline"
+                onClick={() => {
+                  setError(null);
+                  setSuccess(null);
+                  setStep(2);
+                }}
+              >
+                Onaylar adımına git →
+              </button>
+            </div>
           ) : formsDone && !profileReady ? (
             <div className="space-y-2 text-sm text-red-900">
               <p className="font-semibold">
@@ -963,6 +1017,12 @@ export function CourseApplicationWizard({
               Önceki adımları tamamladıktan sonra sertifika onayı burada görünecek.
             </p>
           )}
+          {wizardComplete ? (
+            <p className="rounded-xl border border-sky-200 bg-sky-50 px-4 py-3 text-sm text-sky-900">
+              Bu kayıt için zorunlu formlar ve profil tamamlandı.
+            </p>
+          ) : null}
+          <FormStepAlert error={error} success={success} />
         </section>
       ) : null}
     </div>

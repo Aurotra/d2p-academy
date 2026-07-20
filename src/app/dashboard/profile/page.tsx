@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useMemo, useRef, useState, type FormEvent } from "react";
+import { useEffect, useMemo, useState, type FormEvent } from "react";
 
 import type { StudentProfileData } from "@/core/domain/student-profile";
 import { SupabaseStudentProfileRepository } from "@/infrastructure/repositories/supabase-student-profile-repository";
@@ -41,19 +41,10 @@ const emptyProfile: StudentProfileData = {
 
 export default function DashboardProfilePage() {
   const router = useRouter();
-  const alertRef = useRef<HTMLDivElement | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [form, setForm] = useState<StudentProfileData>(emptyProfile);
   const [alert, setAlert] = useState<AlertState>(null);
-
-  useEffect(() => {
-    if (!alert) {
-      return;
-    }
-
-    alertRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
-  }, [alert]);
 
   useEffect(() => {
     async function loadProfile() {
@@ -427,7 +418,6 @@ export default function DashboardProfilePage() {
 
           {alert ? (
             <div
-              ref={alertRef}
               className={`rounded-2xl border-2 px-5 py-4 text-sm font-medium leading-6 ${
                 alert.type === "success"
                   ? "border-emerald-300 bg-emerald-50 text-emerald-900"

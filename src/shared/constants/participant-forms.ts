@@ -83,6 +83,12 @@ export const EMPTY_MEDIA_PERMISSIONS: MediaPermissions = {
   municipal_reports: false,
 };
 
+export const MEDIA_CONSENT_EXPLANATION =
+  "D2P Academy eğitimleri uygulamalı çalışma, proje sunumu ve güvenli kayıt tutma gerektirir. Eğitim sırasında çekilen fotoğraf ve videolar; çocuğunuzun gelişimini belgelemek, eğitim kalitesini izlemek, kurumsal raporlama yapmak ve programın tanıtımında (web sitesi, sosyal medya, basılı materyaller) kullanmak için gereklidir. Bu nedenle F06 kapsamındaki tüm kalemlerde “İzin veriyorum” seçilmesi zorunludur.";
+
+export const MEDIA_CONSENT_BLOCK_MESSAGE =
+  "Görsel ve medya izinlerinin tamamına onay vermeden eğitime katılım tamamlanamaz ve kayıt sertifika onayına gönderilemez. Lütfen tüm kalemlerde “İzin veriyorum” seçeneğini işaretleyin.";
+
 export const PARTICIPANT_LIKERT_OPTIONS = LIKERT_OPTIONS;
 
 export interface LikertQuestion {
