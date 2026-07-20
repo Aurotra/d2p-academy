@@ -7,13 +7,14 @@ import { useCallback, useEffect, useState } from "react";
 import { createSupabaseBrowserClient } from "@/infrastructure/supabase/create-browser-client";
 import { AuthPortalLink } from "@/presentation/components/auth/auth-portal-link";
 import { BRAND_SURFACE_HEADER } from "@/shared/constants/brand-surfaces";
+import { PARENT_GUIDE_PATH } from "@/shared/constants/parent-guide";
 import { BrandLogo } from "@/presentation/components/layout/brand-logo";
 import { scrollToHash } from "@/shared/utils/scroll-to-hash";
 
 const navItems = [
   { href: "/#hero", label: "Ana Sayfa" },
   { href: "/#events", label: "Etkinlikler" },
-  { href: "/#veli-rehberi", label: "Veli Rehberi" },
+  { href: PARENT_GUIDE_PATH, label: "Veli Rehberi" },
   { href: "/#certificate", label: "Sertifika Doğrula" },
   { href: "/galeri", label: "Galeri" },
   { href: "/kurumsal-talep", label: "Kurumsal Talep" },
