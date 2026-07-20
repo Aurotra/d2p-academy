@@ -4,6 +4,9 @@ export interface EnrollmentSummary {
   eventDate: string;
   status: string;
   certificateCode?: string | null;
+  intakeCompleted?: boolean;
+  preTestCompleted?: boolean;
+  postTestCompleted?: boolean;
 }
 
 export interface CertificateSummary {
@@ -29,6 +32,14 @@ export interface PrintWorkOrderSummary {
   requestedAt: string;
 }
 
+export interface ChildGradeSummary {
+  documentTitle: string;
+  score: number;
+  feedback: string;
+  createdAt: string;
+  documentFileUrl: string;
+}
+
 export interface StudentProgress {
   enrollments: EnrollmentSummary[];
   certificates: CertificateSummary[];
@@ -37,4 +48,5 @@ export interface StudentProgress {
 
 export interface ChildProgress extends StudentProgress {
   activePrintOrders: PrintWorkOrderSummary[];
+  grades?: ChildGradeSummary[];
 }

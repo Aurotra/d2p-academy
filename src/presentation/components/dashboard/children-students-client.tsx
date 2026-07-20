@@ -8,8 +8,24 @@ import { Input } from "@/presentation/components/ui/input";
 import { Select } from "@/presentation/components/ui/select";
 
 export type ChildProgressPreview = {
-  enrollments: Array<{ title: string; status: string; date: string }>;
-  certificates: Array<{ code: string; issuedAt: string }>;
+  enrollments: Array<{
+    title: string;
+    status: string;
+    date: string;
+    intakeCompleted?: boolean;
+    preTestCompleted?: boolean;
+    postTestCompleted?: boolean;
+  }>;
+  certificates: Array<{ code: string; issuedAt: string; pdfUrl?: string | null }>;
+  grades: Array<{
+    documentTitle: string;
+    score: number;
+    feedback: string;
+    createdAt: string;
+    documentFileUrl: string;
+  }>;
+  badges: Array<{ name: string; awardedAt: string }>;
+  printOrders: Array<{ itemName: string; status: string; requestedAt: string }>;
 };
 
 export type ChildStudent = {
@@ -17,6 +33,7 @@ export type ChildStudent = {
   full_name: string;
   username: string;
   created_at: string;
+  profileProgress?: number;
   enrollmentCount?: number;
   certificateCount?: number;
   progressPreview?: ChildProgressPreview;
@@ -36,6 +53,14 @@ const STATUS_LABELS: Record<string, string> = {
   no_show: "Gelmedi",
 };
 
+const PRINT_STATUS_LABELS: Record<string, string> = {
+  queued: "Sırada",
+  printing: "Basılıyor",
+  ready: "Hazır",
+  delivered: "Teslim",
+  cancelled: "İptal",
+};
+
 function formatDate(value: string): string {
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) {
@@ -49,6 +74,36 @@ function formatDate(value: string): string {
 
 function formatEventOption(event: EnrollableEventOption): string {
   return `${event.title} · ${formatDate(event.startAt)}`;
+}
+
+function formStatusLabel(enrollment: {
+  intakeCompleted?: boolean;
+  preTestCompleted?: boolean;
+  postTestCompleted?: boolean;
+}): string {
+  const done = [
+    enrollment.intakeCompleted ? "Kayıt formu" : null,
+    enrollment.preTestCompleted ? "Ön test" : null,
+    enrollment.postTestCompleted ? "Son test" : null,
+  ].filter(Boolean);
+
+  if (done.length === 3) {
+    return "Formlar tamam";
+  }
+  if (done.length === 0) {
+    return "Formlar eksik";
+  }
+  return `Tamamlanan: ${done.join(", ")}`;
+}
+
+function emptyPreview(): ChildProgressPreview {
+  return {
+    enrollments: [],
+    certificates: [],
+    grades: [],
+    badges: [],
+    printOrders: [],
+  };
 }
 
 export function ChildrenStudentsClient({
@@ -80,7 +135,8 @@ export function ChildrenStudentsClient({
           <ul className="divide-y divide-slate-100">
             {students.map((student) => {
               const expanded = expandedId === student.id;
-              const preview = student.progressPreview;
+              const preview = student.progressPreview ?? emptyPreview();
+              const profileProgress = student.profileProgress ?? 0;
 
               return (
                 <li key={student.id} className="p-5">
@@ -90,7 +146,8 @@ export function ChildrenStudentsClient({
                       <p className="text-sm text-slate-500">@{student.username}</p>
                       <p className="mt-1 text-xs text-slate-500">
                         {student.enrollmentCount ?? 0} etkinlik ·{" "}
-                        {student.certificateCount ?? 0} sertifika
+                        {student.certificateCount ?? 0} sertifika · profil %{profileProgress}
+                        {profileProgress < 100 ? " (sertifika için %100 gerekir)" : ""}
                       </p>
                     </div>
                     <div className="flex flex-wrap gap-2">
@@ -110,48 +167,147 @@ export function ChildrenStudentsClient({
                   </div>
 
                   {expanded ? (
-                    <div className="mt-4 grid gap-4 rounded-2xl border border-slate-100 bg-slate-50 p-4 sm:grid-cols-2">
-                      <div>
-                        <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-                          Etkinlikler
-                        </p>
-                        {(preview?.enrollments.length ?? 0) === 0 ? (
-                          <p className="mt-2 text-sm text-slate-600">Kayıt yok</p>
-                        ) : (
-                          <ul className="mt-2 space-y-2">
-                            {preview!.enrollments.map((item, index) => (
-                              <li key={`${item.title}-${index}`} className="text-sm text-slate-700">
-                                <span className="font-medium">{item.title}</span>
-                                <span className="text-slate-500">
-                                  {" "}
-                                  · {STATUS_LABELS[item.status] ?? item.status} ·{" "}
-                                  {formatDate(item.date)}
-                                </span>
-                              </li>
-                            ))}
-                          </ul>
-                        )}
+                    <div className="mt-4 space-y-4 rounded-2xl border border-slate-100 bg-slate-50 p-4">
+                      <div className="grid gap-4 sm:grid-cols-2">
+                        <DetailBlock title="Etkinlikler">
+                          {preview.enrollments.length === 0 ? (
+                            <p className="text-sm text-slate-600">Kayıt yok</p>
+                          ) : (
+                            <ul className="space-y-3">
+                              {preview.enrollments.map((item, index) => (
+                                <li key={`${item.title}-${index}`} className="text-sm text-slate-700">
+                                  <p>
+                                    <span className="font-medium">{item.title}</span>
+                                    <span className="text-slate-500">
+                                      {" "}
+                                      · {STATUS_LABELS[item.status] ?? item.status} ·{" "}
+                                      {formatDate(item.date)}
+                                    </span>
+                                  </p>
+                                  <p className="mt-0.5 text-xs text-slate-500">
+                                    {formStatusLabel(item)}
+                                  </p>
+                                </li>
+                              ))}
+                            </ul>
+                          )}
+                        </DetailBlock>
+
+                        <DetailBlock title="Sertifikalar">
+                          {preview.certificates.length === 0 ? (
+                            <p className="text-sm text-slate-600">Sertifika yok</p>
+                          ) : (
+                            <ul className="space-y-3">
+                              {preview.certificates.map((item) => (
+                                <li key={item.code} className="text-sm text-slate-700">
+                                  <p>
+                                    <span className="font-medium">{item.code}</span>
+                                    <span className="text-slate-500">
+                                      {" "}
+                                      · {formatDate(item.issuedAt)}
+                                    </span>
+                                  </p>
+                                  <div className="mt-1 flex flex-wrap gap-2">
+                                    <a
+                                      href={`/dogrula/${item.code}`}
+                                      className="text-xs font-semibold text-document-primary hover:underline"
+                                    >
+                                      Doğrula
+                                    </a>
+                                    {item.pdfUrl ? (
+                                      <a
+                                        href={item.pdfUrl}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="text-xs font-semibold text-document-primary hover:underline"
+                                      >
+                                        PDF indir
+                                      </a>
+                                    ) : null}
+                                  </div>
+                                </li>
+                              ))}
+                            </ul>
+                          )}
+                        </DetailBlock>
                       </div>
-                      <div>
-                        <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-                          Sertifikalar
-                        </p>
-                        {(preview?.certificates.length ?? 0) === 0 ? (
-                          <p className="mt-2 text-sm text-slate-600">Sertifika yok</p>
-                        ) : (
-                          <ul className="mt-2 space-y-2">
-                            {preview!.certificates.map((item) => (
-                              <li key={item.code} className="text-sm text-slate-700">
-                                <span className="font-medium">{item.code}</span>
-                                <span className="text-slate-500">
-                                  {" "}
-                                  · {formatDate(item.issuedAt)}
-                                </span>
-                              </li>
-                            ))}
-                          </ul>
-                        )}
+
+                      <div className="grid gap-4 sm:grid-cols-2">
+                        <DetailBlock title="Notlar">
+                          {preview.grades.length === 0 ? (
+                            <p className="text-sm text-slate-600">Henüz not yok</p>
+                          ) : (
+                            <ul className="space-y-3">
+                              {preview.grades.map((item, index) => (
+                                <li
+                                  key={`${item.documentTitle}-${index}`}
+                                  className="text-sm text-slate-700"
+                                >
+                                  <p>
+                                    <span className="font-medium">{item.documentTitle}</span>
+                                    <span className="text-slate-500">
+                                      {" "}
+                                      · {item.score} puan · {formatDate(item.createdAt)}
+                                    </span>
+                                  </p>
+                                  {item.feedback ? (
+                                    <p className="mt-0.5 text-xs text-slate-500">{item.feedback}</p>
+                                  ) : null}
+                                  {item.documentFileUrl && item.documentFileUrl !== "#" ? (
+                                    <a
+                                      href={item.documentFileUrl}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="mt-1 inline-flex text-xs font-semibold text-document-primary hover:underline"
+                                    >
+                                      Ödev dosyası
+                                    </a>
+                                  ) : null}
+                                </li>
+                              ))}
+                            </ul>
+                          )}
+                        </DetailBlock>
+
+                        <DetailBlock title="Rozetler / Baskı">
+                          {preview.badges.length === 0 && preview.printOrders.length === 0 ? (
+                            <p className="text-sm text-slate-600">Kayıt yok</p>
+                          ) : (
+                            <div className="space-y-3">
+                              {preview.badges.map((item) => (
+                                <p key={`${item.name}-${item.awardedAt}`} className="text-sm text-slate-700">
+                                  <span className="font-medium">{item.name}</span>
+                                  <span className="text-slate-500">
+                                    {" "}
+                                    · {formatDate(item.awardedAt)}
+                                  </span>
+                                </p>
+                              ))}
+                              {preview.printOrders.map((item, index) => (
+                                <p
+                                  key={`${item.itemName}-${index}`}
+                                  className="text-sm text-slate-700"
+                                >
+                                  <span className="font-medium">{item.itemName}</span>
+                                  <span className="text-slate-500">
+                                    {" "}
+                                    · {PRINT_STATUS_LABELS[item.status] ?? item.status} ·{" "}
+                                    {formatDate(item.requestedAt)}
+                                  </span>
+                                </p>
+                              ))}
+                            </div>
+                          )}
+                        </DetailBlock>
                       </div>
+
+                      <p className="text-xs text-slate-500">
+                        Katılımcı formlarını ve profili çocuk kendi öğrenci girişi ile tamamlar.
+                        Profil %{profileProgress}
+                        {profileProgress < 100
+                          ? " — sertifika için profilin %100 olması gerekir."
+                          : " — sertifika için profil hazır."}
+                      </p>
                     </div>
                   ) : null}
                 </li>
@@ -187,8 +343,8 @@ export function ChildrenStudentsClient({
                   if (item.id !== enrollTarget.id) {
                     return item;
                   }
-                  const enrollments = item.progressPreview?.enrollments ?? [];
-                  const alreadyListed = enrollments.some((row) => row.title === eventTitle);
+                  const preview = item.progressPreview ?? emptyPreview();
+                  const alreadyListed = preview.enrollments.some((row) => row.title === eventTitle);
                   if (alreadyListed) {
                     return item;
                   }
@@ -196,15 +352,18 @@ export function ChildrenStudentsClient({
                     ...item,
                     enrollmentCount: (item.enrollmentCount ?? 0) + 1,
                     progressPreview: {
+                      ...preview,
                       enrollments: [
                         {
                           title: eventTitle,
                           status: "registered",
                           date: new Date().toISOString(),
+                          intakeCompleted: false,
+                          preTestCompleted: false,
+                          postTestCompleted: false,
                         },
-                        ...enrollments,
+                        ...preview.enrollments,
                       ],
-                      certificates: item.progressPreview?.certificates ?? [],
                     },
                   };
                 }),
@@ -214,6 +373,15 @@ export function ChildrenStudentsClient({
           }}
         />
       ) : null}
+    </div>
+  );
+}
+
+function DetailBlock({ title, children }: { title: string; children: ReactNode }) {
+  return (
+    <div>
+      <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">{title}</p>
+      <div className="mt-2">{children}</div>
     </div>
   );
 }
@@ -254,9 +422,10 @@ function AddStudentDialog({
       setSuccess(`${payload.data.student.full_name} eklendi.`);
       onCreated({
         ...payload.data.student,
+        profileProgress: 0,
         enrollmentCount: 0,
         certificateCount: 0,
-        progressPreview: { enrollments: [], certificates: [] },
+        progressPreview: emptyPreview(),
       });
     } catch {
       setError("Bağlantı hatası.");

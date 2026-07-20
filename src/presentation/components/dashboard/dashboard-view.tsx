@@ -72,7 +72,7 @@ export function DashboardView({ data, isAdmin }: DashboardViewProps) {
               href="/dashboard/children"
               className="inline-flex items-center justify-center rounded-xl border-2 border-document-primary bg-white px-5 py-3 text-sm font-semibold text-document-primary transition hover:bg-document-primary/5"
             >
-              Çocuklarım
+              Çocuk hesapları
             </Link>
             <Link
               href="/dashboard/documents"

@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 
 import { fetchChildProgress } from "@/infrastructure/repositories/fetch-child-progress";
 import { createSupabaseServerClient } from "@/infrastructure/supabase/create-server-client";
+import { calculateProgress } from "@/lib/utils/progress";
 import {
   ChildrenStudentsClient,
   type ChildStudent,
@@ -23,7 +24,9 @@ export default async function DashboardChildrenPage() {
 
   const { data, error } = await supabase
     .from("profiles")
-    .select("id, full_name, username, created_at")
+    .select(
+      "id, full_name, username, created_at, gender, grade_level, school_name, city_district, experience_data, interests, motivation_data, profile_avatar_url",
+    )
     .eq("role", "student")
     .eq("parent_id", auth.user.id)
     .not("username", "is", null)
@@ -43,13 +46,34 @@ export default async function DashboardChildrenPage() {
     startAt: event.start_at,
   }));
 
-  const baseStudents = (data ?? []) as ChildStudent[];
+  const baseStudents = data ?? [];
 
   const students: ChildStudent[] = await Promise.all(
     baseStudents.map(async (student) => {
       const progress = await fetchChildProgress(student.id);
+      const profileProgress = calculateProgress({
+        full_name: student.full_name,
+        gender: student.gender,
+        grade_level: student.grade_level,
+        school_name: student.school_name,
+        city_district: student.city_district,
+        experience_data: student.experience_data as {
+          coding_experience?: string;
+        } | null,
+        interests: student.interests,
+        motivation_data: student.motivation_data as {
+          hedef?: string;
+          beklenti?: number;
+        } | null,
+        profile_avatar_url: student.profile_avatar_url,
+      });
+
       return {
-        ...student,
+        id: student.id,
+        full_name: student.full_name,
+        username: student.username,
+        created_at: student.created_at,
+        profileProgress,
         enrollmentCount: progress?.enrollments?.length ?? 0,
         certificateCount: progress?.certificates?.length ?? 0,
         progressPreview: {
@@ -57,10 +81,30 @@ export default async function DashboardChildrenPage() {
             title: item.eventTitle,
             status: item.status,
             date: item.eventDate,
+            intakeCompleted: Boolean(item.intakeCompleted),
+            preTestCompleted: Boolean(item.preTestCompleted),
+            postTestCompleted: Boolean(item.postTestCompleted),
           })),
           certificates: (progress?.certificates ?? []).map((item) => ({
             code: item.certificateCode,
             issuedAt: item.issuedAt,
+            pdfUrl: item.pdfUrl ?? null,
+          })),
+          grades: (progress?.grades ?? []).map((item) => ({
+            documentTitle: item.documentTitle,
+            score: item.score,
+            feedback: item.feedback,
+            createdAt: item.createdAt,
+            documentFileUrl: item.documentFileUrl,
+          })),
+          badges: (progress?.badges ?? []).map((item) => ({
+            name: item.name,
+            awardedAt: item.awardedAt,
+          })),
+          printOrders: (progress?.activePrintOrders ?? []).map((item) => ({
+            itemName: item.itemName,
+            status: item.status,
+            requestedAt: item.requestedAt,
           })),
         },
       };
@@ -81,11 +125,12 @@ export default async function DashboardChildrenPage() {
           </Link>
           <h1 className="mt-3 text-3xl font-black">Çocuklarım</h1>
           <p className="mt-2 text-sm text-sky-900/80">
-            Çocukların için kullanıcı adı ve şifre oluştur, açık etkinliklere kaydet. Onlar{" "}
+            Kullanıcı adlı çocuk hesaplarını yönet, etkinliğe kaydet ve gelişimini takip et. Giriş
+            adresi:{" "}
             <Link href="/student-login" className="font-semibold underline">
-              /student-login
-            </Link>{" "}
-            üzerinden giriş yapar.
+              Öğrenci girişi
+            </Link>
+            .
           </p>
         </div>
 
