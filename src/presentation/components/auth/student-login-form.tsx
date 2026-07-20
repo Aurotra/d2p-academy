@@ -7,6 +7,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { AuthShell } from "@/presentation/components/auth/auth-shell";
 import { Button } from "@/presentation/components/ui/button";
 import { Input } from "@/presentation/components/ui/input";
+import { PARENT_GUIDE_PATH } from "@/shared/constants/parent-guide";
 
 export function StudentLoginForm() {
   const router = useRouter();
@@ -102,7 +103,10 @@ export function StudentLoginForm() {
       </form>
 
       <p className="mt-4 text-center text-xs text-slate-500">
-        Kullanıcı adını veya şifreni unuttuysan velinden yardım iste.
+        Kullanıcı adını veya şifreni unuttuysan velinden yardım iste.{" "}
+        <Link href={PARENT_GUIDE_PATH} className="font-semibold text-secondary hover:text-secondary-hover">
+          Veli rehberi
+        </Link>
       </p>
 
       <p className="mt-3 text-center text-sm">

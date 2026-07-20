@@ -11,6 +11,7 @@ import {
   EMAIL_CONFIRMATION_NOTICE,
   mapAuthErrorToTurkish,
 } from "@/shared/utils/auth-errors";
+import { PARENT_GUIDE_PATH } from "@/shared/constants/parent-guide";
 
 function sanitizeRedirectPath(path: string | null): string {
   if (!path || !path.startsWith("/") || path.startsWith("//")) {
@@ -80,7 +81,7 @@ export function RegisterForm() {
       subtitle={
         redirectTo.includes("enroll=")
           ? "Hesabınızı oluşturun; ardından seçtiğiniz etkinliğe otomatik kaydolacaksınız."
-          : "D2P Academy öğrenci hesabınızı birkaç adımda oluşturun."
+          : "Veli hesabınızı oluşturun; ardından çocuk hesaplarını panelden ekleyebilirsiniz."
       }
       footerText="Zaten hesabınız var mı?"
       footerHref={loginHref}
@@ -150,6 +151,12 @@ export function RegisterForm() {
       )}
 
       <p className="mt-4 text-center text-sm">
+        <Link href={PARENT_GUIDE_PATH} className="font-semibold text-secondary hover:text-secondary-hover">
+          Adım adım veli kayıt rehberi →
+        </Link>
+      </p>
+
+      <p className="mt-3 text-center text-sm">
         <Link href="/" className="text-slate-500 transition hover:text-cyan-700">
           Ana sayfaya dön
         </Link>

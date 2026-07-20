@@ -9,6 +9,7 @@ import { AuthShell } from "@/presentation/components/auth/auth-shell";
 import { Button } from "@/presentation/components/ui/button";
 import { Input } from "@/presentation/components/ui/input";
 import { mapAuthErrorToTurkish } from "@/shared/utils/auth-errors";
+import { PARENT_GUIDE_PATH } from "@/shared/constants/parent-guide";
 
 export function LoginForm() {
   const router = useRouter();
@@ -101,6 +102,12 @@ export function LoginForm() {
           Öğrenci Girişi
         </AuthPortalLink>
       </div>
+
+      <p className="mt-3 text-center text-sm">
+        <Link href={PARENT_GUIDE_PATH} className="font-semibold text-secondary hover:text-secondary-hover">
+          İlk kez mi kayıt oluyorsunuz? Veli kayıt rehberi →
+        </Link>
+      </p>
 
       <p className="mt-3 text-center text-sm">
         <Link href="/" className="text-slate-500 transition hover:text-cyan-700">

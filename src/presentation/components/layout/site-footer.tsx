@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 import { BRAND_SURFACE_FOOTER } from "@/shared/constants/brand-surfaces";
+import { PARENT_GUIDE_PATH } from "@/shared/constants/parent-guide";
 import { BrandLogo } from "@/presentation/components/layout/brand-logo";
 
 export function SiteFooter() {
@@ -26,6 +27,12 @@ export function SiteFooter() {
               className="font-semibold text-sky-900 transition hover:text-document-primary"
             >
               İletişim
+            </Link>
+            <Link
+              href={PARENT_GUIDE_PATH}
+              className="font-semibold text-sky-900 transition hover:text-document-primary"
+            >
+              Veli Rehberi
             </Link>
             <Link
               href="/kvkk"
