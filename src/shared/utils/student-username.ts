@@ -56,3 +56,64 @@ export function resolveUsernameForLookup(raw: string): string {
     );
   }
 }
+
+function lettersOnlyTurkish(value: string): string {
+  return value
+    .toLocaleLowerCase("tr-TR")
+    .replace(/[^a-zçğıöşü]/gi, "");
+}
+
+/**
+ * Ad + soyad + doğum yılının son 2 hanesi (ör. Emre Yılmaz, 2015 → emreyılmaz15).
+ */
+export function buildStudentUsernameFromIdentity(
+  fullName: string,
+  birthDate: string,
+): string {
+  const parts = fullName.trim().split(/\s+/).filter(Boolean);
+  if (parts.length < 2) {
+    throw new InvalidUsernameError("Ad ve soyad birlikte girilmelidir.");
+  }
+
+  let firstName = lettersOnlyTurkish(parts[0]!);
+  let lastName = lettersOnlyTurkish(parts[parts.length - 1]!);
+
+  if (!firstName || !lastName) {
+    throw new InvalidUsernameError("Ad ve soyad geçerli harfler içermelidir.");
+  }
+
+  const parsed = new Date(`${birthDate}T12:00:00`);
+  if (Number.isNaN(parsed.getTime())) {
+    throw new InvalidUsernameError("Geçerli bir doğum tarihi girin.");
+  }
+
+  const today = new Date();
+  today.setHours(23, 59, 59, 999);
+  if (parsed > today) {
+    throw new InvalidUsernameError("Doğum tarihi gelecekte olamaz.");
+  }
+
+  const yy = String(parsed.getFullYear() % 100).padStart(2, "0");
+  const maxNameLen = 30 - yy.length;
+  const combinedLen = firstName.length + lastName.length;
+  if (combinedLen > maxNameLen) {
+    const lastNameBudget = Math.max(2, maxNameLen - firstName.length);
+    lastName = lastName.slice(0, lastNameBudget);
+    if (firstName.length + lastName.length > maxNameLen) {
+      firstName = firstName.slice(0, Math.max(2, maxNameLen - lastName.length));
+    }
+  }
+
+  return normalizeUsername(`${firstName}${lastName}${yy}`);
+}
+
+export function tryBuildStudentUsernameFromIdentity(
+  fullName: string,
+  birthDate: string,
+): string | null {
+  try {
+    return buildStudentUsernameFromIdentity(fullName, birthDate);
+  } catch {
+    return null;
+  }
+}

@@ -4,17 +4,48 @@ import { z } from "zod";
 import {
   hashStudentPassword,
   InvalidUsernameError,
-  normalizeUsername,
   WeakPasswordError,
 } from "@/infrastructure/auth/password";
 import { createServiceRoleClient } from "@/infrastructure/supabase/create-service-role-client";
 import { createSupabaseServerClient } from "@/infrastructure/supabase/create-server-client";
+import { buildStudentUsernameFromIdentity } from "@/shared/utils/student-username";
+import type { SupabaseClient } from "@supabase/supabase-js";
 
 const createSchema = z.object({
   fullName: z.string().trim().min(2).max(80),
-  username: z.string().trim().min(1).max(40),
+  birthDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Geçerli doğum tarihi girin."),
   password: z.string().min(6).max(72),
 });
+
+async function allocateUniqueUsername(
+  client: SupabaseClient,
+  fullName: string,
+  birthDate: string,
+): Promise<string> {
+  const base = buildStudentUsernameFromIdentity(fullName, birthDate);
+  let candidate = base;
+  let suffix = 2;
+
+  while (suffix < 100) {
+    const { data } = await client
+      .from("profiles")
+      .select("id")
+      .eq("username", candidate)
+      .maybeSingle();
+
+    if (!data) {
+      return candidate;
+    }
+
+    const suffixText = String(suffix);
+    candidate = `${base.slice(0, 32 - suffixText.length)}${suffixText}`;
+    suffix += 1;
+  }
+
+  throw new InvalidUsernameError(
+    "Bu bilgilerle benzersiz kullanıcı adı oluşturulamadı. Lütfen destek ile iletişime geçin.",
+  );
+}
 
 export async function GET() {
   const supabase = await createSupabaseServerClient();
@@ -63,10 +94,9 @@ export async function POST(request: NextRequest) {
   let username: string;
   let passwordHash: string;
   try {
-    username = normalizeUsername(parsed.data.username);
     passwordHash = await hashStudentPassword(parsed.data.password);
   } catch (e) {
-    if (e instanceof WeakPasswordError || e instanceof InvalidUsernameError) {
+    if (e instanceof WeakPasswordError) {
       return NextResponse.json({ error: e.message }, { status: 400 });
     }
     throw e;
@@ -82,20 +112,24 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  const { data: existing } = await serviceClient
-    .from("profiles")
-    .select("id")
-    .eq("username", username)
-    .maybeSingle();
-
-  if (existing) {
-    return NextResponse.json({ error: "Bu kullanıcı adı zaten alınmış." }, { status: 409 });
+  try {
+    username = await allocateUniqueUsername(
+      serviceClient,
+      parsed.data.fullName,
+      parsed.data.birthDate,
+    );
+  } catch (e) {
+    if (e instanceof InvalidUsernameError) {
+      return NextResponse.json({ error: e.message }, { status: 400 });
+    }
+    throw e;
   }
 
   const { data: created, error } = await serviceClient
     .from("profiles")
     .insert({
       full_name: parsed.data.fullName.trim(),
+      birth_date: parsed.data.birthDate,
       email: null,
       username,
       student_password_hash: passwordHash,

@@ -2,12 +2,12 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState, type FormEvent, type ReactNode } from "react";
+import { useEffect, useState, type FormEvent, type ReactNode } from "react";
 
 import { Button } from "@/presentation/components/ui/button";
 import { Input } from "@/presentation/components/ui/input";
 import { Select } from "@/presentation/components/ui/select";
-import { tryNormalizeUsername } from "@/shared/utils/student-username";
+import { tryBuildStudentUsernameFromIdentity } from "@/shared/utils/student-username";
 
 export type ChildProgressPreview = {
   enrollments: Array<{
@@ -420,23 +420,37 @@ function AddStudentDialog({
   onCreated: (student: ChildStudent) => void;
 }) {
   const [fullName, setFullName] = useState("");
-  const [username, setUsername] = useState("");
-  const [usernameHint, setUsernameHint] = useState<string | null>(null);
+  const [birthDate, setBirthDate] = useState("");
+  const [generatedUsername, setGeneratedUsername] = useState<string | null>(null);
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
+  useEffect(() => {
+    if (!fullName.trim() || !birthDate) {
+      setGeneratedUsername(null);
+      return;
+    }
+    setGeneratedUsername(tryBuildStudentUsernameFromIdentity(fullName, birthDate));
+  }, [fullName, birthDate]);
+
   async function handleSubmit(event: FormEvent) {
     event.preventDefault();
     setError(null);
     setSuccess(null);
+
+    if (!generatedUsername) {
+      setError("Ad soyad ve doğum tarihini kontrol edin.");
+      return;
+    }
+
     setSubmitting(true);
     try {
       const response = await fetch("/api/v1/parent/students", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ fullName, username, password }),
+        body: JSON.stringify({ fullName, birthDate, password }),
       });
       const payload = (await response.json()) as {
         error?: string;
@@ -446,7 +460,9 @@ function AddStudentDialog({
         setError(payload.error ?? "Çocuk eklenemedi.");
         return;
       }
-      setSuccess(`${payload.data.student.full_name} eklendi.`);
+      setSuccess(
+        `${payload.data.student.full_name} eklendi. Kullanıcı adı: @${payload.data.student.username}`,
+      );
       onCreated({
         ...payload.data.student,
         profileProgress: 0,
@@ -468,31 +484,30 @@ function AddStudentDialog({
           label="Ad Soyad"
           value={fullName}
           onChange={(e) => setFullName(e.target.value)}
+          placeholder="örn: Emre Yılmaz"
           required
         />
         <Input
-          label="Kullanıcı adı"
-          value={username}
-          onChange={(e) => {
-            setUsername(e.target.value);
-            setUsernameHint(null);
-          }}
-          onBlur={() => {
-            const normalized = tryNormalizeUsername(username);
-            if (normalized && normalized !== username.trim()) {
-              setUsernameHint(`Kayıtta şu şekilde kullanılacak: ${normalized}`);
-            } else if (normalized) {
-              setUsernameHint(null);
-            } else if (username.trim()) {
-              setUsernameHint(
-                "3-32 karakter, harf ile başlamalı. Türkçe harf, rakam ve alt çizgi kullanabilirsiniz (ör. emre84, ömer84).",
-              );
-            }
-          }}
-          placeholder="örn: emre84 veya ömer84"
+          label="Doğum tarihi"
+          type="date"
+          value={birthDate}
+          onChange={(e) => setBirthDate(e.target.value)}
           required
         />
-        {usernameHint ? <p className="text-xs text-slate-500">{usernameHint}</p> : null}
+        {generatedUsername ? (
+          <p className="rounded-xl border border-sky-200 bg-sky-50 px-4 py-3 text-sm text-sky-950">
+            Oluşturulacak kullanıcı adı:{" "}
+            <span className="font-semibold">@{generatedUsername}</span>
+          </p>
+        ) : fullName.trim() && birthDate ? (
+          <p className="text-xs text-amber-700">
+            Kullanıcı adı üretilemedi. Ad ve soyadı birlikte yazdığınızdan emin olun.
+          </p>
+        ) : (
+          <p className="text-xs text-slate-500">
+            Kullanıcı adı otomatik oluşturulur: ad + soyad + doğum yılının son 2 hanesi.
+          </p>
+        )}
         <Input
           label="Şifre"
           type="password"
