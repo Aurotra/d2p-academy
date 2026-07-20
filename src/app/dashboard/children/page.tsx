@@ -6,6 +6,7 @@ import { createSupabaseServerClient } from "@/infrastructure/supabase/create-ser
 import {
   ChildrenStudentsClient,
   type ChildStudent,
+  type EnrollableEventOption,
 } from "@/presentation/components/dashboard/children-students-client";
 import { BRAND_SURFACE_GRADIENT } from "@/shared/constants/brand-surfaces";
 
@@ -27,6 +28,20 @@ export default async function DashboardChildrenPage() {
     .eq("parent_id", auth.user.id)
     .not("username", "is", null)
     .order("created_at", { ascending: false });
+
+  const { data: eventRows } = await supabase
+    .from("events")
+    .select("id, title, start_at")
+    .eq("status", "published")
+    .gte("start_at", new Date().toISOString())
+    .order("start_at", { ascending: true })
+    .limit(40);
+
+  const upcomingEvents: EnrollableEventOption[] = (eventRows ?? []).map((event) => ({
+    id: event.id,
+    title: event.title,
+    startAt: event.start_at,
+  }));
 
   const baseStudents = (data ?? []) as ChildStudent[];
 
@@ -66,7 +81,7 @@ export default async function DashboardChildrenPage() {
           </Link>
           <h1 className="mt-3 text-3xl font-black">Çocuklarım</h1>
           <p className="mt-2 text-sm text-sky-900/80">
-            Çocukların için kullanıcı adı ve şifre oluştur. Onlar{" "}
+            Çocukların için kullanıcı adı ve şifre oluştur, açık etkinliklere kaydet. Onlar{" "}
             <Link href="/student-login" className="font-semibold underline">
               /student-login
             </Link>{" "}
@@ -80,7 +95,10 @@ export default async function DashboardChildrenPage() {
               Öğrenciler yüklenirken bir hata oluştu.
             </p>
           ) : (
-            <ChildrenStudentsClient initialStudents={students} />
+            <ChildrenStudentsClient
+              initialStudents={students}
+              upcomingEvents={upcomingEvents}
+            />
           )}
         </div>
       </div>

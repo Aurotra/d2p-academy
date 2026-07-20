@@ -1,9 +1,11 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useState, type FormEvent, type ReactNode } from "react";
 
 import { Button } from "@/presentation/components/ui/button";
 import { Input } from "@/presentation/components/ui/input";
+import { Select } from "@/presentation/components/ui/select";
 
 export type ChildProgressPreview = {
   enrollments: Array<{ title: string; status: string; date: string }>;
@@ -18,6 +20,12 @@ export type ChildStudent = {
   enrollmentCount?: number;
   certificateCount?: number;
   progressPreview?: ChildProgressPreview;
+};
+
+export type EnrollableEventOption = {
+  id: string;
+  title: string;
+  startAt: string;
 };
 
 const STATUS_LABELS: Record<string, string> = {
@@ -39,10 +47,22 @@ function formatDate(value: string): string {
   }).format(date);
 }
 
-export function ChildrenStudentsClient({ initialStudents }: { initialStudents: ChildStudent[] }) {
+function formatEventOption(event: EnrollableEventOption): string {
+  return `${event.title} · ${formatDate(event.startAt)}`;
+}
+
+export function ChildrenStudentsClient({
+  initialStudents,
+  upcomingEvents,
+}: {
+  initialStudents: ChildStudent[];
+  upcomingEvents: EnrollableEventOption[];
+}) {
+  const router = useRouter();
   const [students, setStudents] = useState<ChildStudent[]>(initialStudents);
   const [addOpen, setAddOpen] = useState(false);
   const [resetTarget, setResetTarget] = useState<ChildStudent | null>(null);
+  const [enrollTarget, setEnrollTarget] = useState<ChildStudent | null>(null);
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
   return (
@@ -79,6 +99,9 @@ export function ChildrenStudentsClient({ initialStudents }: { initialStudents: C
                         onClick={() => setExpandedId(expanded ? null : student.id)}
                       >
                         {expanded ? "Gizle" : "Detay"}
+                      </Button>
+                      <Button variant="outline" onClick={() => setEnrollTarget(student)}>
+                        Etkinliğe kaydet
                       </Button>
                       <Button variant="outline" onClick={() => setResetTarget(student)}>
                         Şifreyi sıfırla
@@ -150,6 +173,46 @@ export function ChildrenStudentsClient({ initialStudents }: { initialStudents: C
 
       {resetTarget ? (
         <ResetPasswordDialog student={resetTarget} onClose={() => setResetTarget(null)} />
+      ) : null}
+
+      {enrollTarget ? (
+        <EnrollStudentDialog
+          student={enrollTarget}
+          events={upcomingEvents}
+          onClose={() => setEnrollTarget(null)}
+          onEnrolled={(eventTitle, alreadyEnrolled) => {
+            if (!alreadyEnrolled) {
+              setStudents((prev) =>
+                prev.map((item) => {
+                  if (item.id !== enrollTarget.id) {
+                    return item;
+                  }
+                  const enrollments = item.progressPreview?.enrollments ?? [];
+                  const alreadyListed = enrollments.some((row) => row.title === eventTitle);
+                  if (alreadyListed) {
+                    return item;
+                  }
+                  return {
+                    ...item,
+                    enrollmentCount: (item.enrollmentCount ?? 0) + 1,
+                    progressPreview: {
+                      enrollments: [
+                        {
+                          title: eventTitle,
+                          status: "registered",
+                          date: new Date().toISOString(),
+                        },
+                        ...enrollments,
+                      ],
+                      certificates: item.progressPreview?.certificates ?? [],
+                    },
+                  };
+                }),
+              );
+            }
+            router.refresh();
+          }}
+        />
       ) : null}
     </div>
   );
@@ -297,6 +360,109 @@ function ResetPasswordDialog({
           <DialogActions
             onClose={onClose}
             confirmLabel="Sıfırla"
+            submitting={submitting}
+            confirmType="submit"
+          />
+        </form>
+      )}
+    </Dialog>
+  );
+}
+
+function EnrollStudentDialog({
+  student,
+  events,
+  onClose,
+  onEnrolled,
+}: {
+  student: ChildStudent;
+  events: EnrollableEventOption[];
+  onClose: () => void;
+  onEnrolled: (eventTitle: string, alreadyEnrolled: boolean) => void;
+}) {
+  const [eventId, setEventId] = useState("");
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
+  const [submitting, setSubmitting] = useState(false);
+
+  async function handleSubmit(event: FormEvent) {
+    event.preventDefault();
+    setError(null);
+    setSuccess(null);
+    if (!eventId) {
+      setError("Bir etkinlik seçin.");
+      return;
+    }
+
+    setSubmitting(true);
+    try {
+      const response = await fetch(`/api/v1/parent/students/${student.id}/enrollments`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ eventId }),
+      });
+      const payload = (await response.json()) as {
+        error?: string;
+        data?: { alreadyEnrolled?: boolean; eventTitle?: string };
+      };
+      if (!response.ok) {
+        setError(payload.error ?? "Kayıt oluşturulamadı.");
+        return;
+      }
+
+      const title = payload.data?.eventTitle ?? "Etkinlik";
+      const alreadyEnrolled = Boolean(payload.data?.alreadyEnrolled);
+      if (alreadyEnrolled) {
+        setSuccess(`${student.full_name} bu etkinliğe zaten kayıtlı.`);
+      } else {
+        setSuccess(`${student.full_name} “${title}” etkinliğine kaydedildi.`);
+      }
+      onEnrolled(title, alreadyEnrolled);
+    } catch {
+      setError("Bağlantı hatası.");
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
+  return (
+    <Dialog title={`${student.full_name} — etkinliğe kaydet`} onClose={onClose}>
+      {events.length === 0 ? (
+        <div className="space-y-4">
+          <p className="text-sm text-slate-600">
+            Şu an kayda açık yaklaşan etkinlik yok. Yeni etkinlikler yayınlandığında burada
+            görünecek.
+          </p>
+          <Button className="w-full" onClick={onClose}>
+            Kapat
+          </Button>
+        </div>
+      ) : success ? (
+        <div className="space-y-4">
+          <p className="text-sm text-emerald-700">{success}</p>
+          <Button className="w-full" onClick={onClose}>
+            Kapat
+          </Button>
+        </div>
+      ) : (
+        <form onSubmit={handleSubmit} className="space-y-3">
+          <Select
+            label="Etkinlik"
+            value={eventId}
+            onChange={(e) => setEventId(e.target.value)}
+            required
+          >
+            <option value="">Etkinlik seçin</option>
+            {events.map((item) => (
+              <option key={item.id} value={item.id}>
+                {formatEventOption(item)}
+              </option>
+            ))}
+          </Select>
+          {error ? <p className="text-sm text-red-600">{error}</p> : null}
+          <DialogActions
+            onClose={onClose}
+            confirmLabel="Kaydet"
             submitting={submitting}
             confirmType="submit"
           />

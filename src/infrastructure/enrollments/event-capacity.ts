@@ -1,16 +1,21 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 
+import { tryCreateServiceRoleClient } from "@/infrastructure/supabase/create-service-role-client";
+
 const ACTIVE_ENROLLMENT_STATUSES = ["registered", "attended", "completed"] as const;
 
 /**
  * Returns an error message if the event is at capacity; null if enrollment is allowed.
  * max_capacity null = unlimited.
+ * Prefers service role for the count so RLS does not under-count other students.
  */
 export async function getEventCapacityBlockReason(
   client: SupabaseClient,
   eventId: string,
 ): Promise<string | null> {
-  const { data: event, error: eventError } = await client
+  const countClient = tryCreateServiceRoleClient() ?? client;
+
+  const { data: event, error: eventError } = await countClient
     .from("events")
     .select("max_capacity")
     .eq("id", eventId)
@@ -25,7 +30,7 @@ export async function getEventCapacityBlockReason(
     return null;
   }
 
-  const { count, error: countError } = await client
+  const { count, error: countError } = await countClient
     .from("enrollments")
     .select("id", { count: "exact", head: true })
     .eq("event_id", eventId)

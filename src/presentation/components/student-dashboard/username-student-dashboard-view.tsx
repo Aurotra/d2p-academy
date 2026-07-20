@@ -41,7 +41,7 @@ function EnrollmentsSection({ enrollments }: { enrollments: EnrollmentSummary[] 
   if (enrollments.length === 0) {
     return (
       <div className="rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-4 py-8 text-center text-sm text-slate-600">
-        Henüz etkinlik kaydın yok. Öğretmenin veya admin seni bir etkinliğe kaydedebilir.
+        Henüz etkinlik kaydın yok. Velin, öğretmenin veya admin seni bir etkinliğe kaydedebilir.
       </div>
     );
   }
