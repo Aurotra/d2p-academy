@@ -54,12 +54,13 @@ export async function POST(request: Request) {
       } catch (pdfError) {
         const pdfMessage =
           pdfError instanceof Error ? pdfError.message : "PDF oluşturulamadı.";
+        console.error("[admin certificates issue pdf]", pdfMessage);
         return NextResponse.json(
           {
-            error: `Sertifika kaydı oluşturuldu (${certificate.certificateCode}) ancak PDF üretilemedi: ${pdfMessage}`,
-            data: certificate,
+            data: { ...certificate, pdfUrl: null },
+            warning: `Sertifika kaydı oluşturuldu (${certificate.certificateCode}) ancak PDF henüz hazır değil: ${pdfMessage} Listeden «PDF Oluştur» ile tekrar deneyin.`,
           },
-          { status: 500 },
+          { status: 201 },
         );
       }
     }

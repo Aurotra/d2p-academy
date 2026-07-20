@@ -30,6 +30,8 @@ export function AdminCertificatesManager() {
   const [revokeReason, setRevokeReason] = useState("");
   const [selectedCertificateId, setSelectedCertificateId] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [warning, setWarning] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
 
@@ -67,6 +69,8 @@ export function AdminCertificatesManager() {
 
     setIsSaving(true);
     setError(null);
+    setWarning(null);
+    setSuccess(null);
 
     try {
       const response = await fetch("/api/v1/admin/certificates", {
@@ -75,9 +79,12 @@ export function AdminCertificatesManager() {
         body: JSON.stringify({ action: "issue", enrollmentId: selectedEnrollmentId }),
       });
 
-      const payload = (await response.json()) as { error?: string; data?: AdminCertificateRecord };
+      const payload = (await response.json()) as {
+        error?: string;
+        warning?: string;
+        data?: AdminCertificateRecord;
+      };
 
-      // Certificate row may exist even when PDF generation fails.
       if (payload.data) {
         setSelectedEnrollmentId("");
         await loadData();
@@ -85,6 +92,12 @@ export function AdminCertificatesManager() {
 
       if (!response.ok) {
         throw new Error(payload.error ?? "Sertifika oluşturulamadı.");
+      }
+
+      if (payload.warning) {
+        setWarning(payload.warning);
+      } else {
+        setSuccess("Sertifika oluşturuldu.");
       }
     } catch (issueError) {
       setError(issueError instanceof Error ? issueError.message : "İşlem başarısız.");
@@ -96,6 +109,8 @@ export function AdminCertificatesManager() {
   async function handleRegeneratePdf(certificateId: string) {
     setIsSaving(true);
     setError(null);
+    setWarning(null);
+    setSuccess(null);
 
     try {
       const response = await fetch("/api/v1/admin/certificates", {
@@ -110,6 +125,7 @@ export function AdminCertificatesManager() {
         throw new Error(payload.error ?? "PDF yeniden üretilemedi.");
       }
 
+      setSuccess("PDF oluşturuldu.");
       await loadData();
     } catch (regenerateError) {
       setError(regenerateError instanceof Error ? regenerateError.message : "İşlem başarısız.");
@@ -246,6 +262,16 @@ export function AdminCertificatesManager() {
       {error ? (
         <p className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
           {error}
+        </p>
+      ) : null}
+      {warning ? (
+        <p className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-950">
+          {warning}
+        </p>
+      ) : null}
+      {success ? (
+        <p className="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">
+          {success}
         </p>
       ) : null}
 

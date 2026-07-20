@@ -3,7 +3,7 @@ import { join } from "node:path";
 
 import QRCode from "qrcode";
 
-import { SITE_LOGO_SRC, SITE_URL } from "@/shared/constants/site";
+import { SITE_LOGO_SRC } from "@/shared/constants/site";
 
 export interface CertificateTemplateData {
   certificateCode: string;
@@ -17,6 +17,7 @@ export interface CertificateTemplateData {
   locationName: string;
   instructorName: string;
   instructorTitle: string;
+  /** Absolute URL or data URL */
   badgeImageUrl: string;
   verificationUrl: string;
 }
@@ -38,14 +39,21 @@ function escapeHtml(value: string): string {
 }
 
 function fillTemplate(template: string, values: Record<string, string>): string {
-  return Object.entries(values).reduce(
-    (html, [key, value]) => html.replaceAll(`{{${key}}}`, escapeHtml(value)),
-    template,
-  );
+  const rawKeys = new Set(["logoUrl", "badgeImageUrl", "qrCodeDataUrl"]);
+  return Object.entries(values).reduce((html, [key, value]) => {
+    const safe = rawKeys.has(key) ? value : escapeHtml(value);
+    return html.replaceAll(`{{${key}}}`, safe);
+  }, template);
 }
 
 function isServerlessRuntime(): boolean {
   return Boolean(process.env.AWS_LAMBDA_FUNCTION_NAME || process.env.VERCEL);
+}
+
+function publicAssetDataUrl(publicRelativePath: string, mimeType: string): string {
+  const absolute = join(process.cwd(), "public", publicRelativePath.replace(/^\//, ""));
+  const bytes = readFileSync(absolute);
+  return `data:${mimeType};base64,${bytes.toString("base64")}`;
 }
 
 async function resolveLocalChromePath(): Promise<string> {
@@ -83,7 +91,7 @@ async function launchBrowser() {
     const executablePath = await chromium.executablePath(CHROMIUM_PACK_URL);
 
     return puppeteer.default.launch({
-      args: chromium.args,
+      args: [...chromium.args, "--disable-dev-shm-usage", "--font-render-hinting=none"],
       executablePath,
       headless: true,
     });
@@ -92,7 +100,7 @@ async function launchBrowser() {
   return puppeteer.default.launch({
     executablePath: await resolveLocalChromePath(),
     headless: true,
-    args: ["--no-sandbox", "--disable-setuid-sandbox"],
+    args: ["--no-sandbox", "--disable-setuid-sandbox", "--disable-dev-shm-usage"],
   });
 }
 
@@ -104,8 +112,24 @@ export async function buildCertificateHtml(data: CertificateTemplateData): Promi
     width: 256,
   });
 
+  let logoUrl: string;
+  try {
+    logoUrl = publicAssetDataUrl(SITE_LOGO_SRC, "image/svg+xml");
+  } catch {
+    logoUrl = data.badgeImageUrl;
+  }
+
+  let badgeImageUrl = data.badgeImageUrl;
+  if (!badgeImageUrl.startsWith("data:")) {
+    try {
+      badgeImageUrl = publicAssetDataUrl("/badges/discovery-explorer.png", "image/png");
+    } catch {
+      // keep provided URL
+    }
+  }
+
   return fillTemplate(template, {
-    logoUrl: `${SITE_URL}${SITE_LOGO_SRC}`,
+    logoUrl,
     programName: data.programName,
     studentName: data.studentName,
     workshopName: data.workshopName,
@@ -117,21 +141,33 @@ export async function buildCertificateHtml(data: CertificateTemplateData): Promi
     certificateNo: data.certificateCode,
     instructorName: data.instructorName,
     instructorTitle: data.instructorTitle,
-    badgeImageUrl: data.badgeImageUrl,
+    badgeImageUrl,
     qrCodeDataUrl,
   });
 }
 
-export async function generateCertificatePdfBuffer(data: CertificateTemplateData): Promise<Buffer> {
-  const html = await buildCertificateHtml(data);
+async function renderPdfOnce(html: string): Promise<Buffer> {
   const browser = await launchBrowser();
 
   try {
     const page = await browser.newPage();
     await page.setViewport({ width: 794, height: 1123, deviceScaleFactor: 1 });
-    await page.setContent(html, { waitUntil: "load" });
-    // Allow CDN fonts/styles a moment before print.
-    await new Promise((resolve) => setTimeout(resolve, 750));
+    page.setDefaultNavigationTimeout(45_000);
+
+    try {
+      await page.setContent(html, {
+        waitUntil: "load",
+        timeout: 30_000,
+      });
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+    } catch {
+      await page.setContent(html, {
+        waitUntil: "domcontentloaded",
+        timeout: 20_000,
+      });
+      await new Promise((resolve) => setTimeout(resolve, 1500));
+    }
+
     const pdf = await page.pdf({
       width: "210mm",
       height: "297mm",
@@ -143,5 +179,23 @@ export async function generateCertificatePdfBuffer(data: CertificateTemplateData
     return Buffer.from(pdf);
   } finally {
     await browser.close();
+  }
+}
+
+export async function generateCertificatePdfBuffer(data: CertificateTemplateData): Promise<Buffer> {
+  const html = await buildCertificateHtml(data);
+
+  try {
+    return await renderPdfOnce(html);
+  } catch (firstError) {
+    // Cold-start / Chromium pack flakiness: one retry
+    try {
+      return await renderPdfOnce(html);
+    } catch (secondError) {
+      const firstMessage = firstError instanceof Error ? firstError.message : String(firstError);
+      const secondMessage =
+        secondError instanceof Error ? secondError.message : String(secondError);
+      throw new Error(`PDF üretilemedi: ${secondMessage} (önceki: ${firstMessage})`);
+    }
   }
 }
