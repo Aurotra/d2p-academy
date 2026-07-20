@@ -12,7 +12,10 @@ const WINDOW_MS = 15 * 60 * 1000;
 export async function isAuthRateLimited(
   client: SupabaseClient,
   rateKey: string,
+  options?: { maxAttempts?: number; windowMs?: number },
 ): Promise<boolean> {
+  const maxAttempts = options?.maxAttempts ?? MAX_ATTEMPTS;
+  const windowMs = options?.windowMs ?? WINDOW_MS;
   const now = Date.now();
   const { data: row } = await client
     .from("auth_rate_limits")
@@ -30,7 +33,7 @@ export async function isAuthRateLimited(
   }
 
   const windowStart = new Date(row.window_started_at).getTime();
-  if (Number.isNaN(windowStart) || now - windowStart > WINDOW_MS) {
+  if (Number.isNaN(windowStart) || now - windowStart > windowMs) {
     await client.from("auth_rate_limits").upsert({
       rate_key: rateKey,
       attempt_count: 1,
@@ -45,7 +48,7 @@ export async function isAuthRateLimited(
     .update({ attempt_count: nextCount })
     .eq("rate_key", rateKey);
 
-  return nextCount > MAX_ATTEMPTS;
+  return nextCount > maxAttempts;
 }
 
 export async function clearAuthRateLimit(

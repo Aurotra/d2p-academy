@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 
+import { enforcePublicPostRateLimit } from "@/infrastructure/auth/public-post-rate-limit";
 import { buildConsentAudit, mapConsentToColumns } from "@/lib/utils/consent-audit";
 import { getClientIp } from "@/lib/utils/request-ip";
 import { isKaklikCampaignEnabled } from "@/infrastructure/settings/site-settings";
@@ -39,6 +40,11 @@ function isValidTimeGroup(value: string): value is KaklikTimeGroupValue {
 
 export async function POST(request: Request) {
   try {
+    const rateLimited = await enforcePublicPostRateLimit(request, "registrations-campaign");
+    if (rateLimited) {
+      return rateLimited;
+    }
+
     const client = await createSupabaseServerClient();
     if (!client) {
       return NextResponse.json({ error: "Bağlantı kurulamadı." }, { status: 500 });

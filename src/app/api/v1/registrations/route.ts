@@ -1,8 +1,9 @@
 import { NextResponse } from "next/server";
 
+import { enforcePublicPostRateLimit } from "@/infrastructure/auth/public-post-rate-limit";
+import { createSupabaseServerClient } from "@/infrastructure/supabase/create-server-client";
 import { buildConsentAudit, mapConsentToColumns } from "@/lib/utils/consent-audit";
 import { getClientIp } from "@/lib/utils/request-ip";
-import { createSupabaseServerClient } from "@/infrastructure/supabase/create-server-client";
 import { GRADE_LEVEL_OPTIONS, REGISTRATION_COURSE_OPTIONS } from "@/shared/constants/profile-options";
 
 const PHONE_PATTERN = /^05\d{9}$/;
@@ -31,6 +32,11 @@ function isDuplicatePhoneError(error: { message?: string; code?: string }): bool
 
 export async function POST(request: Request) {
   try {
+    const rateLimited = await enforcePublicPostRateLimit(request, "registrations");
+    if (rateLimited) {
+      return rateLimited;
+    }
+
     const body = (await request.json()) as RegistrationRequestBody;
     const fullName = body.fullName?.trim() ?? "";
     const phone = body.phone?.replace(/\s/g, "") ?? "";

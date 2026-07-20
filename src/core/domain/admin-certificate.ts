@@ -17,6 +17,9 @@ export interface PendingCertificateEnrollment {
   studentEmail: string;
   eventTitle: string;
   completedAt: Date;
+  /** Forms done but profile < 100% — not issuable yet. */
+  profileIncomplete?: boolean;
+  profileProgress?: number;
 }
 
 export interface IssueCertificateInput {

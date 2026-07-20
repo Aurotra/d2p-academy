@@ -10,6 +10,7 @@ import type { CertificateStatus } from "@/core/domain/certificate-verification";
 import type { AdminCertificateRepository } from "@/core/use-cases/manage-admin-certificates";
 import { translateCertificateRpcError } from "@/infrastructure/certificates/translate-certificate-rpc-error";
 import {
+  calculateProgress,
   isProfileComplete,
   PROFILE_REQUIRED_FOR_CERTIFICATE_MESSAGE,
 } from "@/lib/utils/progress";
@@ -161,9 +162,26 @@ export class SupabaseAdminCertificateRepository implements AdminCertificateRepos
         }
 
         const profile = Array.isArray(row.profiles) ? (row.profiles[0] ?? null) : row.profiles;
-        if (!profile) return false;
-
-        return isProfileComplete({
+        return Boolean(profile);
+      })
+      .map((row) => {
+        const profile = Array.isArray(row.profiles) ? (row.profiles[0] ?? null) : row.profiles;
+        const event = Array.isArray(row.events) ? (row.events[0] ?? null) : row.events;
+        const readyAt = row.post_test_completed_at ?? row.completed_at ?? new Date().toISOString();
+        const profileProgress = profile
+          ? calculateProgress({
+              full_name: profile.full_name,
+              gender: profile.gender,
+              grade_level: profile.grade_level,
+              school_name: profile.school_name,
+              city_district: profile.city_district,
+              experience_data: profile.experience_data,
+              interests: profile.interests,
+              motivation_data: profile.motivation_data,
+              profile_avatar_url: profile.profile_avatar_url,
+            })
+          : 0;
+        const profileIncomplete = !profile || !isProfileComplete({
           full_name: profile.full_name,
           gender: profile.gender,
           grade_level: profile.grade_level,
@@ -174,11 +192,6 @@ export class SupabaseAdminCertificateRepository implements AdminCertificateRepos
           motivation_data: profile.motivation_data,
           profile_avatar_url: profile.profile_avatar_url,
         });
-      })
-      .map((row) => {
-        const profile = Array.isArray(row.profiles) ? (row.profiles[0] ?? null) : row.profiles;
-        const event = Array.isArray(row.events) ? (row.events[0] ?? null) : row.events;
-        const readyAt = row.post_test_completed_at ?? row.completed_at ?? new Date().toISOString();
 
         return {
           id: row.id,
@@ -186,6 +199,8 @@ export class SupabaseAdminCertificateRepository implements AdminCertificateRepos
           studentEmail: formatStudentContact(profile?.email, profile?.username),
           eventTitle: event?.title ?? "Eğitim",
           completedAt: new Date(readyAt),
+          profileIncomplete,
+          profileProgress,
         };
       });
   }

@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 
+import { enforcePublicPostRateLimit } from "@/infrastructure/auth/public-post-rate-limit";
 import { buildConsentAudit, mapConsentToColumns } from "@/lib/utils/consent-audit";
 import { getClientIp } from "@/lib/utils/request-ip";
 import { createSupabaseServerClient } from "@/infrastructure/supabase/create-server-client";
@@ -43,6 +44,11 @@ interface InstitutionRequestBody {
 
 export async function POST(request: Request) {
   try {
+    const rateLimited = await enforcePublicPostRateLimit(request, "institution-requests");
+    if (rateLimited) {
+      return rateLimited;
+    }
+
     const body = (await request.json()) as InstitutionRequestBody;
     const institutionName = body.institutionName?.trim() ?? "";
     const institutionType = body.institutionType?.trim() ?? "";

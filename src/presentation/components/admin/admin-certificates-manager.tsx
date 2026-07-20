@@ -33,6 +33,9 @@ export function AdminCertificatesManager() {
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
 
+  const issuablePending = pendingEnrollments.filter((item) => !item.profileIncomplete);
+  const blockedPending = pendingEnrollments.filter((item) => item.profileIncomplete);
+
   async function loadData() {
     setIsLoading(true);
     setError(null);
@@ -165,21 +168,36 @@ export function AdminCertificatesManager() {
           </a>{" "}
           sayfasında görebilirsiniz.
         </p>
-        {pendingEnrollments.length === 0 && !isLoading ? (
+        {issuablePending.length === 0 && !isLoading ? (
           <p className="mt-4 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
             Sertifika verilecek uygun kayıt yok. Öğrencinin katılımcı formlarını bitirmiş ve
             profilini %100 tamamlamış olması gerekir.
           </p>
+        ) : null}
+        {blockedPending.length > 0 ? (
+          <div className="mt-4 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-950">
+            <p className="font-semibold">
+              Formu bitmiş ama profili eksik ({blockedPending.length})
+            </p>
+            <ul className="mt-2 list-inside list-disc text-xs">
+              {blockedPending.slice(0, 8).map((enrollment) => (
+                <li key={enrollment.id}>
+                  {enrollment.studentName} · {enrollment.eventTitle} · profil %
+                  {enrollment.profileProgress ?? 0}
+                </li>
+              ))}
+            </ul>
+          </div>
         ) : null}
         <form onSubmit={handleIssue} className="mt-4 flex flex-col gap-4 sm:flex-row sm:items-end">
           <Select
             label="Kayıt Seç"
             value={selectedEnrollmentId}
             onChange={(e) => setSelectedEnrollmentId(e.target.value)}
-            disabled={pendingEnrollments.length === 0}
+            disabled={issuablePending.length === 0}
           >
             <option value="">Kayıt seçin</option>
-            {pendingEnrollments.map((enrollment) => (
+            {issuablePending.map((enrollment) => (
               <option key={enrollment.id} value={enrollment.id}>
                 {enrollment.studentName} · {enrollment.eventTitle}
               </option>
@@ -187,7 +205,7 @@ export function AdminCertificatesManager() {
           </Select>
           <Button
             type="submit"
-            disabled={isSaving || !selectedEnrollmentId || pendingEnrollments.length === 0}
+            disabled={isSaving || !selectedEnrollmentId || issuablePending.length === 0}
           >
             {isSaving ? "Oluşturuluyor..." : "Sertifika Ver"}
           </Button>

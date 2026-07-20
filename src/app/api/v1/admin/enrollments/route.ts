@@ -3,6 +3,7 @@ import { z } from "zod";
 
 import type { EnrollmentStatus } from "@/core/domain/student-dashboard";
 import { requireAdminApiAccess } from "@/infrastructure/auth/require-admin-api-access";
+import { getEventCapacityBlockReason } from "@/infrastructure/enrollments/event-capacity";
 import { SupabaseAdminAuditLogRepository } from "@/infrastructure/repositories/supabase-admin-audit-log-repository";
 
 const ALLOWED_STATUSES: EnrollmentStatus[] = [
@@ -145,6 +146,11 @@ export async function POST(request: Request) {
         { error: "Bu öğrenci zaten bu etkinliğe kayıtlı.", data: { enrollmentId: existing.id } },
         { status: 409 },
       );
+    }
+
+    const capacityBlock = await getEventCapacityBlockReason(access.client, eventId);
+    if (capacityBlock) {
+      return NextResponse.json({ error: capacityBlock }, { status: 409 });
     }
 
     if (existing?.status === "cancelled") {

@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 
+import { getEventCapacityBlockReason } from "@/infrastructure/enrollments/event-capacity";
 import { createSupabaseServerClient } from "@/infrastructure/supabase/create-server-client";
 import { mapAuthErrorToTurkish } from "@/shared/utils/auth-errors";
 
@@ -52,6 +53,11 @@ export async function POST(request: Request) {
         { error: "Bu etkinliğin tarihi geçmiş; kayıt yapılamaz." },
         { status: 400 },
       );
+    }
+
+    const capacityBlock = await getEventCapacityBlockReason(client, eventId);
+    if (capacityBlock) {
+      return NextResponse.json({ error: capacityBlock }, { status: 409 });
     }
 
     const { data: existing } = await client
