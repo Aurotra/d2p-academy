@@ -5,51 +5,54 @@ export class InvalidUsernameError extends Error {
   }
 }
 
-/** Harf ile başlar; harf, rakam ve alt çizgi. Türkçe karakterler ASCII'ye çevrilir. */
-const USERNAME_RE = /^[a-z][a-z0-9_]{2,31}$/;
+/** Harf (Türkçe dahil) ile başlar; harf, rakam ve alt çizgi. */
+const USERNAME_RE = /^[a-zçğıöşü][a-zçğıöşü0-9_]{2,31}$/u;
 
-const TURKISH_CHAR_MAP: Record<string, string> = {
-  ç: "c",
-  ğ: "g",
-  ı: "i",
-  ö: "o",
-  ş: "s",
-  ü: "u",
-  Ç: "c",
-  Ğ: "g",
-  İ: "i",
-  I: "i",
-  Ö: "o",
-  Ş: "s",
-  Ü: "u",
-};
+/** Eski hesaplar (nokta/tire içeren) için geriye dönük giriş. */
+const LEGACY_USERNAME_RE = /^[a-z0-9_.-]{3,20}$/;
 
-function transliterateTurkish(value: string): string {
-  return value.replace(/[çğıöşüÇĞİÖŞÜI]/g, (char) => TURKISH_CHAR_MAP[char] ?? char);
+function prepareUsernameInput(raw: string): string {
+  let value = raw.trim();
+  if (value.startsWith("@")) {
+    value = value.slice(1);
+  }
+  return value.replace(/\s+/g, "");
 }
 
 export function normalizeUsername(raw: string): string {
-  let normalized = transliterateTurkish(raw.trim().toLowerCase());
-
-  if (normalized.startsWith("@")) {
-    normalized = normalized.slice(1);
-  }
-
-  normalized = normalized.replace(/\s+/g, "");
+  const normalized = prepareUsernameInput(raw).toLocaleLowerCase("tr-TR");
 
   if (!USERNAME_RE.test(normalized)) {
     throw new InvalidUsernameError(
-      "Kullanıcı adı 3-32 karakter olmalı; harf ile başlamalı. Harf, rakam ve alt çizgi (_) kullanabilirsiniz (ör. emre84).",
+      "Kullanıcı adı 3-32 karakter olmalı; harf ile başlamalı. Türkçe harf, rakam ve alt çizgi (_) kullanabilirsiniz (ör. emre84, ömer84).",
     );
   }
 
   return normalized;
 }
 
+/** Kayıt ve güncelleme için; geçersizse null. */
 export function tryNormalizeUsername(raw: string): string | null {
   try {
     return normalizeUsername(raw);
   } catch {
     return null;
+  }
+}
+
+/**
+ * Giriş / admin araması: yeni kurallar + eski hesaplar (nokta/tire).
+ */
+export function resolveUsernameForLookup(raw: string): string {
+  try {
+    return normalizeUsername(raw);
+  } catch {
+    const legacy = prepareUsernameInput(raw).toLowerCase();
+    if (LEGACY_USERNAME_RE.test(legacy)) {
+      return legacy;
+    }
+    throw new InvalidUsernameError(
+      "Geçersiz kullanıcı adı. Türkçe harf, rakam ve alt çizgi kullanabilirsiniz.",
+    );
   }
 }

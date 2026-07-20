@@ -6,7 +6,7 @@ import {
   isAuthRateLimited,
 } from "@/infrastructure/auth/auth-rate-limit";
 import { verifyStudentPassword } from "@/infrastructure/auth/password";
-import { tryNormalizeUsername } from "@/shared/utils/student-username";
+import { resolveUsernameForLookup } from "@/shared/utils/student-username";
 import {
   signStudentSession,
   STUDENT_SESSION_COOKIE,
@@ -29,8 +29,14 @@ export async function POST(request: NextRequest) {
     }
 
     const ip = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "unknown";
-    const rawUsername = parsed.data.username.trim().toLowerCase();
-    const username = tryNormalizeUsername(parsed.data.username) ?? rawUsername;
+    let username: string;
+    try {
+      username = resolveUsernameForLookup(parsed.data.username);
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : "Geçersiz kullanıcı adı.";
+      return NextResponse.json({ error: message }, { status: 400 });
+    }
     const rateLimitKey = `${ip}:${username}`;
 
     const supabase = createServiceRoleClient();

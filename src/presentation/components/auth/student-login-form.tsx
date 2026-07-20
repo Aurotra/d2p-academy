@@ -71,7 +71,7 @@ export function StudentLoginForm() {
           autoComplete="username"
           value={username}
           onChange={(event) => setUsername(event.target.value)}
-          placeholder="örn: emre84"
+          placeholder="örn: emre84 veya ömer84"
           required
         />
         <Input

@@ -479,17 +479,17 @@ function AddStudentDialog({
           }}
           onBlur={() => {
             const normalized = tryNormalizeUsername(username);
-            if (normalized && normalized !== username.trim().toLowerCase()) {
+            if (normalized && normalized !== username.trim()) {
               setUsernameHint(`Kayıtta şu şekilde kullanılacak: ${normalized}`);
             } else if (normalized) {
               setUsernameHint(null);
             } else if (username.trim()) {
               setUsernameHint(
-                "3-32 karakter, harf ile başlamalı. Türkçe harfler otomatik dönüşür (ör. emre84, ayse2015).",
+                "3-32 karakter, harf ile başlamalı. Türkçe harf, rakam ve alt çizgi kullanabilirsiniz (ör. emre84, ömer84).",
               );
             }
           }}
-          placeholder="örn: emre84"
+          placeholder="örn: emre84 veya ömer84"
           required
         />
         {usernameHint ? <p className="text-xs text-slate-500">{usernameHint}</p> : null}
