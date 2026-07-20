@@ -11,22 +11,22 @@ const quickSteps = [
 
 export function ParentGuidePromo() {
   return (
-    <aside
-      id="veli-rehberi"
-      className="rounded-[1.75rem] border border-secondary/25 bg-gradient-to-br from-emerald-50 via-white to-sky-50 p-6 shadow-lg shadow-secondary/10 lg:sticky lg:top-24"
-    >
+    <div id="veli-rehberi" className="flex h-full flex-col">
       <p className="text-xs font-semibold uppercase tracking-[0.18em] text-secondary">
-        Veliler için
+        Veli kaydı
       </p>
-      <h2 className="mt-2 text-xl font-black text-navy-950 sm:text-2xl">Veli Kayıt Rehberi</h2>
-      <p className="mt-3 text-sm leading-6 text-slate-600">
-        Çocuğunuzu etkinliğe kaydetmek, formları doldurmak ve sertifikayı takip etmek için adım
-        adım rehberimizi kullanın.
+      <h3 className="mt-2 text-lg font-bold text-navy-950 sm:text-xl">Nasıl kayıt olurum?</h3>
+      <p className="mt-2 text-sm leading-6 text-slate-600">
+        Etkinliğe kayıt için önce veli hesabı açılır; ardından çocuk hesabı eklenir ve kayıt
+        tamamlanır.
       </p>
 
-      <ol className="mt-5 space-y-2.5">
+      <ol className="mt-5 flex-1 space-y-3">
         {quickSteps.map((step, index) => (
-          <li key={step} className="flex gap-3 text-sm text-slate-700">
+          <li
+            key={step}
+            className="flex gap-3 rounded-xl border border-emerald-100 bg-white/80 px-3 py-2.5 text-sm text-slate-700"
+          >
             <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-secondary text-xs font-bold text-white">
               {index + 1}
             </span>
@@ -35,23 +35,23 @@ export function ParentGuidePromo() {
         ))}
       </ol>
 
-      <div className="mt-6 flex flex-col gap-3">
+      <div className="mt-6 flex flex-col gap-2.5 border-t border-emerald-100 pt-5">
         <Link
           href={PARENT_GUIDE_PATH}
-          className="inline-flex items-center justify-center rounded-xl bg-secondary px-4 py-3 text-sm font-semibold text-white shadow-md shadow-secondary/20 transition hover:bg-secondary-hover hover:shadow-glow-secondary"
+          className="inline-flex items-center justify-center rounded-xl bg-secondary px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-secondary-hover"
         >
           Veli Kayıt Tanıtımı →
         </Link>
-        <AuthPortalLink href="/register" kind="parent" block>
+        <AuthPortalLink href="/register" kind="parent" block className="py-2.5">
           Hemen Hesap Oluştur
         </AuthPortalLink>
         <Link
           href={PARENT_GUIDE_PATH}
-          className="text-center text-sm font-semibold text-secondary hover:text-secondary-hover"
+          className="text-center text-xs font-semibold text-secondary hover:text-secondary-hover"
         >
           SSS ve detaylı anlatım
         </Link>
       </div>
-    </aside>
+    </div>
   );
 }

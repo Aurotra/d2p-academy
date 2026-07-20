@@ -7,10 +7,10 @@ import { ParentGuidePromo } from "@/presentation/components/home/parent-guide-pr
 
 function EmptyEventsState() {
   return (
-    <div className="rounded-[2rem] border border-dashed border-cyan-300/60 bg-cyan-50/40 px-6 py-12 text-center">
-      <p className="text-lg font-semibold text-navy-950">Yaklaşan etkinlik bulunamadı</p>
+    <div className="rounded-2xl border border-dashed border-sky-200 bg-sky-50/50 px-6 py-10 text-center">
+      <p className="text-base font-semibold text-navy-950">Yaklaşan etkinlik bulunamadı</p>
       <p className="mt-2 text-sm text-slate-600">
-        Supabase&apos;de yayınlanmış etkinlik eklediğinizde takvim burada otomatik güncellenecek.
+        Yayınlanmış etkinlik eklendiğinde burada listelenecek.
       </p>
     </div>
   );
@@ -36,44 +36,55 @@ export async function EventCalendarPreview() {
     events = [];
   }
 
-  return (
-    <section id="events" className="border-b border-sky-100 bg-white px-4 py-16 sm:px-6 lg:px-8">
-      <div className="mx-auto max-w-7xl">
-        <div className="max-w-3xl">
-          <p className="text-sm font-semibold uppercase tracking-[0.18em] text-cyan-600">
-            Etkinlik Takvimi
-          </p>
-          <h2 className="mt-2 text-3xl font-black text-navy-950 sm:text-4xl">
-            Yaklaşan eğitimler ve maker atölyeleri
-          </h2>
-          <p className="mt-4 text-base leading-7 text-slate-600">
-            Temel 3D tasarımdan ileri seviye prototiplemeye kadar, uzman mühendisler eşliğinde
-            hazırlanan uygulamalı atölyelerimizi keşfedin. Beğendiğiniz etkinliğe kaydolun; üye
-            değilseniz önce hesap oluşturmanız istenir.
-          </p>
-        </div>
+  const eventGridClass =
+    events.length > 1 ? "grid gap-5 sm:grid-cols-2" : "grid max-w-xl gap-5 grid-cols-1";
 
-        {events.length === 0 ? (
-          <div className="mt-10 grid grid-cols-1 gap-8 lg:grid-cols-[minmax(0,1fr)_320px] lg:items-start">
-            <div className="order-2 lg:order-1">
-              <EmptyEventsState />
+  return (
+    <section id="events" className="bg-slate-50 px-4 py-16 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-7xl">
+        <div className="overflow-hidden rounded-[2rem] border border-sky-200 bg-white shadow-xl shadow-sky-100/60">
+          <header className="border-b border-sky-100 bg-gradient-to-r from-sky-50 via-white to-emerald-50 px-6 py-8 sm:px-8">
+            <div className="flex flex-wrap items-center gap-2 text-xs font-semibold uppercase tracking-[0.18em]">
+              <span className="rounded-full bg-white px-3 py-1 text-cyan-700 ring-1 ring-sky-200">
+                Etkinlik Takvimi
+              </span>
+              <span className="text-slate-300" aria-hidden>
+                ·
+              </span>
+              <span className="rounded-full bg-white px-3 py-1 text-secondary ring-1 ring-emerald-200">
+                Veli Kaydı
+              </span>
             </div>
-            <div className="order-1 lg:order-2">
+            <h2 className="mt-4 text-2xl font-black text-navy-950 sm:text-3xl lg:text-4xl">
+              Etkinliklere katılın, veli rehberiyle kaydı tamamlayın
+            </h2>
+            <p className="mt-3 max-w-3xl text-sm leading-7 text-slate-600 sm:text-base">
+              Sağdaki adımlarla veli hesabınızı açın; soldan etkinlik seçip çocuğunuzu kaydedin.
+              Üye değilseniz önce hesap oluşturmanız yeterli.
+            </p>
+          </header>
+
+          <div className="grid lg:grid-cols-[minmax(0,1fr)_minmax(280px,340px)]">
+            <div className="border-b border-sky-100 p-6 sm:p-8 lg:border-b-0 lg:border-r">
+              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-cyan-600">
+                Yaklaşan etkinlikler
+              </p>
+              <h3 className="mt-1 text-lg font-bold text-navy-950">Maker atölyeleri ve eğitimler</h3>
+
+              <div className={`mt-5 ${eventGridClass}`}>
+                {events.length === 0 ? (
+                  <EmptyEventsState />
+                ) : (
+                  events.map((event) => <EventCard key={event.id} event={event} />)
+                )}
+              </div>
+            </div>
+
+            <div className="bg-gradient-to-b from-emerald-50/60 to-white p-6 sm:p-8">
               <ParentGuidePromo />
             </div>
           </div>
-        ) : (
-          <div className="mt-10 grid grid-cols-1 gap-8 lg:grid-cols-[minmax(0,1fr)_320px] lg:items-start">
-            <div className="order-2 lg:order-1 grid gap-6 md:grid-cols-2 xl:grid-cols-2">
-              {events.map((event) => (
-                <EventCard key={event.id} event={event} />
-              ))}
-            </div>
-            <div className="order-1 lg:order-2">
-              <ParentGuidePromo />
-            </div>
-          </div>
-        )}
+        </div>
       </div>
     </section>
   );
