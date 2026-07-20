@@ -10,6 +10,7 @@ import { BRAND_SURFACE_HEADER } from "@/shared/constants/brand-surfaces";
 import { PARENT_GUIDE_PATH } from "@/shared/constants/parent-guide";
 import { BrandLogo } from "@/presentation/components/layout/brand-logo";
 import { scrollToHash } from "@/shared/utils/scroll-to-hash";
+import { SESSION_CHANGED_EVENT } from "@/shared/utils/session-events";
 
 const navItems = [
   { href: "/#hero", label: "Ana Sayfa" },
@@ -83,18 +84,15 @@ export function SiteHeader() {
     setIsMobileMenuOpen(false);
   }, []);
 
-  useEffect(() => {
-    closeMobileMenu();
-  }, [pathname, closeMobileMenu]);
-
-  useEffect(() => {
+  const refreshSession = useCallback(async () => {
     const client = createSupabaseBrowserClient();
-    if (!client) {
-      return;
-    }
 
     async function resolveDisplayName(userId: string, fallback?: string | null) {
-      const { data } = await client!
+      if (!client) {
+        return;
+      }
+
+      const { data } = await client
         .from("profiles")
         .select("full_name")
         .eq("id", userId)
@@ -125,40 +123,58 @@ export function SiteHeader() {
       setUserDisplayName(null);
     }
 
-    void client.auth.getUser().then(({ data }) => {
-      const user = data.user;
-      if (user) {
-        setSessionKind("email");
-        const metadataName =
-          typeof user.user_metadata?.full_name === "string"
-            ? user.user_metadata.full_name
-            : null;
-        void resolveDisplayName(user.id, metadataName);
-        return;
-      }
-      void probeStudentSession();
-    });
+    if (!client) {
+      await probeStudentSession();
+      return;
+    }
+
+    const { data } = await client.auth.getUser();
+    const user = data.user;
+
+    if (user) {
+      setSessionKind("email");
+      const metadataName =
+        typeof user.user_metadata?.full_name === "string" ? user.user_metadata.full_name : null;
+      await resolveDisplayName(user.id, metadataName);
+      return;
+    }
+
+    await probeStudentSession();
+  }, []);
+
+  useEffect(() => {
+    closeMobileMenu();
+  }, [pathname, closeMobileMenu]);
+
+  useEffect(() => {
+    void refreshSession();
+  }, [pathname, refreshSession]);
+
+  useEffect(() => {
+    function handleSessionChanged() {
+      void refreshSession();
+    }
+
+    window.addEventListener(SESSION_CHANGED_EVENT, handleSessionChanged);
+    return () => window.removeEventListener(SESSION_CHANGED_EVENT, handleSessionChanged);
+  }, [refreshSession]);
+
+  useEffect(() => {
+    const client = createSupabaseBrowserClient();
+    if (!client) {
+      return;
+    }
 
     const {
       data: { subscription },
-    } = client.auth.onAuthStateChange((_event, session) => {
-      const user = session?.user ?? null;
-      if (user) {
-        setSessionKind("email");
-        const metadataName =
-          typeof user.user_metadata?.full_name === "string"
-            ? user.user_metadata.full_name
-            : null;
-        void resolveDisplayName(user.id, metadataName);
-        return;
-      }
-      void probeStudentSession();
+    } = client.auth.onAuthStateChange(() => {
+      void refreshSession();
     });
 
     return () => {
       subscription.unsubscribe();
     };
-  }, []);
+  }, [refreshSession]);
 
   useEffect(() => {
     if (!isMobileMenuOpen) {

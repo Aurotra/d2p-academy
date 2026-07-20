@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 import { Button } from "@/presentation/components/ui/button";
+import { notifySessionChanged } from "@/shared/utils/session-events";
 
 export function StudentLogoutButton() {
   const router = useRouter();
@@ -13,6 +14,7 @@ export function StudentLogoutButton() {
     setIsLoading(true);
     try {
       await fetch("/api/v1/auth/student-logout", { method: "POST" });
+      notifySessionChanged();
       router.push("/student-login");
       router.refresh();
     } catch {

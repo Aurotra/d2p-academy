@@ -1,13 +1,14 @@
 "use client";
 
 import Link from "next/link";
-import { useState, type FormEvent } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { useEffect, useState, type FormEvent } from "react";
 
 import { AuthShell } from "@/presentation/components/auth/auth-shell";
 import { Button } from "@/presentation/components/ui/button";
 import { Input } from "@/presentation/components/ui/input";
 import { PARENT_GUIDE_PATH } from "@/shared/constants/parent-guide";
+import { notifySessionChanged } from "@/shared/utils/session-events";
 
 export function StudentLoginForm() {
   const router = useRouter();
@@ -16,6 +17,29 @@ export function StudentLoginForm() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    async function redirectIfAuthenticated() {
+      try {
+        const response = await fetch("/api/v1/auth/student-session");
+        const payload = (await response.json()) as {
+          data?: { authenticated?: boolean };
+        };
+        if (payload.data?.authenticated) {
+          const redirectTo = searchParams.get("redirectTo");
+          const safeRedirect =
+            redirectTo?.startsWith("/") && !redirectTo.startsWith("//")
+              ? redirectTo
+              : "/student-dashboard";
+          router.replace(safeRedirect);
+        }
+      } catch {
+        // ignore
+      }
+    }
+
+    void redirectIfAuthenticated();
+  }, [router, searchParams]);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -45,6 +69,7 @@ export function StudentLoginForm() {
           ? redirectTo
           : "/student-dashboard";
 
+      notifySessionChanged();
       router.push(safeRedirect);
       router.refresh();
     } catch (loginError) {
