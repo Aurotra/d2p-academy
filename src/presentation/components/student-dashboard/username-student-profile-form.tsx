@@ -47,7 +47,17 @@ const emptyForm: ProfileForm = {
   kvkk_accepted: false,
 };
 
-export function UsernameStudentProfileForm() {
+export function UsernameStudentProfileForm({
+  apiPath = "/api/v1/student/profile",
+  title = "Profilim",
+  backHref = "/student-dashboard",
+  backLabel = "Panele dön",
+}: {
+  apiPath?: string;
+  title?: string;
+  backHref?: string;
+  backLabel?: string;
+} = {}) {
   const [form, setForm] = useState<ProfileForm>(emptyForm);
   const [progress, setProgress] = useState(0);
   const [error, setError] = useState<string | null>(null);
@@ -58,7 +68,7 @@ export function UsernameStudentProfileForm() {
   useEffect(() => {
     void (async () => {
       try {
-        const response = await fetch("/api/v1/student/profile");
+        const response = await fetch(apiPath);
         const payload = (await response.json()) as {
           error?: string;
           data?: { profile: Record<string, unknown>; progress: number };
@@ -96,7 +106,7 @@ export function UsernameStudentProfileForm() {
         setLoading(false);
       }
     })();
-  }, []);
+  }, [apiPath]);
 
   async function handleSubmit(event: FormEvent) {
     event.preventDefault();
@@ -105,7 +115,7 @@ export function UsernameStudentProfileForm() {
     setSuccess(null);
 
     try {
-      const response = await fetch("/api/v1/student/profile", {
+      const response = await fetch(apiPath, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -168,15 +178,15 @@ export function UsernameStudentProfileForm() {
   return (
     <form onSubmit={handleSubmit} className="space-y-4 rounded-[1.5rem] border border-slate-200 bg-white p-6 shadow-sm">
       <div className="flex items-center justify-between gap-3">
-        <h2 className="text-lg font-bold text-navy-950">Profilim</h2>
+        <h2 className="text-lg font-bold text-navy-950">{title}</h2>
         <span className="rounded-full bg-document-primary/10 px-3 py-1 text-xs font-bold text-document-primary">
           %{progress}
         </span>
       </div>
       <p className="text-sm text-slate-600">
         Sertifika için profilin %100 dolu olmalı.{" "}
-        <Link href="/student-dashboard" className="font-semibold text-document-primary underline">
-          Panele dön
+        <Link href={backHref} className="font-semibold text-document-primary underline">
+          {backLabel}
         </Link>
       </p>
 

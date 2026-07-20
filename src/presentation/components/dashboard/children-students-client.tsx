@@ -162,6 +162,12 @@ export function ChildrenStudentsClient({
                       <Button variant="outline" onClick={() => setEnrollTarget(student)}>
                         Etkinliğe kaydet
                       </Button>
+                      <Link
+                        href={`/dashboard/children/${student.id}/profile`}
+                        className="inline-flex items-center justify-center rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-navy-950 transition hover:bg-slate-50"
+                      >
+                        Profili düzenle
+                      </Link>
                       <Button variant="outline" onClick={() => setResetTarget(student)}>
                         Şifreyi sıfırla
                       </Button>
@@ -313,11 +319,18 @@ export function ChildrenStudentsClient({
                       </div>
 
                       <p className="text-xs text-slate-500">
-        Katılımcı formlarını bu panelden çocuğunuz adına doldurabilirsiniz. Profili çocuk kendi
-        öğrenci girişi ile tamamlar. Profil %{profileProgress}
-        {profileProgress < 100
-          ? " — sertifika için profilin %100 olması gerekir."
-          : " — sertifika için profil hazır."}
+                        Katılımcı formlarını bu panelden çocuğunuz adına doldurabilirsiniz. Eksik
+                        profil için{" "}
+                        <Link
+                          href={`/dashboard/children/${student.id}/profile`}
+                          className="font-semibold text-document-primary hover:underline"
+                        >
+                          Profili düzenle
+                        </Link>
+                        . Profil %{profileProgress}
+                        {profileProgress < 100
+                          ? " — sertifika için profilin %100 olması gerekir."
+                          : " — sertifika için profil hazır."}
                       </p>
                     </div>
                   ) : null}

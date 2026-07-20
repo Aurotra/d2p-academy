@@ -81,14 +81,20 @@ export default async function ParentChildEnrollmentFormsPage({ params }: PagePro
             {eventTitle ? ` — ${eventTitle}` : ""}.
           </p>
           <p className="mt-1 text-sky-900/80">
-            Onay adımında veli / yasal temsilci imzasını kendi adınızla atın. Çocuğun profilini
-            tamamlaması gerekiyorsa öğrenci girişi ile profil sayfasını kullanın.
+            Onay adımında veli / yasal temsilci imzasını kendi adınızla atın. Profil eksikse{" "}
+            <Link
+              href={`/dashboard/children/${childId}/profile`}
+              className="font-semibold underline"
+            >
+              profili buradan tamamlayın
+            </Link>
+            .
           </p>
         </div>
 
         <CourseApplicationWizard
           enrollmentId={enrollmentId}
-          profileHref="/dashboard/children"
+          profileHref={`/dashboard/children/${childId}/profile`}
         />
       </div>
     </section>
