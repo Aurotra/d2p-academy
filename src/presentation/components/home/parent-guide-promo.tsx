@@ -4,50 +4,49 @@ import { AuthPortalLink } from "@/presentation/components/auth/auth-portal-link"
 import { PARENT_GUIDE_PATH } from "@/shared/constants/parent-guide";
 
 const quickSteps = [
-  "Hesap Oluştur → e-postanı onayla",
-  "Çocuk hesabı ekle (ad, doğum tarihi, şifre)",
-  "Etkinliğe kaydet ve formları doldur",
+  "Hesap oluştur, e-postanı onayla",
+  "Çocuk hesabı ekle",
+  "Etkinliğe kaydet, formları doldur",
 ];
 
 export function ParentGuidePromo() {
   return (
-    <div id="veli-rehberi" className="flex h-full scroll-mt-24 flex-col">
-      <p className="text-xs font-semibold uppercase tracking-[0.18em] text-secondary">
+    <div id="veli-rehberi" className="scroll-mt-24">
+      <p className="text-xs font-semibold uppercase tracking-[0.16em] text-secondary">
         Veli kaydı
       </p>
-      <h3 className="mt-2 text-lg font-bold text-navy-950 sm:text-xl">Nasıl kayıt olurum?</h3>
-      <p className="mt-2 text-sm leading-6 text-slate-600">
-        Etkinliğe kayıt için önce veli hesabı açılır; ardından çocuk hesabı eklenir ve kayıt
-        tamamlanır.
-      </p>
+      <h3 className="mt-1 text-base font-bold text-navy-950">3 adımda kayıt</h3>
 
-      <ol className="mt-5 flex-1 space-y-3">
+      <ol className="relative mt-4 space-y-0">
         {quickSteps.map((step, index) => (
-          <li
-            key={step}
-            className="flex gap-3 rounded-xl border border-emerald-100 bg-white/80 px-3 py-2.5 text-sm text-slate-700"
-          >
-            <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-secondary text-xs font-bold text-white">
+          <li key={step} className="relative flex gap-3 pb-4 last:pb-0">
+            {index < quickSteps.length - 1 ? (
+              <span
+                className="absolute left-[11px] top-6 h-[calc(100%-0.5rem)] w-px bg-emerald-200"
+                aria-hidden
+              />
+            ) : null}
+            <span className="relative z-10 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-secondary text-[11px] font-bold text-white">
               {index + 1}
             </span>
-            <span className="pt-0.5 leading-5">{step}</span>
+            <span className="pt-0.5 text-sm leading-5 text-slate-700">{step}</span>
           </li>
         ))}
       </ol>
 
-      <div className="mt-6 flex flex-col gap-2.5 border-t border-emerald-100 pt-5">
-        <Link
-          href={PARENT_GUIDE_PATH}
-          className="inline-flex items-center justify-center rounded-xl bg-secondary px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-secondary-hover"
-        >
-          Veli Kayıt Tanıtımı →
-        </Link>
-        <AuthPortalLink href="/register" kind="parent" block className="py-2.5">
+      <div className="mt-5 space-y-2">
+        <AuthPortalLink href="/register" kind="parent" block className="py-2.5 text-sm">
           Hemen Hesap Oluştur
         </AuthPortalLink>
         <Link
           href={PARENT_GUIDE_PATH}
-          className="text-center text-xs font-semibold text-secondary hover:text-secondary-hover"
+          className="inline-flex w-full items-center justify-center rounded-xl border border-secondary/30 bg-white px-4 py-2.5 text-sm font-semibold text-secondary transition hover:border-secondary hover:bg-emerald-50/50"
+        >
+          Veli Rehberi →
+        </Link>
+        <Link
+          href={PARENT_GUIDE_PATH}
+          className="block text-center text-xs font-medium text-slate-500 hover:text-secondary"
         >
           SSS ve detaylı anlatım
         </Link>
