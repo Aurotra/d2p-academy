@@ -41,7 +41,7 @@ export function GalleryHomeSlider({ photos }: GalleryHomeSliderProps) {
   }
 
   return (
-    <section id="gallery-preview" className="bg-white px-4 py-14 sm:px-6 lg:px-8">
+    <section id="gallery-preview" className="border-t border-slate-200 bg-slate-50 px-4 py-14 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-7xl">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div className="max-w-xl">

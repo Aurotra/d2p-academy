@@ -20,6 +20,7 @@ export default async function HomePage() {
         <KaklikCampaignBanner title={campaign.title} bannerText={campaign.bannerText} />
       ) : null}
       <HeroSection />
+      <EventCalendarPreview />
       {campaign?.enabled ? (
         <KaklikRegistrationSection
           title={campaign.title}
@@ -28,9 +29,8 @@ export default async function HomePage() {
         />
       ) : null}
       <LearningValuesSection />
-      <GalleryHomePreview />
       <CertificateVerificationBar />
-      <EventCalendarPreview />
+      <GalleryHomePreview />
     </>
   );
 }

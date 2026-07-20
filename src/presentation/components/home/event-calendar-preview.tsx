@@ -36,7 +36,7 @@ export async function EventCalendarPreview() {
   }
 
   return (
-    <section id="events" className="bg-slate-50 px-4 py-20 sm:px-6 lg:px-8">
+    <section id="events" className="border-b border-sky-100 bg-white px-4 py-16 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-7xl">
         <div className="max-w-3xl">
           <p className="text-sm font-semibold uppercase tracking-[0.18em] text-cyan-600">
