@@ -140,6 +140,8 @@ export function AdminCertificatesManager() {
 
     setIsSaving(true);
     setError(null);
+    setWarning(null);
+    setSuccess(null);
 
     try {
       const response = await fetch("/api/v1/admin/certificates", {
