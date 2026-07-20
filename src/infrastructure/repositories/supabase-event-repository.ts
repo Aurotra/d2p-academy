@@ -84,7 +84,7 @@ export class SupabaseEventRepository implements EventRepository {
       `,
       )
       .eq("status", "published")
-      .gte("start_at", new Date().toISOString())
+      .gte("end_at", new Date().toISOString())
       .order("start_at", { ascending: true })
       .limit(limit);
 

@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { getEventCapacityBlockReason } from "@/infrastructure/enrollments/event-capacity";
 import { createSupabaseServerClient } from "@/infrastructure/supabase/create-server-client";
 import { mapAuthErrorToTurkish } from "@/shared/utils/auth-errors";
+import { getEventEnrollmentBlockReason } from "@/shared/utils/event-enrollment-window";
 
 interface EnrollRequestBody {
   eventId?: string;
@@ -33,7 +34,7 @@ export async function POST(request: Request) {
 
     const { data: event, error: eventError } = await client
       .from("events")
-      .select("id, title, status, start_at")
+      .select("id, title, status, end_at")
       .eq("id", eventId)
       .single();
 
@@ -41,18 +42,9 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Etkinlik bulunamadı." }, { status: 404 });
     }
 
-    if (event.status !== "published") {
-      return NextResponse.json(
-        { error: "Bu etkinlik şu anda kayda açık değil." },
-        { status: 400 },
-      );
-    }
-
-    if (new Date(event.start_at).getTime() < Date.now()) {
-      return NextResponse.json(
-        { error: "Bu etkinliğin tarihi geçmiş; kayıt yapılamaz." },
-        { status: 400 },
-      );
+    const enrollmentBlock = getEventEnrollmentBlockReason(event);
+    if (enrollmentBlock) {
+      return NextResponse.json({ error: enrollmentBlock }, { status: 400 });
     }
 
     const capacityBlock = await getEventCapacityBlockReason(client, eventId);

@@ -4,6 +4,7 @@ import { z } from "zod";
 import { getEventCapacityBlockReason } from "@/infrastructure/enrollments/event-capacity";
 import { createServiceRoleClient } from "@/infrastructure/supabase/create-service-role-client";
 import { createSupabaseServerClient } from "@/infrastructure/supabase/create-server-client";
+import { getEventEnrollmentBlockReason } from "@/shared/utils/event-enrollment-window";
 
 const schema = z.object({
   eventId: z.string().uuid(),
@@ -62,7 +63,7 @@ export async function POST(
 
   const { data: event, error: eventError } = await serviceClient
     .from("events")
-    .select("id, title, status, start_at")
+    .select("id, title, status, end_at")
     .eq("id", eventId)
     .maybeSingle();
 
@@ -70,18 +71,9 @@ export async function POST(
     return NextResponse.json({ error: "Etkinlik bulunamadı." }, { status: 404 });
   }
 
-  if (event.status !== "published") {
-    return NextResponse.json(
-      { error: "Bu etkinlik şu anda kayda açık değil." },
-      { status: 400 },
-    );
-  }
-
-  if (new Date(event.start_at).getTime() < Date.now()) {
-    return NextResponse.json(
-      { error: "Bu etkinliğin tarihi geçmiş; kayıt yapılamaz." },
-      { status: 400 },
-    );
+  const enrollmentBlock = getEventEnrollmentBlockReason(event);
+  if (enrollmentBlock) {
+    return NextResponse.json({ error: enrollmentBlock }, { status: 400 });
   }
 
   const { data: existing } = await serviceClient

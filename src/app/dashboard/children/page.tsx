@@ -34,9 +34,9 @@ export default async function DashboardChildrenPage() {
 
   const { data: eventRows } = await supabase
     .from("events")
-    .select("id, title, start_at")
+    .select("id, title, start_at, end_at")
     .eq("status", "published")
-    .gte("start_at", new Date().toISOString())
+    .gte("end_at", new Date().toISOString())
     .order("start_at", { ascending: true })
     .limit(40);
 
