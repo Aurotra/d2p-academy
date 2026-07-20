@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState, type FormEvent } from "react";
+import { useEffect, useRef, useState, type FormEvent } from "react";
 
 import {
   EVENT_STATUS_LABELS,
@@ -18,7 +18,7 @@ import { Textarea } from "@/presentation/components/ui/textarea";
 import { tryNormalizeProgramCode } from "@/shared/utils/program-code";
 
 interface EventsApiResponse {
-  data: AdminEventRecord[];
+  data: Array<Omit<AdminEventRecord, "startAt" | "endAt"> & { startAt: string; endAt: string }>;
 }
 
 interface CategoriesApiResponse {
@@ -64,7 +64,12 @@ function formatDateTime(value: string | Date): string {
   }).format(date);
 }
 
-function toDatetimeLocalValue(value: Date): string {
+function toDatetimeLocalValue(value: string | Date): string {
+  const date = value instanceof Date ? value : new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return "";
+  }
+
   const parts = new Intl.DateTimeFormat("en-CA", {
     timeZone: "Europe/Istanbul",
     year: "numeric",
@@ -73,12 +78,27 @@ function toDatetimeLocalValue(value: Date): string {
     hour: "2-digit",
     minute: "2-digit",
     hour12: false,
-  }).formatToParts(value);
+  }).formatToParts(date);
 
   const get = (type: Intl.DateTimeFormatPartTypes) =>
     parts.find((part) => part.type === type)?.value ?? "";
 
-  return `${get("year")}-${get("month")}-${get("day")}T${get("hour")}:${get("minute")}`;
+  let hour = get("hour");
+  if (hour === "24") {
+    hour = "00";
+  }
+
+  return `${get("year")}-${get("month")}-${get("day")}T${hour}:${get("minute")}`;
+}
+
+function normalizeEventRecord(
+  event: EventsApiResponse["data"][number],
+): AdminEventRecord {
+  return {
+    ...event,
+    startAt: new Date(event.startAt),
+    endAt: new Date(event.endAt),
+  };
 }
 
 function eventRecordToForm(event: AdminEventRecord): EventFormState {
@@ -130,21 +150,28 @@ function EventFormFields({
   setForm,
   categories,
   idPrefix,
+  titleAutoFocus,
 }: {
   form: EventFormState;
   setForm: (next: EventFormState) => void;
   categories: EventCategoryOption[];
   idPrefix: string;
+  titleAutoFocus?: boolean;
 }) {
   return (
     <div className="grid gap-4 md:grid-cols-2">
       <Input
+        id={`${idPrefix}-title`}
+        name={`${idPrefix}-title`}
         label="Başlık"
         value={form.title}
         onChange={(e) => setForm({ ...form, title: e.target.value })}
+        autoFocus={titleAutoFocus}
         required
       />
       <Select
+        id={`${idPrefix}-event-type`}
+        name={`${idPrefix}-event-type`}
         label="Tür"
         value={form.eventType}
         onChange={(e) => setForm({ ...form, eventType: e.target.value as EventType })}
@@ -164,6 +191,8 @@ function EventFormFields({
         />
       </div>
       <Select
+        id={`${idPrefix}-category`}
+        name={`${idPrefix}-category`}
         label="Kategori"
         value={form.categoryId}
         onChange={(e) => setForm({ ...form, categoryId: e.target.value })}
@@ -176,6 +205,8 @@ function EventFormFields({
         ))}
       </Select>
       <Select
+        id={`${idPrefix}-status`}
+        name={`${idPrefix}-status`}
         label="Durum"
         value={form.status}
         onChange={(e) => setForm({ ...form, status: e.target.value as EventStatus })}
@@ -187,6 +218,8 @@ function EventFormFields({
         ))}
       </Select>
       <Input
+        id={`${idPrefix}-start-at`}
+        name={`${idPrefix}-start-at`}
         label="Başlangıç"
         type="datetime-local"
         value={form.startAt}
@@ -194,6 +227,8 @@ function EventFormFields({
         required
       />
       <Input
+        id={`${idPrefix}-end-at`}
+        name={`${idPrefix}-end-at`}
         label="Bitiş"
         type="datetime-local"
         value={form.endAt}
@@ -201,11 +236,15 @@ function EventFormFields({
         required
       />
       <Input
+        id={`${idPrefix}-location`}
+        name={`${idPrefix}-location`}
         label="Konum"
         value={form.locationName}
         onChange={(e) => setForm({ ...form, locationName: e.target.value })}
       />
       <Input
+        id={`${idPrefix}-max-capacity`}
+        name={`${idPrefix}-max-capacity`}
         label="Kontenjan"
         type="number"
         min={1}
@@ -214,6 +253,8 @@ function EventFormFields({
       />
       <div>
         <Input
+          id={`${idPrefix}-program-code`}
+          name={`${idPrefix}-program-code`}
           label="Program kodu"
           value={form.programCode}
           onChange={(e) => setForm({ ...form, programCode: e.target.value.toUpperCase() })}
@@ -225,6 +266,8 @@ function EventFormFields({
         </p>
       </div>
       <Input
+        id={`${idPrefix}-meeting-url`}
+        name={`${idPrefix}-meeting-url`}
         label="Online Toplantı URL"
         value={form.meetingUrl}
         onChange={(e) => setForm({ ...form, meetingUrl: e.target.value })}
@@ -251,6 +294,7 @@ export function AdminEventsManager() {
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [savingEventId, setSavingEventId] = useState<string | null>(null);
+  const editCardRef = useRef<HTMLDivElement | null>(null);
 
   async function loadData() {
     setIsLoading(true);
@@ -277,7 +321,7 @@ export function AdminEventsManager() {
         );
       }
 
-      setEvents(eventsPayload.data);
+      setEvents(eventsPayload.data.map(normalizeEventRecord));
       setCategories(categoriesPayload.data);
     } catch (loadError) {
       setError(loadError instanceof Error ? loadError.message : "Veri yüklenemedi.");
@@ -290,10 +334,26 @@ export function AdminEventsManager() {
     void loadData();
   }, []);
 
+  useEffect(() => {
+    if (!editingEventId) {
+      return;
+    }
+
+    editCardRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+  }, [editingEventId]);
+
   function startEditing(event: AdminEventRecord) {
-    setEditingEventId(event.id);
-    setEditForm(eventRecordToForm(event));
-    setError(null);
+    try {
+      setEditingEventId(event.id);
+      setEditForm(eventRecordToForm(event));
+      setError(null);
+    } catch (editError) {
+      setError(
+        editError instanceof Error
+          ? editError.message
+          : "Düzenleme formu açılamadı. Tarih bilgilerini kontrol edin.",
+      );
+    }
   }
 
   function cancelEditing() {
@@ -439,7 +499,12 @@ export function AdminEventsManager() {
               return (
                 <div
                   key={event.id}
-                  className="rounded-2xl border border-slate-100 p-4 hover:border-cyan-200"
+                  ref={isEditing ? editCardRef : undefined}
+                  className={`rounded-2xl border p-4 ${
+                    isEditing
+                      ? "border-document-primary bg-sky-50/40 ring-2 ring-document-primary/20"
+                      : "border-slate-100 hover:border-cyan-200"
+                  }`}
                 >
                   {isEditing ? (
                     <form onSubmit={handleUpdate} className="space-y-4">
@@ -451,9 +516,10 @@ export function AdminEventsManager() {
                       </div>
                       <EventFormFields
                         form={editForm}
-                        setForm={setEditForm}
+                        setForm={(next) => setEditForm(next)}
                         categories={categories}
                         idPrefix={`edit-${event.id}`}
+                        titleAutoFocus
                       />
                       <div className="flex flex-wrap gap-2">
                         <Button type="submit" disabled={savingEventId === event.id}>
@@ -491,7 +557,11 @@ export function AdminEventsManager() {
                         ) : null}
                       </div>
                       <div className="flex flex-wrap gap-2">
-                        <Button type="button" variant="outline" onClick={() => startEditing(event)}>
+                        <Button
+                          type="button"
+                          variant="primary"
+                          onClick={() => startEditing(event)}
+                        >
                           Düzenle
                         </Button>
                         <Link
