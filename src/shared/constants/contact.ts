@@ -18,4 +18,6 @@ export const CONTACT = {
   phoneTel: "+905555420444",
   email: "info@d2p.com.tr",
   workingHours: "Pazartesi–Cuma, 09:00–18:00",
+  instagramHandle: "d2p_academy",
+  instagramUrl: "https://www.instagram.com/d2p_academy/",
 } as const;

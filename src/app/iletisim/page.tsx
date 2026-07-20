@@ -9,6 +9,14 @@ export const metadata = {
     "D2P Academy iletişim bilgileri. Adres: Pamukkale Teknokent, Denizli. Telefon ve e-posta ile bize ulaşın.",
 };
 
+function InstagramIcon({ className = "h-5 w-5" }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="currentColor" aria-hidden>
+      <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0 3.691a6.146 6.146 0 100 12.292 6.146 6.146 0 000-12.292zm0 10.155a4.009 4.009 0 110-8.018 4.009 4.009 0 010 8.018zm6.406-11.845a1.44 1.44 0 11-2.88 0 1.44 1.44 0 012.88 0z" />
+    </svg>
+  );
+}
+
 export default function ContactPage() {
   return (
     <div className="min-h-screen bg-slate-50 px-4 py-12 sm:px-6 lg:px-8">
@@ -86,6 +94,21 @@ export default function ContactPage() {
                   className="mt-2 inline-flex min-h-[44px] items-center break-all text-lg font-semibold text-slate-900 transition hover:text-document-primary"
                 >
                   {CONTACT.email}
+                </a>
+              </div>
+
+              <div className="mt-5 border-t border-slate-100 pt-5">
+                <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
+                  Instagram
+                </p>
+                <a
+                  href={CONTACT.instagramUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="mt-2 inline-flex min-h-[44px] items-center gap-2 text-lg font-semibold text-slate-900 transition hover:text-document-primary"
+                >
+                  <InstagramIcon />
+                  @{CONTACT.instagramHandle}
                 </a>
               </div>
 
