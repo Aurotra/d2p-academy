@@ -308,14 +308,21 @@ export function AdminEventsManager() {
                     >
                       Kayıtlar
                     </Link>
-                    {event.status !== "published" ? (
+                    {event.status === "published" ? (
+                      <Button
+                        variant="secondary"
+                        onClick={() => void updateStatus(event.id, "draft")}
+                      >
+                        Yayından Kaldır
+                      </Button>
+                    ) : (
                       <Button
                         variant="secondary"
                         onClick={() => void updateStatus(event.id, "published")}
                       >
                         Yayınla
                       </Button>
-                    ) : null}
+                    )}
                     <Button
                       variant="secondary"
                       className="text-navy-950"
