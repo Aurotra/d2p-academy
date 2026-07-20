@@ -59,9 +59,10 @@ export function StudentLoginForm() {
     <AuthShell
       title="Öğrenci Girişi"
       subtitle="Kullanıcı adın ve şifren ile rozetlerine ve sertifikalarına ulaş."
-      footerText="E-posta hesabın mı var?"
+      footerText="Veli misiniz?"
       footerHref="/login"
-      footerLinkLabel="E-posta ile giriş"
+      footerLinkLabel="Veli Girişi"
+      footerLinkKind="parent"
     >
       <form onSubmit={handleSubmit} className="space-y-4">
         <Input
@@ -95,8 +96,8 @@ export function StudentLoginForm() {
           </div>
         ) : null}
 
-        <Button type="submit" disabled={isLoading} className="w-full">
-          {isLoading ? "Giriş yapılıyor..." : "Giriş Yap"}
+        <Button type="submit" variant="accent" disabled={isLoading} className="w-full">
+          {isLoading ? "Giriş yapılıyor..." : "Öğrenci Girişi"}
         </Button>
       </form>
 

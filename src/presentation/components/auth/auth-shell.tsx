@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 
+import { AuthPortalLink, type AuthPortalKind } from "@/presentation/components/auth/auth-portal-link";
 import { BRAND_SURFACE_GRADIENT } from "@/shared/constants/brand-surfaces";
 import { BrandLogo } from "@/presentation/components/layout/brand-logo";
 
@@ -11,6 +12,7 @@ interface AuthShellProps {
   footerText: string;
   footerHref: string;
   footerLinkLabel: string;
+  footerLinkKind?: AuthPortalKind;
 }
 
 export function AuthShell({
@@ -20,6 +22,7 @@ export function AuthShell({
   footerText,
   footerHref,
   footerLinkLabel,
+  footerLinkKind,
 }: AuthShellProps) {
   return (
     <section className="relative flex min-h-[calc(100vh-8rem)] items-center justify-center overflow-hidden px-4 py-16 sm:px-6">
@@ -38,12 +41,18 @@ export function AuthShell({
 
         {children}
 
-        <p className="mt-6 text-center text-sm text-slate-600">
-          {footerText}{" "}
-          <Link href={footerHref} className="font-semibold text-cyan-700 hover:text-cyan-600">
-            {footerLinkLabel}
-          </Link>
-        </p>
+        <div className="mt-6 space-y-3 text-center text-sm text-slate-600">
+          <p>{footerText}</p>
+          {footerLinkKind ? (
+            <AuthPortalLink href={footerHref} kind={footerLinkKind} block>
+              {footerLinkLabel}
+            </AuthPortalLink>
+          ) : (
+            <Link href={footerHref} className="font-semibold text-cyan-700 hover:text-cyan-600">
+              {footerLinkLabel}
+            </Link>
+          )}
+        </div>
       </div>
     </section>
   );

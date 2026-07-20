@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useState, type FormEvent } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 
+import { AuthPortalLink } from "@/presentation/components/auth/auth-portal-link";
 import { AuthShell } from "@/presentation/components/auth/auth-shell";
 import { Button } from "@/presentation/components/ui/button";
 import { Input } from "@/presentation/components/ui/input";
@@ -51,8 +52,8 @@ export function LoginForm() {
 
   return (
     <AuthShell
-      title="Giriş Yap"
-      subtitle="Öğrenci panelinize erişmek için hesabınıza giriş yapın."
+      title="Veli Girişi"
+      subtitle="Çocuklarınızı yönetmek ve kayıt işlemlerini takip etmek için e-posta ve şifrenizle giriş yapın."
       footerText="Hesabınız yok mu?"
       footerHref="/register"
       footerLinkLabel="Kayıt Ol"
@@ -89,16 +90,17 @@ export function LoginForm() {
           </div>
         ) : null}
 
-        <Button type="submit" disabled={isLoading} className="w-full">
-          {isLoading ? "Giriş yapılıyor..." : "Giriş Yap"}
+        <Button type="submit" variant="primary" disabled={isLoading} className="w-full">
+          {isLoading ? "Giriş yapılıyor..." : "Veli Girişi"}
         </Button>
       </form>
 
-      <p className="mt-4 text-center text-sm">
-        <Link href="/student-login" className="font-semibold text-cyan-700 hover:text-cyan-600">
-          Öğrenci girişi (kullanıcı adı)
-        </Link>
-      </p>
+      <div className="mt-4 space-y-2 text-center">
+        <p className="text-sm text-slate-600">Öğrenci misiniz?</p>
+        <AuthPortalLink href="/student-login" kind="student" block>
+          Öğrenci Girişi
+        </AuthPortalLink>
+      </div>
 
       <p className="mt-3 text-center text-sm">
         <Link href="/" className="text-slate-500 transition hover:text-cyan-700">

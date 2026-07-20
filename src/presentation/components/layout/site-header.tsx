@@ -5,6 +5,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 
 import { createSupabaseBrowserClient } from "@/infrastructure/supabase/create-browser-client";
+import { AuthPortalLink } from "@/presentation/components/auth/auth-portal-link";
 import { BRAND_SURFACE_HEADER } from "@/shared/constants/brand-surfaces";
 import { BrandLogo } from "@/presentation/components/layout/brand-logo";
 
@@ -222,18 +223,12 @@ export function SiteHeader() {
             </>
           ) : (
             <>
-              <Link
-                href="/student-login"
-                className="rounded-xl px-4 py-2 text-sm font-semibold text-slate-800 transition hover:text-primary"
-              >
+              <AuthPortalLink href="/student-login" kind="student">
                 Öğrenci Girişi
-              </Link>
-              <Link
-                href="/login"
-                className="rounded-xl px-4 py-2 text-sm font-semibold text-slate-800 transition hover:text-primary"
-              >
-                Giriş Yap
-              </Link>
+              </AuthPortalLink>
+              <AuthPortalLink href="/login" kind="parent">
+                Veli Girişi
+              </AuthPortalLink>
               <Link
                 href="/register"
                 className="rounded-xl bg-secondary px-4 py-2 text-sm font-semibold text-white transition hover:bg-secondary-hover hover:shadow-glow-secondary"
@@ -310,20 +305,17 @@ export function SiteHeader() {
                 </>
               ) : (
                 <>
-                  <Link
+                  <AuthPortalLink
                     href="/student-login"
-                    className="inline-flex items-center justify-center rounded-xl border-2 border-sky-300 bg-white px-4 py-3 text-sm font-semibold text-slate-800 transition hover:border-primary hover:text-primary"
+                    kind="student"
+                    block
                     onClick={closeMobileMenu}
                   >
                     Öğrenci Girişi
-                  </Link>
-                  <Link
-                    href="/login"
-                    className="inline-flex items-center justify-center rounded-xl border-2 border-sky-300 bg-white px-4 py-3 text-sm font-semibold text-slate-800 transition hover:border-primary hover:text-primary"
-                    onClick={closeMobileMenu}
-                  >
-                    Giriş Yap
-                  </Link>
+                  </AuthPortalLink>
+                  <AuthPortalLink href="/login" kind="parent" block onClick={closeMobileMenu}>
+                    Veli Girişi
+                  </AuthPortalLink>
                   <Link
                     href="/register"
                     className="inline-flex items-center justify-center rounded-xl bg-secondary px-4 py-3 text-sm font-semibold text-white transition hover:bg-secondary-hover hover:shadow-glow-secondary"
