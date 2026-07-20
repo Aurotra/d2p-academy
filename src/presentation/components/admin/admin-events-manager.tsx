@@ -15,6 +15,7 @@ import { Button } from "@/presentation/components/ui/button";
 import { Input } from "@/presentation/components/ui/input";
 import { Select } from "@/presentation/components/ui/select";
 import { Textarea } from "@/presentation/components/ui/textarea";
+import { tryNormalizeProgramCode } from "@/shared/utils/program-code";
 
 interface EventsApiResponse {
   data: AdminEventRecord[];
@@ -35,6 +36,7 @@ const defaultForm = {
   isOnline: false,
   meetingUrl: "",
   maxCapacity: "",
+  programCode: "",
   status: "draft" as EventStatus,
 };
 
@@ -54,6 +56,8 @@ export function AdminEventsManager() {
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
+  const [programCodeDrafts, setProgramCodeDrafts] = useState<Record<string, string>>({});
+  const [savingProgramCodeId, setSavingProgramCodeId] = useState<string | null>(null);
 
   async function loadData() {
     setIsLoading(true);
@@ -82,6 +86,11 @@ export function AdminEventsManager() {
 
       setEvents(eventsPayload.data);
       setCategories(categoriesPayload.data);
+      setProgramCodeDrafts(
+        Object.fromEntries(
+          eventsPayload.data.map((event) => [event.id, event.programCode ?? ""]),
+        ),
+      );
     } catch (loadError) {
       setError(loadError instanceof Error ? loadError.message : "Veri yüklenemedi.");
     } finally {
@@ -113,6 +122,7 @@ export function AdminEventsManager() {
           isOnline: form.isOnline,
           meetingUrl: form.meetingUrl || null,
           maxCapacity: form.maxCapacity ? Number(form.maxCapacity) : null,
+          programCode: form.programCode.trim() || null,
           status: form.status,
         }),
       });
@@ -151,6 +161,39 @@ export function AdminEventsManager() {
       await loadData();
     } catch (updateError) {
       setError(updateError instanceof Error ? updateError.message : "Güncelleme başarısız.");
+    }
+  }
+
+  async function saveProgramCode(id: string) {
+    const draft = programCodeDrafts[id] ?? "";
+    const normalized = tryNormalizeProgramCode(draft);
+
+    if (!normalized) {
+      setError("Program kodu 2–4 harf olmalıdır (ör. KYK, DC).");
+      return;
+    }
+
+    setSavingProgramCodeId(id);
+    setError(null);
+
+    try {
+      const response = await fetch(`/api/v1/admin/events/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ programCode: normalized }),
+      });
+
+      const payload = (await response.json()) as { error?: string };
+
+      if (!response.ok) {
+        throw new Error(payload.error ?? "Program kodu kaydedilemedi.");
+      }
+
+      await loadData();
+    } catch (saveError) {
+      setError(saveError instanceof Error ? saveError.message : "Program kodu kaydedilemedi.");
+    } finally {
+      setSavingProgramCodeId(null);
     }
   }
 
@@ -251,6 +294,13 @@ export function AdminEventsManager() {
             onChange={(e) => setForm({ ...form, maxCapacity: e.target.value })}
           />
           <Input
+            label="Program kodu"
+            value={form.programCode}
+            onChange={(e) => setForm({ ...form, programCode: e.target.value.toUpperCase() })}
+            placeholder="ör. KYK"
+            maxLength={4}
+          />
+          <Input
             label="Online Toplantı URL"
             value={form.meetingUrl}
             onChange={(e) => setForm({ ...form, meetingUrl: e.target.value })}
@@ -300,6 +350,39 @@ export function AdminEventsManager() {
                     <p className="mt-1 text-sm text-slate-600">
                       {formatDateTime(event.startAt)} · {event.categoryName ?? "Kategorisiz"}
                     </p>
+                    <div className="mt-3 flex flex-wrap items-end gap-2">
+                      <div className="min-w-[8rem]">
+                        <Input
+                          label="Program kodu"
+                          value={programCodeDrafts[event.id] ?? ""}
+                          onChange={(e) =>
+                            setProgramCodeDrafts((current) => ({
+                              ...current,
+                              [event.id]: e.target.value.toUpperCase(),
+                            }))
+                          }
+                          placeholder="KYK"
+                          maxLength={4}
+                        />
+                      </div>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        disabled={savingProgramCodeId === event.id}
+                        onClick={() => void saveProgramCode(event.id)}
+                      >
+                        {savingProgramCodeId === event.id ? "Kaydediliyor..." : "Kodu Kaydet"}
+                      </Button>
+                      {!event.programCode ? (
+                        <span className="pb-3 text-xs font-medium text-amber-700">
+                          Öğrenci kodu için zorunlu
+                        </span>
+                      ) : (
+                        <span className="pb-3 text-xs font-medium text-emerald-700">
+                          Kayıtlı: {event.programCode}
+                        </span>
+                      )}
+                    </div>
                   </div>
                   <div className="flex flex-wrap gap-2">
                     <Link

@@ -24,6 +24,7 @@ export interface AdminEventRecord {
   meetingUrl: string | null;
   maxCapacity: number | null;
   status: EventStatus;
+  programCode: string | null;
   coverImageUrl: string | null;
 }
 
@@ -39,6 +40,7 @@ export interface CreateEventInput {
   meetingUrl: string | null;
   maxCapacity: number | null;
   status: EventStatus;
+  programCode: string | null;
 }
 
 export interface UpdateEventInput extends Partial<CreateEventInput> {

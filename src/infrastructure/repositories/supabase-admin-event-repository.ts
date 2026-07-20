@@ -10,6 +10,7 @@ import type {
 import type { EventType } from "@/core/domain/event";
 import type { AdminEventRepository } from "@/core/use-cases/manage-admin-events";
 import { slugify } from "@/shared/utils/slugify";
+import { normalizeProgramCode } from "@/shared/utils/program-code";
 
 interface CategoryRow {
   id: string;
@@ -31,6 +32,7 @@ interface EventRow {
   meeting_url: string | null;
   max_capacity: number | null;
   status: EventStatus;
+  program_code: string | null;
   cover_image_url: string | null;
   event_categories: { name: string } | { name: string }[] | null;
 }
@@ -55,6 +57,7 @@ function mapEvent(row: EventRow): AdminEventRecord {
     meetingUrl: row.meeting_url,
     maxCapacity: row.max_capacity,
     status: row.status,
+    programCode: row.program_code,
     coverImageUrl: row.cover_image_url,
   };
 }
@@ -98,6 +101,7 @@ export class SupabaseAdminEventRepository implements AdminEventRepository {
         meeting_url,
         max_capacity,
         status,
+        program_code,
         cover_image_url,
         event_categories ( name )
       `,
@@ -113,6 +117,10 @@ export class SupabaseAdminEventRepository implements AdminEventRepository {
 
   async create(input: CreateEventInput): Promise<AdminEventRecord> {
     const slug = buildUniqueSlug(input.title);
+    const programCode =
+      input.programCode === undefined || input.programCode === null
+        ? null
+        : normalizeProgramCode(input.programCode);
 
     const { data, error } = await this.client
       .from("events")
@@ -129,6 +137,7 @@ export class SupabaseAdminEventRepository implements AdminEventRepository {
         meeting_url: input.meetingUrl,
         max_capacity: input.maxCapacity,
         status: input.status,
+        program_code: programCode,
       })
       .select(
         `
@@ -145,6 +154,7 @@ export class SupabaseAdminEventRepository implements AdminEventRepository {
         meeting_url,
         max_capacity,
         status,
+        program_code,
         cover_image_url,
         event_categories ( name )
       `,
@@ -172,6 +182,10 @@ export class SupabaseAdminEventRepository implements AdminEventRepository {
     if (input.meetingUrl !== undefined) payload.meeting_url = input.meetingUrl;
     if (input.maxCapacity !== undefined) payload.max_capacity = input.maxCapacity;
     if (input.status !== undefined) payload.status = input.status;
+    if (input.programCode !== undefined) {
+      payload.program_code =
+        input.programCode === null ? null : normalizeProgramCode(input.programCode);
+    }
 
     const { data, error } = await this.client
       .from("events")
@@ -192,6 +206,7 @@ export class SupabaseAdminEventRepository implements AdminEventRepository {
         meeting_url,
         max_capacity,
         status,
+        program_code,
         cover_image_url,
         event_categories ( name )
       `,
