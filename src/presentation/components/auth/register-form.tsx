@@ -9,6 +9,7 @@ import { Button } from "@/presentation/components/ui/button";
 import { Input } from "@/presentation/components/ui/input";
 import {
   EMAIL_CONFIRMATION_NOTICE,
+  EMAIL_CONFIRMATION_RESENT_NOTICE,
   mapAuthErrorToTurkish,
 } from "@/shared/utils/auth-errors";
 import { PARENT_GUIDE_PATH } from "@/shared/constants/parent-guide";
@@ -51,7 +52,7 @@ export function RegisterForm() {
 
       const payload = (await response.json()) as {
         error?: string;
-        data?: { needsEmailConfirmation?: boolean; redirectTo?: string };
+        data?: { needsEmailConfirmation?: boolean; redirectTo?: string; resentConfirmation?: boolean };
       };
 
       if (!response.ok) {
@@ -59,7 +60,11 @@ export function RegisterForm() {
       }
 
       if (payload.data?.needsEmailConfirmation) {
-        setSuccessNotice(EMAIL_CONFIRMATION_NOTICE);
+        setSuccessNotice(
+          payload.data.resentConfirmation
+            ? EMAIL_CONFIRMATION_RESENT_NOTICE
+            : EMAIL_CONFIRMATION_NOTICE,
+        );
         setPassword("");
         return;
       }
@@ -143,6 +148,11 @@ export function RegisterForm() {
               <p className="mt-2">{error}</p>
             </div>
           ) : null}
+
+          <p className="text-xs leading-5 text-slate-500">
+            Onay maili gelmezse formu tekrar tekrar göndermeyin; önce Spam klasörünü kontrol edin
+            veya giriş yapmayı deneyin.
+          </p>
 
           <Button type="submit" disabled={isLoading} className="w-full">
             {isLoading ? "Kayıt oluşturuluyor..." : "Hesap Oluştur"}

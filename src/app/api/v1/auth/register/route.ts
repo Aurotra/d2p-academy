@@ -1,8 +1,7 @@
 import { NextResponse } from "next/server";
 
-import { signUpWithEmail } from "@/core/use-cases/authenticate-user";
-import { SupabaseAuthRepository } from "@/infrastructure/repositories/supabase-auth-repository";
-import { createSupabaseServerClient } from "@/infrastructure/supabase/create-server-client";
+import { registerParentAccount } from "@/infrastructure/auth/register-parent-account";
+import { enforcePublicPostRateLimit } from "@/infrastructure/auth/public-post-rate-limit";
 import { mapAuthErrorToTurkish } from "@/shared/utils/auth-errors";
 
 interface RegisterRequestBody {
@@ -22,6 +21,11 @@ function sanitizeRedirectPath(path: string | undefined): string {
 
 export async function POST(request: Request) {
   try {
+    const rateLimited = await enforcePublicPostRateLimit(request, "auth-register");
+    if (rateLimited) {
+      return rateLimited;
+    }
+
     const body = (await request.json()) as RegisterRequestBody;
     const fullName = body.fullName?.trim() ?? "";
     const email = body.email?.trim() ?? "";
@@ -39,22 +43,13 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Şifre en az 6 karakter olmalıdır." }, { status: 400 });
     }
 
-    const client = await createSupabaseServerClient();
-
-    if (!client) {
-      return NextResponse.json(
-        { error: "Supabase yapılandırması bulunamadı. .env.local dosyanızı kontrol edin." },
-        { status: 500 },
-      );
-    }
-
-    const repository = new SupabaseAuthRepository(client);
-    const result = await signUpWithEmail(repository, { fullName, email, password, redirectTo });
+    const result = await registerParentAccount({ fullName, email, password, redirectTo });
 
     return NextResponse.json({
       data: {
         session: result.session,
         needsEmailConfirmation: Boolean(result.needsEmailConfirmation),
+        resentConfirmation: Boolean(result.resentConfirmation),
         redirectTo,
       },
     });

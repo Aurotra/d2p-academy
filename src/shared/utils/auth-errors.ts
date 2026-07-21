@@ -26,7 +26,7 @@ export function mapAuthErrorToTurkish(rawMessage: string): string {
   }
 
   if (message.includes("rate limit") || message.includes("too many requests")) {
-    return "Çok fazla deneme yapıldı. Lütfen birkaç dakika sonra tekrar deneyin.";
+    return "Çok fazla kayıt denemesi yapıldı. Önce e-postanızdaki onay mailini (Spam klasörü dahil) kontrol edin veya giriş yapmayı deneyin. Bir süre bekleyip tekrar deneyebilirsiniz.";
   }
 
   if (message.includes("password") && (message.includes("weak") || message.includes("least"))) {
@@ -46,3 +46,6 @@ export function mapAuthErrorToTurkish(rawMessage: string): string {
 
 export const EMAIL_CONFIRMATION_NOTICE =
   "Kayıt alındı. E-posta adresinize bir onay maili gönderdik. Lütfen maildeki bağlantıya tıklayarak hesabınızı onaylayın. Spam / Gereksiz klasörünü de kontrol edin.";
+
+export const EMAIL_CONFIRMATION_RESENT_NOTICE =
+  "Bu e-posta ile daha önce kayıt yapılmış. Onay mailini tekrar gönderdik — lütfen gelen kutunuzu ve Spam klasörünü kontrol edin.";
