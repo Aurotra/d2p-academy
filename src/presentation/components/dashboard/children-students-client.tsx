@@ -615,6 +615,7 @@ function EnrollStudentDialog({
   const [eventId, setEventId] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+  const [formsHref, setFormsHref] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
   async function handleSubmit(event: FormEvent) {
@@ -635,7 +636,11 @@ function EnrollStudentDialog({
       });
       const payload = (await response.json()) as {
         error?: string;
-        data?: { alreadyEnrolled?: boolean; eventTitle?: string };
+        data?: {
+          alreadyEnrolled?: boolean;
+          eventTitle?: string;
+          enrollmentId?: string;
+        };
       };
       if (!response.ok) {
         setError(payload.error ?? "Kayıt oluşturulamadı.");
@@ -644,11 +649,17 @@ function EnrollStudentDialog({
 
       const title = payload.data?.eventTitle ?? "Etkinlik";
       const alreadyEnrolled = Boolean(payload.data?.alreadyEnrolled);
+      const enrollmentId = payload.data?.enrollmentId ?? null;
       if (alreadyEnrolled) {
         setSuccess(`${student.full_name} bu etkinliğe zaten kayıtlı.`);
       } else {
         setSuccess(`${student.full_name} “${title}” etkinliğine kaydedildi.`);
       }
+      setFormsHref(
+        enrollmentId
+          ? `/dashboard/children/${student.id}/enrollments/${enrollmentId}/forms`
+          : null,
+      );
       onEnrolled(title, alreadyEnrolled);
     } catch {
       setError("Bağlantı hatası.");
@@ -672,8 +683,20 @@ function EnrollStudentDialog({
       ) : success ? (
         <div className="space-y-4">
           <p className="text-sm text-emerald-700">{success}</p>
-          <Button className="w-full" onClick={onClose}>
-            Kapat
+          <p className="text-sm text-slate-600">
+            Kayıt tamamlandı. Şimdi <strong>Tanışma</strong> ve <strong>Onaylar</strong> formlarını
+            doldurmanız gerekir — etkinlik başlamadan önce tamamlayın.
+          </p>
+          {formsHref ? (
+            <Link
+              href={formsHref}
+              className="inline-flex w-full items-center justify-center rounded-xl bg-secondary px-4 py-3 text-sm font-semibold text-white transition hover:bg-secondary-hover"
+            >
+              Formları doldur →
+            </Link>
+          ) : null}
+          <Button className="w-full" variant="outline" onClick={onClose}>
+            Daha sonra
           </Button>
         </div>
       ) : (

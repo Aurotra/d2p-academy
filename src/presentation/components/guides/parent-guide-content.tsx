@@ -10,7 +10,9 @@ const checklist = [
   "Veli Girişi ile e-posta ve şifrenizle giriş yapın.",
   "Panel → Çocuk hesapları → + Çocuk ekle (ad soyad, doğum tarihi, şifre).",
   "Oluşan kullanıcı adını mutlaka not alın.",
-  "Etkinliğe kaydet, formları doldurun ve profili %100 tamamlayın.",
+  "Etkinliğe kaydet — ardından hemen Formları doldur sayfasına geçin.",
+  "Tanışma → Onaylar → (varsa) Son test adımlarını kayıt günü tamamlayın.",
+  "Profili düzenle ile bilgileri %100 yapın (sertifika için zorunlu).",
 ];
 
 const faqItems = [
@@ -48,6 +50,21 @@ const faqItems = [
     question: "Formları kim doldurmalı?",
     answer:
       "18 yaş altı çocuklar için formları veli adına doldurmanız yeterlidir. Onay adımında kendi adınızı imza olarak yazarsınız.",
+  },
+  {
+    question: "Formları nerede bulurum? Aramam gerekir mi?",
+    answer:
+      "Hayır. Veli Girişi → Panel → Çocuk hesapları → çocuğunuzun satırında Detay → etkinlik altında Formları doldur bağlantısı vardır. Etkinliğe yeni kayıt olduysanız aynı sayfadan hemen devam edin; formlar ayrı bir menüde gizli değildir.",
+  },
+  {
+    question: "Hangi formlar var, sırası ne?",
+    answer:
+      "1) Tanışma (F01 — deneyim ve motivasyon), 2) Onaylar (F05, F06, F07 — özellikle F06 medya izinleri), 3) Gerekirse Son test (5–8. sınıflar), 4) Sertifika onay. Tanışma bitmeden Onaylar açılmaz; kayıttan sonra mümkün olan en kısa sürede tamamlayın.",
+  },
+  {
+    question: "Formları ne zaman doldurmalıyım?",
+    answer:
+      "Etkinliğe kayıt yaptıktan hemen sonra, aynı gün. Etkinlik başlamadan önce Tanışma ve Onaylar tamamlanmış olmalıdır; aksi halde kayıt süreci yarım kalır ve sertifika için gerekli adımlar ilerlemez.",
   },
   {
     question: "Sertifikayı ne zaman alırız?",
@@ -187,16 +204,89 @@ export function ParentGuideContent() {
         </section>
 
         <section>
-          <h2 className="text-xl font-bold text-slate-900">4. Etkinliğe kayıt ve formlar</h2>
+          <h2 className="text-xl font-bold text-slate-900">4. Etkinliğe kayıt</h2>
           <p className="mt-3">
-            Çocuk hesapları sayfasında <strong>Etkinliğe kaydet</strong> ile ilgili etkinliği seçin.
-            Kayıttan sonra <strong>Detay → Formları doldur</strong> ile devam edin. 18 yaş altı
-            çocuklar için formları veli adına doldurabilirsiniz.
+            <strong>Panel → Çocuk hesapları</strong> sayfasında çocuğunuzun satırından{" "}
+            <strong>Etkinliğe kaydet</strong> ile ilgili etkinliği seçin. Kayıt tamamlandığında
+            aynı sayfada çocuğunuzun etkinlik listesinde görünür.
+          </p>
+          <p className="mt-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-950">
+            <strong>Önemli:</strong> Etkinliğe kayıt tek başına yeterli değildir. Kayıttan hemen
+            sonra aşağıdaki formları doldurmanız gerekir — bunları aramanıza gerek yok, panelden
+            doğrudan ulaşırsınız.
           </p>
         </section>
 
         <section>
-          <h2 className="text-xl font-bold text-slate-900">5. Profil ve sertifika</h2>
+          <h2 className="text-xl font-bold text-slate-900">
+            5. Formları doldurma (kayıttan hemen sonra)
+          </h2>
+          <p className="mt-3">
+            Formlar veli panelinde, çocuğunuzun etkinlik kaydının içindedir. Ayrı bir site veya
+            e-posta linki aramanıza gerek yoktur.
+          </p>
+
+          <div className="mt-4 rounded-xl border border-sky-200 bg-sky-50 px-4 py-4 text-sm text-sky-950">
+            <p className="font-semibold">Formlara giden yol</p>
+            <ol className="mt-2 list-decimal space-y-1 pl-5 leading-7">
+              <li>
+                <strong>Veli Girişi</strong> → <strong>Panel</strong>
+              </li>
+              <li>
+                <strong>Çocuk hesapları</strong> (veya üst menüdeki çocuklar bölümü)
+              </li>
+              <li>
+                Çocuğunuzun satırında <strong>Detay</strong>
+              </li>
+              <li>
+                Etkinlik satırında <strong>Formları doldur →</strong>
+              </li>
+            </ol>
+          </div>
+
+          <p className="mt-4">Açılan sayfada adım adım şu bölümler gelir:</p>
+          <div className="mt-4 overflow-hidden rounded-xl border border-slate-200">
+            <table className="w-full text-left text-sm">
+              <thead className="bg-slate-50 text-slate-600">
+                <tr>
+                  <th className="px-4 py-3 font-semibold">Adım</th>
+                  <th className="px-4 py-3 font-semibold">Ne var?</th>
+                  <th className="px-4 py-3 font-semibold">Not</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100">
+                <tr>
+                  <td className="px-4 py-3 font-medium text-slate-900">1. Tanışma</td>
+                  <td className="px-4 py-3">F01 tanıma formu; 5–8. sınıflarda ön test de bu adımda</td>
+                  <td className="px-4 py-3">Kayıttan sonra ilk yapılacak</td>
+                </tr>
+                <tr>
+                  <td className="px-4 py-3 font-medium text-slate-900">2. Onaylar</td>
+                  <td className="px-4 py-3">F05, F06 (medya izinleri), F07 onay metinleri</td>
+                  <td className="px-4 py-3">F06&apos;da tüm kalemlerde izin gerekir</td>
+                </tr>
+                <tr>
+                  <td className="px-4 py-3 font-medium text-slate-900">3. Son test</td>
+                  <td className="px-4 py-3">Etkinlik sonrası değerlendirme</td>
+                  <td className="px-4 py-3">5–8. sınıflar için; diğer sınıflarda atlanır</td>
+                </tr>
+                <tr>
+                  <td className="px-4 py-3 font-medium text-slate-900">4. Sertifika onay</td>
+                  <td className="px-4 py-3">Sertifika süreci</td>
+                  <td className="px-4 py-3">Formlar ve profil tamamlandıktan sonra</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <p className="mt-4 text-sm text-slate-600">
+            Üstteki renkli adım butonlarında yeşil = tamamlandı, kırmızı = doldurulmalı. Tanışma
+            bitmeden Onaylar açılmaz; sırayı atlamayın.
+          </p>
+        </section>
+
+        <section>
+          <h2 className="text-xl font-bold text-slate-900">6. Profil ve sertifika</h2>
           <p className="mt-3">
             Profili düzenle ile okul, sınıf ve diğer bilgileri tamamlayın.{" "}
             <strong>Profil %100 olmadan sertifika verilemez.</strong> Etkinlik tamamlandıktan sonra
@@ -227,7 +317,9 @@ export function ParentGuideContent() {
 2) E-postayı onayla → Veli Girişi
 3) Çocuk hesapları → Çocuk ekle (ad, doğum tarihi, şifre)
 4) Kullanıcı adını not al (ör. emreyılmaz15)
-5) Etkinliğe kaydet + formları doldur + profili %100 yap
+5) Etkinliğe kaydet → hemen Detay → Formları doldur
+6) Tanışma + Onaylar (F05/F06/F07) aynı gün tamamla
+7) Profili %100 yap (sertifika için)
 Veli = e-posta | Öğrenci = kullanıcı adı ile giriş`}
           </p>
         </section>

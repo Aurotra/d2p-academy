@@ -6,7 +6,7 @@ import { PARENT_GUIDE_PATH } from "@/shared/constants/parent-guide";
 const quickSteps = [
   "Hesap oluştur, e-postanı onayla",
   "Çocuk hesabı ekle",
-  "Etkinliğe kaydet, formları doldur",
+  "Etkinliğe kaydet → Formları doldur (Tanışma, Onaylar)",
 ];
 
 export function ParentGuidePromo() {
