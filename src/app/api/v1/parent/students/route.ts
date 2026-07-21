@@ -47,6 +47,31 @@ async function allocateUniqueUsername(
   );
 }
 
+function mapChildInsertError(error: { code?: string; message: string }): string {
+  const message = error.message.toLowerCase();
+
+  if (error.code === "23505" || message.includes("duplicate")) {
+    if (message.includes("username")) {
+      return "Bu kullanıcı adı zaten kullanılıyor. Ad/soyad veya doğum tarihini değiştirip tekrar deneyin.";
+    }
+    return "Bu çocuk hesabı zaten kayıtlı görünüyor.";
+  }
+
+  if (error.code === "23503") {
+    return "Veli hesabınız sistemde bulunamadı. Çıkış yapıp tekrar giriş yapın.";
+  }
+
+  if (message.includes("birth_date")) {
+    return "Doğum tarihi alanı henüz sistemde aktif değil. Lütfen site yöneticisine bildirin.";
+  }
+
+  if (message.includes("student_password_hash") || message.includes("profiles_student_fields_check")) {
+    return "Çocuk hesabı alanları eksik. Lütfen site yöneticisine bildirin.";
+  }
+
+  return "Çocuk eklenirken hata oluştu.";
+}
+
 export async function GET() {
   const supabase = await createSupabaseServerClient();
   if (!supabase) {
@@ -84,6 +109,8 @@ export async function POST(request: NextRequest) {
   if (!auth?.user) {
     return NextResponse.json({ error: "Giriş yapmalısınız." }, { status: 401 });
   }
+
+  await supabase.rpc("ensure_user_profile");
 
   const json = await request.json().catch(() => null);
   const parsed = createSchema.safeParse(json);
@@ -141,8 +168,8 @@ export async function POST(request: NextRequest) {
     .single();
 
   if (error) {
-    console.error("[parent/students POST]", error.message);
-    return NextResponse.json({ error: "Çocuk eklenirken hata oluştu." }, { status: 500 });
+    console.error("[parent/students POST]", error.code, error.message);
+    return NextResponse.json({ error: mapChildInsertError(error) }, { status: 500 });
   }
 
   return NextResponse.json({ data: { student: created } }, { status: 201 });
