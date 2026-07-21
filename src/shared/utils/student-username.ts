@@ -1,3 +1,5 @@
+import type { SupabaseClient } from "@supabase/supabase-js";
+
 export class InvalidUsernameError extends Error {
   constructor(message: string) {
     super(message);
@@ -116,4 +118,44 @@ export function tryBuildStudentUsernameFromIdentity(
   } catch {
     return null;
   }
+}
+
+/** Benzersiz kullanıcı adı üretir; doluysa sonuna rakam ekler (kardeş hesapları için). */
+export async function allocateUniqueStudentUsername(
+  client: SupabaseClient,
+  fullName: string,
+  birthDate: string,
+): Promise<string> {
+  const base = buildStudentUsernameFromIdentity(fullName, birthDate);
+  let candidate = base;
+  let suffix = 2;
+
+  async function isTaken(username: string): Promise<boolean> {
+    const { data } = await client
+      .from("profiles")
+      .select("id")
+      .ilike("username", username)
+      .limit(1);
+
+    return Boolean(data && data.length > 0);
+  }
+
+  if (!(await isTaken(candidate))) {
+    return candidate;
+  }
+
+  while (suffix < 100) {
+    const suffixText = String(suffix);
+    candidate = `${base.slice(0, 32 - suffixText.length)}${suffixText}`;
+
+    if (!(await isTaken(candidate))) {
+      return candidate;
+    }
+
+    suffix += 1;
+  }
+
+  throw new InvalidUsernameError(
+    "Bu bilgilerle benzersiz kullanıcı adı oluşturulamadı. Lütfen destek ile iletişime geçin.",
+  );
 }

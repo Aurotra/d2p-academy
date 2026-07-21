@@ -496,8 +496,12 @@ function AddStudentDialog({
         />
         {generatedUsername ? (
           <p className="rounded-xl border border-sky-200 bg-sky-50 px-4 py-3 text-sm text-sky-950">
-            Oluşturulacak kullanıcı adı:{" "}
+            Tahmini kullanıcı adı:{" "}
             <span className="font-semibold">@{generatedUsername}</span>
+            <span className="mt-1 block text-xs text-sky-800">
+              Kardeş hesaplarında veya isim benzerliğinde sonuna rakam eklenebilir (ör. @
+              {generatedUsername}2).
+            </span>
           </p>
         ) : fullName.trim() && birthDate ? (
           <p className="text-xs text-amber-700">
@@ -505,7 +509,8 @@ function AddStudentDialog({
           </p>
         ) : (
           <p className="text-xs text-slate-500">
-            Kullanıcı adı otomatik oluşturulur: ad + soyad + doğum yılının son 2 hanesi.
+            Her çocuk için ayrı hesap açılır. İkinci kardeş için ilk kayıttan sonra tekrar Çocuk ekle
+            butonunu kullanın. Kullanıcı adı: ad + soyad + doğum yılının son 2 hanesi.
           </p>
         )}
         <Input
