@@ -40,6 +40,13 @@ const categories: AdminCategory[] = [
         badge: "bg-teal-200/70 text-teal-800",
       },
       {
+        href: "/admin/forms",
+        title: "Formlar",
+        description: "Tanışma, onaylar ve test formlarını görüntüleyin; PDF çıktısı alın.",
+        tone: "border-orange-200 bg-orange-100 text-orange-950 hover:bg-orange-50",
+        badge: "bg-orange-200/70 text-orange-900",
+      },
+      {
         href: "/admin/certificates",
         title: "Sertifika Yönetimi",
         description: "Tamamlanan kayıtlara sertifika verin veya iptal edin.",

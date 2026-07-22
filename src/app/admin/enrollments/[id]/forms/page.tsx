@@ -40,10 +40,19 @@ export default async function AdminEnrollmentFormsPage({
     <div className="enrollment-forms-print-root space-y-6">
       <div className="no-print rounded-2xl border border-slate-300 bg-gradient-to-br from-slate-50 via-white to-sky-50 p-6 shadow-sm sm:p-8">
         <Link
+          href={`/admin/forms?event_id=${answers.eventId}`}
+          className="text-sm font-bold text-document-primary hover:underline"
+        >
+          ← Tüm formlara dön
+        </Link>
+        <span className="mx-2 text-slate-300" aria-hidden>
+          ·
+        </span>
+        <Link
           href={`/admin/enrollments?event_id=${answers.eventId}`}
           className="text-sm font-bold text-document-primary hover:underline"
         >
-          ← Etkinlik kayıtlarına dön
+          Etkinlik kayıtları
         </Link>
         <p className="mt-4 text-xs font-bold uppercase tracking-[0.2em] text-document-primary">
           Katılımcı Form Cevapları
