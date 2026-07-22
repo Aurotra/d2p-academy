@@ -5,8 +5,10 @@ export interface EnrollmentSummary {
   status: string;
   certificateCode?: string | null;
   intakeCompleted?: boolean;
+  consentsCompleted?: boolean;
   preTestCompleted?: boolean;
   postTestCompleted?: boolean;
+  requiresSurveys?: boolean;
 }
 
 export interface CertificateSummary {

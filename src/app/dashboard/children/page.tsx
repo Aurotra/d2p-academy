@@ -83,8 +83,10 @@ export default async function DashboardChildrenPage() {
             status: item.status,
             date: item.eventDate,
             intakeCompleted: Boolean(item.intakeCompleted),
+            consentsCompleted: Boolean(item.consentsCompleted),
             preTestCompleted: Boolean(item.preTestCompleted),
             postTestCompleted: Boolean(item.postTestCompleted),
+            requiresSurveys: item.requiresSurveys !== false,
           })),
           certificates: (progress?.certificates ?? []).map((item) => ({
             code: item.certificateCode,

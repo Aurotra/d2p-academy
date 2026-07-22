@@ -60,3 +60,28 @@ export function getEnrollmentFormStatus(input: {
     allRequiredDone,
   };
 }
+
+export function buildEnrollmentFormStatusLabel(input: {
+  intakeCompleted?: boolean;
+  consentsCompleted?: boolean;
+  preTestCompleted?: boolean;
+  postTestCompleted?: boolean;
+  requiresSurveys?: boolean;
+}): string {
+  const requiresSurveys = input.requiresSurveys !== false;
+  const steps = [
+    { label: "Tanışma", done: Boolean(input.intakeCompleted), required: true },
+    { label: "Onaylar", done: Boolean(input.consentsCompleted), required: true },
+    { label: "Ön test", done: Boolean(input.preTestCompleted), required: requiresSurveys },
+    { label: "Son test", done: Boolean(input.postTestCompleted), required: requiresSurveys },
+  ].filter((step) => step.required);
+
+  const missing = steps.filter((step) => !step.done).map((step) => step.label);
+  if (missing.length === 0) {
+    return "Formlar tamam";
+  }
+  if (missing.length === steps.length) {
+    return "Formlar eksik";
+  }
+  return `Eksik: ${missing.join(", ")}`;
+}

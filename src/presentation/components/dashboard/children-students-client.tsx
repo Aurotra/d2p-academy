@@ -8,6 +8,7 @@ import { Button } from "@/presentation/components/ui/button";
 import { Input } from "@/presentation/components/ui/input";
 import { Select } from "@/presentation/components/ui/select";
 import { tryBuildStudentUsernameFromIdentity } from "@/shared/utils/student-username";
+import { buildEnrollmentFormStatusLabel } from "@/shared/utils/enrollment-form-status";
 
 export type ChildProgressPreview = {
   enrollments: Array<{
@@ -16,8 +17,10 @@ export type ChildProgressPreview = {
     status: string;
     date: string;
     intakeCompleted?: boolean;
+    consentsCompleted?: boolean;
     preTestCompleted?: boolean;
     postTestCompleted?: boolean;
+    requiresSurveys?: boolean;
   }>;
   certificates: Array<{ code: string; issuedAt: string; pdfUrl?: string | null }>;
   grades: Array<{
@@ -77,26 +80,6 @@ function formatDate(value: string): string {
 
 function formatEventOption(event: EnrollableEventOption): string {
   return `${event.title} · ${formatDate(event.startAt)}`;
-}
-
-function formStatusLabel(enrollment: {
-  intakeCompleted?: boolean;
-  preTestCompleted?: boolean;
-  postTestCompleted?: boolean;
-}): string {
-  const done = [
-    enrollment.intakeCompleted ? "Kayıt formu" : null,
-    enrollment.preTestCompleted ? "Ön test" : null,
-    enrollment.postTestCompleted ? "Son test" : null,
-  ].filter(Boolean);
-
-  if (done.length === 3) {
-    return "Formlar tamam";
-  }
-  if (done.length === 0) {
-    return "Formlar eksik";
-  }
-  return `Tamamlanan: ${done.join(", ")}`;
 }
 
 function emptyPreview(): ChildProgressPreview {
@@ -194,7 +177,7 @@ export function ChildrenStudentsClient({
                                     </span>
                                   </p>
                                   <p className="mt-0.5 text-xs text-slate-500">
-                                    {formStatusLabel(item)}
+                                    {buildEnrollmentFormStatusLabel(item)}
                                   </p>
                                   {item.status !== "cancelled" &&
                                   !item.enrollmentId.startsWith("temp-") ? (
@@ -385,8 +368,10 @@ export function ChildrenStudentsClient({
                           status: "registered",
                           date: new Date().toISOString(),
                           intakeCompleted: false,
+                          consentsCompleted: false,
                           preTestCompleted: false,
                           postTestCompleted: false,
+                          requiresSurveys: true,
                         },
                         ...preview.enrollments,
                       ],
