@@ -612,16 +612,15 @@ function EnrollStudentDialog({
   onClose: () => void;
   onEnrolled: (eventTitle: string, alreadyEnrolled: boolean) => void;
 }) {
+  const router = useRouter();
   const [eventId, setEventId] = useState("");
   const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState<string | null>(null);
-  const [formsHref, setFormsHref] = useState<string | null>(null);
+  const [redirecting, setRedirecting] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
   async function handleSubmit(event: FormEvent) {
     event.preventDefault();
     setError(null);
-    setSuccess(null);
     if (!eventId) {
       setError("Bir etkinlik seçin.");
       return;
@@ -650,17 +649,15 @@ function EnrollStudentDialog({
       const title = payload.data?.eventTitle ?? "Etkinlik";
       const alreadyEnrolled = Boolean(payload.data?.alreadyEnrolled);
       const enrollmentId = payload.data?.enrollmentId ?? null;
-      if (alreadyEnrolled) {
-        setSuccess(`${student.full_name} bu etkinliğe zaten kayıtlı.`);
-      } else {
-        setSuccess(`${student.full_name} “${title}” etkinliğine kaydedildi.`);
-      }
-      setFormsHref(
-        enrollmentId
-          ? `/dashboard/children/${student.id}/enrollments/${enrollmentId}/forms`
-          : null,
-      );
       onEnrolled(title, alreadyEnrolled);
+
+      if (enrollmentId) {
+        setRedirecting(true);
+        router.push(`/dashboard/children/${student.id}/enrollments/${enrollmentId}/forms`);
+        return;
+      }
+
+      setError("Kayıt alındı ancak form sayfasına yönlendirilemedi. Çocuk detayından formlara ulaşabilirsiniz.");
     } catch {
       setError("Bağlantı hatası.");
     } finally {
@@ -680,24 +677,12 @@ function EnrollStudentDialog({
             Kapat
           </Button>
         </div>
-      ) : success ? (
+      ) : redirecting ? (
         <div className="space-y-4">
-          <p className="text-sm text-emerald-700">{success}</p>
+          <p className="text-sm font-semibold text-emerald-700">Kayıt tamamlandı.</p>
           <p className="text-sm text-slate-600">
-            Kayıt tamamlandı. Şimdi <strong>Tanışma</strong> ve <strong>Onaylar</strong> formlarını
-            doldurmanız gerekir — etkinlik başlamadan önce tamamlayın.
+            Tanışma ve Onaylar formlarına yönlendiriliyorsunuz…
           </p>
-          {formsHref ? (
-            <Link
-              href={formsHref}
-              className="inline-flex w-full items-center justify-center rounded-xl bg-secondary px-4 py-3 text-sm font-semibold text-white transition hover:bg-secondary-hover"
-            >
-              Formları doldur →
-            </Link>
-          ) : null}
-          <Button className="w-full" variant="outline" onClick={onClose}>
-            Daha sonra
-          </Button>
         </div>
       ) : (
         <form onSubmit={handleSubmit} className="space-y-3">

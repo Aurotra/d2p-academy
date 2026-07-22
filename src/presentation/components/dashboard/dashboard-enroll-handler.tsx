@@ -47,11 +47,18 @@ export function DashboardEnrollHandler() {
 
         const payload = (await response.json()) as {
           error?: string;
-          data?: { alreadyEnrolled?: boolean; eventTitle?: string };
+          data?: { alreadyEnrolled?: boolean; eventTitle?: string; enrollmentId?: string };
         };
 
         if (!response.ok) {
           throw new Error(payload.error ?? "Etkinliğe kayıt olunamadı.");
+        }
+
+        const enrollmentId = payload.data?.enrollmentId;
+        if (enrollmentId) {
+          setIsEnrolling(false);
+          router.replace(`/dashboard/enrollments/${enrollmentId}/forms`);
+          return;
         }
 
         const title = payload.data?.eventTitle ?? "Etkinlik";

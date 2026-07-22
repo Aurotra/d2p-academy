@@ -81,8 +81,16 @@ export async function POST(request: Request) {
 
     if (insertError) {
       if (insertError.code === "23505" || insertError.message.toLowerCase().includes("duplicate")) {
+        const { data: duplicate } = await client
+          .from("enrollments")
+          .select("id")
+          .eq("user_id", user.id)
+          .eq("event_id", eventId)
+          .maybeSingle();
+
         return NextResponse.json({
           data: {
+            enrollmentId: duplicate?.id,
             alreadyEnrolled: true,
             eventTitle: event.title,
           },
