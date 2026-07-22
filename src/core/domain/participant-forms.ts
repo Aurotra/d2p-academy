@@ -118,6 +118,7 @@ export interface EnrollmentFormAnswers {
   enrollmentId: string;
   eventId: string;
   eventTitle: string;
+  eventProgramCode: string | null;
   studentName: string;
   studentEmail: string;
   studentCode: string | null;

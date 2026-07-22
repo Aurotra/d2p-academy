@@ -5,11 +5,34 @@ import { getAdminAccess } from "@/infrastructure/auth/get-admin-access";
 import { SupabaseParticipantFormsRepository } from "@/infrastructure/repositories/supabase-participant-forms-repository";
 import { createSupabaseServerClient } from "@/infrastructure/supabase/create-server-client";
 import { AdminEnrollmentFormsView } from "@/presentation/components/admin/admin-enrollment-forms-view";
+import { buildEnrollmentFormsPdfTitle } from "@/shared/utils/enrollment-forms-pdf-filename";
 
 export const dynamic = "force-dynamic";
 
 interface AdminEnrollmentFormsPageProps {
   params: Promise<{ id: string }>;
+}
+
+export async function generateMetadata({ params }: AdminEnrollmentFormsPageProps) {
+  const { id } = await params;
+  const client = await createSupabaseServerClient();
+  if (!client) {
+    return { title: "Katılımcı Formları" };
+  }
+
+  const repository = new SupabaseParticipantFormsRepository(client);
+  try {
+    const answers = await repository.getEnrollmentFormAnswers(id);
+    return {
+      title: buildEnrollmentFormsPdfTitle({
+        studentName: answers.studentName,
+        eventProgramCode: answers.eventProgramCode,
+        studentCode: answers.studentCode,
+      }),
+    };
+  } catch {
+    return { title: "Katılımcı Formları" };
+  }
 }
 
 export default async function AdminEnrollmentFormsPage({
@@ -61,7 +84,10 @@ export default async function AdminEnrollmentFormsPage({
           {answers.studentName}
         </h1>
         <p className="mt-2 text-base font-semibold text-slate-800">{answers.studentEmail}</p>
-        <p className="mt-1 text-sm font-medium text-slate-600">{answers.eventTitle}</p>
+        <p className="mt-1 text-sm font-medium text-slate-600">
+          {answers.eventTitle}
+          {answers.eventProgramCode ? ` · ${answers.eventProgramCode}` : ""}
+        </p>
       </div>
 
       <AdminEnrollmentFormsView answers={answers} />

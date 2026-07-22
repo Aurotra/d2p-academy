@@ -24,6 +24,7 @@ import {
   TRAINING_IMPACT_QUESTIONS,
 } from "@/shared/constants/participant-forms";
 import { GRADE_LEVEL_OPTIONS } from "@/shared/constants/profile-options";
+import { buildEnrollmentFormsPdfTitle } from "@/shared/utils/enrollment-forms-pdf-filename";
 
 interface AdminEnrollmentFormsViewProps {
   answers: EnrollmentFormAnswers;
@@ -283,6 +284,11 @@ export function AdminEnrollmentFormsView({ answers }: AdminEnrollmentFormsViewPr
   const consentsByType = new Map(answers.consents.map((item) => [item.formType, item]));
   const consentsDone = answers.consents.some((item) => item.accepted);
   const printedAt = formatDate(new Date().toISOString());
+  const pdfTitle = buildEnrollmentFormsPdfTitle({
+    studentName: answers.studentName,
+    eventProgramCode: answers.eventProgramCode,
+    studentCode: answers.studentCode,
+  });
 
   const navItems = [
     { id: "forms-intake", label: "Tanışma" },
@@ -526,13 +532,16 @@ export function AdminEnrollmentFormsView({ answers }: AdminEnrollmentFormsViewPr
         <p className="mt-2 text-sm font-semibold text-slate-800">{answers.studentName}</p>
         <p className="text-sm text-slate-600">{answers.studentEmail}</p>
         <p className="text-sm text-slate-600">{answers.eventTitle}</p>
+        {answers.eventProgramCode ? (
+          <p className="text-sm font-semibold text-slate-700">Program kodu: {answers.eventProgramCode}</p>
+        ) : null}
         <p className="mt-2 text-xs text-slate-500">
           Sınıf: {formatGradeLevel(answers.gradeLevel)}
           {answers.studentCode ? ` · Öğrenci kodu: ${answers.studentCode}` : ""} · Çıktı: {printedAt}
         </p>
       </div>
 
-      <EnrollmentFormsPrintToolbar />
+      <EnrollmentFormsPrintToolbar pdfTitle={pdfTitle} />
 
       <div className="no-print rounded-2xl border border-slate-300 bg-white p-5 shadow-sm sm:p-6">
         <p className="text-xs font-bold uppercase tracking-[0.18em] text-document-primary">

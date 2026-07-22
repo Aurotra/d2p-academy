@@ -217,7 +217,7 @@ export class SupabaseParticipantFormsRepository {
         intake_form_completed_at,
         pre_test_completed_at,
         post_test_completed_at,
-        events ( id, title ),
+        events ( id, title, program_code ),
         profiles ( full_name, email, grade_level )
       `,
       )
@@ -304,6 +304,7 @@ export class SupabaseParticipantFormsRepository {
       enrollmentId: enrollment.id,
       eventId: enrollment.event_id,
       eventTitle: event?.title ?? "Eğitim",
+      eventProgramCode: event?.program_code ?? null,
       studentName: profile?.full_name ?? "Öğrenci",
       studentEmail: profile?.email ?? "—",
       studentCode: enrollment.student_code,
