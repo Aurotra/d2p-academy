@@ -74,6 +74,13 @@ const categories: AdminCategory[] = [
         badge: "bg-amber-200/70 text-amber-900",
       },
       {
+        href: "/admin/members",
+        title: "Veliler ve Üyeler",
+        description: "Siteye kayıt olan veli ve üye hesaplarını listeleyin.",
+        tone: "border-cyan-200 bg-cyan-100 text-cyan-950 hover:bg-cyan-50",
+        badge: "bg-cyan-200/70 text-cyan-900",
+      },
+      {
         href: "/admin/documents",
         title: "Döküman Yönetimi",
         description: "Ödev ve ders materyallerini yükleyin, öğrencilerle paylaşın.",
