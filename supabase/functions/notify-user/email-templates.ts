@@ -44,18 +44,25 @@ function primaryButton(label: string, href: string): string {
 }
 
 export function buildGradeEmail(input: {
+  recipientName: string;
   studentName: string;
   documentTitle: string;
   score: number;
   feedback: string | null;
+  reportUrl: string;
+  notifyParent: boolean;
 }): { subject: string; html: string } {
   const status =
     input.score >= 85 ? "Başarılı" : input.score >= 60 ? "Geliştirilebilir" : "Yetersiz";
 
+  const greeting = input.notifyParent
+    ? `Merhaba <strong>${input.recipientName}</strong>, <strong>${input.studentName}</strong> için <em>${input.documentTitle}</em> ödevinde değerlendirme tamamlandı.`
+    : `Merhaba <strong>${input.studentName}</strong>, <em>${input.documentTitle}</em> ödeviniz için değerlendirme tamamlandı.`;
+
   const content = `
-    <h1 style="margin:0 0 12px;font-size:22px;line-height:1.3;color:#0f172a;">Yeni Notunuz Yayınlandı</h1>
+    <h1 style="margin:0 0 12px;font-size:22px;line-height:1.3;color:#0f172a;">Yeni Not Yayınlandı</h1>
     <p style="margin:0 0 16px;font-size:15px;line-height:1.6;color:#475569;">
-      Merhaba <strong>${input.studentName}</strong>, <em>${input.documentTitle}</em> ödeviniz için değerlendirme tamamlandı.
+      ${greeting}
     </p>
     <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="margin:16px 0;background-color:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;">
       <tr>
@@ -71,35 +78,50 @@ export function buildGradeEmail(input: {
         </td>
       </tr>
     </table>
-    ${primaryButton("Not Raporumu Görüntüle", `${SITE_URL}/dashboard/report`)}
+    ${primaryButton("Not Raporunu Görüntüle", input.reportUrl)}
   `;
 
+  const subject = input.notifyParent
+    ? `D2P Academy | ${input.studentName} — ${input.documentTitle} notu hazır`
+    : `D2P Academy | ${input.documentTitle} notunuz hazır`;
+
   return {
-    subject: `D2P Academy | ${input.documentTitle} notunuz hazır`,
+    subject,
     html: emailLayout(content),
   };
 }
 
 export function buildDocumentEmail(input: {
+  recipientName: string;
   studentName: string;
   documentTitle: string;
+  documentsUrl: string;
+  notifyParent: boolean;
 }): { subject: string; html: string } {
+  const greeting = input.notifyParent
+    ? `Merhaba <strong>${input.recipientName}</strong>, <strong>${input.studentName}</strong> için eğitmen yeni bir materyal yükledi:`
+    : `Merhaba <strong>${input.studentName}</strong>, eğitmeniniz yeni bir materyal yükledi:`;
+
   const content = `
     <h1 style="margin:0 0 12px;font-size:22px;line-height:1.3;color:#0f172a;">Yeni Döküman Paylaşıldı</h1>
     <p style="margin:0 0 16px;font-size:15px;line-height:1.6;color:#475569;">
-      Merhaba <strong>${input.studentName}</strong>, eğitmeniniz yeni bir materyal yükledi:
+      ${greeting}
     </p>
     <p style="margin:0;padding:16px;background-color:#eff6ff;border-left:4px solid ${BRAND_PRIMARY};border-radius:8px;font-size:16px;font-weight:bold;color:#1e3a8a;">
       ${input.documentTitle}
     </p>
     <p style="margin:16px 0 0;font-size:14px;line-height:1.6;color:#475569;">
-      Dökümanı öğrenci panelinizden görüntüleyebilir ve indirebilirsiniz.
+      Dökümanı öğrenci panelinden görüntüleyebilir ve indirebilirsiniz.
     </p>
-    ${primaryButton("Dökümanları Görüntüle", `${SITE_URL}/dashboard/documents`)}
+    ${primaryButton("Dökümanları Görüntüle", input.documentsUrl)}
   `;
 
+  const subject = input.notifyParent
+    ? `D2P Academy | ${input.studentName} için yeni döküman: ${input.documentTitle}`
+    : `D2P Academy | Yeni döküman: ${input.documentTitle}`;
+
   return {
-    subject: `D2P Academy | Yeni döküman: ${input.documentTitle}`,
+    subject,
     html: emailLayout(content),
   };
 }

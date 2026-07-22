@@ -6,6 +6,15 @@ import {
   buildRegistrationAdminEmail,
   sendResendEmail,
 } from "./email-templates.ts";
+import {
+  loadParentProfiles,
+  resolveStudentRecipientEmail,
+  studentDocumentsPath,
+  studentReportPath,
+  type StudentProfileRow,
+} from "./resolve-student-notification.ts";
+
+const SITE_URL = "https://www.d2p.com.tr";
 
 interface WebhookPayload {
   type: "INSERT" | "UPDATE" | "DELETE";
@@ -41,7 +50,7 @@ function getSupabaseAdmin() {
 async function handleGradeNotification(
   supabaseAdmin: ReturnType<typeof createClient>,
   record: Record<string, unknown>,
-): Promise<{ sent: number }> {
+): Promise<{ sent: number; skipped?: boolean; reason?: string }> {
   const studentId = String(record.student_id ?? "");
   const documentId = String(record.document_id ?? "");
   const score = Number(record.score ?? 0);
@@ -51,19 +60,34 @@ async function handleGradeNotification(
     throw new Error("grades kaydında student_id bulunamadı.");
   }
 
-  const { data: authUser, error: authError } = await supabaseAdmin.auth.admin.getUserById(
-    studentId,
-  );
-
-  if (authError || !authUser.user?.email) {
-    throw new Error(authError?.message ?? "Öğrenci e-postası alınamadı.");
-  }
-
-  const { data: profile } = await supabaseAdmin
+  const { data: profile, error: profileError } = await supabaseAdmin
     .from("profiles")
-    .select("full_name")
+    .select("id, full_name, email, parent_id")
     .eq("id", studentId)
     .single();
+
+  if (profileError || !profile) {
+    throw new Error(profileError?.message ?? "Öğrenci profili alınamadı.");
+  }
+
+  const parentById = await loadParentProfiles(
+    supabaseAdmin,
+    profile.parent_id ? [profile.parent_id] : [],
+  );
+
+  const recipient = await resolveStudentRecipientEmail(
+    supabaseAdmin,
+    profile as StudentProfileRow,
+    parentById,
+  );
+
+  if (!recipient) {
+    return {
+      sent: 0,
+      skipped: true,
+      reason: "Öğrenci veya veli için e-posta adresi bulunamadı.",
+    };
+  }
 
   const { data: document } = await supabaseAdmin
     .from("documents")
@@ -71,15 +95,21 @@ async function handleGradeNotification(
     .eq("id", documentId)
     .single();
 
+  const studentName = profile.full_name ?? "Öğrenci";
+  const documentTitle = document?.title ?? "Ödev";
+
   const email = buildGradeEmail({
-    studentName: profile?.full_name ?? "Öğrenci",
-    documentTitle: document?.title ?? "Ödev",
+    recipientName: recipient.recipientName,
+    studentName,
+    documentTitle,
     score,
     feedback,
+    reportUrl: `${SITE_URL}${studentReportPath(profile)}`,
+    notifyParent: recipient.notifyParent,
   });
 
   await sendResendEmail({
-    to: authUser.user.email,
+    to: recipient.email,
     subject: email.subject,
     html: email.html,
   });
@@ -90,12 +120,12 @@ async function handleGradeNotification(
 async function handleDocumentNotification(
   supabaseAdmin: ReturnType<typeof createClient>,
   record: Record<string, unknown>,
-): Promise<{ sent: number }> {
+): Promise<{ sent: number; skipped: number }> {
   const documentTitle = String(record.title ?? "Yeni Döküman");
 
   const { data: students, error } = await supabaseAdmin
     .from("profiles")
-    .select("id, full_name, email")
+    .select("id, full_name, email, parent_id")
     .eq("role", "student")
     .eq("is_active", true);
 
@@ -103,20 +133,32 @@ async function handleDocumentNotification(
     throw new Error(`Öğrenci listesi alınamadı: ${error.message}`);
   }
 
-  let sent = 0;
+  const studentRows = (students ?? []) as StudentProfileRow[];
+  const parentById = await loadParentProfiles(
+    supabaseAdmin,
+    studentRows.map((student) => student.parent_id).filter(Boolean) as string[],
+  );
 
-  for (const student of students ?? []) {
-    if (!student.email) {
+  let sent = 0;
+  let skipped = 0;
+
+  for (const student of studentRows) {
+    const recipient = await resolveStudentRecipientEmail(supabaseAdmin, student, parentById);
+    if (!recipient) {
+      skipped += 1;
       continue;
     }
 
     const email = buildDocumentEmail({
+      recipientName: recipient.recipientName,
       studentName: student.full_name ?? "Öğrenci",
       documentTitle,
+      documentsUrl: `${SITE_URL}${studentDocumentsPath(student)}`,
+      notifyParent: recipient.notifyParent,
     });
 
     await sendResendEmail({
-      to: student.email,
+      to: recipient.email,
       subject: email.subject,
       html: email.html,
     });
@@ -124,7 +166,7 @@ async function handleDocumentNotification(
     sent += 1;
   }
 
-  return { sent };
+  return { sent, skipped };
 }
 
 async function handleRegistrationNotification(
