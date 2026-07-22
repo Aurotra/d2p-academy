@@ -51,7 +51,9 @@ export class SupabaseAuthRepository implements AuthRepository {
     return {
       session: mapSession(data.user.id, data.user.email),
       role:
-        role === "admin" || role === "instructor" || role === "student" ? role : undefined,
+        role === "admin" || role === "instructor" || role === "student" || role === "parent"
+          ? role
+          : undefined,
       defaultRedirect,
     };
   }

@@ -1,11 +1,11 @@
 "use client";
 
+import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState, type FormEvent } from "react";
+import { useState } from "react";
 
 import type { AdminInstructorRecord } from "@/core/domain/admin-instructor";
 import { Button } from "@/presentation/components/ui/button";
-import { Input } from "@/presentation/components/ui/input";
 
 function formatDate(value: string): string {
   return new Intl.DateTimeFormat("tr-TR", {
@@ -20,53 +20,12 @@ interface AdminInstructorsManagerProps {
 
 export function AdminInstructorsManager({ initialInstructors }: AdminInstructorsManagerProps) {
   const router = useRouter();
-  const [fullName, setFullName] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState<string | null>(null);
-  const [isCreating, setIsCreating] = useState(false);
   const [pendingId, setPendingId] = useState<string | null>(null);
-
-  async function handleCreate(event: FormEvent) {
-    event.preventDefault();
-    setError(null);
-    setSuccess(null);
-    setIsCreating(true);
-
-    try {
-      const response = await fetch("/api/v1/admin/instructors", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ fullName, email, password }),
-      });
-      const payload = (await response.json()) as {
-        error?: string;
-        data?: { fullName: string; email: string };
-      };
-
-      if (!response.ok) {
-        throw new Error(payload.error ?? "Eğitmen oluşturulamadı.");
-      }
-
-      setSuccess(
-        `${payload.data?.fullName ?? fullName} için eğitmen hesabı oluşturuldu. Giriş: ${payload.data?.email ?? email}`,
-      );
-      setFullName("");
-      setEmail("");
-      setPassword("");
-      router.refresh();
-    } catch (createError) {
-      setError(createError instanceof Error ? createError.message : "İşlem başarısız.");
-    } finally {
-      setIsCreating(false);
-    }
-  }
 
   async function toggleActive(instructor: AdminInstructorRecord) {
     setPendingId(instructor.id);
     setError(null);
-    setSuccess(null);
 
     try {
       const response = await fetch(`/api/v1/admin/instructors/${instructor.id}`, {
@@ -88,53 +47,56 @@ export function AdminInstructorsManager({ initialInstructors }: AdminInstructors
     }
   }
 
+  async function demoteToMember(instructor: AdminInstructorRecord) {
+    if (
+      !window.confirm(
+        `${instructor.fullName} eğitmen yetkisinden çıkarılacak ve üye listesine dönecek. Devam edilsin mi?`,
+      )
+    ) {
+      return;
+    }
+
+    setPendingId(instructor.id);
+    setError(null);
+
+    try {
+      const response = await fetch(`/api/v1/admin/instructors/${instructor.id}/demote`, {
+        method: "POST",
+      });
+      const payload = (await response.json()) as {
+        error?: string;
+        data?: { role: "parent" | "student" };
+      };
+
+      if (!response.ok) {
+        throw new Error(payload.error ?? "Üye rolüne alınamadı.");
+      }
+
+      router.refresh();
+    } catch (demoteError) {
+      setError(demoteError instanceof Error ? demoteError.message : "İşlem başarısız.");
+    } finally {
+      setPendingId(null);
+    }
+  }
+
   return (
     <div className="space-y-6">
-      <form
-        onSubmit={handleCreate}
-        className="rounded-[1.75rem] border border-slate-200 bg-white p-6 shadow-sm"
-      >
-        <h2 className="text-xl font-bold text-navy-950">Yeni Eğitmen Hesabı</h2>
-        <p className="mt-2 text-sm text-slate-600">
-          Eğitmen e-posta ve şifre ile <strong>/login</strong> üzerinden giriş yapar; panel adresi{" "}
-          <strong>/instructor</strong>. E-posta onayı otomatik tamamlanır.
+      <div className="rounded-[1.75rem] border border-sky-200 bg-sky-50/70 p-6">
+        <h2 className="text-lg font-bold text-navy-950">Eğitmen nasıl eklenir?</h2>
+        <p className="mt-2 text-sm text-slate-700">
+          Yeni eğitmen eklemenin en kolay yolu{" "}
+          <Link href="/admin/members" className="font-semibold text-document-primary hover:underline">
+            Veliler ve Üyeler
+          </Link>{" "}
+          listesinden mevcut bir hesaba <strong>Eğitmen yap</strong> demektir. Aynı e-posta ve şifre
+          ile <strong>/login</strong> → <strong>/instructor</strong> paneline girer.
         </p>
-        <div className="mt-6 grid gap-4 md:grid-cols-2">
-          <Input
-            label="Ad Soyad"
-            value={fullName}
-            onChange={(e) => setFullName(e.target.value)}
-            required
-          />
-          <Input
-            label="E-posta"
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-          />
-          <Input
-            label="Geçici şifre"
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            minLength={6}
-            required
-          />
-        </div>
-        <Button type="submit" className="mt-4" disabled={isCreating}>
-          {isCreating ? "Oluşturuluyor..." : "Eğitmen Oluştur"}
-        </Button>
-      </form>
+      </div>
 
       {error ? (
         <p className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
           {error}
-        </p>
-      ) : null}
-      {success ? (
-        <p className="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">
-          {success}
         </p>
       ) : null}
 
@@ -146,7 +108,7 @@ export function AdminInstructorsManager({ initialInstructors }: AdminInstructors
 
         {initialInstructors.length === 0 ? (
           <p className="px-5 py-10 text-center text-sm text-slate-500">
-            Henüz eğitmen yok. Yukarıdan ilk hesabı oluşturun.
+            Henüz eğitmen yok. Üye listesinden bir hesaba eğitmen yetkisi verin.
           </p>
         ) : (
           <ul className="divide-y divide-slate-100">
@@ -162,7 +124,7 @@ export function AdminInstructorsManager({ initialInstructors }: AdminInstructors
                     Oluşturulma: {formatDate(instructor.createdAt)}
                   </p>
                 </div>
-                <div className="flex items-center gap-3">
+                <div className="flex flex-wrap items-center gap-2">
                   <span
                     className={`rounded-full px-3 py-1 text-xs font-semibold ${
                       instructor.isActive
@@ -183,6 +145,14 @@ export function AdminInstructorsManager({ initialInstructors }: AdminInstructors
                       : instructor.isActive
                         ? "Pasifleştir"
                         : "Aktifleştir"}
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    disabled={pendingId === instructor.id}
+                    onClick={() => void demoteToMember(instructor)}
+                  >
+                    Üye yap
                   </Button>
                 </div>
               </li>

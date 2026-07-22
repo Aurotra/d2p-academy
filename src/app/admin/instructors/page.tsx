@@ -31,8 +31,9 @@ export default async function AdminInstructorsPage() {
         </p>
         <h1 className="mt-2 text-2xl font-bold text-slate-900">Eğitmenler</h1>
         <p className="mt-2 text-sm text-slate-600">
-          Eğitmen hesaplarını buradan oluşturun. Oluşturduktan sonra etkinlik düzenlerken eğitmen
-          atayabilirsiniz; eğitmen <strong>/instructor</strong> panelinden yoklama alır.
+          Eğitmenleri buradan yönetin. Yeni eğitmen eklemek için{" "}
+          <strong>Veliler ve Üyeler</strong> listesinden mevcut bir hesaba eğitmen yetkisi verin;
+          ardından etkinlik düzenlerken eğitmen atayın.
         </p>
         <div className="mt-4 flex flex-wrap gap-2 text-sm">
           <span className="rounded-full bg-slate-100 px-3 py-1 font-semibold text-slate-700">
