@@ -31,6 +31,7 @@ export function AdminMembersTable({ members }: { members: AdminMember[] }) {
   const router = useRouter();
   const [pendingId, setPendingId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
 
   async function promoteToInstructor(member: AdminMember) {
     if (!window.confirm(promoteConfirmMessage(member))) {
@@ -39,15 +40,32 @@ export function AdminMembersTable({ members }: { members: AdminMember[] }) {
 
     setPendingId(member.id);
     setError(null);
+    setSuccess(null);
 
     try {
       const response = await fetch(`/api/v1/admin/members/${member.id}/promote-instructor`, {
         method: "POST",
       });
-      const payload = (await response.json()) as { error?: string };
+      const payload = (await response.json()) as {
+        error?: string;
+        data?: { fullName?: string; emailSent?: boolean; emailError?: string | null };
+      };
 
       if (!response.ok) {
         throw new Error(payload.error ?? "Eğitmen yetkisi verilemedi.");
+      }
+
+      const name = payload.data?.fullName ?? member.fullName;
+      if (payload.data?.emailSent) {
+        setSuccess(`${name} eğitmen yapıldı. Bilgilendirme e-postası gönderildi.`);
+      } else if (payload.data?.emailError) {
+        setSuccess(
+          `${name} eğitmen yapıldı ancak e-posta gönderilemedi: ${payload.data.emailError}`,
+        );
+      } else {
+        setSuccess(
+          `${name} eğitmen yapıldı. (RESEND_API_KEY tanımlı değil; e-posta gönderilmedi.)`,
+        );
       }
 
       router.refresh();
@@ -63,6 +81,11 @@ export function AdminMembersTable({ members }: { members: AdminMember[] }) {
       {error ? (
         <p className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
           {error}
+        </p>
+      ) : null}
+      {success ? (
+        <p className="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">
+          {success}
         </p>
       ) : null}
 
