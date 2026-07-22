@@ -38,15 +38,19 @@ declare
   v_grade text;
   v_requires_surveys boolean;
 begin
-  select e.*, p.grade_level
-  into v_enrollment, v_grade
+  select e.*
+  into v_enrollment
   from public.enrollments e
-  join public.profiles p on p.id = e.user_id
   where e.id = p_enrollment_id;
 
   if not found then
     return false;
   end if;
+
+  select p.grade_level
+  into v_grade
+  from public.profiles p
+  where p.id = v_enrollment.user_id;
 
   if v_enrollment.intake_form_completed_at is null then
     return false;
