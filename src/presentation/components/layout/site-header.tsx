@@ -77,6 +77,7 @@ export function SiteHeader() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [sessionKind, setSessionKind] = useState<"email" | "student" | null>(null);
   const [userDisplayName, setUserDisplayName] = useState<string | null>(null);
+  const [userRole, setUserRole] = useState<string | null>(null);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const isLoggedIn = sessionKind !== null;
 
@@ -94,12 +95,13 @@ export function SiteHeader() {
 
       const { data } = await client
         .from("profiles")
-        .select("full_name")
+        .select("full_name, role")
         .eq("id", userId)
         .maybeSingle();
 
       const name = data?.full_name?.trim() || fallback?.trim() || null;
       setUserDisplayName(name);
+      setUserRole(data?.role ?? null);
     }
 
     async function probeStudentSession() {
@@ -121,6 +123,7 @@ export function SiteHeader() {
       }
       setSessionKind(null);
       setUserDisplayName(null);
+      setUserRole(null);
     }
 
     if (!client) {
@@ -211,6 +214,7 @@ export function SiteHeader() {
       }
       setSessionKind(null);
       setUserDisplayName(null);
+      setUserRole(null);
       router.push(sessionKind === "student" ? "/student-login" : "/");
       router.refresh();
     } catch {
@@ -218,7 +222,14 @@ export function SiteHeader() {
     }
   }
 
-  const panelHref = sessionKind === "student" ? "/student-dashboard" : "/dashboard";
+  const panelHref =
+    sessionKind === "student"
+      ? "/student-dashboard"
+      : userRole === "admin"
+        ? "/admin"
+        : userRole === "instructor"
+          ? "/instructor"
+          : "/dashboard";
 
   return (
     <header className={`sticky top-0 z-40 ${BRAND_SURFACE_HEADER}`}>
@@ -267,6 +278,9 @@ export function SiteHeader() {
             <>
               <AuthPortalLink href="/student-login" kind="student">
                 Öğrenci Girişi
+              </AuthPortalLink>
+              <AuthPortalLink href="/instructor-login" kind="instructor">
+                Eğitmen Paneli
               </AuthPortalLink>
               <AuthPortalLink href="/login" kind="parent">
                 Veli Girişi
@@ -357,6 +371,14 @@ export function SiteHeader() {
                     onClick={closeMobileMenu}
                   >
                     Öğrenci Girişi
+                  </AuthPortalLink>
+                  <AuthPortalLink
+                    href="/instructor-login"
+                    kind="instructor"
+                    block
+                    onClick={closeMobileMenu}
+                  >
+                    Eğitmen Paneli
                   </AuthPortalLink>
                   <AuthPortalLink href="/login" kind="parent" block onClick={closeMobileMenu}>
                     Veli Girişi

@@ -58,7 +58,14 @@ export async function middleware(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  if (!user && (pathname.startsWith("/dashboard") || pathname.startsWith("/admin") || pathname.startsWith("/instructor"))) {
+  if (!user && pathname.startsWith("/instructor")) {
+    const loginUrl = request.nextUrl.clone();
+    loginUrl.pathname = "/instructor-login";
+    loginUrl.searchParams.set("redirectTo", pathname);
+    return NextResponse.redirect(loginUrl);
+  }
+
+  if (!user && (pathname.startsWith("/dashboard") || pathname.startsWith("/admin"))) {
     const loginUrl = request.nextUrl.clone();
     loginUrl.pathname = "/login";
     loginUrl.searchParams.set("redirectTo", pathname);
@@ -84,6 +91,20 @@ export async function middleware(request: NextRequest) {
   if (user && pathname.startsWith("/instructor")) {
     if (profileRole !== "instructor") {
       return NextResponse.redirect(new URL("/dashboard", request.url));
+    }
+  }
+
+  if (user && pathname === "/instructor-login") {
+    if (profileRole === "instructor") {
+      const redirectTo = request.nextUrl.searchParams.get("redirectTo");
+      const safeRedirect =
+        redirectTo && redirectTo.startsWith("/") && !redirectTo.startsWith("//")
+          ? redirectTo
+          : "/instructor";
+      return NextResponse.redirect(new URL(safeRedirect, request.url));
+    }
+    if (profileRole === "admin") {
+      return NextResponse.redirect(new URL("/admin", request.url));
     }
   }
 
@@ -116,6 +137,7 @@ export const config = {
     "/admin/:path*",
     "/instructor",
     "/instructor/:path*",
+    "/instructor-login",
     "/login",
     "/register",
     "/student-dashboard",

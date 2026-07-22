@@ -19,10 +19,11 @@ function scrollToCurrentHash() {
 
 export function SiteChrome({ children }: SiteChromeProps) {
   const pathname = usePathname();
-  const isAdminRoute = pathname.startsWith("/admin");
+  const isStandalonePanelRoute =
+    pathname.startsWith("/admin") || pathname.startsWith("/instructor");
 
   useEffect(() => {
-    if (isAdminRoute) {
+    if (isStandalonePanelRoute) {
       return;
     }
 
@@ -35,9 +36,9 @@ export function SiteChrome({ children }: SiteChromeProps) {
       timeoutIds.forEach((timeoutId) => window.clearTimeout(timeoutId));
       window.removeEventListener("hashchange", onHashChange);
     };
-  }, [pathname, isAdminRoute]);
+  }, [pathname, isStandalonePanelRoute]);
 
-  if (isAdminRoute) {
+  if (isStandalonePanelRoute) {
     return <>{children}</>;
   }
 

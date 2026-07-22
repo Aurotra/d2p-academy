@@ -90,7 +90,7 @@ export function AdminInstructorsManager({ initialInstructors }: AdminInstructors
             Veliler ve Üyeler
           </Link>{" "}
           listesinden mevcut bir hesaba <strong>Eğitmen yap</strong> demektir. Aynı e-posta ve şifre
-          ile <strong>/login</strong> → <strong>/instructor</strong> paneline girer.
+          ile <strong>/instructor-login</strong> → <strong>/instructor</strong> paneline girer.
         </p>
       </div>
 
