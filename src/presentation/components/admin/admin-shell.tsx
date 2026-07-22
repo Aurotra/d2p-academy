@@ -50,7 +50,7 @@ function CountBadge({ count }: { count: number }) {
 export function AdminShell({ profile, pendingCounts, children }: AdminShellProps) {
   return (
     <div className="min-h-screen bg-slate-50">
-      <div className={`${BRAND_SURFACE_HEADER} border-b`}>
+      <div className={`${BRAND_SURFACE_HEADER} no-print border-b`}>
         <div className="mx-auto flex max-w-7xl flex-col gap-4 px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-6 lg:px-8">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
             <BrandLogo href="/" height={36} />
@@ -73,7 +73,7 @@ export function AdminShell({ profile, pendingCounts, children }: AdminShellProps
       </div>
 
       <div className="mx-auto grid max-w-7xl gap-6 px-4 py-8 lg:grid-cols-[220px_1fr] lg:px-8">
-        <aside className="h-fit rounded-2xl border border-sky-200 bg-sky-50/80 p-4 shadow-sm">
+        <aside className="no-print h-fit rounded-2xl border border-sky-200 bg-sky-50/80 p-4 shadow-sm">
           <nav className="space-y-1">
             {navItems.map((item) => {
               const count = item.countKey ? pendingCounts[item.countKey] : 0;
@@ -92,7 +92,9 @@ export function AdminShell({ profile, pendingCounts, children }: AdminShellProps
           </nav>
         </aside>
         <div>
-          <AdminBackLink />
+          <div className="no-print">
+            <AdminBackLink />
+          </div>
           {children}
         </div>
       </div>

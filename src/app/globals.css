@@ -123,3 +123,45 @@ body {
     box-shadow: inset 0 0 0 1px rgb(255 183 3 / 0.3);
   }
 }
+
+@media print {
+  @page {
+    margin: 12mm;
+    size: A4;
+  }
+
+  body {
+    background: #fff !important;
+  }
+
+  .no-print {
+    display: none !important;
+  }
+
+  .enrollment-forms-print-root {
+    max-width: none !important;
+    padding: 0 !important;
+  }
+
+  .forms-print-section {
+    break-before: page;
+    page-break-before: always;
+  }
+
+  .forms-print-section:first-of-type {
+    break-before: auto;
+    page-break-before: auto;
+  }
+
+  .forms-print-cover {
+    display: block !important;
+    margin-bottom: 1.5rem;
+    border-bottom: 2px solid #0f172a;
+    padding-bottom: 1rem;
+  }
+
+  * {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+}

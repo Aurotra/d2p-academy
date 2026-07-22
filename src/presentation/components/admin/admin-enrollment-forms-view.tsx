@@ -6,6 +6,7 @@ import type {
   SurveyAnswerSnapshot,
 } from "@/core/domain/participant-forms";
 import { MEDIA_PERMISSION_KEYS } from "@/core/domain/participant-forms";
+import { EnrollmentFormsPrintToolbar } from "@/presentation/components/forms/enrollment-forms-print-toolbar";
 import {
   CONSENT_DOCUMENTS,
   FUTURE_TRENDS_QUESTIONS,
@@ -105,17 +106,21 @@ function FormSection({
   title,
   meta,
   children,
+  printSection = false,
 }: {
   id: string;
   code: string;
   title: string;
   meta?: string | null;
   children: ReactNode;
+  printSection?: boolean;
 }) {
   return (
     <section
       id={id}
-      className="scroll-mt-24 overflow-hidden rounded-2xl border border-slate-300 bg-white shadow-sm"
+      className={`scroll-mt-24 overflow-hidden rounded-2xl border border-slate-300 bg-white shadow-sm ${
+        printSection ? "forms-print-section" : ""
+      }`}
     >
       <header className="border-b border-slate-300 bg-navy-950 px-5 py-4 text-white sm:px-6">
         <div className="flex flex-wrap items-end justify-between gap-3">
@@ -277,17 +282,259 @@ export function AdminEnrollmentFormsView({ answers }: AdminEnrollmentFormsViewPr
   const consentOrder: ConsentFormType[] = ["scientific", "media", "participation"];
   const consentsByType = new Map(answers.consents.map((item) => [item.formType, item]));
   const consentsDone = answers.consents.some((item) => item.accepted);
+  const printedAt = formatDate(new Date().toISOString());
 
   const navItems = [
-    { id: "forms-consents", label: "Onaylar" },
     { id: "forms-intake", label: "Tanışma" },
+    { id: "forms-consents", label: "Onaylar" },
     { id: "forms-pre", label: "Ön test" },
     { id: "forms-post", label: "Son test" },
   ];
 
+  const intakeSection = (
+    <FormSection
+      id="forms-intake"
+      code="F01"
+      title="Tanışma"
+      meta={answers.intake ? `Kayıt: ${formatDate(answers.intake.submittedAt)}` : null}
+      printSection
+    >
+      {!answers.intake ? (
+        <EmptyState message="Tanışma formu henüz doldurulmamış." />
+      ) : (
+        <div className="space-y-6">
+          <Subsection title="Önceki deneyim">
+            {INTAKE_PREVIOUS_EXPERIENCE_FIELDS.map((field) => (
+              <QuestionBlock key={field.id} question={field.label}>
+                <ChoiceOptions
+                  options={field.options}
+                  selected={answers.intake?.previousExperience[field.id]}
+                />
+              </QuestionBlock>
+            ))}
+          </Subsection>
+
+          <Subsection title="Teknoloji erişimi">
+            {INTAKE_TECH_ACCESS_FIELDS.map((field) => (
+              <QuestionBlock key={field.id} question={field.label}>
+                <ChoiceOptions
+                  options={field.options}
+                  selected={answers.intake?.techAccess[field.id]}
+                />
+              </QuestionBlock>
+            ))}
+          </Subsection>
+
+          <Subsection title="İlgi alanları">
+            {INTAKE_INTEREST_FIELDS.map((field) => (
+              <QuestionBlock key={field.id} question={field.label}>
+                <ChoiceOptions
+                  options={field.options}
+                  selected={answers.intake?.interests[field.id]}
+                />
+              </QuestionBlock>
+            ))}
+          </Subsection>
+
+          <Subsection title="Motivasyon">
+            <QuestionBlock question="Bu eğitime katılma nedeniniz">
+              <ChoiceOptions
+                options={[...INTAKE_MOTIVATION_REASONS]}
+                selected={answers.intake.motivation}
+              />
+            </QuestionBlock>
+            {answers.intake.motivationOther ? (
+              <QuestionBlock question="Diğer (açıklama)">
+                <TextAnswer value={answers.intake.motivationOther} />
+              </QuestionBlock>
+            ) : null}
+          </Subsection>
+
+          <Subsection title="Likert maddeleri">
+            {INTAKE_LIKERT_QUESTIONS.map((question) => (
+              <QuestionBlock key={question.id} question={question.label}>
+                <LikertOptions value={answers.intake?.intakeLikert[question.id]} />
+              </QuestionBlock>
+            ))}
+          </Subsection>
+
+          <Subsection title="Açık uçlu">
+            <QuestionBlock question={INTAKE_OPEN_ENDED.learn_most}>
+              <TextAnswer value={String(answers.intake.openEnded.learn_most ?? "")} />
+            </QuestionBlock>
+            <QuestionBlock question={INTAKE_OPEN_ENDED.design_wish}>
+              <TextAnswer value={String(answers.intake.openEnded.design_wish ?? "")} />
+            </QuestionBlock>
+            <QuestionBlock question={INTAKE_OPEN_ENDED.expectation}>
+              <TextAnswer value={String(answers.intake.openEnded.expectation ?? "")} />
+            </QuestionBlock>
+          </Subsection>
+        </div>
+      )}
+    </FormSection>
+  );
+
+  const consentsSection = (
+    <FormSection id="forms-consents" code="F05 · F06 · F07" title="Onaylar" printSection>
+      {answers.consents.length === 0 ? (
+        <EmptyState message="Henüz onay kaydı yok." />
+      ) : (
+        <div className="space-y-5">
+          {consentOrder.map((type) => {
+            const consent = consentsByType.get(type);
+            const document = CONSENT_DOCUMENTS.find((item) => item.formType === type);
+            const heading = document ? `${document.code} — ${document.title}` : CONSENT_LABELS[type];
+
+            if (!consent) {
+              return (
+                <Subsection key={type} title={heading}>
+                  <EmptyState message="Kaydedilmemiş" />
+                </Subsection>
+              );
+            }
+
+            return (
+              <Subsection key={type} title={heading}>
+                <QuestionBlock question="Durum">
+                  <ChoiceOptions
+                    options={["Kabul edildi", "Kabul edilmedi"]}
+                    selected={consent.accepted ? "Kabul edildi" : "Kabul edilmedi"}
+                  />
+                  {consent.accepted ? (
+                    <p className="mt-2 text-sm font-semibold text-slate-600">
+                      Tarih: {formatDate(consent.acceptedAt)}
+                    </p>
+                  ) : null}
+                </QuestionBlock>
+                <QuestionBlock question="Veli / yasal temsilci imzası">
+                  <TextAnswer value={consent.parentSignature?.trim() || ""} />
+                </QuestionBlock>
+                {consent.formType === "media" && consent.mediaPermissions ? (
+                  <div className="space-y-3 rounded-xl border border-slate-200 bg-white p-3">
+                    <p className="text-sm font-black text-navy-950">Medya izin matrisi</p>
+                    {MEDIA_PERMISSION_KEYS.map((key) => (
+                      <QuestionBlock key={key} question={MEDIA_PERMISSION_LABELS[key]}>
+                        <ChoiceOptions
+                          options={["İzin verildi", "İzin yok"]}
+                          selected={
+                            consent.mediaPermissions?.[key] ? "İzin verildi" : "İzin yok"
+                          }
+                        />
+                      </QuestionBlock>
+                    ))}
+                  </div>
+                ) : null}
+              </Subsection>
+            );
+          })}
+
+          <Subsection title="Sağlık / özel durum">
+            <QuestionBlock question="Not">
+              <TextAnswer value={answers.healthNote?.trim() || ""} />
+            </QuestionBlock>
+          </Subsection>
+        </div>
+      )}
+    </FormSection>
+  );
+
+  const preTestSection = (
+    <FormSection
+      id="forms-pre"
+      code="F02"
+      title="Ön Test"
+      meta={
+        answers.preTest
+          ? `Gönderim: ${formatDate(answers.preTest.submittedAt)}`
+          : answers.preTestCompletedAt
+            ? `Tamamlanma: ${formatDate(answers.preTestCompletedAt)}`
+            : null
+      }
+      printSection
+    >
+      {!answers.requiresSurveys ? (
+        <EmptyState message="Bu sınıf düzeyinde ön test zorunlu değil." />
+      ) : !answers.preTest ? (
+        <EmptyState message="Ön test henüz doldurulmamış." />
+      ) : (
+        <SurveyScaleAnswers survey={answers.preTest} openEndedLabel={PRE_TEST_OPEN_ENDED} />
+      )}
+    </FormSection>
+  );
+
+  const postTestSection = (
+    <FormSection
+      id="forms-post"
+      code="F03"
+      title="Son Test"
+      meta={answers.postTest ? `Gönderim: ${formatDate(answers.postTest.submittedAt)}` : null}
+      printSection
+    >
+      {!answers.requiresSurveys ? (
+        <EmptyState message="Bu sınıf düzeyinde son test zorunlu değil." />
+      ) : !answers.postTest ? (
+        <EmptyState message="Son test henüz doldurulmamış." />
+      ) : (
+        <div className="space-y-6">
+          <SurveyScaleAnswers survey={answers.postTest} />
+          {answers.postTestExtra ? (
+            <>
+              <Subsection title="Eğitim etkisi">
+                {TRAINING_IMPACT_QUESTIONS.map((question) => (
+                  <QuestionBlock key={question.id} question={question.label}>
+                    <LikertOptions value={answers.postTestExtra?.trainingImpact[question.id]} />
+                  </QuestionBlock>
+                ))}
+              </Subsection>
+              <Subsection title="Gelecek eğilimler">
+                {FUTURE_TRENDS_QUESTIONS.map((question) => (
+                  <QuestionBlock key={question.id} question={question.label}>
+                    <LikertOptions value={answers.postTestExtra?.futureTrends[question.id]} />
+                  </QuestionBlock>
+                ))}
+              </Subsection>
+              <Subsection title="Açık uçlu">
+                <QuestionBlock question={POST_TEST_OPEN_ENDED.favorite_activity}>
+                  <TextAnswer
+                    value={String(answers.postTestExtra.openEnded.favorite_activity ?? "")}
+                  />
+                </QuestionBlock>
+                <QuestionBlock question={POST_TEST_OPEN_ENDED.most_important_learning}>
+                  <TextAnswer
+                    value={String(answers.postTestExtra.openEnded.most_important_learning ?? "")}
+                  />
+                </QuestionBlock>
+                <QuestionBlock question={POST_TEST_OPEN_ENDED.next_topics}>
+                  <TextAnswer value={String(answers.postTestExtra.openEnded.next_topics ?? "")} />
+                </QuestionBlock>
+                <QuestionBlock question={POST_TEST_OPEN_ENDED.product_idea}>
+                  <TextAnswer value={String(answers.postTestExtra.openEnded.product_idea ?? "")} />
+                </QuestionBlock>
+              </Subsection>
+            </>
+          ) : null}
+        </div>
+      )}
+    </FormSection>
+  );
+
   return (
-    <div className="space-y-6">
-      <div className="rounded-2xl border border-slate-300 bg-white p-5 shadow-sm sm:p-6">
+    <div className="enrollment-forms-print-root space-y-6">
+      <div className="forms-print-cover hidden">
+        <p className="text-xs font-bold uppercase tracking-[0.2em] text-slate-600">D2P Academy</p>
+        <h1 className="mt-2 text-2xl font-black text-navy-950">Katılımcı Form Sonuçları</h1>
+        <p className="mt-2 text-sm font-semibold text-slate-800">{answers.studentName}</p>
+        <p className="text-sm text-slate-600">{answers.studentEmail}</p>
+        <p className="text-sm text-slate-600">{answers.eventTitle}</p>
+        <p className="mt-2 text-xs text-slate-500">
+          Sınıf: {formatGradeLevel(answers.gradeLevel)}
+          {answers.studentCode ? ` · Öğrenci kodu: ${answers.studentCode}` : ""} · Çıktı: {printedAt}
+        </p>
+      </div>
+
+      <EnrollmentFormsPrintToolbar />
+
+      <div className="no-print rounded-2xl border border-slate-300 bg-white p-5 shadow-sm sm:p-6">
         <p className="text-xs font-bold uppercase tracking-[0.18em] text-document-primary">
           Form durumu
         </p>
@@ -334,231 +581,10 @@ export function AdminEnrollmentFormsView({ answers }: AdminEnrollmentFormsViewPr
         </nav>
       </div>
 
-      <FormSection id="forms-consents" code="F05 · F06 · F07" title="Onaylar">
-        {answers.consents.length === 0 ? (
-          <EmptyState message="Henüz onay kaydı yok." />
-        ) : (
-          <div className="space-y-5">
-            {consentOrder.map((type) => {
-              const consent = consentsByType.get(type);
-              const document = CONSENT_DOCUMENTS.find((item) => item.formType === type);
-              const heading = document
-                ? `${document.code} — ${document.title}`
-                : CONSENT_LABELS[type];
-
-              if (!consent) {
-                return (
-                  <Subsection key={type} title={heading}>
-                    <EmptyState message="Kaydedilmemiş" />
-                  </Subsection>
-                );
-              }
-
-              return (
-                <Subsection key={type} title={heading}>
-                  <QuestionBlock question="Durum">
-                    <ChoiceOptions
-                      options={["Kabul edildi", "Kabul edilmedi"]}
-                      selected={consent.accepted ? "Kabul edildi" : "Kabul edilmedi"}
-                    />
-                    {consent.accepted ? (
-                      <p className="mt-2 text-sm font-semibold text-slate-600">
-                        Tarih: {formatDate(consent.acceptedAt)}
-                      </p>
-                    ) : null}
-                  </QuestionBlock>
-                  <QuestionBlock question="Veli / yasal temsilci imzası">
-                    <TextAnswer value={consent.parentSignature?.trim() || ""} />
-                  </QuestionBlock>
-                  {consent.formType === "media" && consent.mediaPermissions ? (
-                    <div className="space-y-3 rounded-xl border border-slate-200 bg-white p-3">
-                      <p className="text-sm font-black text-navy-950">Medya izin matrisi</p>
-                      {MEDIA_PERMISSION_KEYS.map((key) => (
-                        <QuestionBlock key={key} question={MEDIA_PERMISSION_LABELS[key]}>
-                          <ChoiceOptions
-                            options={["İzin verildi", "İzin yok"]}
-                            selected={
-                              consent.mediaPermissions?.[key] ? "İzin verildi" : "İzin yok"
-                            }
-                          />
-                        </QuestionBlock>
-                      ))}
-                    </div>
-                  ) : null}
-                </Subsection>
-              );
-            })}
-
-            <Subsection title="Sağlık / özel durum">
-              <QuestionBlock question="Not">
-                <TextAnswer value={answers.healthNote?.trim() || ""} />
-              </QuestionBlock>
-            </Subsection>
-          </div>
-        )}
-      </FormSection>
-
-      <FormSection
-        id="forms-intake"
-        code="F01"
-        title="Tanışma"
-        meta={answers.intake ? `Kayıt: ${formatDate(answers.intake.submittedAt)}` : null}
-      >
-        {!answers.intake ? (
-          <EmptyState message="Tanışma formu henüz doldurulmamış." />
-        ) : (
-          <div className="space-y-6">
-            <Subsection title="Önceki deneyim">
-              {INTAKE_PREVIOUS_EXPERIENCE_FIELDS.map((field) => (
-                <QuestionBlock key={field.id} question={field.label}>
-                  <ChoiceOptions
-                    options={field.options}
-                    selected={answers.intake?.previousExperience[field.id]}
-                  />
-                </QuestionBlock>
-              ))}
-            </Subsection>
-
-            <Subsection title="Teknoloji erişimi">
-              {INTAKE_TECH_ACCESS_FIELDS.map((field) => (
-                <QuestionBlock key={field.id} question={field.label}>
-                  <ChoiceOptions
-                    options={field.options}
-                    selected={answers.intake?.techAccess[field.id]}
-                  />
-                </QuestionBlock>
-              ))}
-            </Subsection>
-
-            <Subsection title="İlgi alanları">
-              {INTAKE_INTEREST_FIELDS.map((field) => (
-                <QuestionBlock key={field.id} question={field.label}>
-                  <ChoiceOptions
-                    options={field.options}
-                    selected={answers.intake?.interests[field.id]}
-                  />
-                </QuestionBlock>
-              ))}
-            </Subsection>
-
-            <Subsection title="Motivasyon">
-              <QuestionBlock question="Bu eğitime katılma nedeniniz">
-                <ChoiceOptions
-                  options={[...INTAKE_MOTIVATION_REASONS]}
-                  selected={answers.intake.motivation}
-                />
-              </QuestionBlock>
-              {answers.intake.motivationOther ? (
-                <QuestionBlock question="Diğer (açıklama)">
-                  <TextAnswer value={answers.intake.motivationOther} />
-                </QuestionBlock>
-              ) : null}
-            </Subsection>
-
-            <Subsection title="Likert maddeleri">
-              {INTAKE_LIKERT_QUESTIONS.map((question) => (
-                <QuestionBlock key={question.id} question={question.label}>
-                  <LikertOptions value={answers.intake?.intakeLikert[question.id]} />
-                </QuestionBlock>
-              ))}
-            </Subsection>
-
-            <Subsection title="Açık uçlu">
-              <QuestionBlock question={INTAKE_OPEN_ENDED.learn_most}>
-                <TextAnswer value={String(answers.intake.openEnded.learn_most ?? "")} />
-              </QuestionBlock>
-              <QuestionBlock question={INTAKE_OPEN_ENDED.design_wish}>
-                <TextAnswer value={String(answers.intake.openEnded.design_wish ?? "")} />
-              </QuestionBlock>
-              <QuestionBlock question={INTAKE_OPEN_ENDED.expectation}>
-                <TextAnswer value={String(answers.intake.openEnded.expectation ?? "")} />
-              </QuestionBlock>
-            </Subsection>
-          </div>
-        )}
-      </FormSection>
-
-      <FormSection
-        id="forms-pre"
-        code="F02"
-        title="Ön Test"
-        meta={
-          answers.preTest
-            ? `Gönderim: ${formatDate(answers.preTest.submittedAt)}`
-            : answers.preTestCompletedAt
-              ? `Tamamlanma: ${formatDate(answers.preTestCompletedAt)}`
-              : null
-        }
-      >
-        {!answers.requiresSurveys ? (
-          <EmptyState message="Bu sınıf düzeyinde ön test zorunlu değil." />
-        ) : !answers.preTest ? (
-          <EmptyState message="Ön test henüz doldurulmamış." />
-        ) : (
-          <SurveyScaleAnswers survey={answers.preTest} openEndedLabel={PRE_TEST_OPEN_ENDED} />
-        )}
-      </FormSection>
-
-      <FormSection
-        id="forms-post"
-        code="F03"
-        title="Son Test"
-        meta={answers.postTest ? `Gönderim: ${formatDate(answers.postTest.submittedAt)}` : null}
-      >
-        {!answers.requiresSurveys ? (
-          <EmptyState message="Bu sınıf düzeyinde son test zorunlu değil." />
-        ) : !answers.postTest ? (
-          <EmptyState message="Son test henüz doldurulmamış." />
-        ) : (
-          <div className="space-y-6">
-            <SurveyScaleAnswers survey={answers.postTest} />
-            {answers.postTestExtra ? (
-              <>
-                <Subsection title="Eğitim etkisi">
-                  {TRAINING_IMPACT_QUESTIONS.map((question) => (
-                    <QuestionBlock key={question.id} question={question.label}>
-                      <LikertOptions
-                        value={answers.postTestExtra?.trainingImpact[question.id]}
-                      />
-                    </QuestionBlock>
-                  ))}
-                </Subsection>
-                <Subsection title="Gelecek eğilimler">
-                  {FUTURE_TRENDS_QUESTIONS.map((question) => (
-                    <QuestionBlock key={question.id} question={question.label}>
-                      <LikertOptions value={answers.postTestExtra?.futureTrends[question.id]} />
-                    </QuestionBlock>
-                  ))}
-                </Subsection>
-                <Subsection title="Açık uçlu">
-                  <QuestionBlock question={POST_TEST_OPEN_ENDED.favorite_activity}>
-                    <TextAnswer
-                      value={String(answers.postTestExtra.openEnded.favorite_activity ?? "")}
-                    />
-                  </QuestionBlock>
-                  <QuestionBlock question={POST_TEST_OPEN_ENDED.most_important_learning}>
-                    <TextAnswer
-                      value={String(
-                        answers.postTestExtra.openEnded.most_important_learning ?? "",
-                      )}
-                    />
-                  </QuestionBlock>
-                  <QuestionBlock question={POST_TEST_OPEN_ENDED.next_topics}>
-                    <TextAnswer
-                      value={String(answers.postTestExtra.openEnded.next_topics ?? "")}
-                    />
-                  </QuestionBlock>
-                  <QuestionBlock question={POST_TEST_OPEN_ENDED.product_idea}>
-                    <TextAnswer
-                      value={String(answers.postTestExtra.openEnded.product_idea ?? "")}
-                    />
-                  </QuestionBlock>
-                </Subsection>
-              </>
-            ) : null}
-          </div>
-        )}
-      </FormSection>
+      {intakeSection}
+      {consentsSection}
+      {preTestSection}
+      {postTestSection}
     </div>
   );
 }
