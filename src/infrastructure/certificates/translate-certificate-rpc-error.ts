@@ -18,6 +18,8 @@ const CERTIFICATE_RPC_ERRORS: Record<string, string> = {
   "Sertifika bulunamadı.": "Sertifika bulunamadı.",
   "Son test tamamlanmadan sertifika verilemez.":
     "Son test tamamlanmadan sertifika verilemez.",
+  "Katılımcı formları tamamlanmadan sertifika verilemez.":
+    "Katılımcı formları tamamlanmadan sertifika verilemez.",
 };
 
 export function translateCertificateRpcError(message: string | null | undefined): string {

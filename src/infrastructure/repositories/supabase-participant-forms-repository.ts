@@ -524,8 +524,7 @@ export class SupabaseParticipantFormsRepository {
       p_enrollment_id: enrollmentId,
       p_intake: false,
       p_pre_test: true,
-      // Non 5–8 skip both surveys → unlock certificate gate as well.
-      p_post_test: skippedSurvey,
+      p_post_test: false,
       p_actor_id: userId,
     });
 

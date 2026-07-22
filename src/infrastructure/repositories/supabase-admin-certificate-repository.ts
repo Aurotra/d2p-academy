@@ -15,6 +15,10 @@ import {
   PROFILE_REQUIRED_FOR_CERTIFICATE_MESSAGE,
 } from "@/lib/utils/progress";
 import { formatStudentContact } from "@/shared/utils/format-student-contact";
+import {
+  getEnrollmentFormStatus,
+  type ConsentRecordSnapshot,
+} from "@/shared/utils/enrollment-form-status";
 
 interface CertificateRow {
   id: string;
@@ -52,6 +56,8 @@ interface PendingProfileRow {
 interface PendingEnrollmentRow {
   id: string;
   completed_at: string | null;
+  intake_form_completed_at: string | null;
+  pre_test_completed_at: string | null;
   post_test_completed_at: string | null;
   profiles: PendingProfileRow | PendingProfileRow[] | null;
   events: { title: string } | { title: string }[] | null;
@@ -115,6 +121,8 @@ export class SupabaseAdminCertificateRepository implements AdminCertificateRepos
         `
         id,
         completed_at,
+        intake_form_completed_at,
+        pre_test_completed_at,
         post_test_completed_at,
         status,
         profiles (
@@ -134,15 +142,15 @@ export class SupabaseAdminCertificateRepository implements AdminCertificateRepos
         certificates ( id, status )
       `,
       )
-      .not("post_test_completed_at", "is", null)
+      .not("intake_form_completed_at", "is", null)
       .in("status", ["registered", "attended", "completed"])
-      .order("post_test_completed_at", { ascending: false });
+      .order("intake_form_completed_at", { ascending: false });
 
     if (error) {
       throw new Error(`Tamamlanan kayıtlar alınamadı: ${error.message}`);
     }
 
-    return (data as Array<
+    const rows = (data as Array<
       PendingEnrollmentRow & {
         status: string;
         certificates:
@@ -150,7 +158,33 @@ export class SupabaseAdminCertificateRepository implements AdminCertificateRepos
           | { id: string; status: CertificateStatus }[]
           | null;
       }
-    >)
+    >) ?? [];
+
+    const enrollmentIds = rows.map((row) => row.id);
+    const consentsByEnrollment = new Map<string, ConsentRecordSnapshot[]>();
+
+    if (enrollmentIds.length > 0) {
+      const { data: consentRows, error: consentError } = await this.client
+        .from("consent_records")
+        .select("enrollment_id, form_type, accepted, media_permissions")
+        .in("enrollment_id", enrollmentIds);
+
+      if (consentError) {
+        throw new Error(`Onay kayıtları alınamadı: ${consentError.message}`);
+      }
+
+      for (const row of consentRows ?? []) {
+        const list = consentsByEnrollment.get(row.enrollment_id) ?? [];
+        list.push({
+          form_type: row.form_type,
+          accepted: Boolean(row.accepted),
+          media_permissions: row.media_permissions as ConsentRecordSnapshot["media_permissions"],
+        });
+        consentsByEnrollment.set(row.enrollment_id, list);
+      }
+    }
+
+    return rows
       .filter((row) => {
         const certificates = Array.isArray(row.certificates)
           ? row.certificates
@@ -162,12 +196,29 @@ export class SupabaseAdminCertificateRepository implements AdminCertificateRepos
         }
 
         const profile = Array.isArray(row.profiles) ? (row.profiles[0] ?? null) : row.profiles;
-        return Boolean(profile);
+        if (!profile) {
+          return false;
+        }
+
+        const formStatus = getEnrollmentFormStatus({
+          gradeLevel: profile.grade_level,
+          intakeFormCompletedAt: row.intake_form_completed_at,
+          preTestCompletedAt: row.pre_test_completed_at,
+          postTestCompletedAt: row.post_test_completed_at,
+          consentRecords: consentsByEnrollment.get(row.id) ?? [],
+        });
+
+        return formStatus.allRequiredDone;
       })
       .map((row) => {
         const profile = Array.isArray(row.profiles) ? (row.profiles[0] ?? null) : row.profiles;
         const event = Array.isArray(row.events) ? (row.events[0] ?? null) : row.events;
-        const readyAt = row.post_test_completed_at ?? row.completed_at ?? new Date().toISOString();
+        const readyAt =
+          row.post_test_completed_at ??
+          row.pre_test_completed_at ??
+          row.intake_form_completed_at ??
+          row.completed_at ??
+          new Date().toISOString();
         const profileProgress = profile
           ? calculateProgress({
               full_name: profile.full_name,
@@ -250,6 +301,43 @@ export class SupabaseAdminCertificateRepository implements AdminCertificateRepos
       })
     ) {
       throw new Error(`Sertifika oluşturulamadı: ${PROFILE_REQUIRED_FOR_CERTIFICATE_MESSAGE}`);
+    }
+
+    const { data: enrollmentForms, error: enrollmentFormsError } = await this.client
+      .from("enrollments")
+      .select("intake_form_completed_at, pre_test_completed_at, post_test_completed_at")
+      .eq("id", input.enrollmentId)
+      .maybeSingle();
+
+    if (enrollmentFormsError || !enrollmentForms) {
+      throw new Error("Sertifika oluşturulamadı: Kayıt bulunamadı.");
+    }
+
+    const { data: consentRows, error: consentError } = await this.client
+      .from("consent_records")
+      .select("form_type, accepted, media_permissions")
+      .eq("enrollment_id", input.enrollmentId);
+
+    if (consentError) {
+      throw new Error(`Sertifika oluşturulamadı: ${consentError.message}`);
+    }
+
+    const formStatus = getEnrollmentFormStatus({
+      gradeLevel: profile.grade_level,
+      intakeFormCompletedAt: enrollmentForms.intake_form_completed_at,
+      preTestCompletedAt: enrollmentForms.pre_test_completed_at,
+      postTestCompletedAt: enrollmentForms.post_test_completed_at,
+      consentRecords: (consentRows ?? []).map((row) => ({
+        form_type: row.form_type,
+        accepted: Boolean(row.accepted),
+        media_permissions: row.media_permissions as ConsentRecordSnapshot["media_permissions"],
+      })),
+    });
+
+    if (!formStatus.allRequiredDone) {
+      throw new Error(
+        "Sertifika oluşturulamadı: Katılımcı formları tamamlanmadan sertifika verilemez.",
+      );
     }
 
     const { data, error } = await this.client.rpc("issue_certificate", {
