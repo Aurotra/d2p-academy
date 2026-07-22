@@ -1,9 +1,44 @@
 import "server-only";
 
 import type { UserRole } from "@/core/domain/auth";
+import { profileHasInstructorCapability } from "@/infrastructure/auth/instructor-capability";
 import { createServiceRoleClient } from "@/infrastructure/supabase/create-service-role-client";
 
-const PROMOTABLE_MEMBER_ROLES = new Set<UserRole>(["parent", "student"]);
+const PROMOTABLE_MEMBER_ROLES = new Set<UserRole>(["parent", "student", "admin"]);
+
+async function setInstructorCapability(userId: string, enabled: boolean): Promise<void> {
+  const serviceClient = createServiceRoleClient();
+
+  const { error: profileError } = await serviceClient
+    .from("profiles")
+    .update({
+      is_instructor: enabled,
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", userId);
+
+  if (profileError) {
+    throw new Error(`Eğitmen yetkisi güncellenemedi: ${profileError.message}`);
+  }
+
+  const { data: authUser, error: authError } = await serviceClient.auth.admin.getUserById(userId);
+  if (authError) {
+    throw new Error(`Auth kullanıcısı okunamadı: ${authError.message}`);
+  }
+
+  if (authUser.user) {
+    const { error: updateAuthError } = await serviceClient.auth.admin.updateUserById(userId, {
+      user_metadata: {
+        ...authUser.user.user_metadata,
+        is_instructor: enabled,
+      },
+    });
+
+    if (updateAuthError) {
+      throw new Error(`Auth eğitmen bayrağı güncellenemedi: ${updateAuthError.message}`);
+    }
+  }
+}
 
 export async function setUserRole(userId: string, role: UserRole): Promise<void> {
   const serviceClient = createServiceRoleClient();
@@ -39,12 +74,13 @@ export async function setUserRole(userId: string, role: UserRole): Promise<void>
 export async function promoteMemberToInstructor(userId: string): Promise<{
   fullName: string;
   email: string;
+  role: UserRole;
 }> {
   const serviceClient = createServiceRoleClient();
 
   const { data: profile, error } = await serviceClient
     .from("profiles")
-    .select("id, full_name, email, role, username, parent_id, is_active")
+    .select("id, full_name, email, role, username, parent_id, is_active, is_instructor")
     .eq("id", userId)
     .maybeSingle();
 
@@ -64,27 +100,34 @@ export async function promoteMemberToInstructor(userId: string): Promise<{
     throw new Error("Pasif hesap eğitmen yapılamaz.");
   }
 
-  if (!PROMOTABLE_MEMBER_ROLES.has(profile.role as UserRole)) {
-    throw new Error("Bu hesap zaten eğitmen veya admin.");
+  if (profileHasInstructorCapability(profile)) {
+    throw new Error("Bu hesap zaten eğitmen yetkisine sahip.");
   }
 
-  await setUserRole(userId, "instructor");
+  if (!PROMOTABLE_MEMBER_ROLES.has(profile.role as UserRole)) {
+    throw new Error("Bu hesap eğitmen yapılamaz.");
+  }
+
+  await setInstructorCapability(userId, true);
 
   return {
     fullName: profile.full_name,
     email: profile.email,
+    role: profile.role as UserRole,
   };
 }
 
 export async function demoteInstructorToMember(userId: string): Promise<{
   fullName: string;
-  role: "parent" | "student";
+  email: string | null;
+  role: UserRole;
+  unassignedEventCount: number;
 }> {
   const serviceClient = createServiceRoleClient();
 
   const { data: profile, error } = await serviceClient
     .from("profiles")
-    .select("id, full_name, role")
+    .select("id, full_name, email, role, is_instructor")
     .eq("id", userId)
     .maybeSingle();
 
@@ -92,24 +135,52 @@ export async function demoteInstructorToMember(userId: string): Promise<{
     throw new Error("Eğitmen bulunamadı.");
   }
 
-  if (profile.role !== "instructor") {
+  if (!profileHasInstructorCapability(profile)) {
     throw new Error("Bu hesap eğitmen değil.");
   }
 
-  const { count, error: childError } = await serviceClient
-    .from("profiles")
+  const { count: assignedEventCount, error: eventCountError } = await serviceClient
+    .from("events")
     .select("id", { count: "exact", head: true })
-    .eq("parent_id", userId);
+    .eq("instructor_id", userId);
 
-  if (childError) {
-    throw new Error(`Çocuk kayıtları kontrol edilemedi: ${childError.message}`);
+  if (eventCountError) {
+    throw new Error(`Etkinlik atamaları kontrol edilemedi: ${eventCountError.message}`);
   }
 
-  const nextRole: "parent" | "student" = (count ?? 0) > 0 ? "parent" : "student";
-  await setUserRole(userId, nextRole);
+  if ((assignedEventCount ?? 0) > 0) {
+    const { error: unassignError } = await serviceClient
+      .from("events")
+      .update({ instructor_id: null })
+      .eq("instructor_id", userId);
+
+    if (unassignError) {
+      throw new Error(`Etkinlik atamaları kaldırılamadı: ${unassignError.message}`);
+    }
+  }
+
+  await setInstructorCapability(userId, false);
+
+  let resolvedRole = profile.role as UserRole;
+
+  if (profile.role === "instructor") {
+    const { count, error: childError } = await serviceClient
+      .from("profiles")
+      .select("id", { count: "exact", head: true })
+      .eq("parent_id", userId);
+
+    if (childError) {
+      throw new Error(`Çocuk kayıtları kontrol edilemedi: ${childError.message}`);
+    }
+
+    resolvedRole = (count ?? 0) > 0 ? "parent" : "student";
+    await setUserRole(userId, resolvedRole);
+  }
 
   return {
     fullName: profile.full_name,
-    role: nextRole,
+    email: profile.email,
+    role: resolvedRole,
+    unassignedEventCount: assignedEventCount ?? 0,
   };
 }

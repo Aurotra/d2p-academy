@@ -6,8 +6,17 @@ interface InstructorRow {
   id: string;
   full_name: string;
   email: string | null;
+  role: string;
   is_active: boolean;
   created_at: string;
+}
+
+function memberRoleLabel(role: string): string {
+  if (role === "parent") return "Veli";
+  if (role === "student") return "Üye öğrenci";
+  if (role === "admin") return "Admin";
+  if (role === "instructor") return "Yalnızca eğitmen";
+  return role;
 }
 
 function mapInstructor(row: InstructorRow): AdminInstructorRecord {
@@ -15,6 +24,7 @@ function mapInstructor(row: InstructorRow): AdminInstructorRecord {
     id: row.id,
     fullName: row.full_name,
     email: row.email ?? "—",
+    memberRole: memberRoleLabel(row.role),
     isActive: row.is_active,
     createdAt: row.created_at,
   };
@@ -26,8 +36,8 @@ export class SupabaseAdminInstructorRepository {
   async listAll(): Promise<AdminInstructorRecord[]> {
     const { data, error } = await this.client
       .from("profiles")
-      .select("id, full_name, email, is_active, created_at")
-      .eq("role", "instructor")
+      .select("id, full_name, email, role, is_active, created_at, is_instructor")
+      .or("is_instructor.eq.true,role.eq.instructor")
       .order("full_name", { ascending: true });
 
     if (error) {
@@ -42,7 +52,7 @@ export class SupabaseAdminInstructorRepository {
       .from("profiles")
       .update({ is_active: isActive, updated_at: new Date().toISOString() })
       .eq("id", id)
-      .eq("role", "instructor");
+      .or("is_instructor.eq.true,role.eq.instructor");
 
     if (error) {
       throw new Error(`Eğitmen durumu güncellenemedi: ${error.message}`);

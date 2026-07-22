@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 
 import { getStudentDashboard } from "@/core/use-cases/get-student-dashboard";
 import { getAdminAccess } from "@/infrastructure/auth/get-admin-access";
+import { getInstructorAccess } from "@/infrastructure/auth/get-instructor-access";
 import { SupabaseStudentDashboardRepository } from "@/infrastructure/repositories/supabase-student-dashboard-repository";
 import { createSupabaseServerClient } from "@/infrastructure/supabase/create-server-client";
 import { DashboardView } from "@/presentation/components/dashboard/dashboard-view";
@@ -25,6 +26,13 @@ export default async function DashboardPage() {
   const repository = new SupabaseStudentDashboardRepository(client);
   const dashboardData = await getStudentDashboard(repository, user.id);
   const adminAccess = await getAdminAccess(client);
+  const instructorAccess = await getInstructorAccess(client);
 
-  return <DashboardView data={dashboardData} isAdmin={adminAccess.authorized} />;
+  return (
+    <DashboardView
+      data={dashboardData}
+      isAdmin={adminAccess.authorized}
+      isInstructor={instructorAccess.authorized}
+    />
+  );
 }

@@ -51,45 +51,55 @@ function emailLayout(content: string): string {
 </html>`;
 }
 
-export function buildInstructorRoleGrantedEmail(input: {
+export function buildInstructorRoleRevokedEmail(input: {
   recipientName: string;
+  memberRole: "parent" | "student" | "admin" | "instructor";
 }): { subject: string; html: string } {
-  const loginUrl = `${SITE_URL}/instructor-login`;
+  const loginUrl = `${SITE_URL}/login`;
   const name = escapeHtml(input.recipientName);
+  const panelLabel =
+    input.memberRole === "parent"
+      ? "veli paneline"
+      : input.memberRole === "admin"
+        ? "admin ve veli paneline"
+        : "üye paneline";
 
   const content = `
-    <h1 style="margin:0 0 12px;font-size:22px;line-height:1.3;color:#0f172a;">Eğitmen Paneli Erişiminiz Açıldı</h1>
+    <h1 style="margin:0 0 12px;font-size:22px;line-height:1.3;color:#0f172a;">Eğitmen Yetkiniz Kaldırıldı</h1>
     <p style="margin:0 0 16px;font-size:15px;line-height:1.6;color:#475569;">
-      Merhaba <strong>${name}</strong>, D2P Academy hesabınıza <strong>eğitmen yetkisi</strong> tanımlandı.
+      Merhaba <strong>${name}</strong>, D2P Academy hesabınızdaki <strong>eğitmen yetkisi</strong> yönetici tarafından kaldırıldı.
     </p>
     <p style="margin:0 0 16px;font-size:15px;line-height:1.6;color:#475569;">
-      Mevcut e-posta adresiniz ve şifrenizle Eğitmen Paneli'ne giriş yapabilir; veli/üye paneliniz de
-      açık kalır. Size atanmış etkinliklerde günlük yoklama alabilirsiniz.
+      Artık Eğitmen Paneli'ne erişemezsiniz. ${panelLabel.charAt(0).toUpperCase() + panelLabel.slice(1)} giriş yapmaya devam edebilirsiniz.
     </p>
     <p style="margin:0;font-size:14px;line-height:1.6;color:#475569;">
       Giriş adresi: <a href="${loginUrl}" style="color:${BRAND_PRIMARY};font-weight:bold;">${loginUrl}</a>
     </p>
-    <a href="${loginUrl}" style="display:inline-block;margin-top:20px;padding:12px 20px;background-color:${BRAND_PRIMARY};color:#ffffff;text-decoration:none;border-radius:10px;font-size:14px;font-weight:bold;">Eğitmen Paneline Giriş</a>
+    <a href="${loginUrl}" style="display:inline-block;margin-top:20px;padding:12px 20px;background-color:${BRAND_PRIMARY};color:#ffffff;text-decoration:none;border-radius:10px;font-size:14px;font-weight:bold;">Giriş Yap</a>
     <p style="margin:20px 0 0;font-size:13px;line-height:1.6;color:#64748b;">
-      Şifrenizi bilmiyorsanız veli giriş sayfasındaki “şifremi unuttum” akışını kullanabilir veya D2P Academy ile iletişime geçebilirsiniz.
+      Bu değişiklikle ilgili sorularınız için D2P Academy ile iletişime geçebilirsiniz.
     </p>
   `;
 
   return {
-    subject: "D2P Academy | Eğitmen paneli erişiminiz açıldı",
+    subject: "D2P Academy | Eğitmen yetkiniz kaldırıldı",
     html: emailLayout(content),
   };
 }
 
-export async function sendInstructorRoleGrantedEmail(input: {
+export async function sendInstructorRoleRevokedEmail(input: {
   recipientName: string;
   email: string;
+  memberRole: "parent" | "student" | "admin" | "instructor";
 }): Promise<boolean> {
   if (!isResendConfigured()) {
     return false;
   }
 
-  const email = buildInstructorRoleGrantedEmail({ recipientName: input.recipientName });
+  const email = buildInstructorRoleRevokedEmail({
+    recipientName: input.recipientName,
+    memberRole: input.memberRole,
+  });
   await sendResendEmail({
     to: input.email,
     subject: email.subject,

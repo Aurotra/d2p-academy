@@ -9,4 +9,5 @@ export interface AdminMember {
   createdAt: string;
   isActive: boolean;
   childCount: number;
+  isInstructor: boolean;
 }

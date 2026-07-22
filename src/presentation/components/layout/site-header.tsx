@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 
+import { profileHasInstructorCapability } from "@/infrastructure/auth/instructor-capability";
 import { createSupabaseBrowserClient } from "@/infrastructure/supabase/create-browser-client";
 import { AuthPortalLink } from "@/presentation/components/auth/auth-portal-link";
 import { BRAND_SURFACE_HEADER } from "@/shared/constants/brand-surfaces";
@@ -78,6 +79,7 @@ export function SiteHeader() {
   const [sessionKind, setSessionKind] = useState<"email" | "student" | null>(null);
   const [userDisplayName, setUserDisplayName] = useState<string | null>(null);
   const [userRole, setUserRole] = useState<string | null>(null);
+  const [isInstructor, setIsInstructor] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const isLoggedIn = sessionKind !== null;
 
@@ -95,13 +97,14 @@ export function SiteHeader() {
 
       const { data } = await client
         .from("profiles")
-        .select("full_name, role")
+        .select("full_name, role, is_instructor")
         .eq("id", userId)
         .maybeSingle();
 
       const name = data?.full_name?.trim() || fallback?.trim() || null;
       setUserDisplayName(name);
       setUserRole(data?.role ?? null);
+      setIsInstructor(data ? profileHasInstructorCapability(data) : false);
     }
 
     async function probeStudentSession() {
@@ -124,6 +127,7 @@ export function SiteHeader() {
       setSessionKind(null);
       setUserDisplayName(null);
       setUserRole(null);
+      setIsInstructor(false);
     }
 
     if (!client) {
@@ -215,6 +219,7 @@ export function SiteHeader() {
       setSessionKind(null);
       setUserDisplayName(null);
       setUserRole(null);
+      setIsInstructor(false);
       router.push(sessionKind === "student" ? "/student-login" : "/");
       router.refresh();
     } catch {
@@ -227,7 +232,7 @@ export function SiteHeader() {
       ? "/student-dashboard"
       : userRole === "admin"
         ? "/admin"
-        : userRole === "instructor"
+        : userRole === "instructor" || (isInstructor && userRole !== "parent" && userRole !== "student")
           ? "/instructor"
           : "/dashboard";
 

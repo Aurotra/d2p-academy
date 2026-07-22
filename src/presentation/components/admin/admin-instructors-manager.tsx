@@ -21,6 +21,7 @@ interface AdminInstructorsManagerProps {
 export function AdminInstructorsManager({ initialInstructors }: AdminInstructorsManagerProps) {
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
   const [pendingId, setPendingId] = useState<string | null>(null);
 
   async function toggleActive(instructor: AdminInstructorRecord) {
@@ -47,10 +48,10 @@ export function AdminInstructorsManager({ initialInstructors }: AdminInstructors
     }
   }
 
-  async function demoteToMember(instructor: AdminInstructorRecord) {
+  async function revokeInstructorRole(instructor: AdminInstructorRecord) {
     if (
       !window.confirm(
-        `${instructor.fullName} eğitmen yetkisinden çıkarılacak ve üye listesine dönecek. Devam edilsin mi?`,
+        `${instructor.fullName} için eğitmen yetkisi geri alınacak. Veli/üye paneli erişimi korunur; atanmış etkinliklerden eğitmen ataması kaldırılır. Devam edilsin mi?`,
       )
     ) {
       return;
@@ -58,6 +59,7 @@ export function AdminInstructorsManager({ initialInstructors }: AdminInstructors
 
     setPendingId(instructor.id);
     setError(null);
+    setSuccess(null);
 
     try {
       const response = await fetch(`/api/v1/admin/instructors/${instructor.id}/demote`, {
@@ -65,11 +67,43 @@ export function AdminInstructorsManager({ initialInstructors }: AdminInstructors
       });
       const payload = (await response.json()) as {
         error?: string;
-        data?: { role: "parent" | "student" };
+        data?: {
+          fullName?: string;
+          role?: string;
+          unassignedEventCount?: number;
+          emailSent?: boolean;
+          emailError?: string | null;
+        };
       };
 
       if (!response.ok) {
-        throw new Error(payload.error ?? "Üye rolüne alınamadı.");
+        throw new Error(payload.error ?? "Eğitmen yetkisi geri alınamadı.");
+      }
+
+      const name = payload.data?.fullName ?? instructor.fullName;
+      const roleLabel =
+        payload.data?.role === "parent"
+          ? "veli"
+          : payload.data?.role === "admin"
+            ? "admin"
+            : "üye öğrenci";
+      const eventNote =
+        (payload.data?.unassignedEventCount ?? 0) > 0
+          ? ` ${payload.data?.unassignedEventCount} etkinlikten eğitmen ataması kaldırıldı.`
+          : "";
+
+      if (payload.data?.emailSent) {
+        setSuccess(
+          `${name} için eğitmen yetkisi kaldırıldı (${roleLabel} erişimi devam ediyor).${eventNote} Bilgilendirme e-postası gönderildi.`,
+        );
+      } else if (payload.data?.emailError) {
+        setSuccess(
+          `${name} için eğitmen yetkisi kaldırıldı.${eventNote} E-posta gönderilemedi: ${payload.data.emailError}`,
+        );
+      } else {
+        setSuccess(
+          `${name} için eğitmen yetkisi kaldırıldı.${eventNote} (RESEND_API_KEY tanımlı değil veya e-posta yok; bildirim gönderilmedi.)`,
+        );
       }
 
       router.refresh();
@@ -89,14 +123,19 @@ export function AdminInstructorsManager({ initialInstructors }: AdminInstructors
           <Link href="/admin/members" className="font-semibold text-document-primary hover:underline">
             Veliler ve Üyeler
           </Link>{" "}
-          listesinden mevcut bir hesaba <strong>Eğitmen yap</strong> demektir. Aynı e-posta ve şifre
-          ile <strong>/instructor-login</strong> → <strong>/instructor</strong> paneline girer.
+          listesinden mevcut bir hesaba <strong>Eğitmen yap</strong> demektir. Veli/üye rolü
+          korunur; aynı hesap hem veli hem eğitmen paneline girebilir.
         </p>
       </div>
 
       {error ? (
         <p className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
           {error}
+        </p>
+      ) : null}
+      {success ? (
+        <p className="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">
+          {success}
         </p>
       ) : null}
 
@@ -121,7 +160,8 @@ export function AdminInstructorsManager({ initialInstructors }: AdminInstructors
                   <p className="font-semibold text-slate-900">{instructor.fullName}</p>
                   <p className="text-sm text-slate-600">{instructor.email}</p>
                   <p className="mt-1 text-xs text-slate-500">
-                    Oluşturulma: {formatDate(instructor.createdAt)}
+                    Hesap türü: {instructor.memberRole} · Oluşturulma:{" "}
+                    {formatDate(instructor.createdAt)}
                   </p>
                 </div>
                 <div className="flex flex-wrap items-center gap-2">
@@ -150,9 +190,9 @@ export function AdminInstructorsManager({ initialInstructors }: AdminInstructors
                     type="button"
                     variant="ghost"
                     disabled={pendingId === instructor.id}
-                    onClick={() => void demoteToMember(instructor)}
+                    onClick={() => void revokeInstructorRole(instructor)}
                   >
-                    Üye yap
+                    {pendingId === instructor.id ? "Kaydediliyor..." : "Yetkiyi geri al"}
                   </Button>
                 </div>
               </li>

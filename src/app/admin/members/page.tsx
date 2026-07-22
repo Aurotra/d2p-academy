@@ -52,8 +52,8 @@ export default async function AdminMembersPage({ searchParams }: AdminMembersPag
         <h1 className="mt-2 text-2xl font-bold text-slate-900">Veliler ve Üyeler</h1>
         <p className="mt-2 text-sm text-slate-600">
           Siteye kayıt olan veli ve e-posta ile giriş yapan üye hesapları. Çocuk (kullanıcı adlı)
-          hesaplar bu listede yer almaz. Eğitmen atamak için satırdaki <strong>Eğitmen yap</strong>{" "}
-          butonunu kullanın.
+          hesaplar bu listede yer almaz. Eğitmen yetkisi verildiğinde veli/üye rolü korunur; kişi hem
+          veli hem eğitmen panelini kullanabilir.
         </p>
         <div className="mt-4 flex flex-wrap gap-2 text-sm">
           <span className="rounded-full bg-slate-100 px-3 py-1 font-semibold text-slate-700">

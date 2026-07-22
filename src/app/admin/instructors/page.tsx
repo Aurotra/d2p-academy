@@ -33,7 +33,8 @@ export default async function AdminInstructorsPage() {
         <p className="mt-2 text-sm text-slate-600">
           Eğitmenleri buradan yönetin. Yeni eğitmen eklemek için{" "}
           <strong>Veliler ve Üyeler</strong> listesinden mevcut bir hesaba eğitmen yetkisi verin;
-          ardından etkinlik düzenlerken eğitmen atayın.
+          ardından etkinlik düzenlerken eğitmen atayın. Yetkiyi kaldırmak için listedeki{" "}
+          <strong>Yetkiyi geri al</strong> butonunu kullanın.
         </p>
         <div className="mt-4 flex flex-wrap gap-2 text-sm">
           <span className="rounded-full bg-slate-100 px-3 py-1 font-semibold text-slate-700">

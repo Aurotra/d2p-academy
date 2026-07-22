@@ -26,6 +26,14 @@ export function InstructorShell({ profile, children }: InstructorShellProps) {
             </div>
           </div>
           <div className="flex flex-wrap items-center gap-3">
+            {(profile.role === "parent" || profile.role === "student" || profile.role === "admin") && (
+              <Link
+                href="/dashboard"
+                className="text-sm font-semibold text-sky-900 hover:underline"
+              >
+                {profile.role === "admin" ? "Admin / Veli Paneli" : "Veli Paneli"}
+              </Link>
+            )}
             <Link
               href="/instructor"
               className="text-sm font-semibold text-sky-900 hover:underline"

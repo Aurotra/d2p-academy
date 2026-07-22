@@ -5,6 +5,7 @@ export interface Profile {
   fullName: string;
   email: string;
   role: UserRole;
+  isInstructor?: boolean;
 }
 
 export interface AuthCredentials {
@@ -26,6 +27,7 @@ export interface AuthSession {
 export interface AuthResult {
   session: AuthSession;
   role?: UserRole;
+  isInstructor?: boolean;
   defaultRedirect?: string;
   /** True when signup succeeded but email confirmation is still required. */
   needsEmailConfirmation?: boolean;

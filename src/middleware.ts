@@ -9,6 +9,7 @@ import {
   clearStudentSessionCookie,
   validateStudentSessionAgainstDb,
 } from "@/infrastructure/auth/validate-student-session-edge";
+import { profileHasInstructorCapability } from "@/infrastructure/auth/instructor-capability";
 
 export async function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
@@ -73,13 +74,18 @@ export async function middleware(request: NextRequest) {
   }
 
   let profileRole: string | null = null;
+  let profileIsInstructor = false;
   if (user) {
     const { data: profile } = await supabase
       .from("profiles")
-      .select("role")
+      .select("role, is_instructor")
       .eq("id", user.id)
       .single();
     profileRole = profile?.role ?? null;
+    profileIsInstructor = profileHasInstructorCapability({
+      role: profileRole ?? "",
+      is_instructor: profile?.is_instructor,
+    });
   }
 
   if (user && pathname.startsWith("/admin")) {
@@ -89,13 +95,13 @@ export async function middleware(request: NextRequest) {
   }
 
   if (user && pathname.startsWith("/instructor")) {
-    if (profileRole !== "instructor") {
+    if (!profileIsInstructor) {
       return NextResponse.redirect(new URL("/dashboard", request.url));
     }
   }
 
   if (user && pathname === "/instructor-login") {
-    if (profileRole === "instructor") {
+    if (profileIsInstructor) {
       const redirectTo = request.nextUrl.searchParams.get("redirectTo");
       const safeRedirect =
         redirectTo && redirectTo.startsWith("/") && !redirectTo.startsWith("//")
@@ -119,7 +125,9 @@ export async function middleware(request: NextRequest) {
         ? "/admin"
         : profileRole === "instructor"
           ? "/instructor"
-          : "/dashboard";
+          : profileIsInstructor && profileRole !== "parent" && profileRole !== "student"
+            ? "/instructor"
+            : "/dashboard";
     const safeRedirect =
       redirectTo && redirectTo.startsWith("/") && !redirectTo.startsWith("//")
         ? redirectTo

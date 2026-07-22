@@ -5,8 +5,11 @@ import type {
   AuthResult,
   AuthSession,
   SignUpInput,
+  UserRole,
 } from "@/core/domain/auth";
 import type { AuthRepository } from "@/core/use-cases/authenticate-user";
+import { defaultDashboardPathForRole } from "@/infrastructure/auth/get-instructor-access";
+import { profileHasInstructorCapability } from "@/infrastructure/auth/instructor-capability";
 import { SITE_URL } from "@/shared/constants/site";
 import { mapAuthErrorToTurkish } from "@/shared/utils/auth-errors";
 
@@ -40,13 +43,13 @@ export class SupabaseAuthRepository implements AuthRepository {
 
     const { data: profile } = await this.client
       .from("profiles")
-      .select("role")
+      .select("role, is_instructor")
       .eq("id", data.user.id)
       .maybeSingle();
 
-    const role = profile?.role;
-    const defaultRedirect =
-      role === "admin" ? "/admin" : role === "instructor" ? "/instructor" : "/dashboard";
+    const role = profile?.role as UserRole | undefined;
+    const isInstructor = profile ? profileHasInstructorCapability(profile) : false;
+    const defaultRedirect = defaultDashboardPathForRole(role, isInstructor);
 
     return {
       session: mapSession(data.user.id, data.user.email),
@@ -54,6 +57,7 @@ export class SupabaseAuthRepository implements AuthRepository {
         role === "admin" || role === "instructor" || role === "student" || role === "parent"
           ? role
           : undefined,
+      isInstructor,
       defaultRedirect,
     };
   }

@@ -9,6 +9,7 @@ interface ProfileMemberRow {
   phone: string | null;
   created_at: string;
   is_active: boolean;
+  is_instructor: boolean;
 }
 
 export interface ListAdminMembersInput {
@@ -22,7 +23,7 @@ export class SupabaseAdminMemberRepository {
   async listMembers(input: ListAdminMembersInput = {}): Promise<AdminMember[]> {
     let request = this.client
       .from("profiles")
-      .select("id, full_name, email, role, phone, created_at, is_active")
+      .select("id, full_name, email, role, phone, created_at, is_active, is_instructor")
       .in("role", ["parent", "student"])
       .is("username", null)
       .is("parent_id", null)
@@ -58,6 +59,7 @@ export class SupabaseAdminMemberRepository {
       createdAt: row.created_at,
       isActive: row.is_active,
       childCount: childCountByParent.get(row.id) ?? 0,
+      isInstructor: row.is_instructor,
     }));
   }
 

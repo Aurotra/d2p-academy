@@ -28,7 +28,8 @@ export async function createInstructorAccount(
     email_confirm: true,
     user_metadata: {
       full_name: fullName,
-      role: "instructor",
+      role: "student",
+      is_instructor: true,
     },
   });
 
@@ -45,7 +46,8 @@ export async function createInstructorAccount(
       id: data.user.id,
       full_name: fullName,
       email,
-      role: "instructor",
+      role: "student",
+      is_instructor: true,
       is_active: true,
     },
     { onConflict: "id" },

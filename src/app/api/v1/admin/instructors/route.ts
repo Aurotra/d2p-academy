@@ -11,7 +11,7 @@ export async function GET() {
   const { data, error } = await access.client
     .from("profiles")
     .select("id, full_name, email")
-    .eq("role", "instructor")
+    .or("is_instructor.eq.true,role.eq.instructor")
     .eq("is_active", true)
     .order("full_name", { ascending: true });
 

@@ -19,12 +19,12 @@ function roleLabel(role: AdminMember["role"]): string {
 }
 
 function promoteConfirmMessage(member: AdminMember): string {
-  const base =
+  const roleNote =
     member.role === "parent"
-      ? `${member.fullName} veli hesabından eğitmen yapılacak. Veli paneline erişemez; /instructor panelini kullanır.`
-      : `${member.fullName} üye öğrenci hesabından eğitmen yapılacak. Öğrenci paneline erişemez; /instructor panelini kullanır.`;
+      ? "Veli paneli erişimi korunur; ayrıca Eğitmen Paneli açılır."
+      : "Üye paneli erişimi korunur; ayrıca Eğitmen Paneli açılır.";
 
-  return `${base}\n\nDevam edilsin mi?`;
+  return `${member.fullName} için eğitmen yetkisi verilecek. ${roleNote}\n\nDevam edilsin mi?`;
 }
 
 export function AdminMembersTable({ members }: { members: AdminMember[] }) {
@@ -144,14 +144,20 @@ export function AdminMembersTable({ members }: { members: AdminMember[] }) {
                       </span>
                     </td>
                     <td className="px-5 py-4">
-                      <Button
-                        type="button"
-                        variant="outline"
-                        disabled={!member.isActive || pendingId === member.id}
-                        onClick={() => void promoteToInstructor(member)}
-                      >
-                        {pendingId === member.id ? "Kaydediliyor..." : "Eğitmen yap"}
-                      </Button>
+                      {member.isInstructor ? (
+                        <span className="inline-flex rounded-full bg-violet-100 px-3 py-1 text-xs font-bold text-violet-900">
+                          Eğitmen
+                        </span>
+                      ) : (
+                        <Button
+                          type="button"
+                          variant="outline"
+                          disabled={!member.isActive || pendingId === member.id}
+                          onClick={() => void promoteToInstructor(member)}
+                        >
+                          {pendingId === member.id ? "Kaydediliyor..." : "Eğitmen yap"}
+                        </Button>
+                      )}
                     </td>
                   </tr>
                 ))

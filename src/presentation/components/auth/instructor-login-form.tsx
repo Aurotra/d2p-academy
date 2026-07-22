@@ -9,6 +9,7 @@ import { AuthShell } from "@/presentation/components/auth/auth-shell";
 import { Button } from "@/presentation/components/ui/button";
 import { Input } from "@/presentation/components/ui/input";
 import { createSupabaseBrowserClient } from "@/infrastructure/supabase/create-browser-client";
+import { profileHasInstructorCapability } from "@/infrastructure/auth/instructor-capability";
 import { mapAuthErrorToTurkish } from "@/shared/utils/auth-errors";
 
 export function InstructorLoginForm() {
@@ -35,11 +36,11 @@ export function InstructorLoginForm() {
 
       const { data: profile } = await client
         .from("profiles")
-        .select("role, full_name")
+        .select("role, full_name, is_instructor")
         .eq("id", data.user.id)
         .maybeSingle();
 
-      if (profile?.role === "instructor") {
+      if (profile && profileHasInstructorCapability(profile)) {
         const redirectTo = searchParams.get("redirectTo");
         const safeRedirect =
           redirectTo?.startsWith("/") && !redirectTo.startsWith("//")
@@ -74,14 +75,14 @@ export function InstructorLoginForm() {
 
       const payload = (await response.json()) as {
         error?: string;
-        data?: { role?: string; defaultRedirect?: string };
+        data?: { role?: string; isInstructor?: boolean; defaultRedirect?: string };
       };
 
       if (!response.ok) {
         throw new Error(mapAuthErrorToTurkish(payload.error ?? "Giriş başarısız oldu."));
       }
 
-      if (payload.data?.role !== "instructor") {
+      if (!payload.data?.isInstructor) {
         await fetch("/api/v1/auth/logout", { method: "POST" });
         throw new Error("Bu hesap eğitmen yetkisine sahip değil. Veli girişini kullanın.");
       }
