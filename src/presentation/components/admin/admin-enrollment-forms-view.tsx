@@ -122,7 +122,7 @@ function FormSection({
         printSection ? "forms-print-section" : ""
       }`}
     >
-      <header className="border-b border-slate-300 bg-navy-950 px-5 py-4 text-white sm:px-6">
+      <header className="forms-print-section-header border-b border-slate-300 bg-navy-950 px-5 py-4 text-white sm:px-6">
         <div className="flex flex-wrap items-end justify-between gap-3">
           <div>
             <p className="text-xs font-bold uppercase tracking-[0.2em] text-sky-300">{code}</p>
@@ -131,15 +131,15 @@ function FormSection({
           {meta ? <p className="text-sm font-medium text-sky-100">{meta}</p> : null}
         </div>
       </header>
-      <div className="space-y-6 p-5 sm:p-6">{children}</div>
+      <div className="forms-print-section-body space-y-6 p-5 sm:p-6">{children}</div>
     </section>
   );
 }
 
 function Subsection({ title, children }: { title: string; children: ReactNode }) {
   return (
-    <div className="space-y-3">
-      <div className="flex items-center gap-3 border-b-2 border-document-primary/30 pb-2">
+    <div className="forms-print-subsection space-y-3">
+      <div className="forms-print-subsection-title flex items-center gap-3 border-b-2 border-document-primary/30 pb-2">
         <span className="h-5 w-1.5 rounded-full bg-document-primary" aria-hidden />
         <h3 className="text-base font-black text-navy-950">{title}</h3>
       </div>
@@ -175,7 +175,7 @@ function ChoiceOptions({
   const extras = toSelectedList(selected).filter((item) => !known.has(item));
 
   return (
-    <div className="flex flex-wrap gap-2">
+    <div className="forms-print-chip-row flex flex-wrap gap-2">
       {options.map((option) => (
         <OptionChip key={option} label={option} selected={selectedSet.has(option)} />
       ))}
@@ -193,7 +193,7 @@ function LikertOptions({ value }: { value: number | undefined }) {
   const selected = typeof value === "number" && value >= 1 && value <= 5 ? value : null;
 
   return (
-    <div className="flex flex-wrap gap-2">
+    <div className="forms-print-chip-row flex flex-wrap gap-2">
       {PARTICIPANT_LIKERT_OPTIONS.map((option) => (
         <OptionChip
           key={option.value}
@@ -216,7 +216,7 @@ function QuestionBlock({
   children: ReactNode;
 }) {
   return (
-    <div className="rounded-xl border border-slate-200 bg-slate-50/80 px-4 py-3">
+    <div className="forms-print-question rounded-xl border border-slate-200 bg-slate-50/80 px-4 py-3">
       <p className="text-sm font-semibold leading-snug text-navy-950">{question}</p>
       <div className="mt-3">{children}</div>
     </div>
@@ -240,7 +240,7 @@ function TextAnswer({ value }: { value: string }) {
 
 function EmptyState({ message }: { message: string }) {
   return (
-    <p className="rounded-xl border border-dashed border-slate-300 bg-slate-50 px-4 py-6 text-center text-sm font-semibold text-slate-600">
+    <p className="forms-print-empty rounded-xl border border-dashed border-slate-300 bg-slate-50 px-4 py-6 text-center text-sm font-semibold text-slate-600">
       {message}
     </p>
   );
@@ -519,7 +519,7 @@ export function AdminEnrollmentFormsView({ answers }: AdminEnrollmentFormsViewPr
   );
 
   return (
-    <div className="enrollment-forms-print-root space-y-6">
+    <div className="forms-print-document enrollment-forms-print-root space-y-6">
       <div className="forms-print-cover hidden">
         <p className="text-xs font-bold uppercase tracking-[0.2em] text-slate-600">D2P Academy</p>
         <h1 className="mt-2 text-2xl font-black text-navy-950">Katılımcı Form Sonuçları</h1>

@@ -37,7 +37,7 @@ export default async function AdminEnrollmentFormsPage({
   }
 
   return (
-    <div className="enrollment-forms-print-root space-y-6">
+    <div className="forms-print-document enrollment-forms-print-root space-y-6">
       <div className="no-print rounded-2xl border border-slate-300 bg-gradient-to-br from-slate-50 via-white to-sky-50 p-6 shadow-sm sm:p-8">
         <Link
           href={`/admin/forms?event_id=${answers.eventId}`}

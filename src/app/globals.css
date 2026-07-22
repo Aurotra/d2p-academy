@@ -126,8 +126,16 @@ body {
 
 @media print {
   @page {
-    margin: 12mm;
-    size: A4;
+    margin: 14mm 12mm;
+    size: A4 portrait;
+  }
+
+  html,
+  body {
+    width: 100% !important;
+    height: auto !important;
+    overflow: visible !important;
+    background: #fff !important;
   }
 
   body {
@@ -138,14 +146,64 @@ body {
     display: none !important;
   }
 
-  .enrollment-forms-print-root {
+  /* Admin shell: strip chrome, use full printable width */
+  .admin-shell-root,
+  .admin-shell-root .mx-auto.grid,
+  .admin-shell-main {
+    display: block !important;
     max-width: none !important;
+    width: 100% !important;
+    margin: 0 !important;
     padding: 0 !important;
+    background: #fff !important;
   }
 
+  .forms-print-document,
+  .enrollment-forms-print-root {
+    box-sizing: border-box;
+    max-width: none !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: visible !important;
+  }
+
+  .forms-print-document > * + *,
+  .enrollment-forms-print-root > * + * {
+    margin-top: 0 !important;
+  }
+
+  /* Cover page */
+  .forms-print-cover {
+    display: block !important;
+    box-sizing: border-box;
+    width: 100%;
+    margin: 0;
+    padding: 0 0 10mm;
+    border-bottom: 2px solid #0f172a;
+    break-after: page;
+    page-break-after: always;
+  }
+
+  .forms-print-cover h1 {
+    font-size: 20pt !important;
+    line-height: 1.2 !important;
+  }
+
+  /* Major form sections — each starts on a new page */
   .forms-print-section {
+    box-sizing: border-box;
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    overflow: visible !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    border: 1px solid #cbd5e1 !important;
     break-before: page;
     page-break-before: always;
+    break-inside: auto;
+    page-break-inside: auto;
   }
 
   .forms-print-section:first-of-type {
@@ -153,11 +211,86 @@ body {
     page-break-before: auto;
   }
 
-  .forms-print-cover {
-    display: block !important;
-    margin-bottom: 1.5rem;
-    border-bottom: 2px solid #0f172a;
-    padding-bottom: 1rem;
+  .forms-print-section-header {
+    break-after: avoid;
+    page-break-after: avoid;
+    border-radius: 0 !important;
+  }
+
+  .forms-print-section-body {
+    box-sizing: border-box;
+    width: 100% !important;
+    padding: 4mm 0 2mm !important;
+    overflow: visible !important;
+  }
+
+  .forms-print-subsection {
+    box-sizing: border-box;
+    width: 100% !important;
+    max-width: 100% !important;
+    overflow: visible !important;
+    margin-bottom: 4mm;
+  }
+
+  .forms-print-subsection-title {
+    break-after: avoid;
+    page-break-after: avoid;
+  }
+
+  .forms-print-question {
+    box-sizing: border-box;
+    width: 100% !important;
+    max-width: 100% !important;
+    overflow: visible !important;
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  .forms-print-empty {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  .forms-print-section .forms-print-chip-row {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    gap: 2mm !important;
+    max-width: 100% !important;
+  }
+
+  .forms-print-section .forms-print-chip-row > * {
+    max-width: 100% !important;
+    word-break: break-word;
+  }
+
+  .forms-print-section header {
+    padding: 3mm 0 !important;
+  }
+
+  .forms-print-section header h2 {
+    font-size: 14pt !important;
+    line-height: 1.25 !important;
+  }
+
+  .forms-print-section .text-sm {
+    font-size: 10pt !important;
+    line-height: 1.4 !important;
+  }
+
+  .forms-print-section .text-xs {
+    font-size: 8.5pt !important;
+    line-height: 1.35 !important;
+  }
+
+  .forms-print-section .text-base {
+    font-size: 11pt !important;
+    line-height: 1.35 !important;
+  }
+
+  .forms-print-section .inline-flex.items-center.rounded-lg {
+    padding: 1mm 2.5mm !important;
+    font-size: 8.5pt !important;
+    line-height: 1.3 !important;
   }
 
   * {
