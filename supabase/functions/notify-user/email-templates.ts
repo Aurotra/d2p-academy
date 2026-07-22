@@ -170,7 +170,7 @@ export async function sendResendEmail(input: {
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      from: "D2P Academy <bildirim@d2pacademy.com>",
+      from: "D2P Academy <info@d2p.com.tr>",
       to: [input.to],
       subject: input.subject,
       html: input.html,
