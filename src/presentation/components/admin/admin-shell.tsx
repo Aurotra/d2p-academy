@@ -19,6 +19,7 @@ const navItems: NavItem[] = [
   { href: "/admin/students", label: "Öğrenciler" },
   { href: "/admin/members", label: "Veliler ve Üyeler" },
   { href: "/admin/events", label: "Etkinlikler" },
+  { href: "/admin/instructors", label: "Eğitmenler" },
   { href: "/admin/enrollments", label: "Etkinlik Kayıtları" },
   { href: "/admin/forms", label: "Formlar" },
   { href: "/admin/certificates", label: "Sertifikalar" },
