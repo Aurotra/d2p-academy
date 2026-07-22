@@ -38,8 +38,21 @@ export class SupabaseAuthRepository implements AuthRepository {
       throw new Error(mapAuthErrorToTurkish(error?.message ?? "Giriş başarısız oldu."));
     }
 
+    const { data: profile } = await this.client
+      .from("profiles")
+      .select("role")
+      .eq("id", data.user.id)
+      .maybeSingle();
+
+    const role = profile?.role;
+    const defaultRedirect =
+      role === "admin" ? "/admin" : role === "instructor" ? "/instructor" : "/dashboard";
+
     return {
       session: mapSession(data.user.id, data.user.email),
+      role:
+        role === "admin" || role === "instructor" || role === "student" ? role : undefined,
+      defaultRedirect,
     };
   }
 

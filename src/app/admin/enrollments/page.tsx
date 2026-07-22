@@ -193,6 +193,14 @@ export default async function AdminEnrollmentsPage({ searchParams }: AdminEnroll
             Sertifika Yönetimi →
           </Link>
           {eventId ? (
+            <Link
+              href={`/admin/events/${eventId}/attendance`}
+              className="text-sm font-semibold text-document-primary hover:underline"
+            >
+              Yoklama →
+            </Link>
+          ) : null}
+          {eventId ? (
             <Link href="/admin/enrollments" className="text-sm font-semibold text-slate-600 hover:underline">
               Tüm kayıtları göster
             </Link>

@@ -34,13 +34,16 @@ interface EventRow {
   status: EventStatus;
   program_code: string | null;
   cover_image_url: string | null;
+  instructor_id: string | null;
   event_categories: { name: string } | { name: string }[] | null;
+  instructor: { full_name: string } | { full_name: string }[] | null;
 }
 
 function mapEvent(row: EventRow): AdminEventRecord {
   const category = Array.isArray(row.event_categories)
     ? (row.event_categories[0] ?? null)
     : row.event_categories;
+  const instructor = Array.isArray(row.instructor) ? (row.instructor[0] ?? null) : row.instructor;
 
   return {
     id: row.id,
@@ -59,6 +62,8 @@ function mapEvent(row: EventRow): AdminEventRecord {
     status: row.status,
     programCode: row.program_code,
     coverImageUrl: row.cover_image_url,
+    instructorId: row.instructor_id,
+    instructorName: instructor?.full_name ?? null,
   };
 }
 
@@ -103,7 +108,9 @@ export class SupabaseAdminEventRepository implements AdminEventRepository {
         status,
         program_code,
         cover_image_url,
-        event_categories ( name )
+        instructor_id,
+        event_categories ( name ),
+        instructor:profiles!events_instructor_id_fkey ( full_name )
       `,
       )
       .order("start_at", { ascending: false });
@@ -138,6 +145,7 @@ export class SupabaseAdminEventRepository implements AdminEventRepository {
         max_capacity: input.maxCapacity,
         status: input.status,
         program_code: programCode,
+        instructor_id: input.instructorId ?? null,
       })
       .select(
         `
@@ -156,7 +164,9 @@ export class SupabaseAdminEventRepository implements AdminEventRepository {
         status,
         program_code,
         cover_image_url,
-        event_categories ( name )
+        instructor_id,
+        event_categories ( name ),
+        instructor:profiles!events_instructor_id_fkey ( full_name )
       `,
       )
       .single();
@@ -186,6 +196,7 @@ export class SupabaseAdminEventRepository implements AdminEventRepository {
       payload.program_code =
         input.programCode === null ? null : normalizeProgramCode(input.programCode);
     }
+    if (input.instructorId !== undefined) payload.instructor_id = input.instructorId;
 
     const { data, error } = await this.client
       .from("events")
@@ -208,7 +219,9 @@ export class SupabaseAdminEventRepository implements AdminEventRepository {
         status,
         program_code,
         cover_image_url,
-        event_categories ( name )
+        instructor_id,
+        event_categories ( name ),
+        instructor:profiles!events_instructor_id_fkey ( full_name )
       `,
       )
       .single();

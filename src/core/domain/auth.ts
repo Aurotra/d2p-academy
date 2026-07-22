@@ -25,6 +25,8 @@ export interface AuthSession {
 
 export interface AuthResult {
   session: AuthSession;
+  role?: UserRole;
+  defaultRedirect?: string;
   /** True when signup succeeded but email confirmation is still required. */
   needsEmailConfirmation?: boolean;
   /** True when confirmation email was resent for an existing unconfirmed account. */

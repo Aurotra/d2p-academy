@@ -8,6 +8,7 @@ import {
   type AdminEventRecord,
   type EventCategoryOption,
   type EventStatus,
+  type InstructorOption,
 } from "@/core/domain/admin-event";
 import { EVENT_TYPE_LABELS, type EventType } from "@/core/domain/event";
 import { Badge } from "@/presentation/components/ui/badge";
@@ -38,6 +39,7 @@ type EventFormState = {
   maxCapacity: string;
   programCode: string;
   status: EventStatus;
+  instructorId: string;
 };
 
 const defaultForm: EventFormState = {
@@ -53,6 +55,7 @@ const defaultForm: EventFormState = {
   maxCapacity: "",
   programCode: "",
   status: "draft",
+  instructorId: "",
 };
 
 function formatDateTime(value: string | Date): string {
@@ -115,6 +118,7 @@ function eventRecordToForm(event: AdminEventRecord): EventFormState {
     maxCapacity: event.maxCapacity?.toString() ?? "",
     programCode: event.programCode ?? "",
     status: event.status,
+    instructorId: event.instructorId ?? "",
   };
 }
 
@@ -142,6 +146,7 @@ function buildEventPayload(form: EventFormState) {
     maxCapacity: form.maxCapacity ? Number(form.maxCapacity) : null,
     programCode,
     status: form.status,
+    instructorId: form.instructorId || null,
   };
 }
 
@@ -149,12 +154,14 @@ function EventFormFields({
   form,
   setForm,
   categories,
+  instructors,
   idPrefix,
   titleAutoFocus,
 }: {
   form: EventFormState;
   setForm: (next: EventFormState) => void;
   categories: EventCategoryOption[];
+  instructors: InstructorOption[];
   idPrefix: string;
   titleAutoFocus?: boolean;
 }) {
@@ -201,6 +208,20 @@ function EventFormFields({
         {categories.map((category) => (
           <option key={category.id} value={category.id}>
             {category.name}
+          </option>
+        ))}
+      </Select>
+      <Select
+        id={`${idPrefix}-instructor`}
+        name={`${idPrefix}-instructor`}
+        label="Eğitmen"
+        value={form.instructorId}
+        onChange={(e) => setForm({ ...form, instructorId: e.target.value })}
+      >
+        <option value="">Eğitmen seçin</option>
+        {instructors.map((instructor) => (
+          <option key={instructor.id} value={instructor.id}>
+            {instructor.fullName} ({instructor.email})
           </option>
         ))}
       </Select>
@@ -287,6 +308,7 @@ function EventFormFields({
 export function AdminEventsManager() {
   const [events, setEvents] = useState<AdminEventRecord[]>([]);
   const [categories, setCategories] = useState<EventCategoryOption[]>([]);
+  const [instructors, setInstructors] = useState<InstructorOption[]>([]);
   const [createForm, setCreateForm] = useState(defaultForm);
   const [editingEventId, setEditingEventId] = useState<string | null>(null);
   const [editForm, setEditForm] = useState<EventFormState | null>(null);
@@ -301,14 +323,18 @@ export function AdminEventsManager() {
     setError(null);
 
     try {
-      const [eventsResponse, categoriesResponse] = await Promise.all([
+      const [eventsResponse, categoriesResponse, instructorsResponse] = await Promise.all([
         fetch("/api/v1/admin/events"),
         fetch("/api/v1/admin/event-categories"),
+        fetch("/api/v1/admin/instructors"),
       ]);
 
       const eventsPayload = (await eventsResponse.json()) as EventsApiResponse | { error: string };
       const categoriesPayload = (await categoriesResponse.json()) as
         | CategoriesApiResponse
+        | { error: string };
+      const instructorsPayload = (await instructorsResponse.json()) as
+        | { data: InstructorOption[] }
         | { error: string };
 
       if (!eventsResponse.ok || "error" in eventsPayload) {
@@ -321,8 +347,15 @@ export function AdminEventsManager() {
         );
       }
 
+      if (!instructorsResponse.ok || "error" in instructorsPayload) {
+        throw new Error(
+          "error" in instructorsPayload ? instructorsPayload.error : "Eğitmenler alınamadı.",
+        );
+      }
+
       setEvents(eventsPayload.data.map(normalizeEventRecord));
       setCategories(categoriesPayload.data);
+      setInstructors(instructorsPayload.data);
     } catch (loadError) {
       setError(loadError instanceof Error ? loadError.message : "Veri yüklenemedi.");
     } finally {
@@ -471,6 +504,7 @@ export function AdminEventsManager() {
             form={createForm}
             setForm={setCreateForm}
             categories={categories}
+            instructors={instructors}
             idPrefix="create"
           />
           <Button type="submit" disabled={isSaving}>
@@ -518,6 +552,7 @@ export function AdminEventsManager() {
                         form={editForm}
                         setForm={(next) => setEditForm(next)}
                         categories={categories}
+                        instructors={instructors}
                         idPrefix={`edit-${event.id}`}
                         titleAutoFocus
                       />
@@ -530,6 +565,12 @@ export function AdminEventsManager() {
                           className="inline-flex items-center justify-center rounded-xl border-2 border-sky-800 bg-white px-5 py-3 text-sm font-semibold text-sky-950 shadow-md shadow-sky-200/60 transition hover:border-sky-900 hover:bg-sky-50"
                         >
                           Kayıtlar
+                        </Link>
+                        <Link
+                          href={`/admin/events/${event.id}/attendance`}
+                          className="inline-flex items-center justify-center rounded-xl border-2 border-sky-800 bg-white px-5 py-3 text-sm font-semibold text-sky-950 shadow-md shadow-sky-200/60 transition hover:border-sky-900 hover:bg-sky-50"
+                        >
+                          Yoklama
                         </Link>
                       </div>
                     </form>
@@ -555,6 +596,9 @@ export function AdminEventsManager() {
                         {event.locationName ? (
                           <p className="mt-1 text-sm text-slate-500">{event.locationName}</p>
                         ) : null}
+                        <p className="mt-1 text-sm text-slate-500">
+                          Eğitmen: {event.instructorName ?? "Atanmadı"}
+                        </p>
                       </div>
                       <div className="flex flex-wrap gap-2">
                         <Button
@@ -569,6 +613,12 @@ export function AdminEventsManager() {
                           className="inline-flex items-center justify-center rounded-xl border-2 border-sky-800 bg-white px-5 py-3 text-sm font-semibold text-sky-950 shadow-md shadow-sky-200/60 transition hover:border-sky-900 hover:bg-sky-50"
                         >
                           Kayıtlar
+                        </Link>
+                        <Link
+                          href={`/admin/events/${event.id}/attendance`}
+                          className="inline-flex items-center justify-center rounded-xl border-2 border-sky-800 bg-white px-5 py-3 text-sm font-semibold text-sky-950 shadow-md shadow-sky-200/60 transition hover:border-sky-900 hover:bg-sky-50"
+                        >
+                          Yoklama
                         </Link>
                         {event.status === "published" ? (
                           <Button

@@ -33,13 +33,17 @@ export function LoginForm() {
         body: JSON.stringify({ email, password }),
       });
 
-      const payload = (await response.json()) as { error?: string };
+      const payload = (await response.json()) as {
+        error?: string;
+        data?: { defaultRedirect?: string };
+      };
 
       if (!response.ok) {
         throw new Error(mapAuthErrorToTurkish(payload.error ?? "Giriş başarısız oldu."));
       }
 
-      const redirectTo = searchParams.get("redirectTo") ?? "/dashboard";
+      const redirectTo =
+        searchParams.get("redirectTo") ?? payload.data?.defaultRedirect ?? "/dashboard";
       router.push(redirectTo);
       router.refresh();
     } catch (loginError) {

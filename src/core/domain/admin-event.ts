@@ -26,6 +26,14 @@ export interface AdminEventRecord {
   status: EventStatus;
   programCode: string | null;
   coverImageUrl: string | null;
+  instructorId: string | null;
+  instructorName: string | null;
+}
+
+export interface InstructorOption {
+  id: string;
+  fullName: string;
+  email: string;
 }
 
 export interface CreateEventInput {
@@ -41,6 +49,7 @@ export interface CreateEventInput {
   maxCapacity: number | null;
   status: EventStatus;
   programCode: string | null;
+  instructorId: string | null;
 }
 
 export interface UpdateEventInput extends Partial<CreateEventInput> {

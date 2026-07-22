@@ -58,31 +58,51 @@ export async function middleware(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  if (!user && (pathname.startsWith("/dashboard") || pathname.startsWith("/admin"))) {
+  if (!user && (pathname.startsWith("/dashboard") || pathname.startsWith("/admin") || pathname.startsWith("/instructor"))) {
     const loginUrl = request.nextUrl.clone();
     loginUrl.pathname = "/login";
     loginUrl.searchParams.set("redirectTo", pathname);
     return NextResponse.redirect(loginUrl);
   }
 
-  if (user && pathname.startsWith("/admin")) {
+  let profileRole: string | null = null;
+  if (user) {
     const { data: profile } = await supabase
       .from("profiles")
       .select("role")
       .eq("id", user.id)
       .single();
+    profileRole = profile?.role ?? null;
+  }
 
-    if (profile?.role !== "admin") {
+  if (user && pathname.startsWith("/admin")) {
+    if (profileRole !== "admin") {
       return NextResponse.redirect(new URL("/dashboard", request.url));
     }
   }
 
+  if (user && pathname.startsWith("/instructor")) {
+    if (profileRole !== "instructor") {
+      return NextResponse.redirect(new URL("/dashboard", request.url));
+    }
+  }
+
+  if (user && pathname === "/dashboard" && profileRole === "instructor") {
+    return NextResponse.redirect(new URL("/instructor", request.url));
+  }
+
   if (user && (pathname === "/login" || pathname === "/register")) {
     const redirectTo = request.nextUrl.searchParams.get("redirectTo");
+    const defaultPath =
+      profileRole === "admin"
+        ? "/admin"
+        : profileRole === "instructor"
+          ? "/instructor"
+          : "/dashboard";
     const safeRedirect =
       redirectTo && redirectTo.startsWith("/") && !redirectTo.startsWith("//")
         ? redirectTo
-        : "/dashboard";
+        : defaultPath;
     return NextResponse.redirect(new URL(safeRedirect, request.url));
   }
 
@@ -94,6 +114,8 @@ export const config = {
     "/dashboard/:path*",
     "/admin",
     "/admin/:path*",
+    "/instructor",
+    "/instructor/:path*",
     "/login",
     "/register",
     "/student-dashboard",
