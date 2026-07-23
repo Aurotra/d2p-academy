@@ -1,5 +1,3 @@
-import "server-only";
-
 export interface InstructorCapableProfile {
   role: string;
   is_instructor?: boolean | null;
