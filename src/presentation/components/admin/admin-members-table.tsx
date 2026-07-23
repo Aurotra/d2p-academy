@@ -14,8 +14,11 @@ function formatDate(value: string): string {
   }).format(new Date(value));
 }
 
-function roleLabel(role: AdminMember["role"]): string {
-  return role === "parent" ? "Veli" : "Üye öğrenci";
+function roleLabel(role: string): string {
+  if (role === "parent") return "Veli";
+  if (role === "student") return "Üye öğrenci";
+  if (role === "instructor") return "Eğitmen (eski kayıt)";
+  return role;
 }
 
 function promoteConfirmMessage(member: AdminMember): string {
@@ -178,7 +181,9 @@ export function AdminMembersTable({ members }: { members: AdminMember[] }) {
                         className={`inline-flex rounded-full px-3 py-1 text-xs font-bold ${
                           member.role === "parent"
                             ? "bg-sky-100 text-sky-900"
-                            : "bg-amber-100 text-amber-900"
+                            : member.role === "student"
+                              ? "bg-amber-100 text-amber-900"
+                              : "bg-violet-100 text-violet-900"
                         }`}
                       >
                         {roleLabel(member.role)}
@@ -201,7 +206,7 @@ export function AdminMembersTable({ members }: { members: AdminMember[] }) {
                       </span>
                     </td>
                     <td className="px-5 py-4">
-                      {member.isInstructor ? (
+                      {member.isInstructor || member.role === "instructor" ? (
                         <div className="flex flex-wrap items-center gap-2">
                           <span className="inline-flex rounded-full bg-violet-100 px-3 py-1 text-xs font-bold text-violet-900">
                             Eğitmen

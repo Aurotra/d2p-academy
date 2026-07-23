@@ -24,9 +24,9 @@ export class SupabaseAdminMemberRepository {
     let request = this.client
       .from("profiles")
       .select("id, full_name, email, role, phone, created_at, is_active, is_instructor")
-      .in("role", ["parent", "student"])
       .is("username", null)
       .is("parent_id", null)
+      .or("role.in.(parent,student),is_instructor.eq.true,role.eq.instructor")
       .order("created_at", { ascending: false });
 
     if (input.role && input.role !== "all") {

@@ -4,7 +4,7 @@ export interface AdminMember {
   id: string;
   fullName: string;
   email: string | null;
-  role: AdminMemberRole;
+  role: AdminMemberRole | "instructor";
   phone: string | null;
   createdAt: string;
   isActive: boolean;
