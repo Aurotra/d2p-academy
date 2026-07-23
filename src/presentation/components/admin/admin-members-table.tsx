@@ -76,6 +76,63 @@ export function AdminMembersTable({ members }: { members: AdminMember[] }) {
     }
   }
 
+  async function revokeInstructorRole(member: AdminMember) {
+    if (
+      !window.confirm(
+        `${member.fullName} için eğitmen yetkisi geri alınacak. Veli/üye paneli erişimi korunur; atanmış etkinliklerden eğitmen ataması kaldırılır. Devam edilsin mi?`,
+      )
+    ) {
+      return;
+    }
+
+    setPendingId(member.id);
+    setError(null);
+    setSuccess(null);
+
+    try {
+      const response = await fetch(`/api/v1/admin/instructors/${member.id}/demote`, {
+        method: "POST",
+      });
+      const payload = (await response.json()) as {
+        error?: string;
+        data?: {
+          fullName?: string;
+          unassignedEventCount?: number;
+          emailSent?: boolean;
+          emailError?: string | null;
+        };
+      };
+
+      if (!response.ok) {
+        throw new Error(payload.error ?? "Eğitmen yetkisi geri alınamadı.");
+      }
+
+      const name = payload.data?.fullName ?? member.fullName;
+      const eventNote =
+        (payload.data?.unassignedEventCount ?? 0) > 0
+          ? ` ${payload.data?.unassignedEventCount} etkinlikten eğitmen ataması kaldırıldı.`
+          : "";
+
+      if (payload.data?.emailSent) {
+        setSuccess(`${name} için eğitmen yetkisi kaldırıldı.${eventNote} Bilgilendirme e-postası gönderildi.`);
+      } else if (payload.data?.emailError) {
+        setSuccess(
+          `${name} için eğitmen yetkisi kaldırıldı.${eventNote} E-posta gönderilemedi: ${payload.data.emailError}`,
+        );
+      } else {
+        setSuccess(
+          `${name} için eğitmen yetkisi kaldırıldı.${eventNote} (RESEND_API_KEY tanımlı değil veya e-posta yok; bildirim gönderilmedi.)`,
+        );
+      }
+
+      router.refresh();
+    } catch (revokeError) {
+      setError(revokeError instanceof Error ? revokeError.message : "İşlem başarısız.");
+    } finally {
+      setPendingId(null);
+    }
+  }
+
   return (
     <div className="space-y-4">
       {error ? (
@@ -145,9 +202,19 @@ export function AdminMembersTable({ members }: { members: AdminMember[] }) {
                     </td>
                     <td className="px-5 py-4">
                       {member.isInstructor ? (
-                        <span className="inline-flex rounded-full bg-violet-100 px-3 py-1 text-xs font-bold text-violet-900">
-                          Eğitmen
-                        </span>
+                        <div className="flex flex-wrap items-center gap-2">
+                          <span className="inline-flex rounded-full bg-violet-100 px-3 py-1 text-xs font-bold text-violet-900">
+                            Eğitmen
+                          </span>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            disabled={pendingId === member.id}
+                            onClick={() => void revokeInstructorRole(member)}
+                          >
+                            {pendingId === member.id ? "Kaydediliyor..." : "Yetkiyi geri al"}
+                          </Button>
+                        </div>
                       ) : (
                         <Button
                           type="button"
