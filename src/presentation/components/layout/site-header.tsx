@@ -284,9 +284,6 @@ export function SiteHeader() {
               <AuthPortalLink href="/student-login" kind="student">
                 Öğrenci Girişi
               </AuthPortalLink>
-              <AuthPortalLink href="/instructor-login" kind="instructor">
-                Eğitmen Paneli
-              </AuthPortalLink>
               <AuthPortalLink href="/login" kind="parent">
                 Veli Girişi
               </AuthPortalLink>
@@ -376,14 +373,6 @@ export function SiteHeader() {
                     onClick={closeMobileMenu}
                   >
                     Öğrenci Girişi
-                  </AuthPortalLink>
-                  <AuthPortalLink
-                    href="/instructor-login"
-                    kind="instructor"
-                    block
-                    onClick={closeMobileMenu}
-                  >
-                    Eğitmen Paneli
                   </AuthPortalLink>
                   <AuthPortalLink href="/login" kind="parent" block onClick={closeMobileMenu}>
                     Veli Girişi

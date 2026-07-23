@@ -11,13 +11,13 @@ export default async function InstructorLayout({ children }: { children: ReactNo
   const client = await createSupabaseServerClient();
 
   if (!client) {
-    redirect("/instructor-login?redirectTo=/instructor");
+    redirect("/login?redirectTo=/instructor");
   }
 
   const access = await getInstructorAccess(client);
 
   if (!access.authorized) {
-    redirect(access.reason === "unauthenticated" ? "/instructor-login?redirectTo=/instructor" : "/dashboard");
+    redirect(access.reason === "unauthenticated" ? "/login?redirectTo=/instructor" : "/dashboard");
   }
 
   return <InstructorShell profile={access.profile}>{children}</InstructorShell>;

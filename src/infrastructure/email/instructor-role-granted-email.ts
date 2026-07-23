@@ -54,7 +54,7 @@ function emailLayout(content: string): string {
 export function buildInstructorRoleGrantedEmail(input: {
   recipientName: string;
 }): { subject: string; html: string } {
-  const loginUrl = `${SITE_URL}/instructor-login`;
+  const loginUrl = `${SITE_URL}/login`;
   const name = escapeHtml(input.recipientName);
 
   const content = `
@@ -63,13 +63,13 @@ export function buildInstructorRoleGrantedEmail(input: {
       Merhaba <strong>${name}</strong>, D2P Academy hesabınıza <strong>eğitmen yetkisi</strong> tanımlandı.
     </p>
     <p style="margin:0 0 16px;font-size:15px;line-height:1.6;color:#475569;">
-      Mevcut e-posta adresiniz ve şifrenizle Eğitmen Paneli'ne giriş yapabilir; veli/üye paneliniz de
-      açık kalır. Size atanmış etkinliklerde günlük yoklama alabilirsiniz.
+      Mevcut e-posta adresiniz ve şifrenizle veli girişi yapın; panelinizde Eğitmen Paneli bağlantısını
+      göreceksiniz. Size atanmış etkinliklerde günlük yoklama alabilirsiniz.
     </p>
     <p style="margin:0;font-size:14px;line-height:1.6;color:#475569;">
       Giriş adresi: <a href="${loginUrl}" style="color:${BRAND_PRIMARY};font-weight:bold;">${loginUrl}</a>
     </p>
-    <a href="${loginUrl}" style="display:inline-block;margin-top:20px;padding:12px 20px;background-color:${BRAND_PRIMARY};color:#ffffff;text-decoration:none;border-radius:10px;font-size:14px;font-weight:bold;">Eğitmen Paneline Giriş</a>
+    <a href="${loginUrl}" style="display:inline-block;margin-top:20px;padding:12px 20px;background-color:${BRAND_PRIMARY};color:#ffffff;text-decoration:none;border-radius:10px;font-size:14px;font-weight:bold;">Veli Girişi</a>
     <p style="margin:20px 0 0;font-size:13px;line-height:1.6;color:#64748b;">
       Şifrenizi bilmiyorsanız veli giriş sayfasındaki “şifremi unuttum” akışını kullanabilir veya D2P Academy ile iletişime geçebilirsiniz.
     </p>

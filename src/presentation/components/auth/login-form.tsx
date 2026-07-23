@@ -105,9 +105,6 @@ export function LoginForm() {
         <AuthPortalLink href="/student-login" kind="student" block>
           Öğrenci Girişi
         </AuthPortalLink>
-        <AuthPortalLink href="/instructor-login" kind="instructor" block>
-          Eğitmen Paneli
-        </AuthPortalLink>
       </div>
 
       <p className="mt-3 text-center text-sm">

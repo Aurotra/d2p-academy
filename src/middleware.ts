@@ -61,7 +61,7 @@ export async function middleware(request: NextRequest) {
 
   if (!user && pathname.startsWith("/instructor")) {
     const loginUrl = request.nextUrl.clone();
-    loginUrl.pathname = "/instructor-login";
+    loginUrl.pathname = "/login";
     loginUrl.searchParams.set("redirectTo", pathname);
     return NextResponse.redirect(loginUrl);
   }
@@ -100,18 +100,27 @@ export async function middleware(request: NextRequest) {
     }
   }
 
+  if (!user && pathname === "/instructor-login") {
+    const loginUrl = request.nextUrl.clone();
+    loginUrl.pathname = "/login";
+    const redirectTo = request.nextUrl.searchParams.get("redirectTo");
+    if (redirectTo) {
+      loginUrl.searchParams.set("redirectTo", redirectTo);
+    } else {
+      loginUrl.searchParams.set("redirectTo", "/instructor");
+    }
+    return NextResponse.redirect(loginUrl);
+  }
+
   if (user && pathname === "/instructor-login") {
-    if (profileIsInstructor) {
-      const redirectTo = request.nextUrl.searchParams.get("redirectTo");
-      const safeRedirect =
-        redirectTo && redirectTo.startsWith("/") && !redirectTo.startsWith("//")
-          ? redirectTo
-          : "/instructor";
-      return NextResponse.redirect(new URL(safeRedirect, request.url));
-    }
-    if (profileRole === "admin") {
-      return NextResponse.redirect(new URL("/admin", request.url));
-    }
+    const redirectTo = request.nextUrl.searchParams.get("redirectTo");
+    const safeRedirect =
+      redirectTo && redirectTo.startsWith("/") && !redirectTo.startsWith("//")
+        ? redirectTo
+        : profileIsInstructor
+          ? "/instructor"
+          : "/dashboard";
+    return NextResponse.redirect(new URL(safeRedirect, request.url));
   }
 
   if (user && pathname === "/dashboard" && profileRole === "instructor") {
