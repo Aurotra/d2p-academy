@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 
-import { sendInstructorRoleRevokedEmail } from "@/infrastructure/email/instructor-role-revoked-email";
+import { sendInstructorRevokedNotification } from "@/infrastructure/email/send-instructor-notification-email";
 import { requireAdminApiAccess } from "@/infrastructure/auth/require-admin-api-access";
 import { demoteInstructorToMember } from "@/infrastructure/auth/set-user-role";
 
@@ -20,16 +20,19 @@ export async function POST(
     let emailError: string | null = null;
 
     if (member.email) {
-      try {
-        emailSent = await sendInstructorRoleRevokedEmail({
-          recipientName: member.fullName,
-          email: member.email,
-          memberRole: member.role,
-        });
-      } catch (error) {
-        emailError = error instanceof Error ? error.message : "E-posta gönderilemedi.";
+      const emailResult = await sendInstructorRevokedNotification({
+        recipientName: member.fullName,
+        email: member.email,
+        memberRole: member.role,
+      });
+      emailSent = emailResult.emailSent;
+      emailError = emailResult.emailError;
+
+      if (!emailSent) {
         console.error("[demote-instructor] E-posta hatası:", emailError);
       }
+    } else {
+      emailError = "Profilde e-posta adresi yok.";
     }
 
     return NextResponse.json({

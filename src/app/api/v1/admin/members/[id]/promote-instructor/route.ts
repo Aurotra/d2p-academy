@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 
-import { sendInstructorRoleGrantedEmail } from "@/infrastructure/email/instructor-role-granted-email";
+import { sendInstructorGrantedNotification } from "@/infrastructure/email/send-instructor-notification-email";
 import { requireAdminApiAccess } from "@/infrastructure/auth/require-admin-api-access";
 import { promoteMemberToInstructor } from "@/infrastructure/auth/set-user-role";
 
@@ -15,25 +15,20 @@ export async function POST(
 
   try {
     const member = await promoteMemberToInstructor(id);
+    const emailResult = await sendInstructorGrantedNotification({
+      recipientName: member.fullName,
+      email: member.email,
+    });
 
-    let emailSent = false;
-    let emailError: string | null = null;
-
-    try {
-      emailSent = await sendInstructorRoleGrantedEmail({
-        recipientName: member.fullName,
-        email: member.email,
-      });
-    } catch (error) {
-      emailError = error instanceof Error ? error.message : "E-posta gönderilemedi.";
-      console.error("[promote-instructor] E-posta hatası:", emailError);
+    if (!emailResult.emailSent) {
+      console.error("[promote-instructor] E-posta hatası:", emailResult.emailError);
     }
 
     return NextResponse.json({
       data: {
         ...member,
-        emailSent,
-        emailError,
+        emailSent: emailResult.emailSent,
+        emailError: emailResult.emailError,
       },
     });
   } catch (error) {

@@ -35,6 +35,7 @@ export function AdminMembersTable({ members }: { members: AdminMember[] }) {
   const [pendingId, setPendingId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+  const [warning, setWarning] = useState<string | null>(null);
 
   async function promoteToInstructor(member: AdminMember) {
     if (!window.confirm(promoteConfirmMessage(member))) {
@@ -44,6 +45,7 @@ export function AdminMembersTable({ members }: { members: AdminMember[] }) {
     setPendingId(member.id);
     setError(null);
     setSuccess(null);
+    setWarning(null);
 
     try {
       const response = await fetch(`/api/v1/admin/members/${member.id}/promote-instructor`, {
@@ -61,13 +63,11 @@ export function AdminMembersTable({ members }: { members: AdminMember[] }) {
       const name = payload.data?.fullName ?? member.fullName;
       if (payload.data?.emailSent) {
         setSuccess(`${name} eğitmen yapıldı. Bilgilendirme e-postası gönderildi.`);
-      } else if (payload.data?.emailError) {
-        setSuccess(
-          `${name} eğitmen yapıldı ancak e-posta gönderilemedi: ${payload.data.emailError}`,
-        );
       } else {
-        setSuccess(
-          `${name} eğitmen yapıldı. (RESEND_API_KEY tanımlı değil; e-posta gönderilmedi.)`,
+        setSuccess(`${name} eğitmen yapıldı.`);
+        setWarning(
+          payload.data?.emailError ??
+            "Bilgilendirme e-postası gönderilemedi. Vercel RESEND_API_KEY veya Supabase send-instructor-email fonksiyonunu kontrol edin.",
         );
       }
 
@@ -91,6 +91,7 @@ export function AdminMembersTable({ members }: { members: AdminMember[] }) {
     setPendingId(member.id);
     setError(null);
     setSuccess(null);
+    setWarning(null);
 
     try {
       const response = await fetch(`/api/v1/admin/members/${member.id}/revoke-instructor`, {
@@ -118,13 +119,11 @@ export function AdminMembersTable({ members }: { members: AdminMember[] }) {
 
       if (payload.data?.emailSent) {
         setSuccess(`${name} için eğitmen yetkisi kaldırıldı.${eventNote} Bilgilendirme e-postası gönderildi.`);
-      } else if (payload.data?.emailError) {
-        setSuccess(
-          `${name} için eğitmen yetkisi kaldırıldı.${eventNote} E-posta gönderilemedi: ${payload.data.emailError}`,
-        );
       } else {
-        setSuccess(
-          `${name} için eğitmen yetkisi kaldırıldı.${eventNote} (RESEND_API_KEY tanımlı değil veya e-posta yok; bildirim gönderilmedi.)`,
+        setSuccess(`${name} için eğitmen yetkisi kaldırıldı.${eventNote}`);
+        setWarning(
+          payload.data?.emailError ??
+            "Bilgilendirme e-postası gönderilemedi. Vercel RESEND_API_KEY veya Supabase send-instructor-email fonksiyonunu kontrol edin.",
         );
       }
 
@@ -146,6 +145,11 @@ export function AdminMembersTable({ members }: { members: AdminMember[] }) {
       {success ? (
         <p className="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">
           {success}
+        </p>
+      ) : null}
+      {warning ? (
+        <p className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+          {warning}
         </p>
       ) : null}
 

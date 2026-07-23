@@ -1,6 +1,6 @@
 import "server-only";
 
-import { isResendConfigured, sendResendEmail } from "@/infrastructure/email/send-resend-email";
+import { sendResendEmail } from "@/infrastructure/email/send-resend-email";
 import { SITE_URL } from "@/shared/constants/site";
 
 const BRAND_PRIMARY = "#2563eb";
@@ -91,11 +91,7 @@ export async function sendInstructorRoleRevokedEmail(input: {
   recipientName: string;
   email: string;
   memberRole: "parent" | "student" | "admin" | "instructor";
-}): Promise<boolean> {
-  if (!isResendConfigured()) {
-    return false;
-  }
-
+}): Promise<void> {
   const email = buildInstructorRoleRevokedEmail({
     recipientName: input.recipientName,
     memberRole: input.memberRole,
@@ -105,6 +101,4 @@ export async function sendInstructorRoleRevokedEmail(input: {
     subject: email.subject,
     html: email.html,
   });
-
-  return true;
 }
