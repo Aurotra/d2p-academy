@@ -93,7 +93,7 @@ export function AdminMembersTable({ members }: { members: AdminMember[] }) {
     setSuccess(null);
 
     try {
-      const response = await fetch(`/api/v1/admin/instructors/${member.id}/demote`, {
+      const response = await fetch(`/api/v1/admin/members/${member.id}/revoke-instructor`, {
         method: "POST",
       });
       const payload = (await response.json()) as {
@@ -161,7 +161,7 @@ export function AdminMembersTable({ members }: { members: AdminMember[] }) {
                 <th className="px-5 py-4">Çocuk</th>
                 <th className="px-5 py-4">Kayıt</th>
                 <th className="px-5 py-4">Durum</th>
-                <th className="px-5 py-4">İşlem</th>
+                <th className="px-5 py-4">Eğitmen yetkisi</th>
               </tr>
             </thead>
             <tbody>
@@ -206,14 +206,14 @@ export function AdminMembersTable({ members }: { members: AdminMember[] }) {
                       </span>
                     </td>
                     <td className="px-5 py-4">
-                      {member.isInstructor || member.role === "instructor" ? (
+                      {member.isInstructor ? (
                         <div className="flex flex-wrap items-center gap-2">
                           <span className="inline-flex rounded-full bg-violet-100 px-3 py-1 text-xs font-bold text-violet-900">
-                            Eğitmen
+                            Aktif
                           </span>
                           <Button
                             type="button"
-                            variant="ghost"
+                            variant="outline"
                             disabled={pendingId === member.id}
                             onClick={() => void revokeInstructorRole(member)}
                           >

@@ -2,9 +2,8 @@ import { Suspense } from "react";
 import { redirect } from "next/navigation";
 
 import type { AdminMemberRole } from "@/core/domain/admin-member";
-import { getAdminAccess } from "@/infrastructure/auth/get-admin-access";
+import { getAdminDataClient } from "@/infrastructure/auth/get-admin-data-client";
 import { SupabaseAdminMemberRepository } from "@/infrastructure/repositories/supabase-admin-member-repository";
-import { createSupabaseServerClient } from "@/infrastructure/supabase/create-server-client";
 import { AdminMembersFilters } from "@/presentation/components/admin/admin-members-filters";
 import { AdminMembersTable } from "@/presentation/components/admin/admin-members-table";
 
@@ -23,27 +22,20 @@ function parseRoleFilter(value: string | undefined): AdminMemberRole | "all" {
 
 export default async function AdminMembersPage({ searchParams }: AdminMembersPageProps) {
   const params = await searchParams;
-  const client = await createSupabaseServerClient();
 
-  if (!client) {
-    redirect("/login");
-  }
+  try {
+    const dataClient = await getAdminDataClient();
+    const repository = new SupabaseAdminMemberRepository(dataClient);
+    const members = await repository.listMembers({
+      query: params.q,
+      role: parseRoleFilter(params.role),
+    });
 
-  const access = await getAdminAccess(client);
-  if (!access.authorized) {
-    redirect("/login");
-  }
+    const parentCount = members.filter((member) => member.role === "parent").length;
+    const studentCount = members.filter((member) => member.role === "student").length;
+    const instructorCount = members.filter((member) => member.isInstructor).length;
 
-  const repository = new SupabaseAdminMemberRepository(client);
-  const members = await repository.listMembers({
-    query: params.q,
-    role: parseRoleFilter(params.role),
-  });
-
-  const parentCount = members.filter((member) => member.role === "parent").length;
-  const studentCount = members.filter((member) => member.role === "student").length;
-
-  return (
+    return (
     <div className="space-y-6">
       <div className="rounded-[1.75rem] border border-slate-200 bg-white p-8 shadow-sm">
         <p className="text-sm font-semibold uppercase tracking-[0.18em] text-document-primary">
@@ -53,8 +45,8 @@ export default async function AdminMembersPage({ searchParams }: AdminMembersPag
         <p className="mt-2 text-sm text-slate-600">
           Siteye kayıt olan veli ve e-posta ile giriş yapan üye hesapları. Çocuk (kullanıcı adlı)
           hesaplar bu listede yer almaz. <strong>Eğitmen yap</strong> veya{" "}
-          <strong>Yetkiyi geri al</strong> işlemlerini bu listeden yönetebilirsiniz. Eğitmen yetkisi
-          verildiğinde veli/üye rolü korunur; kişi hem veli hem eğitmen panelini kullanabilir.
+          <strong>Yetkiyi geri al</strong> işlemlerini <strong>Eğitmen yetkisi</strong> sütunundan
+          yönetin.
         </p>
         <div className="mt-4 flex flex-wrap gap-2 text-sm">
           <span className="rounded-full bg-slate-100 px-3 py-1 font-semibold text-slate-700">
@@ -66,6 +58,9 @@ export default async function AdminMembersPage({ searchParams }: AdminMembersPag
           <span className="rounded-full bg-amber-100 px-3 py-1 font-semibold text-amber-900">
             Üye öğrenci: {studentCount}
           </span>
+          <span className="rounded-full bg-violet-100 px-3 py-1 font-semibold text-violet-900">
+            Eğitmen yetkili: {instructorCount}
+          </span>
         </div>
       </div>
 
@@ -75,5 +70,12 @@ export default async function AdminMembersPage({ searchParams }: AdminMembersPag
 
       <AdminMembersTable members={members} />
     </div>
-  );
+    );
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Üye listesi yüklenemedi.";
+    if (message.includes("SUPABASE_SERVICE_ROLE_KEY")) {
+      redirect("/admin");
+    }
+    throw error;
+  }
 }

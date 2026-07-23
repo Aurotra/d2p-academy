@@ -2,16 +2,18 @@ import { NextResponse } from "next/server";
 
 import type { InstructorOption } from "@/core/domain/admin-event";
 import { createInstructorAccount } from "@/infrastructure/auth/create-instructor-account";
+import { profileHasInstructorCapability } from "@/infrastructure/auth/instructor-capability";
 import { requireAdminApiAccess } from "@/infrastructure/auth/require-admin-api-access";
+import { createServiceRoleClient } from "@/infrastructure/supabase/create-service-role-client";
 
 export async function GET() {
   const access = await requireAdminApiAccess();
   if (access.response) return access.response;
 
-  const { data, error } = await access.client
+  const serviceClient = createServiceRoleClient();
+  const { data, error } = await serviceClient
     .from("profiles")
-    .select("id, full_name, email")
-    .or("is_instructor.eq.true,role.eq.instructor")
+    .select("id, full_name, email, role, is_instructor, is_active")
     .eq("is_active", true)
     .order("full_name", { ascending: true });
 
@@ -19,11 +21,18 @@ export async function GET() {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 
-  const instructors: InstructorOption[] = (data ?? []).map((row) => ({
-    id: row.id,
-    fullName: row.full_name,
-    email: row.email ?? "",
-  }));
+  const instructors: InstructorOption[] = (data ?? [])
+    .filter((row) =>
+      profileHasInstructorCapability({
+        role: row.role,
+        is_instructor: row.is_instructor,
+      }),
+    )
+    .map((row) => ({
+      id: row.id,
+      fullName: row.full_name,
+      email: row.email ?? "",
+    }));
 
   return NextResponse.json({ data: instructors });
 }

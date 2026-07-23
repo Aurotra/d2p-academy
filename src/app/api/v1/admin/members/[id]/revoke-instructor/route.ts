@@ -28,7 +28,7 @@ export async function POST(
         });
       } catch (error) {
         emailError = error instanceof Error ? error.message : "E-posta gönderilemedi.";
-        console.error("[demote-instructor] E-posta hatası:", emailError);
+        console.error("[revoke-instructor] E-posta hatası:", emailError);
       }
     }
 

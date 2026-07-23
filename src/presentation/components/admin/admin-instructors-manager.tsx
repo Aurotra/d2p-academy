@@ -62,7 +62,7 @@ export function AdminInstructorsManager({ initialInstructors }: AdminInstructors
     setSuccess(null);
 
     try {
-      const response = await fetch(`/api/v1/admin/instructors/${instructor.id}/demote`, {
+      const response = await fetch(`/api/v1/admin/members/${instructor.id}/revoke-instructor`, {
         method: "POST",
       });
       const payload = (await response.json()) as {
@@ -188,7 +188,8 @@ export function AdminInstructorsManager({ initialInstructors }: AdminInstructors
                   </Button>
                   <Button
                     type="button"
-                    variant="ghost"
+                    variant="outline"
+                    className="border-violet-300 text-violet-900 hover:bg-violet-50"
                     disabled={pendingId === instructor.id}
                     onClick={() => void revokeInstructorRole(instructor)}
                   >

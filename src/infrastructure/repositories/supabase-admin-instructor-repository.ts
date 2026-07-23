@@ -1,6 +1,7 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 
 import type { AdminInstructorRecord } from "@/core/domain/admin-instructor";
+import { profileHasInstructorCapability } from "@/infrastructure/auth/instructor-capability";
 
 interface InstructorRow {
   id: string;
@@ -9,6 +10,7 @@ interface InstructorRow {
   role: string;
   is_active: boolean;
   created_at: string;
+  is_instructor?: boolean | null;
 }
 
 function memberRoleLabel(role: string): string {
@@ -30,29 +32,48 @@ function mapInstructor(row: InstructorRow): AdminInstructorRecord {
   };
 }
 
+function isMissingInstructorColumnError(message: string): boolean {
+  return message.includes("is_instructor") && message.includes("does not exist");
+}
+
 export class SupabaseAdminInstructorRepository {
   constructor(private readonly client: SupabaseClient) {}
 
   async listAll(): Promise<AdminInstructorRecord[]> {
-    const { data, error } = await this.client
+    const baseSelect = "id, full_name, email, role, is_active, created_at";
+    let { data: rawData, error } = await this.client
       .from("profiles")
-      .select("id, full_name, email, role, is_active, created_at, is_instructor")
-      .or("is_instructor.eq.true,role.eq.instructor")
+      .select(`${baseSelect}, is_instructor`)
       .order("full_name", { ascending: true });
+    let data = rawData as InstructorRow[] | null;
+
+    if (error && isMissingInstructorColumnError(error.message)) {
+      const fallback = await this.client.from("profiles").select(baseSelect).order("full_name", {
+        ascending: true,
+      });
+      data = (fallback.data ?? null) as InstructorRow[] | null;
+      error = fallback.error;
+    }
 
     if (error) {
       throw new Error(`Eğitmenler alınamadı: ${error.message}`);
     }
 
-    return (data as InstructorRow[]).map(mapInstructor);
+    const rows = ((data ?? []) as InstructorRow[]).filter((row) =>
+      profileHasInstructorCapability({
+        role: row.role,
+        is_instructor: row.is_instructor,
+      }),
+    );
+
+    return rows.map(mapInstructor);
   }
 
   async setActive(id: string, isActive: boolean): Promise<void> {
     const { error } = await this.client
       .from("profiles")
       .update({ is_active: isActive, updated_at: new Date().toISOString() })
-      .eq("id", id)
-      .or("is_instructor.eq.true,role.eq.instructor");
+      .eq("id", id);
 
     if (error) {
       throw new Error(`Eğitmen durumu güncellenemedi: ${error.message}`);
