@@ -15,7 +15,7 @@ import { SESSION_CHANGED_EVENT } from "@/shared/utils/session-events";
 
 const navItems = [
   { href: "/#hero", label: "Ana Sayfa" },
-  { href: "/#events", label: "Etkinlikler" },
+  { href: "/etkinlikler", label: "Etkinlikler" },
   { href: PARENT_GUIDE_PATH, label: "Veli Rehberi" },
   { href: "/#certificate", label: "Sertifika Doğrula" },
   { href: "/galeri", label: "Galeri" },

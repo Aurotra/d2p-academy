@@ -26,6 +26,12 @@ export function SiteFooter() {
         <div className="flex flex-col gap-3 text-sm sm:items-end">
           <div className="flex flex-wrap gap-x-4 gap-y-2">
             <Link
+              href="/etkinlikler"
+              className="font-semibold text-sky-900 transition hover:text-document-primary"
+            >
+              Etkinlikler
+            </Link>
+            <Link
               href="/galeri"
               className="font-semibold text-sky-900 transition hover:text-document-primary"
             >

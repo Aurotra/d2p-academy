@@ -1,38 +1,18 @@
+import Link from "next/link";
+
 import { EVENT_TYPE_LABELS, type AcademyEvent } from "@/core/domain/event";
 import { EventEnrollButton } from "@/presentation/components/events/event-enroll-button";
 import { Badge } from "@/presentation/components/ui/badge";
-
-const TURKEY_TIME_ZONE = "Europe/Istanbul";
-
-function formatEventDateParts(date: Date): { day: string; month: string } {
-  return {
-    day: new Intl.DateTimeFormat("tr-TR", {
-      day: "2-digit",
-      timeZone: TURKEY_TIME_ZONE,
-    }).format(date),
-    month: new Intl.DateTimeFormat("tr-TR", {
-      month: "short",
-      timeZone: TURKEY_TIME_ZONE,
-    }).format(date),
-  };
-}
-
-function formatEventTime(date: Date): string {
-  return new Intl.DateTimeFormat("tr-TR", {
-    hour: "2-digit",
-    minute: "2-digit",
-    hour12: false,
-    timeZone: TURKEY_TIME_ZONE,
-  }).format(date);
-}
-
-function formatEventTimeRange(startAt: Date, endAt: Date): string {
-  return `${formatEventTime(startAt)} – ${formatEventTime(endAt)}`;
-}
+import {
+  eventLocationLabel,
+  formatEventDateParts,
+  formatEventTimeRange,
+} from "@/shared/utils/event-format";
 
 interface EventCardProps {
   event: AcademyEvent;
   compact?: boolean;
+  linkToDetail?: boolean;
 }
 
 function EventDateBadge({ day, month }: { day: string; month: string }) {
@@ -58,10 +38,28 @@ function EventMetaBadges({ event }: { event: AcademyEvent }) {
   );
 }
 
-export function EventCard({ event, compact = false }: EventCardProps) {
+function EventTitle({ event, linkToDetail }: { event: AcademyEvent; linkToDetail?: boolean }) {
+  const title = (
+    <h3 className="mt-2 text-lg font-bold text-navy-950 group-hover:text-sky-800 md:mt-3">
+      {event.title}
+    </h3>
+  );
+
+  if (!linkToDetail) {
+    return title;
+  }
+
+  return (
+    <Link href={`/etkinlikler/${event.slug}`} className="block">
+      {title}
+    </Link>
+  );
+}
+
+export function EventCard({ event, compact = false, linkToDetail = false }: EventCardProps) {
   const start = formatEventDateParts(event.startAt);
   const timeRange = formatEventTimeRange(event.startAt, event.endAt);
-  const locationLabel = event.isOnline ? "Çevrimiçi" : (event.locationName ?? "Konum belirtilecek");
+  const locationLabel = eventLocationLabel(event);
 
   if (compact) {
     return (
@@ -71,7 +69,7 @@ export function EventCard({ event, compact = false }: EventCardProps) {
 
           <div className="min-w-0 flex-1">
             <EventMetaBadges event={event} />
-            <h3 className="mt-2 text-lg font-bold text-navy-950">{event.title}</h3>
+            <EventTitle event={event} linkToDetail={linkToDetail} />
             <p className="mt-1 line-clamp-2 text-sm leading-6 text-slate-600">{event.description}</p>
             <p className="mt-2 text-sm text-slate-500">
               {timeRange}
@@ -80,6 +78,14 @@ export function EventCard({ event, compact = false }: EventCardProps) {
               </span>
               {locationLabel}
             </p>
+            {linkToDetail ? (
+              <Link
+                href={`/etkinlikler/${event.slug}`}
+                className="mt-2 inline-block text-sm font-semibold text-document-primary hover:underline"
+              >
+                Detayları gör →
+              </Link>
+            ) : null}
           </div>
 
           <div className="shrink-0 sm:w-44">
@@ -98,7 +104,7 @@ export function EventCard({ event, compact = false }: EventCardProps) {
 
           <div className="min-w-0 flex-1">
             <EventMetaBadges event={event} />
-            <h3 className="mt-3 text-lg font-bold text-navy-950">{event.title}</h3>
+            <EventTitle event={event} linkToDetail={linkToDetail} />
             <p className="mt-2 line-clamp-2 text-sm leading-6 text-slate-600">
               {event.description}
             </p>
@@ -109,6 +115,15 @@ export function EventCard({ event, compact = false }: EventCardProps) {
           <span>{timeRange}</span>
           <span>{locationLabel}</span>
         </div>
+
+        {linkToDetail ? (
+          <Link
+            href={`/etkinlikler/${event.slug}`}
+            className="mt-3 text-sm font-semibold text-document-primary hover:underline"
+          >
+            Detayları gör →
+          </Link>
+        ) : null}
 
         <div className="mt-4">
           <EventEnrollButton eventId={event.id} />

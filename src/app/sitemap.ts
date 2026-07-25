@@ -1,12 +1,14 @@
 import type { MetadataRoute } from "next";
 
 import { SupabaseGalleryRepository } from "@/infrastructure/repositories/supabase-gallery-repository";
+import { SupabaseEventRepository } from "@/infrastructure/repositories/supabase-event-repository";
 import { tryCreateServiceRoleClient } from "@/infrastructure/supabase/create-service-role-client";
 import { absoluteUrl } from "@/shared/seo/metadata";
 import { SITE_URL } from "@/shared/constants/site";
 
 const PUBLIC_PATHS = [
   "/",
+  "/etkinlikler",
   "/galeri",
   "/iletisim",
   "/veli-rehberi",
@@ -37,7 +39,14 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   }
 
   try {
-    const albums = await new SupabaseGalleryRepository(client).listPublishedAlbums();
+    const galleryRepository = new SupabaseGalleryRepository(client);
+    const eventRepository = new SupabaseEventRepository(client);
+
+    const [albums, events] = await Promise.all([
+      galleryRepository.listPublishedAlbums(),
+      eventRepository.listPublishedSlugs(),
+    ]);
+
     const albumEntries: MetadataRoute.Sitemap = albums.map((album) => ({
       url: absoluteUrl(`/galeri/${album.slug}`),
       lastModified: now,
@@ -45,7 +54,14 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.6,
     }));
 
-    return [...staticEntries, ...albumEntries];
+    const eventEntries: MetadataRoute.Sitemap = events.map((event) => ({
+      url: absoluteUrl(`/etkinlikler/${event.slug}`),
+      lastModified: event.updatedAt,
+      changeFrequency: "weekly",
+      priority: 0.8,
+    }));
+
+    return [...staticEntries, ...albumEntries, ...eventEntries];
   } catch {
     return staticEntries;
   }

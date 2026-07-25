@@ -10,6 +10,25 @@ interface EventCategoryRow {
   color: string;
 }
 
+const EVENT_SELECT = `
+        id,
+        title,
+        slug,
+        description,
+        event_type,
+        start_at,
+        end_at,
+        location_name,
+        is_online,
+        cover_image_url,
+        event_categories (
+          id,
+          name,
+          slug,
+          color
+        )
+      `;
+
 interface EventRow {
   id: string;
   title: string;
@@ -63,26 +82,7 @@ export class SupabaseEventRepository implements EventRepository {
   async listUpcoming(limit: number): Promise<AcademyEvent[]> {
     const { data, error } = await this.client
       .from("events")
-      .select(
-        `
-        id,
-        title,
-        slug,
-        description,
-        event_type,
-        start_at,
-        end_at,
-        location_name,
-        is_online,
-        cover_image_url,
-        event_categories (
-          id,
-          name,
-          slug,
-          color
-        )
-      `,
-      )
+      .select(EVENT_SELECT)
       .eq("status", "published")
       .gte("end_at", new Date().toISOString())
       .order("start_at", { ascending: true })
@@ -93,5 +93,45 @@ export class SupabaseEventRepository implements EventRepository {
     }
 
     return (data as EventRow[]).map(mapEvent);
+  }
+
+  async listPublishedUpcoming(limit = 50): Promise<AcademyEvent[]> {
+    return this.listUpcoming(limit);
+  }
+
+  async getPublishedBySlug(slug: string): Promise<AcademyEvent | null> {
+    const { data, error } = await this.client
+      .from("events")
+      .select(EVENT_SELECT)
+      .eq("status", "published")
+      .eq("slug", slug)
+      .maybeSingle();
+
+    if (error) {
+      throw new Error(`Etkinlik alınamadı: ${error.message}`);
+    }
+
+    if (!data) {
+      return null;
+    }
+
+    return mapEvent(data as EventRow);
+  }
+
+  async listPublishedSlugs(): Promise<Array<{ slug: string; updatedAt: Date }>> {
+    const { data, error } = await this.client
+      .from("events")
+      .select("slug, updated_at")
+      .eq("status", "published")
+      .order("start_at", { ascending: false });
+
+    if (error) {
+      throw new Error(`Etkinlik listesi alınamadı: ${error.message}`);
+    }
+
+    return (data ?? []).map((row) => ({
+      slug: row.slug as string,
+      updatedAt: new Date(row.updated_at as string),
+    }));
   }
 }

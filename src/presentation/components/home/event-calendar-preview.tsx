@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 import { type AcademyEvent } from "@/core/domain/event";
 import { listUpcomingEvents } from "@/core/use-cases/list-upcoming-events";
 import { SupabaseEventRepository } from "@/infrastructure/repositories/supabase-event-repository";
@@ -47,7 +49,10 @@ export async function EventCalendarPreview() {
               Etkinlik seçin, kaydı 3 adımda tamamlayın
             </h2>
             <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600">
-              Soldan etkinliği seçin; sağdaki adımlarla veli hesabı açıp çocuğunuzu kaydedin.
+              Soldan etkinliği seçin; sağdaki adımlarla veli hesabı açıp çocuğunuzu kaydedin.{" "}
+              <Link href="/etkinlikler" className="font-semibold text-document-primary hover:underline">
+                Tüm etkinlikler →
+              </Link>
             </p>
           </div>
 
@@ -56,11 +61,11 @@ export async function EventCalendarPreview() {
               {events.length === 0 ? (
                 <EmptyEventsState />
               ) : singleEvent ? (
-                <EventCard event={events[0]!} compact />
+                <EventCard event={events[0]!} compact linkToDetail />
               ) : (
                 <div className="grid gap-4 sm:grid-cols-2">
                   {events.map((event) => (
-                    <EventCard key={event.id} event={event} />
+                    <EventCard key={event.id} event={event} linkToDetail />
                   ))}
                 </div>
               )}
