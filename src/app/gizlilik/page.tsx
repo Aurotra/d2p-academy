@@ -15,7 +15,7 @@ export default function PrivacyPage() {
       <section>
         <h2>1. Giriş</h2>
         <p>
-          Bu Gizlilik Politikası; D2P Academy web sitesi, öğrenci paneli, ön kayıt formları,
+          Bu Gizlilik Politikası; D2P Academy web sitesi, veli paneli, etkinlik kayıt formları,
           kurumsal talep formları ve dijital hizmetlerimiz kapsamında kişisel verilerinizin nasıl
           toplandığını, kullanıldığını ve korunduğunu açıklar. Veri sorumlusu ATH Eğitim
           Teknolojileri Mühendislik Danışmanlık Sanayi ve Ticaret Limited Şirketi&apos;dir.
@@ -27,7 +27,7 @@ export default function PrivacyPage() {
         <p>Platformumuzda aşağıdaki bilgiler toplanabilir:</p>
         <ul className="list-disc space-y-2 pl-6">
           <li>Hesap bilgileri (ad, soyad, e-posta)</li>
-          <li>Ön kayıt ve iletişim bilgileri (telefon, eğitim düzeyi, atölye tercihi)</li>
+          <li>Etkinlik kaydı ve iletişim bilgileri (telefon, eğitim düzeyi, atölye tercihi)</li>
           <li>Öğrenci profil bilgileri (okul, deneyim, ilgi alanları, motivasyon cevapları)</li>
           <li>Kurumsal başvuru bilgileri (kurum adı, yetkili, katılımcı sayısı)</li>
           <li>Veli/vasi bilgileri (18 yaş altı katılımcılar için)</li>

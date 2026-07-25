@@ -21,6 +21,11 @@ const nextConfig: NextConfig = {
         destination: "https://www.d2p.com.tr/:path*",
         permanent: true,
       },
+      {
+        source: "/kayit",
+        destination: "/etkinlikler",
+        permanent: true,
+      },
     ];
   },
 };

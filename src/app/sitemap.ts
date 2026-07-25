@@ -13,7 +13,6 @@ const PUBLIC_PATHS = [
   "/iletisim",
   "/veli-rehberi",
   "/kurumsal-talep",
-  "/kayit",
   "/kvkk",
   "/gizlilik",
 ] as const;

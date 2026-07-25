@@ -11,7 +11,7 @@ import { LogoutButton } from "@/presentation/components/dashboard/logout-button"
 interface NavItem {
   href: string;
   label: string;
-  countKey?: keyof AdminPendingCounts;
+  countKey?: "registrations" | "institutionRequests" | "courseDemandRequests";
 }
 
 const navItems: NavItem[] = [
@@ -26,12 +26,18 @@ const navItems: NavItem[] = [
   { href: "/admin/logs", label: "İşlem Logları" },
   { href: "/admin/gallery", label: "Galeri" },
   { href: "/admin/documents", label: "Dökümanlar" },
-  { href: "/admin/registrations", label: "Ön Kayıtlar", countKey: "registrations" },
+  { href: "/admin/registrations", label: "Eski Ön Kayıtlar", countKey: "registrations" },
   {
     href: "/admin/institution-requests",
     label: "Kurumsal Talepler",
     countKey: "institutionRequests",
   },
+  {
+    href: "/admin/course-demand",
+    label: "Kurs Talepleri",
+    countKey: "courseDemandRequests",
+  },
+  { href: "/admin/programs", label: "Programlar" },
 ];
 
 interface AdminShellProps {

@@ -26,10 +26,15 @@ export default function InstitutionRequestPage() {
             taleplerinizi buradan iletebilirsiniz. Ekibimiz size özel teklif için dönüş yapar.
           </p>
           <p className="mt-3 text-sm text-slate-500">
-            Bireysel öğrenci için{" "}
-            <Link href="/kayit" className="font-semibold text-document-primary hover:underline">
-              Eylül Dönemi Ön Kaydı
+            Bireysel kayıt için{" "}
+            <Link href="/etkinlikler" className="font-semibold text-document-primary hover:underline">
+              etkinliklere göz atın
             </Link>
+            {" "}veya{" "}
+            <Link href="/register" className="font-semibold text-document-primary hover:underline">
+              veli hesabı oluşturun
+            </Link>
+            .
             ; panel üyeliği için{" "}
             <Link href="/register" className="font-semibold text-document-primary hover:underline">
               hesap oluşturun

@@ -11,7 +11,7 @@ interface AdminCard {
   description: string;
   tone: string;
   badge: string;
-  pendingKey?: "registrations" | "institutionRequests";
+  pendingKey?: "registrations" | "institutionRequests" | "courseDemandRequests";
 }
 
 interface AdminCategory {
@@ -91,12 +91,13 @@ const categories: AdminCategory[] = [
   },
   {
     title: "Başvurular",
-    description: "Bireysel ön kayıtlar ve kurumsal eğitim talepleri.",
+    description:
+      "Kurs talepleri, kurumsal eğitim başvuruları, program tanımları ve eski ön kayıt arşivi.",
     cards: [
       {
         href: "/admin/registrations",
-        title: "Ön Kayıtlar",
-        description: "Eylül dönemi ön kayıt başvurularını görüntüleyin ve durumlarını güncelleyin.",
+        title: "Eski Ön Kayıtlar",
+        description: "Kapatılan ön kayıt formundan gelen başvuruları arşiv olarak görüntüleyin.",
         tone: "border-lime-200 bg-lime-100 text-lime-950 hover:bg-lime-50",
         badge: "bg-lime-200/70 text-lime-900",
         pendingKey: "registrations",
@@ -108,6 +109,21 @@ const categories: AdminCategory[] = [
         tone: "border-rose-200 bg-rose-100 text-rose-950 hover:bg-rose-50",
         badge: "bg-rose-200/70 text-rose-800",
         pendingKey: "institutionRequests",
+      },
+      {
+        href: "/admin/course-demand",
+        title: "Kurs Talepleri",
+        description: "Velilerin bıraktığı program ve tarih tercihlerini gruplayıp sınıf oluşturun.",
+        tone: "border-amber-200 bg-amber-100 text-amber-950 hover:bg-amber-50",
+        badge: "bg-amber-200/70 text-amber-900",
+        pendingKey: "courseDemandRequests",
+      },
+      {
+        href: "/admin/programs",
+        title: "Program Tanımları",
+        description: "Kurs programlarının süre bilgilerini (hafta/saat) yönetin.",
+        tone: "border-fuchsia-200 bg-fuchsia-100 text-fuchsia-950 hover:bg-fuchsia-50",
+        badge: "bg-fuchsia-200/70 text-fuchsia-900",
       },
     ],
   },
@@ -134,6 +150,20 @@ export default async function AdminOverviewPage() {
           Etkinlikleri, başvuruları ve öğrenci içeriklerini buradan yönetin.
         </p>
       </div>
+
+      {pendingCounts.programsMissingDuration > 0 ? (
+        <div className="rounded-2xl border border-amber-200 bg-amber-50 px-5 py-4 text-sm text-amber-950">
+          <p className="font-semibold">Program süre bilgisi eksik</p>
+          <p className="mt-1 leading-6 text-amber-900/90">
+            {pendingCounts.programsMissingDuration} aktif programda hafta/saat süresi girilmemiş (
+            {pendingCounts.programsMissingDurationCodes.join(", ")}). Veli kurs talebi formunda
+            otomatik tarih önerisi bu programlar için çalışmaz.{" "}
+            <Link href="/admin/programs" className="font-semibold underline hover:text-amber-950">
+              Program Tanımları →
+            </Link>
+          </p>
+        </div>
+      ) : null}
 
       {categories.map((category) => (
         <section key={category.title} className="space-y-4">

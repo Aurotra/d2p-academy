@@ -2,9 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 
 import { getAdminAccess } from "@/infrastructure/auth/get-admin-access";
-import { getKaklikCampaignSettings } from "@/infrastructure/settings/site-settings";
 import { createSupabaseServerClient } from "@/infrastructure/supabase/create-server-client";
-import { KaklikCampaignToggleCard } from "@/presentation/components/admin/kaklik-campaign-toggle-card";
 import {
   RegistrationEditableRow,
   type AdminRegistrationRow,
@@ -48,8 +46,6 @@ export default async function AdminRegistrationsPage({
     redirect("/login");
   }
 
-  const campaignSettings = await getKaklikCampaignSettings(client);
-
   let query = client
     .from("registrations")
     .select(
@@ -81,12 +77,12 @@ export default async function AdminRegistrationsPage({
     <div className="space-y-6">
       <div className="rounded-[1.75rem] border border-slate-200 bg-white p-8 shadow-sm">
         <p className="text-sm font-semibold uppercase tracking-[0.18em] text-document-primary">
-          Ön Kayıt Yönetimi
+          Arşiv
         </p>
-        <h1 className="mt-2 text-2xl font-bold text-slate-900">Ön Kayıtlar</h1>
+        <h1 className="mt-2 text-2xl font-bold text-slate-900">Eski Ön Kayıtlar</h1>
         <p className="mt-2 text-sm text-slate-600">
-          Web sitesinden gelen ön kayıtları görüntüleyin, düzenleyin ve durumlarını güncelleyin.
-          Kaklık başvurularını gruba göre filtreleyebilirsiniz.
+          Kapatılan ön kayıt formundan gelen başvurular. Yeni kayıtlar veli hesabı ve etkinlik
+          kaydı üzerinden alınır.
         </p>
 
         <div className="mt-4 flex flex-wrap gap-2">
@@ -131,8 +127,6 @@ export default async function AdminRegistrationsPage({
           </p>
         ) : null}
       </div>
-
-      <KaklikCampaignToggleCard initialSettings={campaignSettings} />
 
       <div className="overflow-hidden rounded-[1.75rem] border border-slate-200 bg-white shadow-sm">
         <div className="overflow-x-auto">

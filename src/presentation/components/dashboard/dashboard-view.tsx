@@ -84,6 +84,12 @@ export function DashboardView({ data, isAdmin, isInstructor }: DashboardViewProp
               Çocuk hesapları
             </Link>
             <Link
+              href="/dashboard/kurs-talebi"
+              className="inline-flex items-center justify-center rounded-xl border-2 border-amber-600 bg-white px-5 py-3 text-sm font-semibold text-amber-800 transition hover:bg-amber-50"
+            >
+              Kurs talebi
+            </Link>
+            <Link
               href="/dashboard/documents"
               className="inline-flex items-center justify-center rounded-xl bg-document-primary px-5 py-3 text-sm font-semibold text-white transition hover:bg-document-primary-hover hover:shadow-glow-document"
             >
