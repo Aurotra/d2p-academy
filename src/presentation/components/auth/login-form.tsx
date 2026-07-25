@@ -1,14 +1,17 @@
 "use client";
 
 import Link from "next/link";
-import { useState, type FormEvent } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 
 import { AuthPortalLink } from "@/presentation/components/auth/auth-portal-link";
 import { AuthShell } from "@/presentation/components/auth/auth-shell";
 import { Button } from "@/presentation/components/ui/button";
 import { Input } from "@/presentation/components/ui/input";
-import { mapAuthErrorToTurkish } from "@/shared/utils/auth-errors";
+import {
+  AUTH_CALLBACK_ERROR_NOTICE,
+  mapAuthErrorToTurkish,
+} from "@/shared/utils/auth-errors";
 import { PARENT_GUIDE_PATH } from "@/shared/constants/parent-guide";
 
 export function LoginForm() {
@@ -18,6 +21,12 @@ export function LoginForm() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    if (searchParams.get("error") === "auth") {
+      setError(AUTH_CALLBACK_ERROR_NOTICE);
+    }
+  }, [searchParams]);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();

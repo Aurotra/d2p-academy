@@ -49,3 +49,6 @@ export const EMAIL_CONFIRMATION_NOTICE =
 
 export const EMAIL_CONFIRMATION_RESENT_NOTICE =
   "Bu e-posta ile daha önce kayıt yapılmış. Onay mailini tekrar gönderdik — lütfen gelen kutunuzu ve Spam klasörünü kontrol edin.";
+
+export const AUTH_CALLBACK_ERROR_NOTICE =
+  "E-posta onayı tamamlanamadı. Bağlantının süresi dolmuş veya daha önce kullanılmış olabilir. Giriş yapmayı deneyin; sorun sürerse kayıt formundan onay mailini yeniden isteyin.";

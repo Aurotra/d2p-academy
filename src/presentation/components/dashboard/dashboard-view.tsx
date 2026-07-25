@@ -64,7 +64,7 @@ export function DashboardView({ data, isAdmin, isInstructor }: DashboardViewProp
               ) : null}
             </div>
             <h1 className="mt-2 text-3xl font-black">
-              Hoş geldin, {data.profile.fullName.split(" ")[0]}!
+              Hoş geldin, {data.profile.fullName?.trim().split(/\s+/)[0] || "veli"}!
             </h1>
             <p className="mt-2 text-sm text-sky-900/80">
               Yaklaşan etkinliklerini ve kazandığın sertifikaları buradan takip edebilirsin.

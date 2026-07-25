@@ -475,19 +475,27 @@ function AddStudentDialog({
 
   return (
     <Dialog title="Yeni çocuk ekle" onClose={onClose}>
-      <form onSubmit={handleSubmit} className="space-y-3">
+      <form autoComplete="off" onSubmit={handleSubmit} className="space-y-3">
         <Input
+          id="child-full-name"
+          name="child-full-name"
           label="Ad Soyad"
           value={fullName}
           onChange={(e) => setFullName(e.target.value)}
           placeholder="örn: Emre Yılmaz"
+          autoComplete="off"
+          readOnly
+          onFocus={(event) => event.currentTarget.removeAttribute("readonly")}
           required
         />
         <Input
+          id="child-birth-date"
+          name="child-birth-date"
           label="Doğum tarihi"
           type="date"
           value={birthDate}
           onChange={(e) => setBirthDate(e.target.value)}
+          autoComplete="bday"
           required
         />
         {generatedUsername ? (
@@ -510,10 +518,13 @@ function AddStudentDialog({
           </p>
         )}
         <Input
+          id="child-password"
+          name="child-password"
           label="Şifre"
           type="password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
+          autoComplete="new-password"
           required
         />
         {error ? <p className="text-sm text-red-600">{error}</p> : null}
@@ -576,12 +587,15 @@ function ResetPasswordDialog({
           </Button>
         </div>
       ) : (
-        <form onSubmit={handleSubmit} className="space-y-3">
+        <form autoComplete="off" onSubmit={handleSubmit} className="space-y-3">
           <Input
+            id="child-reset-password"
+            name="child-reset-password"
             label="Yeni şifre"
             type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
+            autoComplete="new-password"
             required
           />
           {error ? <p className="text-sm text-red-600">{error}</p> : null}
