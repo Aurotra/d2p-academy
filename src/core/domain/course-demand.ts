@@ -28,7 +28,7 @@ export const COURSE_DEMAND_STATUS_LABELS: Record<CourseDemandStatus, string> = {
 
 export const COURSE_DEMAND_PARENT_STATUS_MESSAGES: Record<CourseDemandStatus, string> = {
   pending: "Talebiniz alındı. Yeterli talep birikince sınıf açılacak.",
-  grouped: "Bir sınıfa dahil edildiniz. Öğrenci profili oluşturulduktan sonra kayıt tamamlanacak.",
+  grouped: "Bir sınıfa atandınız. Aynı adla öğrenci profili oluşturduğunuzda kayıt otomatik tamamlanır.",
   converted: "Talebiniz bir sınıfa dönüştürüldü. Etkinlik kaydınız panelde görünecek.",
   cancelled: "Talep iptal edildi.",
 };

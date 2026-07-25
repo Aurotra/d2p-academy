@@ -139,7 +139,36 @@ export async function POST(request: NextRequest) {
       .single();
 
     if (!error) {
-      return NextResponse.json({ data: { student: created } }, { status: 201 });
+      const { data: linkResult, error: linkError } = await supabase.rpc(
+        "link_course_demands_to_student_profile",
+        { p_student_profile_id: created.id },
+      );
+
+      if (linkError) {
+        console.error("[parent/students POST] course demand link", linkError.message);
+      }
+
+      const linkedDemands =
+        linkResult && typeof linkResult === "object" && "linked" in linkResult
+          ? Number((linkResult as { linked?: number }).linked ?? 0)
+          : 0;
+      const enrolledFromDemands =
+        linkResult && typeof linkResult === "object" && "enrolled" in linkResult
+          ? Number((linkResult as { enrolled?: number }).enrolled ?? 0)
+          : 0;
+
+      return NextResponse.json(
+        {
+          data: {
+            student: created,
+            courseDemand: {
+              linked: linkedDemands,
+              enrolled: enrolledFromDemands,
+            },
+          },
+        },
+        { status: 201 },
+      );
     }
 
     const duplicateUsername =

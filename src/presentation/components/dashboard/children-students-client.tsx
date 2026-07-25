@@ -439,14 +439,25 @@ function AddStudentDialog({
       });
       const payload = (await response.json()) as {
         error?: string;
-        data?: { student: ChildStudent };
+        data?: {
+          student: ChildStudent;
+          courseDemand?: { linked?: number; enrolled?: number };
+        };
       };
       if (!response.ok || !payload.data?.student) {
         setError(payload.error ?? "Çocuk eklenemedi.");
         return;
       }
+      const enrolledFromDemands = payload.data.courseDemand?.enrolled ?? 0;
+      const linkedDemands = payload.data.courseDemand?.linked ?? 0;
+      const demandNote =
+        enrolledFromDemands > 0
+          ? ` ${enrolledFromDemands} kurs talebi kayda dönüştürüldü.`
+          : linkedDemands > 0
+            ? ` ${linkedDemands} kurs talebi bu profile bağlandı.`
+            : "";
       setSuccess(
-        `${payload.data.student.full_name} eklendi. Kullanıcı adı: @${payload.data.student.username}`,
+        `${payload.data.student.full_name} eklendi. Kullanıcı adı: @${payload.data.student.username}${demandNote}`,
       );
       onCreated({
         ...payload.data.student,
