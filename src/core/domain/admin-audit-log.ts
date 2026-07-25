@@ -1,4 +1,8 @@
-export type AdminAuditAction = "enrollment_deleted" | "certificate_revoked";
+export type AdminAuditAction =
+  | "enrollment_deleted"
+  | "certificate_revoked"
+  | "instructor_granted"
+  | "instructor_revoked";
 
 export interface AdminAuditLogRecord {
   id: string;
@@ -17,4 +21,6 @@ export interface AdminAuditLogRecord {
 export const ADMIN_AUDIT_ACTION_LABELS: Record<AdminAuditAction, string> = {
   enrollment_deleted: "Kayıt silindi",
   certificate_revoked: "Sertifika iptal",
+  instructor_granted: "Eğitmen yetkisi verildi",
+  instructor_revoked: "Eğitmen yetkisi alındı",
 };

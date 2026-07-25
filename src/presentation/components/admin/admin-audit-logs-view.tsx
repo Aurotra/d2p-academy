@@ -10,6 +10,28 @@ import { Button } from "@/presentation/components/ui/button";
 
 type Filter = "all" | AdminAuditAction;
 
+const MEMBER_ROLE_LABELS: Record<string, string> = {
+  parent: "Veli",
+  student: "Üye",
+  admin: "Admin",
+  instructor: "Eğitmen",
+};
+
+function isInstructorAction(action: AdminAuditAction): boolean {
+  return action === "instructor_granted" || action === "instructor_revoked";
+}
+
+function badgeTone(action: AdminAuditAction): "neutral" | "cyan" | "navy" {
+  if (action === "certificate_revoked") return "neutral";
+  if (action === "instructor_granted") return "navy";
+  if (action === "instructor_revoked") return "cyan";
+  return "cyan";
+}
+
+function formatMemberRole(role: unknown): string {
+  return typeof role === "string" ? (MEMBER_ROLE_LABELS[role] ?? role) : "—";
+}
+
 function formatDate(value: string | Date): string {
   const date = typeof value === "string" ? new Date(value) : value;
   return new Intl.DateTimeFormat("tr-TR", {
@@ -22,8 +44,14 @@ function formatDate(value: string | Date): string {
 export function AdminAuditLogsView() {
   const searchParams = useSearchParams();
   const initial = searchParams.get("action");
+  const initialActions: AdminAuditAction[] = [
+    "enrollment_deleted",
+    "certificate_revoked",
+    "instructor_granted",
+    "instructor_revoked",
+  ];
   const [filter, setFilter] = useState<Filter>(
-    initial === "enrollment_deleted" || initial === "certificate_revoked" ? initial : "all",
+    initialActions.includes(initial as AdminAuditAction) ? (initial as Filter) : "all",
   );
   const [logs, setLogs] = useState<AdminAuditLogRecord[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -68,6 +96,8 @@ export function AdminAuditLogsView() {
         { id: "all" as const, label: "Tümü" },
         { id: "certificate_revoked" as const, label: "Sertifika iptalleri" },
         { id: "enrollment_deleted" as const, label: "Kayıt silmeleri" },
+        { id: "instructor_granted" as const, label: "Eğitmen verildi" },
+        { id: "instructor_revoked" as const, label: "Eğitmen yetkisi alındı" },
       ] as const,
     [],
   );
@@ -77,7 +107,7 @@ export function AdminAuditLogsView() {
       <div className="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm">
         <h1 className="text-2xl font-bold text-navy-950">İşlem Logları</h1>
         <p className="mt-2 text-sm text-slate-600">
-          Sertifika iptal nedenleri ve silinen etkinlik kayıtları burada listelenir.
+          Sertifika iptalleri, silinen kayıtlar ve eğitmen yetkisi değişiklikleri burada listelenir.
         </p>
 
         <div className="mt-4 flex flex-wrap gap-2">
@@ -125,18 +155,19 @@ export function AdminAuditLogsView() {
                 className="rounded-2xl border border-slate-100 px-4 py-4 hover:border-sky-200"
               >
                 <div className="flex flex-wrap items-center gap-2">
-                  <Badge tone={log.action === "certificate_revoked" ? "neutral" : "cyan"}>
+                  <Badge tone={badgeTone(log.action)}>
                     {ADMIN_AUDIT_ACTION_LABELS[log.action]}
                   </Badge>
                   <span className="text-xs text-slate-500">{formatDate(log.createdAt)}</span>
                 </div>
                 <p className="mt-2 font-semibold text-navy-950">
-                  {log.studentName ?? "Öğrenci"}
+                  {log.studentName ?? (isInstructorAction(log.action) ? "Üye" : "Öğrenci")}
                   {log.studentEmail ? ` · ${log.studentEmail}` : ""}
                 </p>
                 <p className="mt-1 text-sm text-slate-600">
-                  {log.eventTitle ?? "Etkinlik"}
-                  {log.certificateCode ? ` · ${log.certificateCode}` : ""}
+                  {isInstructorAction(log.action)
+                    ? `Üye rolü: ${formatMemberRole(log.metadata.member_role)}`
+                    : `${log.eventTitle ?? "Etkinlik"}${log.certificateCode ? ` · ${log.certificateCode}` : ""}`}
                 </p>
                 {log.reason ? (
                   <p className="mt-2 rounded-xl bg-slate-50 px-3 py-2 text-sm text-slate-800">

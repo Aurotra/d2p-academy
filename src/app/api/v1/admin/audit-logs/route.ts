@@ -11,10 +11,15 @@ export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
     const actionParam = searchParams.get("action");
-    const action =
-      actionParam === "enrollment_deleted" || actionParam === "certificate_revoked"
-        ? (actionParam as AdminAuditAction)
-        : undefined;
+    const allowedActions: AdminAuditAction[] = [
+      "enrollment_deleted",
+      "certificate_revoked",
+      "instructor_granted",
+      "instructor_revoked",
+    ];
+    const action = allowedActions.includes(actionParam as AdminAuditAction)
+      ? (actionParam as AdminAuditAction)
+      : undefined;
 
     const repository = new SupabaseAdminAuditLogRepository(access.client);
     const logs = await repository.list(150, action);

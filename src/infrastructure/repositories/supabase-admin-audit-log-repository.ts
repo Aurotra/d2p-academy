@@ -157,4 +157,66 @@ export class SupabaseAdminAuditLogRepository {
       throw new Error(`Silme kaydı yazılamadı: ${error.message}`);
     }
   }
+
+  async logInstructorGranted(input: {
+    actorId: string;
+    actorEmail: string | null;
+    memberId: string;
+    memberName: string;
+    memberEmail: string;
+    memberRole: string;
+    emailSent: boolean;
+  }): Promise<void> {
+    const { error } = await this.client.from("admin_audit_logs").insert({
+      action: "instructor_granted",
+      actor_id: input.actorId,
+      actor_email: input.actorEmail,
+      student_id: input.memberId,
+      student_name: input.memberName,
+      student_email: input.memberEmail,
+      metadata: {
+        member_role: input.memberRole,
+        email_sent: input.emailSent,
+      },
+    });
+
+    if (error) {
+      throw new Error(`Eğitmen yetkisi kaydı yazılamadı: ${error.message}`);
+    }
+  }
+
+  async logInstructorRevoked(input: {
+    actorId: string;
+    actorEmail: string | null;
+    memberId: string;
+    memberName: string;
+    memberEmail: string | null;
+    memberRole: string;
+    unassignedEventCount: number;
+    emailSent: boolean;
+  }): Promise<void> {
+    const reason =
+      input.unassignedEventCount > 0
+        ? `${input.unassignedEventCount} etkinlikten eğitmen ataması kaldırıldı.`
+        : null;
+
+    const { error } = await this.client.from("admin_audit_logs").insert({
+      action: "instructor_revoked",
+      actor_id: input.actorId,
+      actor_email: input.actorEmail,
+      reason,
+      student_id: input.memberId,
+      student_name: input.memberName,
+      student_email: input.memberEmail,
+      metadata: {
+        member_role: input.memberRole,
+        unassigned_event_count: input.unassignedEventCount,
+        email_sent: input.emailSent,
+      },
+    });
+
+    if (error) {
+      throw new Error(`Eğitmen yetkisi kaydı yazılamadı: ${error.message}`);
+    }
+  }
 }

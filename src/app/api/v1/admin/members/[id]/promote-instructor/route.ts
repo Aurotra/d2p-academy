@@ -1,8 +1,10 @@
 import { NextResponse } from "next/server";
 
 import { sendInstructorGrantedNotification } from "@/infrastructure/email/send-instructor-notification-email";
+import { getAdminAccess } from "@/infrastructure/auth/get-admin-access";
 import { requireAdminApiAccess } from "@/infrastructure/auth/require-admin-api-access";
 import { promoteMemberToInstructor } from "@/infrastructure/auth/set-user-role";
+import { SupabaseAdminAuditLogRepository } from "@/infrastructure/repositories/supabase-admin-audit-log-repository";
 
 export async function POST(
   _request: Request,
@@ -10,6 +12,11 @@ export async function POST(
 ) {
   const access = await requireAdminApiAccess();
   if (access.response) return access.response;
+
+  const adminAccess = await getAdminAccess(access.client);
+  if (!adminAccess.authorized) {
+    return NextResponse.json({ error: "Bu işlem için admin yetkisi gereklidir." }, { status: 403 });
+  }
 
   const { id } = await context.params;
 
@@ -23,6 +30,17 @@ export async function POST(
     if (!emailResult.emailSent) {
       console.error("[promote-instructor] E-posta hatası:", emailResult.emailError);
     }
+
+    const audit = new SupabaseAdminAuditLogRepository(access.client);
+    await audit.logInstructorGranted({
+      actorId: adminAccess.profile.id,
+      actorEmail: adminAccess.profile.email,
+      memberId: id,
+      memberName: member.fullName,
+      memberEmail: member.email,
+      memberRole: member.role,
+      emailSent: emailResult.emailSent,
+    });
 
     return NextResponse.json({
       data: {
