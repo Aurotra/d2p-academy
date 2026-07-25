@@ -1,12 +1,14 @@
 import Link from "next/link";
 
 import { RegistrationForm } from "@/presentation/components/registration/registration-form";
+import { publicPageMetadata } from "@/shared/seo/metadata";
 
-export const metadata = {
-  title: "Eylül Dönemi Ön Kayıt | D2P Academy",
+export const metadata = publicPageMetadata({
+  title: "Atölye Ön Kayıt",
   description:
-    "D2P Academy Eylül dönemi atölye programları için ön kayıt formu. 3D Tasarım, 3D Baskı ve Robotik atölyelerine hemen başvurun.",
-};
+    "D2P Academy atölye programları için ön kayıt formu. 3D tasarım, 3D baskı ve robotik atölyelerine başvurun.",
+  path: "/kayit",
+});
 
 export default function PreRegistrationPage() {
   return (

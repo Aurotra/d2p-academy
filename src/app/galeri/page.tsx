@@ -3,14 +3,16 @@ import Link from "next/link";
 import type { GalleryAlbum } from "@/core/domain/gallery";
 import { createSupabaseServerClient } from "@/infrastructure/supabase/create-server-client";
 import { SupabaseGalleryRepository } from "@/infrastructure/repositories/supabase-gallery-repository";
+import { publicPageMetadata } from "@/shared/seo/metadata";
 
 export const dynamic = "force-dynamic";
 
-export const metadata = {
+export const metadata = publicPageMetadata({
   title: "Galeri",
   description:
-    "D2P Academy eğitim fotoğrafları. 2026 ve sonraki yıllardaki atölyelerden kareler.",
-};
+    "D2P Academy eğitim fotoğrafları. 3D tasarım, robotik ve maker atölyelerinden kareler.",
+  path: "/galeri",
+});
 
 function formatEventDate(value: string | null): string | null {
   if (!value) return null;

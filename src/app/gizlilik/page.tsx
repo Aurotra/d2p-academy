@@ -1,10 +1,12 @@
 import { LegalDocumentLayout } from "@/presentation/components/legal/legal-document-layout";
 import { KVKK_TEXT_VERSION } from "@/shared/constants/kvkk";
+import { publicPageMetadata } from "@/shared/seo/metadata";
 
-export const metadata = {
-  title: "Gizlilik Politikası | D2P Academy",
+export const metadata = publicPageMetadata({
+  title: "Gizlilik Politikası",
   description: "D2P Academy web sitesi ve hizmetleri gizlilik politikası.",
-};
+  path: "/gizlilik",
+});
 
 export default function PrivacyPage() {
   return (

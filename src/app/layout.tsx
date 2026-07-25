@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 import { Geist, Geist_Mono } from "next/font/google";
 
 import "./globals.css";
+import { OrganizationJsonLd } from "@/presentation/components/seo/organization-json-ld";
 import { SITE_DESCRIPTION, SITE_NAME, SITE_URL } from "@/shared/constants/site";
 import { SiteChrome } from "@/presentation/components/layout/site-chrome";
 const geistSans = Geist({
@@ -39,9 +40,6 @@ export const metadata: Metadata = {
     title: SITE_NAME,
     description: SITE_DESCRIPTION,
   },
-  alternates: {
-    canonical: "/",
-  },
 };
 export default function RootLayout({
   children,
@@ -51,6 +49,7 @@ export default function RootLayout({
   return (
     <html lang="tr">
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+        <OrganizationJsonLd />
         <SiteChrome>{children}</SiteChrome>
       </body>    </html>
   );

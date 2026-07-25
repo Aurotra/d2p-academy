@@ -1,8 +1,10 @@
 import Link from "next/link";
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
 import { createSupabaseServerClient } from "@/infrastructure/supabase/create-server-client";
 import { SupabaseGalleryRepository } from "@/infrastructure/repositories/supabase-gallery-repository";
+import { publicPageMetadata } from "@/shared/seo/metadata";
 
 export const dynamic = "force-dynamic";
 
@@ -18,11 +20,15 @@ function formatEventDate(value: string | null): string | null {
   }).format(new Date(`${value}T12:00:00`));
 }
 
-export async function generateMetadata({ params }: PageProps) {
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { slug } = await params;
   const client = await createSupabaseServerClient();
   if (!client) {
-    return { title: "Galeri" };
+    return publicPageMetadata({
+      title: "Galeri",
+      description: "D2P Academy eğitim fotoğrafları.",
+      path: "/galeri",
+    });
   }
 
   const album = await new SupabaseGalleryRepository(client).getPublishedAlbumBySlug(slug);
@@ -30,12 +36,13 @@ export async function generateMetadata({ params }: PageProps) {
     return { title: "Albüm bulunamadı" };
   }
 
-  return {
+  return publicPageMetadata({
     title: album.title,
     description:
       album.description ||
       `${album.locationName ?? "D2P Academy"} eğitim fotoğrafları.`,
-  };
+    path: `/galeri/${slug}`,
+  });
 }
 
 export default async function GalleryAlbumPage({ params }: PageProps) {

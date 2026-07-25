@@ -1,6 +1,8 @@
 import { ImageResponse } from "next/og";
 
-export const alt = "D2P Academy";
+import { SITE_NAME, SITE_TAGLINE } from "@/shared/constants/site";
+
+export const alt = `${SITE_NAME} — ${SITE_TAGLINE}`;
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
@@ -14,8 +16,9 @@ export default function OpenGraphImage() {
           display: "flex",
           flexDirection: "column",
           justifyContent: "center",
-          padding: 72,
-          background: "linear-gradient(135deg, #e0f2fe 0%, #f0f9ff 45%, #ffffff 100%)",
+          padding: "72px",
+          background: "linear-gradient(135deg, #0c4a6e 0%, #0284c7 55%, #38bdf8 100%)",
+          color: "#ffffff",
         }}
       >
         <div
@@ -27,35 +30,20 @@ export default function OpenGraphImage() {
             height: 96,
             borderRadius: 24,
             background: "#E63946",
-            color: "#ffffff",
             fontSize: 36,
             fontWeight: 800,
-            marginBottom: 28,
+            letterSpacing: "-0.04em",
           }}
         >
           D2P
         </div>
-        <div
-          style={{
-            fontSize: 64,
-            fontWeight: 900,
-            color: "#0c4a6e",
-            lineHeight: 1.1,
-          }}
-        >
-          D2P Academy
+        <div style={{ marginTop: 40, fontSize: 64, fontWeight: 800, lineHeight: 1.1 }}>
+          {SITE_NAME}
         </div>
-        <div
-          style={{
-            marginTop: 18,
-            fontSize: 28,
-            color: "#0369a1",
-            maxWidth: 820,
-            lineHeight: 1.4,
-          }}
-        >
-          Design to Print — 3D tasarım ve baskı eğitimleri
+        <div style={{ marginTop: 20, fontSize: 32, fontWeight: 500, opacity: 0.92 }}>
+          {SITE_TAGLINE} · 3D tasarım, baskı ve robotik eğitimleri
         </div>
+        <div style={{ marginTop: 48, fontSize: 24, opacity: 0.85 }}>www.d2p.com.tr</div>
       </div>
     ),
     { ...size },

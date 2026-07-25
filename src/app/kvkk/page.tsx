@@ -1,10 +1,12 @@
 import { LegalDocumentLayout } from "@/presentation/components/legal/legal-document-layout";
 import { KVKK_TEXT_VERSION } from "@/shared/constants/kvkk";
+import { publicPageMetadata } from "@/shared/seo/metadata";
 
-export const metadata = {
-  title: "KVKK Aydınlatma Metni | D2P Academy",
+export const metadata = publicPageMetadata({
+  title: "KVKK Aydınlatma Metni",
   description: "D2P Academy kişisel verilerin işlenmesine ilişkin aydınlatma metni.",
-};
+  path: "/kvkk",
+});
 
 export default function KvkkPage() {
   return (

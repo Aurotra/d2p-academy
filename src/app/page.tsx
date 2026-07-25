@@ -7,8 +7,16 @@ import { KaklikRegistrationSection } from "@/presentation/components/home/kaklik
 import { LearningValuesSection } from "@/presentation/components/home/learning-values-section";
 import { getKaklikCampaignSettings } from "@/infrastructure/settings/site-settings";
 import { createSupabaseServerClient } from "@/infrastructure/supabase/create-server-client";
+import { publicPageMetadata } from "@/shared/seo/metadata";
 
 export const dynamic = "force-dynamic";
+
+export const metadata = publicPageMetadata({
+  title: "3D Tasarım, 3D Baskı ve Robotik Eğitimleri",
+  description:
+    "D2P Academy — Denizli merkezli 3D tasarım, 3D baskı ve robotik atölye eğitimleri. Okullara ve öğrencilere yönelik modern STEM eğitim platformu.",
+  path: "/",
+});
 
 export default async function HomePage() {
   const client = await createSupabaseServerClient();
