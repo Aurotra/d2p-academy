@@ -37,13 +37,31 @@ export default function OpenGraphImage() {
         >
           D2P
         </div>
-        <div style={{ marginTop: 40, fontSize: 64, fontWeight: 800, lineHeight: 1.1 }}>
+        <div
+          style={{
+            display: "flex",
+            marginTop: 40,
+            fontSize: 64,
+            fontWeight: 800,
+            lineHeight: 1.1,
+          }}
+        >
           {SITE_NAME}
         </div>
-        <div style={{ marginTop: 20, fontSize: 32, fontWeight: 500, opacity: 0.92 }}>
+        <div
+          style={{
+            display: "flex",
+            marginTop: 20,
+            fontSize: 32,
+            fontWeight: 500,
+            opacity: 0.92,
+          }}
+        >
           {SITE_TAGLINE} · 3D tasarım, baskı ve robotik eğitimleri
         </div>
-        <div style={{ marginTop: 48, fontSize: 24, opacity: 0.85 }}>www.d2p.com.tr</div>
+        <div style={{ display: "flex", marginTop: 48, fontSize: 24, opacity: 0.85 }}>
+          www.d2p.com.tr
+        </div>
       </div>
     ),
     { ...size },
