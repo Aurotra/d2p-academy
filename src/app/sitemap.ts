@@ -1,7 +1,7 @@
 import type { MetadataRoute } from "next";
 
 import { SupabaseGalleryRepository } from "@/infrastructure/repositories/supabase-gallery-repository";
-import { createSupabaseServerClient } from "@/infrastructure/supabase/create-server-client";
+import { tryCreateServiceRoleClient } from "@/infrastructure/supabase/create-service-role-client";
 import { absoluteUrl } from "@/shared/seo/metadata";
 import { SITE_URL } from "@/shared/constants/site";
 
@@ -16,22 +16,27 @@ const PUBLIC_PATHS = [
   "/gizlilik",
 ] as const;
 
-export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const now = new Date();
+export const revalidate = 3600;
 
-  const staticEntries: MetadataRoute.Sitemap = PUBLIC_PATHS.map((path) => ({
+function buildStaticEntries(now: Date): MetadataRoute.Sitemap {
+  return PUBLIC_PATHS.map((path) => ({
     url: path === "/" ? SITE_URL : absoluteUrl(path),
     lastModified: now,
     changeFrequency: path === "/" ? "weekly" : "monthly",
     priority: path === "/" ? 1 : 0.7,
   }));
+}
+
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+  const now = new Date();
+  const staticEntries = buildStaticEntries(now);
+
+  const client = tryCreateServiceRoleClient();
+  if (!client) {
+    return staticEntries;
+  }
 
   try {
-    const client = await createSupabaseServerClient();
-    if (!client) {
-      return staticEntries;
-    }
-
     const albums = await new SupabaseGalleryRepository(client).listPublishedAlbums();
     const albumEntries: MetadataRoute.Sitemap = albums.map((album) => ({
       url: absoluteUrl(`/galeri/${album.slug}`),
