@@ -3,10 +3,10 @@ import type { EmailOtpType } from "@supabase/supabase-js";
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 
-function sanitizeNextPath(nextParam: string | null): string {
-  const next = nextParam ?? "/dashboard";
-  return next.startsWith("/") && !next.startsWith("//") ? next : "/dashboard";
-}
+import {
+  mapVerifyOtpErrorToQueryCode,
+  sanitizeAuthNextPath,
+} from "@/shared/utils/auth-redirect";
 
 function getRedirectOrigin(request: Request): string {
   const requestUrl = new URL(request.url);
@@ -40,9 +40,21 @@ function authCallbackHashFallbackResponse(): NextResponse {
   <p>Yönlendiriliyor…</p>
   <script>
     (function () {
-      var params = new URLSearchParams((window.location.hash || "").replace(/^#/, ""));
-      var errorCode = params.get("error_code") || params.get("error") || "auth";
-      window.location.replace("/login?error=" + encodeURIComponent(errorCode));
+      var hash = window.location.hash || "";
+      var params = new URLSearchParams(hash.replace(/^#/, ""));
+
+      if (params.get("access_token")) {
+        window.location.replace("/login" + (window.location.search || "") + hash);
+        return;
+      }
+
+      var errorCode = params.get("error_code") || params.get("error");
+      if (errorCode) {
+        window.location.replace("/login?error=" + encodeURIComponent(errorCode));
+        return;
+      }
+
+      window.location.replace("/login?error=auth");
     })();
   </script>
 </body>
@@ -61,7 +73,7 @@ export async function GET(request: Request) {
   const code = requestUrl.searchParams.get("code");
   const tokenHash = requestUrl.searchParams.get("token_hash");
   const type = requestUrl.searchParams.get("type") as EmailOtpType | null;
-  const next = sanitizeNextPath(requestUrl.searchParams.get("next"));
+  const next = sanitizeAuthNextPath(requestUrl.searchParams.get("next"));
 
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
@@ -72,6 +84,14 @@ export async function GET(request: Request) {
 
   if (!code && !(tokenHash && type)) {
     return authCallbackHashFallbackResponse();
+  }
+
+  if (tokenHash && type) {
+    const confirmUrl = new URL("/auth/confirm", getRedirectOrigin(request));
+    confirmUrl.searchParams.set("token_hash", tokenHash);
+    confirmUrl.searchParams.set("type", type);
+    confirmUrl.searchParams.set("next", next);
+    return NextResponse.redirect(confirmUrl);
   }
 
   const cookieStore = await cookies();
@@ -95,13 +115,8 @@ export async function GET(request: Request) {
     const { error } = await supabase.auth.exchangeCodeForSession(code);
     if (error) {
       console.error("[auth/callback] exchangeCodeForSession", error.message);
-      return redirectTo(request, "/login?error=auth");
-    }
-  } else if (tokenHash && type) {
-    const { error } = await supabase.auth.verifyOtp({ token_hash: tokenHash, type });
-    if (error) {
-      console.error("[auth/callback] verifyOtp", error.message);
-      return redirectTo(request, "/login?error=auth");
+      const queryCode = mapVerifyOtpErrorToQueryCode(error.message);
+      return redirectTo(request, `/login?error=${queryCode}`);
     }
   }
 

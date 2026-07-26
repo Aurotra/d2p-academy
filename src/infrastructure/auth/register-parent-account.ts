@@ -4,15 +4,8 @@ import type { AuthResult, SignUpInput } from "@/core/domain/auth";
 import { sendSignupConfirmationNotification } from "@/infrastructure/email/send-signup-confirmation-notification";
 import { createServiceRoleClient } from "@/infrastructure/supabase/create-service-role-client";
 import { SITE_URL } from "@/shared/constants/site";
+import { buildEmailConfirmationUrl, sanitizeAuthNextPath } from "@/shared/utils/auth-redirect";
 import { mapAuthErrorToTurkish } from "@/shared/utils/auth-errors";
-
-function sanitizeRedirectPath(path: string | undefined): string {
-  if (!path || !path.startsWith("/") || path.startsWith("//")) {
-    return "/dashboard";
-  }
-
-  return path;
-}
 
 function mapSession(userId: string, email: string) {
   return { userId, email };
@@ -23,12 +16,13 @@ async function deliverSignupConfirmationEmail(input: {
   email: string;
   fullName: string;
   emailRedirectTo: string;
-  actionLink?: string;
+  confirmationLink?: string;
+  nextPath: string;
   password: string;
 }): Promise<void> {
-  let actionLink = input.actionLink;
+  let confirmationLink = input.confirmationLink;
 
-  if (!actionLink) {
+  if (!confirmationLink) {
     const { data: linkData, error: linkError } = await input.serviceClient.auth.admin.generateLink({
       type: "signup",
       email: input.email,
@@ -46,17 +40,22 @@ async function deliverSignupConfirmationEmail(input: {
       throw new Error(mapAuthErrorToTurkish(linkError.message));
     }
 
-    actionLink = linkData?.properties?.action_link;
-  }
+    const hashedToken = linkData?.properties?.hashed_token;
+    if (!hashedToken) {
+      throw new Error("Onay bağlantısı oluşturulamadı.");
+    }
 
-  if (!actionLink) {
-    throw new Error("Onay bağlantısı oluşturulamadı.");
+    confirmationLink = buildEmailConfirmationUrl({
+      tokenHash: hashedToken,
+      type: "signup",
+      nextPath: input.nextPath,
+    });
   }
 
   const emailResult = await sendSignupConfirmationNotification({
     recipientName: input.fullName,
     email: input.email,
-    actionLink,
+    actionLink: confirmationLink,
   });
 
   if (emailResult.emailSent) {
@@ -86,7 +85,7 @@ export async function registerParentAccount(input: SignUpInput): Promise<AuthRes
   const serviceClient = createServiceRoleClient();
   const email = input.email.trim().toLowerCase();
   const fullName = input.fullName.trim();
-  const nextPath = sanitizeRedirectPath(input.redirectTo);
+  const nextPath = sanitizeAuthNextPath(input.redirectTo);
   const emailRedirectTo = `${SITE_URL}/auth/callback?next=${encodeURIComponent(nextPath)}`;
 
   const { data, error } = await serviceClient.auth.admin.generateLink({
@@ -107,7 +106,7 @@ export async function registerParentAccount(input: SignUpInput): Promise<AuthRes
   }
 
   const user = data.user;
-  const actionLink = data.properties?.action_link;
+  const hashedToken = data.properties?.hashed_token;
 
   if (!user?.email) {
     throw new Error("Kayıt işlemi başarısız oldu.");
@@ -117,13 +116,21 @@ export async function registerParentAccount(input: SignUpInput): Promise<AuthRes
   const userEmail = user.email;
   const createdAtMs = new Date(user.created_at).getTime();
   const resentConfirmation = Date.now() - createdAtMs > 60_000;
+  const confirmationLink = hashedToken
+    ? buildEmailConfirmationUrl({
+        tokenHash: hashedToken,
+        type: "signup",
+        nextPath,
+      })
+    : undefined;
 
   await deliverSignupConfirmationEmail({
     serviceClient,
     email,
     fullName,
     emailRedirectTo,
-    actionLink,
+    confirmationLink,
+    nextPath,
     password: input.password,
   });
 
