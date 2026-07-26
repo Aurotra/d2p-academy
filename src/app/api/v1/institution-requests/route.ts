@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { enforcePublicPostRateLimit } from "@/infrastructure/auth/public-post-rate-limit";
+import { logMemberActivity } from "@/infrastructure/audit/log-member-activity";
 import { buildConsentAudit, mapConsentToColumns } from "@/lib/utils/consent-audit";
 import { getClientIp } from "@/lib/utils/request-ip";
 import { createSupabaseServerClient } from "@/infrastructure/supabase/create-server-client";
@@ -136,6 +137,20 @@ export async function POST(request: Request) {
     if (error) {
       return NextResponse.json({ error: error.message }, { status: 400 });
     }
+
+    void logMemberActivity({
+      action: "institution_request_submitted",
+      actorEmail: email,
+      actorName: contactName,
+      studentName: institutionName,
+      metadata: {
+        institution_type: institutionType,
+        city,
+        student_count: studentCount,
+        package_interest: packageInterest,
+        phone,
+      },
+    });
 
     return NextResponse.json({ success: true }, { status: 201 });
   } catch (error) {

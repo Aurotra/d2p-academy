@@ -2,7 +2,32 @@ export type AdminAuditAction =
   | "enrollment_deleted"
   | "certificate_revoked"
   | "instructor_granted"
-  | "instructor_revoked";
+  | "instructor_revoked"
+  | "member_registered"
+  | "email_confirmed"
+  | "child_profile_created"
+  | "child_profile_updated"
+  | "course_demand_submitted"
+  | "institution_request_submitted"
+  | "enrollment_created"
+  | "intake_form_submitted";
+
+export const MEMBER_ACTIVITY_ACTIONS = [
+  "member_registered",
+  "email_confirmed",
+  "child_profile_created",
+  "child_profile_updated",
+  "course_demand_submitted",
+  "institution_request_submitted",
+  "enrollment_created",
+  "intake_form_submitted",
+] as const satisfies readonly AdminAuditAction[];
+
+export type MemberActivityAction = (typeof MEMBER_ACTIVITY_ACTIONS)[number];
+
+export function isMemberActivityAction(action: AdminAuditAction): action is MemberActivityAction {
+  return (MEMBER_ACTIVITY_ACTIONS as readonly string[]).includes(action);
+}
 
 export interface AdminAuditLogRecord {
   id: string;
@@ -23,4 +48,12 @@ export const ADMIN_AUDIT_ACTION_LABELS: Record<AdminAuditAction, string> = {
   certificate_revoked: "Sertifika iptal",
   instructor_granted: "Eğitmen yetkisi verildi",
   instructor_revoked: "Eğitmen yetkisi alındı",
+  member_registered: "Veli kaydı",
+  email_confirmed: "E-posta onayı",
+  child_profile_created: "Çocuk eklendi",
+  child_profile_updated: "Profil güncellendi",
+  course_demand_submitted: "Kurs talebi",
+  institution_request_submitted: "Kurum formu",
+  enrollment_created: "Etkinlik kaydı",
+  intake_form_submitted: "Tanıma formu",
 };

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 
+import { logMemberActivity } from "@/infrastructure/audit/log-member-activity";
 import { createSupabaseServerClient } from "@/infrastructure/supabase/create-server-client";
 import { calculateProgress } from "@/lib/utils/progress";
 
@@ -138,6 +139,25 @@ export async function PATCH(
       interests: data.interests,
       motivation_data: data.motivation_data,
       profile_avatar_url: data.profile_avatar_url,
+    });
+
+    const { data: parentProfile } = await access.supabase
+      .from("profiles")
+      .select("full_name, email")
+      .eq("id", access.parentId)
+      .maybeSingle();
+
+    void logMemberActivity({
+      action: "child_profile_updated",
+      actorId: access.parentId,
+      actorEmail: parentProfile?.email ?? null,
+      actorName: parentProfile?.full_name ?? null,
+      studentId: data.id,
+      studentName: data.full_name,
+      metadata: {
+        progress_percent: progress,
+        updated_fields: Object.keys(payload),
+      },
     });
 
     return NextResponse.json({ data: { profile: data, progress } });

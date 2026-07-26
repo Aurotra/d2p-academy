@@ -97,8 +97,7 @@ export function EmailConfirmForm() {
       ) : (
         <div className="space-y-4">
           <p className="text-sm leading-relaxed text-slate-600">
-            Güvenlik için onay işlemi butona tıkladığınızda tamamlanır. E-posta uygulamanız bağlantıyı
-            önizlediyse sorun değil — bu sayfada onaylayabilirsiniz.
+            E-postanızı onaylamak için «E-postamı Onayla» butonuna basın.
           </p>
 
           {error ? (

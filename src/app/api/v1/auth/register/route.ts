@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { registerParentAccount } from "@/infrastructure/auth/register-parent-account";
+import { logMemberActivity } from "@/infrastructure/audit/log-member-activity";
 import { enforcePublicPostRateLimit } from "@/infrastructure/auth/public-post-rate-limit";
 import { mapAuthErrorToTurkish } from "@/shared/utils/auth-errors";
 
@@ -44,6 +45,16 @@ export async function POST(request: Request) {
     }
 
     const result = await registerParentAccount({ fullName, email, password, redirectTo });
+
+    void logMemberActivity({
+      action: "member_registered",
+      actorId: result.session.userId,
+      actorEmail: email,
+      actorName: fullName,
+      metadata: {
+        resent_confirmation: Boolean(result.resentConfirmation),
+      },
+    });
 
     return NextResponse.json({
       data: {

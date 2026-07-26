@@ -7,6 +7,7 @@ import {
   mapVerifyOtpErrorToQueryCode,
   sanitizeAuthNextPath,
 } from "@/shared/utils/auth-redirect";
+import { logMemberActivity } from "@/infrastructure/audit/log-member-activity";
 import { mapAuthErrorToTurkish } from "@/shared/utils/auth-errors";
 
 interface ConfirmEmailRequestBody {
@@ -62,6 +63,20 @@ export async function POST(request: Request) {
   const { error: profileError } = await supabase.rpc("ensure_user_profile");
   if (profileError) {
     console.error("[confirm-email] ensure_user_profile", profileError.message);
+  }
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (user) {
+    void logMemberActivity({
+      action: "email_confirmed",
+      actorId: user.id,
+      actorEmail: user.email ?? null,
+      actorName:
+        typeof user.user_metadata?.full_name === "string" ? user.user_metadata.full_name : null,
+    });
   }
 
   return response;

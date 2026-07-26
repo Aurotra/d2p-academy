@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { getEventCapacityBlockReason } from "@/infrastructure/enrollments/event-capacity";
+import { logMemberActivity } from "@/infrastructure/audit/log-member-activity";
 import { createSupabaseServerClient } from "@/infrastructure/supabase/create-server-client";
 import { mapAuthErrorToTurkish } from "@/shared/utils/auth-errors";
 import { getEventEnrollmentBlockReason } from "@/shared/utils/event-enrollment-window";
@@ -102,6 +103,24 @@ export async function POST(request: Request) {
         { status: 400 },
       );
     }
+
+    const { data: profile } = await client
+      .from("profiles")
+      .select("full_name, email")
+      .eq("id", user.id)
+      .maybeSingle();
+
+    void logMemberActivity({
+      action: "enrollment_created",
+      actorId: user.id,
+      actorEmail: profile?.email ?? user.email ?? null,
+      actorName: profile?.full_name ?? null,
+      studentId: user.id,
+      studentName: profile?.full_name ?? null,
+      eventId: event.id,
+      eventTitle: event.title,
+      enrollmentId: enrollment.id,
+    });
 
     return NextResponse.json({
       data: {

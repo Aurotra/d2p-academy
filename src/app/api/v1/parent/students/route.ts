@@ -6,6 +6,7 @@ import {
   InvalidUsernameError,
   WeakPasswordError,
 } from "@/infrastructure/auth/password";
+import { logMemberActivity } from "@/infrastructure/audit/log-member-activity";
 import { createServiceRoleClient } from "@/infrastructure/supabase/create-service-role-client";
 import { createSupabaseServerClient } from "@/infrastructure/supabase/create-server-client";
 import { allocateUniqueStudentUsername } from "@/shared/utils/student-username";
@@ -156,6 +157,26 @@ export async function POST(request: NextRequest) {
         linkResult && typeof linkResult === "object" && "enrolled" in linkResult
           ? Number((linkResult as { enrolled?: number }).enrolled ?? 0)
           : 0;
+
+      const { data: parentProfile } = await serviceClient
+        .from("profiles")
+        .select("full_name, email")
+        .eq("id", auth.user.id)
+        .maybeSingle();
+
+      void logMemberActivity({
+        action: "child_profile_created",
+        actorId: auth.user.id,
+        actorEmail: parentProfile?.email ?? auth.user.email ?? null,
+        actorName: parentProfile?.full_name ?? null,
+        studentId: created.id,
+        studentName: created.full_name,
+        metadata: {
+          username: created.username,
+          course_demands_linked: linkedDemands,
+          course_demands_enrolled: enrolledFromDemands,
+        },
+      });
 
       return NextResponse.json(
         {

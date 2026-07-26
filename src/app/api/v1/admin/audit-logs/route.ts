@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 
 import type { AdminAuditAction } from "@/core/domain/admin-audit-log";
+import { ADMIN_AUDIT_ACTION_LABELS } from "@/core/domain/admin-audit-log";
 import { requireAdminApiAccess } from "@/infrastructure/auth/require-admin-api-access";
 import { SupabaseAdminAuditLogRepository } from "@/infrastructure/repositories/supabase-admin-audit-log-repository";
 
@@ -11,12 +12,7 @@ export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
     const actionParam = searchParams.get("action");
-    const allowedActions: AdminAuditAction[] = [
-      "enrollment_deleted",
-      "certificate_revoked",
-      "instructor_granted",
-      "instructor_revoked",
-    ];
+    const allowedActions = Object.keys(ADMIN_AUDIT_ACTION_LABELS) as AdminAuditAction[];
     const action = allowedActions.includes(actionParam as AdminAuditAction)
       ? (actionParam as AdminAuditAction)
       : undefined;

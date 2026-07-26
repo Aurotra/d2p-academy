@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 
 import { createSupabaseServerClient } from "@/infrastructure/supabase/create-server-client";
+import { logMemberActivity } from "@/infrastructure/audit/log-member-activity";
 import { tryNormalizeProgramCode } from "@/shared/utils/program-code";
 
 const bodySchema = z
@@ -97,6 +98,37 @@ export async function POST(request: Request) {
     console.error("[course-demand POST]", insertError.message);
     return NextResponse.json({ error: "Talep oluşturulamadı." }, { status: 500 });
   }
+
+  const [{ data: parentProfile }, { data: program }] = await Promise.all([
+    client.from("profiles").select("full_name, email").eq("id", auth.user.id).maybeSingle(),
+    client.from("programs").select("name").eq("program_code", programCode).maybeSingle(),
+  ]);
+
+  let resolvedStudentName = studentName;
+  if (studentProfileId && !resolvedStudentName) {
+    const { data: child } = await client
+      .from("profiles")
+      .select("full_name")
+      .eq("id", studentProfileId)
+      .maybeSingle();
+    resolvedStudentName = child?.full_name ?? null;
+  }
+
+  void logMemberActivity({
+    action: "course_demand_submitted",
+    actorId: auth.user.id,
+    actorEmail: parentProfile?.email ?? auth.user.email ?? null,
+    actorName: parentProfile?.full_name ?? null,
+    studentId: studentProfileId,
+    studentName: resolvedStudentName,
+    metadata: {
+      request_id: inserted.id,
+      program_code: programCode,
+      program_title: program?.name ?? programCode,
+      preferred_start_date: parsed.data.preferred_start_date,
+      preferred_end_date: preferredEndDate,
+    },
+  });
 
   return NextResponse.json({ data: inserted }, { status: 201 });
 }
