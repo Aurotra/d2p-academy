@@ -73,7 +73,7 @@ function MenuIcon({ open }: { open: boolean }) {
 }
 
 export function SiteHeader() {
-  const pathname = usePathname();
+  const pathname = usePathname() ?? "";
   const router = useRouter();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [sessionKind, setSessionKind] = useState<"email" | "student" | null>(null);

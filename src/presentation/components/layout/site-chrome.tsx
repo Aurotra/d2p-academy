@@ -19,7 +19,7 @@ function scrollToCurrentHash() {
 }
 
 export function SiteChrome({ children }: SiteChromeProps) {
-  const pathname = usePathname();
+  const pathname = usePathname() ?? "";
   const isStandalonePanelRoute =
     pathname.startsWith("/admin") || pathname.startsWith("/instructor");
 

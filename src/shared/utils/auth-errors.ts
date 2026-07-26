@@ -41,7 +41,33 @@ export function mapAuthErrorToTurkish(rawMessage: string): string {
     return "Yeni kayıtlar şu anda kapalı. Lütfen daha sonra tekrar deneyin.";
   }
 
+  if (
+    message.includes("otp_expired") ||
+    message.includes("link is invalid") ||
+    message.includes("has expired")
+  ) {
+    return EMAIL_CONFIRMATION_EXPIRED_NOTICE;
+  }
+
   return rawMessage;
+}
+
+export const EMAIL_CONFIRMATION_EXPIRED_NOTICE =
+  "Onay bağlantısının süresi dolmuş veya daha önce kullanılmış. Veli Girişi ile giriş yapmayı deneyin. Giriş olmuyorsa kayıt sayfasından aynı e-posta ile tekrar kayıt olun; onay maili yeniden gönderilir.";
+
+export function mapAuthQueryErrorToTurkish(errorCode: string | null): string | null {
+  if (!errorCode) {
+    return null;
+  }
+
+  switch (errorCode) {
+    case "otp_expired":
+      return EMAIL_CONFIRMATION_EXPIRED_NOTICE;
+    case "auth":
+      return AUTH_CALLBACK_ERROR_NOTICE;
+    default:
+      return mapAuthErrorToTurkish(errorCode.replaceAll("_", " "));
+  }
 }
 
 export const EMAIL_CONFIRMATION_NOTICE =
@@ -52,3 +78,5 @@ export const EMAIL_CONFIRMATION_RESENT_NOTICE =
 
 export const AUTH_CALLBACK_ERROR_NOTICE =
   "E-posta onayı tamamlanamadı. Bağlantının süresi dolmuş veya daha önce kullanılmış olabilir. Giriş yapmayı deneyin; sorun sürerse kayıt formundan onay mailini yeniden isteyin.";
+
+export const AUTH_HASH_ERROR_EVENT = "d2p-auth-hash-error";

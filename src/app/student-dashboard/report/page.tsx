@@ -43,12 +43,20 @@ export default async function StudentDashboardReportPage() {
               Ödev değerlendirmeleri, puanlar ve gelişim yorumları.
             </p>
           </div>
-          <Link
-            href="/student-dashboard/documents"
-            className="text-sm font-semibold text-document-primary transition hover:text-document-primary-hover"
-          >
-            ← Dökümanlara Dön
-          </Link>
+          <div className="flex flex-col gap-2 sm:items-end">
+            <Link
+              href="/student-dashboard/profile"
+              className="text-sm font-semibold text-document-primary transition hover:text-document-primary-hover"
+            >
+              ← Profilime Dön
+            </Link>
+            <Link
+              href="/student-dashboard/documents"
+              className="text-sm font-semibold text-document-primary transition hover:text-document-primary-hover"
+            >
+              ← Dökümanlara Dön
+            </Link>
+          </div>
         </div>
 
         {grades.length === 0 ? (

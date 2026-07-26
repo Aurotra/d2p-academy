@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 export function AdminBackLink() {
-  const pathname = usePathname();
+  const pathname = usePathname() ?? "";
 
   if (pathname === "/admin") {
     return null;

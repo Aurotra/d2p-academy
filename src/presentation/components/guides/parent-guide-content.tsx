@@ -6,11 +6,12 @@ import { PARENT_GUIDE_UPDATED } from "@/shared/constants/parent-guide";
 const checklist = [
   "d2p.com.tr adresine girin.",
   "Sağ üstten Hesap Oluştur ile veli hesabı açın (ad, e-posta, şifre).",
-  "E-postanıza gelen onay linkine tıklayın.",
-  "Veli Girişi ile e-posta ve şifrenizle giriş yapın.",
+  "E-postanıza gelen onay linkine tıklayın; ardından Veli Girişi yapın.",
   "Panel → Çocuk hesapları → + Çocuk ekle (ad soyad, doğum tarihi, şifre).",
   "Oluşan kullanıcı adını mutlaka not alın.",
-  "Etkinliğe kaydet — ardından hemen Formları doldur sayfasına geçin.",
+  "Yayınlanmış etkinlik varsa: Çocuk hesapları → Etkinliğe kaydet.",
+  "Uygun etkinlik yoksa: Panel → Kurs talebi ile program ve tarih tercihi bırakın.",
+  "Kayıt oluştuktan hemen sonra Detay → Formları doldur sayfasına geçin.",
   "Tanışma → Onaylar → (varsa) Son test adımlarını kayıt günü tamamlayın.",
   "Profili düzenle ile bilgileri %100 yapın (sertifika için zorunlu).",
 ];
@@ -27,14 +28,19 @@ const faqItems = [
       "Hayır. Sistem otomatik oluşturur: ad + soyad + doğum yılının son 2 hanesi (ör. emreyılmaz15). Aynı isim ve yıl varsa sonuna rakam eklenir.",
   },
   {
-    question: "E-posta onayı gelmedi, ne yapmalıyım?",
+    question: "E-posta onayı gelmedi veya onay linki hata verdi, ne yapmalıyım?",
     answer:
-      "Spam, gereksiz veya promosyon klasörlerine bakın. 10–15 dakika bekleyin. Hâlâ gelmezse farklı bir e-posta deneyin veya info@d2p.com.tr adresine yazın.",
+      "Önce Spam / Gereksiz klasörüne bakın ve 10–15 dakika bekleyin. Onay linkine tıkladıysanız tekrar Veli Girişi deneyin; hesap onaylanmış olabilir. Link süresi dolmuşsa kayıt formunu tekrar göndermeyin — giriş yapın veya info@d2p.com.tr adresine yazın.",
   },
   {
     question: "“Bu e-posta zaten kayıtlı” diyor.",
     answer:
       "Daha önce kayıt olmuşsunuz demektir. Veli Girişi ile giriş yapın; şifrenizi unuttuysanız destek ile iletişime geçin.",
+  },
+  {
+    question: "Çocuk ekle formunda e-posta adresim görünüyor, normal mi?",
+    answer:
+      "Hayır — bu tarayıcının otomatik doldurmasıdır. Ad Soyad alanına çocuğun gerçek adını yazın (ör. Emre Yılmaz). Veli e-postası bu alana girilmemelidir.",
   },
   {
     question: "Çocuğum kendi giriş yapabilir mi?",
@@ -45,6 +51,16 @@ const faqItems = [
     question: "Birden fazla çocuğum var.",
     answer:
       "Aynı veli hesabından + Çocuk ekle ile her çocuk için ayrı hesap açabilirsiniz. Her çocuğun kullanıcı adı farklı olur.",
+  },
+  {
+    question: "Uygun etkinlik yoksa ne yapmalıyım?",
+    answer:
+      "Panel → Kurs talebi sayfasından program (ör. 3D tasarım, robotik) ve tercih ettiğiniz tarih aralığını bırakın. Yeterli talep birikince sınıf açılır; kaydınız panele düşer. Talep durumunu aynı sayfadan takip edebilirsiniz.",
+  },
+  {
+    question: "Kurs talebinde çocuk profili seçmeden sadece isim yazdım, sonra ne olur?",
+    answer:
+      "Sınıf açıldıktan sonra Çocuk hesapları bölümünden aynı adla öğrenci profili oluşturun. Sistem talebi otomatik eşleştirir ve kaydı tamamlar. Mümkünse talep verirken mevcut çocuk profilini seçmek daha hızlıdır.",
   },
   {
     question: "Formları kim doldurmalı?",
@@ -84,8 +100,9 @@ export function ParentGuideContent() {
           Veli Kayıt Rehberi
         </h1>
         <p className="mt-4 text-base leading-7 text-slate-600">
-          Çocuğunuzun etkinlik kaydı, formları ve sertifikası web sitemiz üzerinden yürütülür.
-          Aşağıdaki adımları takip ederek birkaç dakikada kayıt işlemini tamamlayabilirsiniz.
+          Çocuğunuzun etkinlik kaydı, kurs talebi, formları ve sertifikası web sitemiz üzerinden
+          yürütülür. Yayınlanmış bir etkinlik varsa doğrudan kayıt olabilir; uygun tarih yoksa kurs
+          talebi bırakabilirsiniz.
         </p>
         <div className="mt-6 flex flex-wrap gap-3">
           <Link
@@ -100,6 +117,12 @@ export function ParentGuideContent() {
           <AuthPortalLink href="/student-login" kind="student">
             Öğrenci Girişi
           </AuthPortalLink>
+          <Link
+            href="/etkinlikler"
+            className="inline-flex items-center justify-center rounded-xl border border-slate-200 bg-white px-5 py-3 text-sm font-semibold text-slate-800 transition hover:border-slate-300"
+          >
+            Etkinlikler
+          </Link>
         </div>
       </header>
 
@@ -143,7 +166,9 @@ export function ParentGuideContent() {
               <tbody className="divide-y divide-slate-100">
                 <tr>
                   <td className="px-4 py-3 font-medium text-slate-900">Ad Soyad</td>
-                  <td className="px-4 py-3">Çocuğun tam adı (en az ad + soyad)</td>
+                  <td className="px-4 py-3">
+                    Çocuğun tam adı (en az ad + soyad). Veli e-postası değil.
+                  </td>
                 </tr>
                 <tr>
                   <td className="px-4 py-3 font-medium text-slate-900">Doğum tarihi</td>
@@ -158,11 +183,13 @@ export function ParentGuideContent() {
           </div>
           <p className="mt-4">
             <strong>Kullanıcı adı otomatik oluşur:</strong> ad + soyad + doğum yılının son 2 hanesi.
-            Örnek: Emre Yılmaz, 2015 doğumlu → <code className="rounded bg-slate-100 px-1.5 py-0.5">emreyılmaz15</code>
+            Örnek: Emre Yılmaz, 2015 doğumlu →{" "}
+            <code className="rounded bg-slate-100 px-1.5 py-0.5">emreyılmaz15</code>
           </p>
           <p className="mt-3 rounded-xl border border-sky-200 bg-sky-50 px-4 py-3 text-sm text-sky-950">
             Kayıt sonrası ekranda görünen kullanıcı adını mutlaka bir yere yazın. Çocuğunuz giriş
-            yaparken buna ihtiyaç duyacak.
+            yaparken buna ihtiyaç duyacak. Tarayıcı Ad Soyad alanına veli e-postanızı otomatik
+            yazarsa silip çocuğun adını girin.
           </p>
         </section>
 
@@ -190,7 +217,7 @@ export function ParentGuideContent() {
                 </tr>
                 <tr>
                   <td className="px-4 py-3 font-medium text-slate-900">Ne yapılır?</td>
-                  <td className="px-4 py-3">Çocuk ekleme, kayıt, form, profil</td>
+                  <td className="px-4 py-3">Çocuk ekleme, kayıt, kurs talebi, form, profil</td>
                   <td className="px-4 py-3">Rozet, sertifika, kendi paneli</td>
                 </tr>
                 <tr>
@@ -206,9 +233,13 @@ export function ParentGuideContent() {
         <section>
           <h2 className="text-xl font-bold text-slate-900">4. Etkinliğe kayıt</h2>
           <p className="mt-3">
+            <Link href="/etkinlikler" className="font-semibold text-document-primary hover:underline">
+              Etkinlikler
+            </Link>{" "}
+            sayfasında yayınlanmış atölyeleri görebilirsiniz. Kayıt için{" "}
             <strong>Panel → Çocuk hesapları</strong> sayfasında çocuğunuzun satırından{" "}
             <strong>Etkinliğe kaydet</strong> ile ilgili etkinliği seçin. Kayıt tamamlandığında
-            aynı sayfada çocuğunuzun etkinlik listesinde görünür.
+            Detay bölümünde çocuğunuzun etkinlik listesinde görünür.
           </p>
           <p className="mt-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-950">
             <strong>Önemli:</strong> Etkinliğe kayıt tek başına yeterli değildir. Kayıttan hemen
@@ -219,7 +250,38 @@ export function ParentGuideContent() {
 
         <section>
           <h2 className="text-xl font-bold text-slate-900">
-            5. Formları doldurma (kayıttan hemen sonra)
+            5. Kurs talebi (uygun etkinlik yoksa)
+          </h2>
+          <p className="mt-3">
+            Takvimde size uygun etkinlik yoksa <strong>Panel → Kurs talebi</strong> sayfasından
+            program ve tercih ettiğiniz tarih aralığını bırakabilirsiniz. Yeterli talep birikince
+            D2P Academy sınıf açar; kaydınız veli paneline düşer.
+          </p>
+          <div className="mt-4 rounded-xl border border-amber-200 bg-amber-50 px-4 py-4 text-sm text-amber-950">
+            <p className="font-semibold">Kurs talebi adımları</p>
+            <ol className="mt-2 list-decimal space-y-1 pl-5 leading-7">
+              <li>
+                <strong>Veli Girişi</strong> → <strong>Panel</strong> →{" "}
+                <strong>Kurs talebi</strong>
+              </li>
+              <li>Program seçin (ör. 3D tasarım, robotik)</li>
+              <li>
+                Mümkünse listeden çocuk profilini seçin; henüz profil yoksa adını yazın ve sonra
+                mutlaka Çocuk hesaplarından aynı adla profil oluşturun
+              </li>
+              <li>Tercih ettiğiniz başlangıç (ve varsa bitiş) tarihini girin</li>
+              <li>Talep durumunu aynı sayfadan takip edin</li>
+            </ol>
+          </div>
+          <p className="mt-4 text-sm text-slate-600">
+            Sınıf açıldıktan sonra çocuk profili oluşturduğunuzda, aynı isimle bıraktığınız talep
+            otomatik olarak kayda dönüşür. Profil zaten varsa kayıt doğrudan oluşturulur.
+          </p>
+        </section>
+
+        <section>
+          <h2 className="text-xl font-bold text-slate-900">
+            6. Formları doldurma (kayıttan hemen sonra)
           </h2>
           <p className="mt-3">
             Formlar veli panelinde, çocuğunuzun etkinlik kaydının içindedir. Ayrı bir site veya
@@ -233,7 +295,7 @@ export function ParentGuideContent() {
                 <strong>Veli Girişi</strong> → <strong>Panel</strong>
               </li>
               <li>
-                <strong>Çocuk hesapları</strong> (veya üst menüdeki çocuklar bölümü)
+                <strong>Çocuk hesapları</strong>
               </li>
               <li>
                 Çocuğunuzun satırında <strong>Detay</strong>
@@ -286,9 +348,9 @@ export function ParentGuideContent() {
         </section>
 
         <section>
-          <h2 className="text-xl font-bold text-slate-900">6. Profil ve sertifika</h2>
+          <h2 className="text-xl font-bold text-slate-900">7. Profil ve sertifika</h2>
           <p className="mt-3">
-            Profili düzenle ile okul, sınıf ve diğer bilgileri tamamlayın.{" "}
+            <strong>Profili düzenle</strong> ile okul, sınıf ve diğer bilgileri tamamlayın.{" "}
             <strong>Profil %100 olmadan sertifika verilemez.</strong> Etkinlik tamamlandıktan sonra
             sertifika oluşturulur ve panelden görüntülenebilir.
           </p>
@@ -317,8 +379,9 @@ export function ParentGuideContent() {
 2) E-postayı onayla → Veli Girişi
 3) Çocuk hesapları → Çocuk ekle (ad, doğum tarihi, şifre)
 4) Kullanıcı adını not al (ör. emreyılmaz15)
-5) Etkinliğe kaydet → hemen Detay → Formları doldur
-6) Tanışma + Onaylar (F05/F06/F07) aynı gün tamamla
+5a) Etkinlik varsa → Etkinliğe kaydet
+5b) Etkinlik yoksa → Kurs talebi bırak
+6) Detay → Formları doldur (Tanışma + Onaylar aynı gün)
 7) Profili %100 yap (sertifika için)
 Veli = e-posta | Öğrenci = kullanıcı adı ile giriş`}
           </p>

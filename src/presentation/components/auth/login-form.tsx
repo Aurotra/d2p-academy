@@ -10,6 +10,8 @@ import { Button } from "@/presentation/components/ui/button";
 import { Input } from "@/presentation/components/ui/input";
 import {
   AUTH_CALLBACK_ERROR_NOTICE,
+  AUTH_HASH_ERROR_EVENT,
+  mapAuthQueryErrorToTurkish,
   mapAuthErrorToTurkish,
 } from "@/shared/utils/auth-errors";
 import { PARENT_GUIDE_PATH } from "@/shared/constants/parent-guide";
@@ -23,9 +25,27 @@ export function LoginForm() {
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-    if (searchParams.get("error") === "auth") {
-      setError(AUTH_CALLBACK_ERROR_NOTICE);
+    const queryError = searchParams.get("error");
+    if (queryError) {
+      setError(mapAuthQueryErrorToTurkish(queryError) ?? AUTH_CALLBACK_ERROR_NOTICE);
     }
+
+    const storedHashError = sessionStorage.getItem("d2p_auth_hash_error");
+    if (storedHashError) {
+      setError(storedHashError);
+      sessionStorage.removeItem("d2p_auth_hash_error");
+    }
+
+    function handleHashError() {
+      const message = sessionStorage.getItem("d2p_auth_hash_error");
+      if (message) {
+        setError(message);
+        sessionStorage.removeItem("d2p_auth_hash_error");
+      }
+    }
+
+    window.addEventListener(AUTH_HASH_ERROR_EVENT, handleHashError);
+    return () => window.removeEventListener(AUTH_HASH_ERROR_EVENT, handleHashError);
   }, [searchParams]);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
