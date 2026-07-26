@@ -4,13 +4,13 @@ import { GalleryHomePreview } from "@/presentation/components/home/gallery-home-
 import { HeroSection } from "@/presentation/components/home/hero-section";
 import { LearningValuesSection } from "@/presentation/components/home/learning-values-section";
 import { publicPageMetadata } from "@/shared/seo/metadata";
+import { SITE_DESCRIPTION } from "@/shared/constants/site";
 
 export const dynamic = "force-dynamic";
 
 export const metadata = publicPageMetadata({
   title: "3D Tasarım, 3D Baskı ve Robotik Eğitimleri",
-  description:
-    "D2P Academy — Denizli merkezli 3D tasarım, 3D baskı ve robotik atölye eğitimleri. Okullara ve öğrencilere yönelik modern STEM eğitim platformu.",
+  description: SITE_DESCRIPTION,
   path: "/",
 });
 

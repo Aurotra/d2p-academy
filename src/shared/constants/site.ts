@@ -3,6 +3,6 @@ export const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? `https://${SITE_DOMA
 export const SITE_NAME = "D2P Academy";
 export const SITE_TAGLINE = "Design to Print";
 export const SITE_DESCRIPTION =
-  "D2P Academy — 3D tasarım ve baskı eğitimleri. Okullara ve öğrencilere yönelik modern eğitim platformu.";
+  "D2P Academy — Denizli merkezli 3D tasarım, 3D baskı ve robotik atölye eğitimleri. Okullara ve öğrencilere yönelik modern STEM eğitim platformu.";
 /** Official brand logo in public/ — replace public/d2p-logo.svg with your file. */
 export const SITE_LOGO_SRC = "/d2p-logo.svg";

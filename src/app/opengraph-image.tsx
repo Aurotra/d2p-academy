@@ -57,7 +57,7 @@ export default function OpenGraphImage() {
             opacity: 0.92,
           }}
         >
-          {SITE_TAGLINE} · 3D tasarım, baskı ve robotik eğitimleri
+          {SITE_TAGLINE} · 3D tasarım, 3D baskı ve robotik atölye eğitimleri
         </div>
         <div style={{ display: "flex", marginTop: 48, fontSize: 24, opacity: 0.85 }}>
           www.d2p.com.tr
