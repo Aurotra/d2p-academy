@@ -1,6 +1,5 @@
-import Link from "next/link";
-
 import { InstitutionRequestForm } from "@/presentation/components/institution/institution-request-form";
+import { InstitutionRequestGuestNote } from "@/presentation/components/institution/institution-request-guest-note";
 import { institutionRequestPageMetadata } from "@/shared/seo/public-pages";
 
 export const metadata = institutionRequestPageMetadata;
@@ -104,22 +103,7 @@ export default function InstitutionRequestPage() {
             Özel okul, devlet okulu, belediye ve diğer kurumlar için toplu atölye / eğitim paketi
             taleplerinizi buradan iletebilirsiniz. Ekibimiz size özel teklif için dönüş yapar.
           </p>
-          <p className="mt-3 text-sm text-slate-500">
-            Bireysel kayıt için{" "}
-            <Link href="/etkinlikler" className="font-semibold text-document-primary hover:underline">
-              etkinliklere göz atın
-            </Link>
-            {" "}veya{" "}
-            <Link href="/register" className="font-semibold text-document-primary hover:underline">
-              veli hesabı oluşturun
-            </Link>
-            .
-            ; panel üyeliği için{" "}
-            <Link href="/register" className="font-semibold text-document-primary hover:underline">
-              hesap oluşturun
-            </Link>
-            .
-          </p>
+          <InstitutionRequestGuestNote />
         </div>
 
         <div className="rounded-[1.75rem] border border-slate-200 bg-white p-6 shadow-sm sm:p-8">

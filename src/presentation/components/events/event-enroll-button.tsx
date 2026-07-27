@@ -2,10 +2,10 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
-import { createSupabaseBrowserClient } from "@/infrastructure/supabase/create-browser-client";
 import { Button } from "@/presentation/components/ui/button";
+import { useSiteAuth } from "@/presentation/providers/site-auth-provider";
 import {
   buildLoginForEventPath,
   buildRegisterForEventPath,
@@ -20,31 +20,9 @@ type EnrollState = "idle" | "loading" | "success" | "already" | "error";
 
 export function EventEnrollButton({ eventId, className = "" }: EventEnrollButtonProps) {
   const router = useRouter();
-  const [isLoggedIn, setIsLoggedIn] = useState<boolean | null>(null);
+  const { isAuthResolved, isLoggedIn } = useSiteAuth();
   const [state, setState] = useState<EnrollState>("idle");
   const [message, setMessage] = useState<string | null>(null);
-
-  useEffect(() => {
-    const client = createSupabaseBrowserClient();
-    if (!client) {
-      setIsLoggedIn(false);
-      return;
-    }
-
-    void client.auth.getUser().then(({ data }) => {
-      setIsLoggedIn(Boolean(data.user));
-    });
-
-    const {
-      data: { subscription },
-    } = client.auth.onAuthStateChange((_event, session) => {
-      setIsLoggedIn(Boolean(session?.user));
-    });
-
-    return () => {
-      subscription.unsubscribe();
-    };
-  }, []);
 
   async function enroll() {
     setState("loading");
@@ -95,7 +73,7 @@ export function EventEnrollButton({ eventId, className = "" }: EventEnrollButton
     }
   }
 
-  if (isLoggedIn === null) {
+  if (!isAuthResolved) {
     return (
       <Button disabled className={`min-h-[44px] w-full ${className}`}>
         Kontrol ediliyor...

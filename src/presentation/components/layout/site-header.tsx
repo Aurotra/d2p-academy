@@ -4,14 +4,12 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 
-import { profileHasInstructorCapability } from "@/infrastructure/auth/instructor-capability";
-import { createSupabaseBrowserClient } from "@/infrastructure/supabase/create-browser-client";
 import { AuthPortalLink } from "@/presentation/components/auth/auth-portal-link";
+import { BrandLogo } from "@/presentation/components/layout/brand-logo";
+import { useSiteAuth } from "@/presentation/providers/site-auth-provider";
 import { BRAND_SURFACE_HEADER } from "@/shared/constants/brand-surfaces";
 import { PARENT_GUIDE_PATH } from "@/shared/constants/parent-guide";
-import { BrandLogo } from "@/presentation/components/layout/brand-logo";
 import { scrollToHash } from "@/shared/utils/scroll-to-hash";
-import { SESSION_CHANGED_EVENT } from "@/shared/utils/session-events";
 
 const navItems = [
   { href: "/#hero", label: "Ana Sayfa" },
@@ -77,112 +75,23 @@ export function SiteHeader() {
   const pathname = usePathname() ?? "";
   const router = useRouter();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [sessionKind, setSessionKind] = useState<"email" | "student" | null>(null);
-  const [userDisplayName, setUserDisplayName] = useState<string | null>(null);
-  const [userRole, setUserRole] = useState<string | null>(null);
-  const [isInstructor, setIsInstructor] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
-  const isLoggedIn = sessionKind !== null;
+  const {
+    isAuthResolved,
+    isLoggedIn,
+    sessionKind,
+    userDisplayName,
+    panelHref,
+    clearSession,
+  } = useSiteAuth();
 
   const closeMobileMenu = useCallback(() => {
     setIsMobileMenuOpen(false);
   }, []);
 
-  const refreshSession = useCallback(async () => {
-    const client = createSupabaseBrowserClient();
-
-    async function resolveDisplayName(userId: string, fallback?: string | null) {
-      if (!client) {
-        return;
-      }
-
-      const { data } = await client
-        .from("profiles")
-        .select("full_name, role, is_instructor")
-        .eq("id", userId)
-        .maybeSingle();
-
-      const name = data?.full_name?.trim() || fallback?.trim() || null;
-      setUserDisplayName(name);
-      setUserRole(data?.role ?? null);
-      setIsInstructor(data ? profileHasInstructorCapability(data) : false);
-    }
-
-    async function probeStudentSession() {
-      try {
-        const response = await fetch("/api/v1/auth/student-session");
-        const payload = (await response.json()) as {
-          data?: { authenticated?: boolean; fullName?: string; username?: string };
-        };
-        if (payload.data?.authenticated) {
-          setSessionKind("student");
-          setUserDisplayName(
-            payload.data.fullName?.trim() ||
-              (payload.data.username ? `@${payload.data.username}` : null),
-          );
-          return;
-        }
-      } catch {
-        // ignore
-      }
-      setSessionKind(null);
-      setUserDisplayName(null);
-      setUserRole(null);
-      setIsInstructor(false);
-    }
-
-    if (!client) {
-      await probeStudentSession();
-      return;
-    }
-
-    const { data } = await client.auth.getUser();
-    const user = data.user;
-
-    if (user) {
-      setSessionKind("email");
-      const metadataName =
-        typeof user.user_metadata?.full_name === "string" ? user.user_metadata.full_name : null;
-      await resolveDisplayName(user.id, metadataName);
-      return;
-    }
-
-    await probeStudentSession();
-  }, []);
-
   useEffect(() => {
     closeMobileMenu();
   }, [pathname, closeMobileMenu]);
-
-  useEffect(() => {
-    void refreshSession();
-  }, [pathname, refreshSession]);
-
-  useEffect(() => {
-    function handleSessionChanged() {
-      void refreshSession();
-    }
-
-    window.addEventListener(SESSION_CHANGED_EVENT, handleSessionChanged);
-    return () => window.removeEventListener(SESSION_CHANGED_EVENT, handleSessionChanged);
-  }, [refreshSession]);
-
-  useEffect(() => {
-    const client = createSupabaseBrowserClient();
-    if (!client) {
-      return;
-    }
-
-    const {
-      data: { subscription },
-    } = client.auth.onAuthStateChange(() => {
-      void refreshSession();
-    });
-
-    return () => {
-      subscription.unsubscribe();
-    };
-  }, [refreshSession]);
 
   useEffect(() => {
     if (!isMobileMenuOpen) {
@@ -217,10 +126,7 @@ export function SiteHeader() {
       if (!response.ok) {
         throw new Error("Çıkış yapılamadı.");
       }
-      setSessionKind(null);
-      setUserDisplayName(null);
-      setUserRole(null);
-      setIsInstructor(false);
+      clearSession();
       router.push(sessionKind === "student" ? "/student-login" : "/");
       router.refresh();
     } catch {
@@ -228,14 +134,8 @@ export function SiteHeader() {
     }
   }
 
-  const panelHref =
-    sessionKind === "student"
-      ? "/student-dashboard"
-      : userRole === "admin"
-        ? "/admin"
-        : userRole === "instructor" || (isInstructor && userRole !== "parent" && userRole !== "student")
-          ? "/instructor"
-          : "/dashboard";
+  const showGuestAuthActions = isAuthResolved && !isLoggedIn;
+  const showLoggedInActions = isAuthResolved && isLoggedIn;
 
   return (
     <header className={`sticky top-0 z-40 ${BRAND_SURFACE_HEADER}`}>
@@ -257,8 +157,8 @@ export function SiteHeader() {
           ))}
         </nav>
 
-        <div className="hidden items-center gap-3 md:flex">
-          {isLoggedIn ? (
+        <div className="hidden min-h-[40px] items-center gap-3 md:flex">
+          {showLoggedInActions ? (
             <>
               {userDisplayName ? (
                 <span className="max-w-[10rem] truncate text-sm font-medium text-slate-700 lg:max-w-[14rem]">
@@ -280,7 +180,8 @@ export function SiteHeader() {
                 {isLoggingOut ? "Çıkış..." : "Çıkış Yap"}
               </button>
             </>
-          ) : (
+          ) : null}
+          {showGuestAuthActions ? (
             <>
               <AuthPortalLink href="/student-login" kind="student">
                 Öğrenci Girişi
@@ -295,7 +196,7 @@ export function SiteHeader() {
                 Hesap Oluştur
               </Link>
             </>
-          )}
+          ) : null}
         </div>
 
         <button
@@ -341,8 +242,8 @@ export function SiteHeader() {
               ))}
             </ul>
 
-            <div className="mt-5 flex flex-col gap-3 border-t border-sky-200/80 pt-5">
-              {isLoggedIn ? (
+            <div className="mt-5 flex min-h-[52px] flex-col gap-3 border-t border-sky-200/80 pt-5">
+              {showLoggedInActions ? (
                 <>
                   {userDisplayName ? (
                     <p className="px-1 text-center text-sm font-medium text-slate-700">
@@ -365,7 +266,8 @@ export function SiteHeader() {
                     {isLoggingOut ? "Çıkış..." : "Çıkış Yap"}
                   </button>
                 </>
-              ) : (
+              ) : null}
+              {showGuestAuthActions ? (
                 <>
                   <AuthPortalLink
                     href="/student-login"
@@ -386,7 +288,7 @@ export function SiteHeader() {
                     Hesap Oluştur
                   </Link>
                 </>
-              )}
+              ) : null}
             </div>
           </nav>
         </>

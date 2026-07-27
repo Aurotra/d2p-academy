@@ -1,34 +1,13 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
 
-import { createSupabaseBrowserClient } from "@/infrastructure/supabase/create-browser-client";
+import { GuestOnly } from "@/presentation/components/auth/guest-only";
 import { Button } from "@/presentation/components/ui/button";
+import { useSiteAuth } from "@/presentation/providers/site-auth-provider";
 
 export function HeroCtaButtons() {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-
-  useEffect(() => {
-    const client = createSupabaseBrowserClient();
-    if (!client) {
-      return;
-    }
-
-    void client.auth.getUser().then(({ data }) => {
-      setIsLoggedIn(Boolean(data.user));
-    });
-
-    const {
-      data: { subscription },
-    } = client.auth.onAuthStateChange((_event, session) => {
-      setIsLoggedIn(Boolean(session?.user));
-    });
-
-    return () => {
-      subscription.unsubscribe();
-    };
-  }, []);
+  const { isAuthResolved, isLoggedIn, panelHref } = useSiteAuth();
 
   return (
     <div className="mt-8 space-y-5">
@@ -56,19 +35,20 @@ export function HeroCtaButtons() {
               ? "Çocuklarınızı ekleyin, etkinlik kayıtlarını ve formları panelden yönetin."
               : "Ücretsiz veli hesabı açın; etkinlik kaydı ve çocuk profilleri tek panelde."}
           </p>
-          {isLoggedIn ? (
-            <Link href="/dashboard" className="mt-4 inline-flex w-full sm:w-auto">
+          {isAuthResolved && isLoggedIn ? (
+            <Link href={panelHref} className="mt-4 inline-flex w-full sm:w-auto">
               <Button variant="secondary" className="min-h-[44px] w-full sm:w-auto">
                 Panele Git
               </Button>
             </Link>
-          ) : (
+          ) : null}
+          <GuestOnly>
             <Link href="/register" className="mt-4 inline-flex w-full sm:w-auto">
               <Button variant="secondary" className="min-h-[44px] w-full sm:w-auto">
                 Veli Hesabı Oluştur
               </Button>
             </Link>
-          )}
+          </GuestOnly>
         </div>
 
         <div className="flex h-full flex-col rounded-2xl border border-sky-200/80 bg-white/70 p-4 backdrop-blur-sm sm:col-span-2 sm:p-5 lg:col-span-1">

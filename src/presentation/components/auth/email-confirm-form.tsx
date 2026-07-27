@@ -5,14 +5,28 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 
 import { AuthShell } from "@/presentation/components/auth/auth-shell";
+import { GuestOnly } from "@/presentation/components/auth/guest-only";
 import { Button } from "@/presentation/components/ui/button";
+import { useSiteAuth } from "@/presentation/providers/site-auth-provider";
+import { PARENT_GUIDE_PATH } from "@/shared/constants/parent-guide";
 import { sanitizeAuthNextPath } from "@/shared/utils/auth-redirect";
 import { isEmailConfirmationExpiredNotice, mapAuthErrorToTurkish } from "@/shared/utils/auth-errors";
-import { PARENT_GUIDE_PATH } from "@/shared/constants/parent-guide";
+
+function PanelLink({ href, className = "" }: { href: string; className?: string }) {
+  return (
+    <Link
+      href={href}
+      className={`inline-flex w-full items-center justify-center rounded-xl bg-secondary px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-secondary-hover ${className}`}
+    >
+      Panele Git
+    </Link>
+  );
+}
 
 export function EmailConfirmForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { isAuthResolved, isLoggedIn, panelHref } = useSiteAuth();
   const tokenHash = searchParams.get("token_hash")?.trim() ?? "";
   const type = searchParams.get("type")?.trim() ?? "";
   const nextPath = sanitizeAuthNextPath(searchParams.get("next"));
@@ -23,6 +37,7 @@ export function EmailConfirmForm() {
   const [isConfirmed, setIsConfirmed] = useState(false);
 
   const hasValidParams = Boolean(tokenHash && type);
+  const showLoggedInState = isAuthResolved && isLoggedIn;
 
   async function handleConfirm() {
     if (!hasValidParams) {
@@ -72,10 +87,10 @@ export function EmailConfirmForm() {
     <AuthShell
       title="E-posta Onayı"
       subtitle="Kaydınızı tamamlamak için e-posta onayınızı yapmanız yeterli."
-      footerText="Zaten onayladınız mı?"
-      footerHref={loginHref}
-      footerLinkLabel="Veli Girişi"
-      footerLinkKind="parent"
+      footerText={showLoggedInState ? "Hesabınız zaten aktif görünüyor." : "Zaten onayladınız mı?"}
+      footerHref={showLoggedInState ? panelHref : loginHref}
+      footerLinkLabel={showLoggedInState ? "Panele Git" : "Veli Girişi"}
+      footerLinkKind={showLoggedInState ? undefined : "parent"}
     >
       {!hasValidParams ? (
         <div className="space-y-4">
@@ -83,17 +98,30 @@ export function EmailConfirmForm() {
             Onay bağlantısı geçersiz veya eksik. E-postanızdaki butona tıklayın; sorun sürerse kayıt
             sayfasından aynı e-posta ile tekrar kayıt olun.
           </p>
-          <Link
-            href="/register"
-            className="inline-flex w-full items-center justify-center rounded-xl bg-primary px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-primary/20 hover:bg-primary-hover"
-          >
-            Kayıt Ol
-          </Link>
+          {showLoggedInState ? (
+            <PanelLink href={panelHref} />
+          ) : (
+            <GuestOnly>
+              <Link
+                href="/register"
+                className="inline-flex w-full items-center justify-center rounded-xl bg-primary px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-primary/20 hover:bg-primary-hover"
+              >
+                Kayıt Ol
+              </Link>
+            </GuestOnly>
+          )}
         </div>
       ) : isConfirmed ? (
         <p className="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">
           E-postanız onaylandı. Yönlendiriliyorsunuz…
         </p>
+      ) : showLoggedInState ? (
+        <div className="space-y-4">
+          <p className="rounded-xl border border-sky-200 bg-sky-50 px-4 py-3 text-sm text-sky-900">
+            Oturumunuz açık görünüyor. Onayınızı tamamladıysanız doğrudan panele devam edebilirsiniz.
+          </p>
+          <PanelLink href={panelHref} />
+        </div>
       ) : (
         <div className="space-y-4">
           <p className="text-sm leading-relaxed text-slate-600">

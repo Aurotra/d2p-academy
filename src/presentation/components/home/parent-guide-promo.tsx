@@ -1,6 +1,9 @@
+"use client";
+
 import Link from "next/link";
 
 import { AuthPortalLink } from "@/presentation/components/auth/auth-portal-link";
+import { GuestOnly } from "@/presentation/components/auth/guest-only";
 import { PARENT_GUIDE_PATH } from "@/shared/constants/parent-guide";
 
 const quickSteps = [
@@ -35,9 +38,11 @@ export function ParentGuidePromo() {
       </ol>
 
       <div className="mt-5 space-y-2">
-        <AuthPortalLink href="/register" kind="parent" block className="py-2.5 text-sm">
-          Hemen Hesap Oluştur
-        </AuthPortalLink>
+        <GuestOnly>
+          <AuthPortalLink href="/register" kind="parent" block className="py-2.5 text-sm">
+            Hemen Hesap Oluştur
+          </AuthPortalLink>
+        </GuestOnly>
         <Link
           href={PARENT_GUIDE_PATH}
           className="inline-flex w-full items-center justify-center rounded-xl border border-secondary/30 bg-white px-4 py-2.5 text-sm font-semibold text-secondary transition hover:border-secondary hover:bg-emerald-50/50"
