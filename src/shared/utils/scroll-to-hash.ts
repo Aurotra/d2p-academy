@@ -1,3 +1,5 @@
+const CENTERED_HASH_IDS = new Set(["certificate"]);
+
 export function scrollToHash(hash: string, behavior: ScrollBehavior = "smooth") {
   if (!hash || hash === "#") {
     return false;
@@ -16,7 +18,10 @@ export function scrollToHash(hash: string, behavior: ScrollBehavior = "smooth") 
       return false;
     }
 
-    element.scrollIntoView({ behavior, block: "start" });
+    element.scrollIntoView({
+      behavior,
+      block: CENTERED_HASH_IDS.has(id) ? "center" : "start",
+    });
     return true;
   } catch {
     return false;
