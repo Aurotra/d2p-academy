@@ -54,6 +54,43 @@ const educationAreas = [
   "Takım çalışması",
 ] as const;
 
+const corporateParagraphs = [
+  <>
+    <span className="font-semibold text-document-primary">D2P Academy</span>, ATH Eğitim
+    Teknolojileri Mühendislik Danışmanlık Sanayi ve Ticaret Limited Şirketi (
+    <span className="font-semibold text-document-primary">ATH Mühendislik</span>) bünyesinde
+    faaliyet gösteren, çocuklara ve gençlere yönelik tasarım, üretim ve teknoloji eğitimleri
+    geliştiren eğitim markasıdır.
+  </>,
+  <>
+    <span className="font-semibold text-document-primary">ATH Mühendislik</span>; mühendislik,
+    eğitim teknolojileri, dijital üretim, üç boyutlu tasarım, STEM uygulamaları, danışmanlık ve
+    Ar-Ge alanlarında faaliyet gösteren yenilikçi bir teknoloji şirketidir. Şirket, mühendislik
+    bilgi birikimini eğitimle buluşturarak geleceğin üreten bireylerini yetiştirmeyi amaçlayan
+    projeler geliştirmektedir.
+  </>,
+  <>
+    Bu vizyonun en önemli eğitim platformu olan{" "}
+    <span className="font-semibold text-document-primary">
+      D2P Academy (Design to Print Academy)
+    </span>
+    ; çocukların ve gençlerin yalnızca teknoloji kullanan bireyler değil, aynı zamanda
+    tasarlayan, üreten, problem çözen ve takım çalışması yapabilen bireyler olarak
+    yetişmelerini hedeflemektedir.
+  </>,
+  <>
+    D2P Academy bünyesinde geliştirilen eğitim programları; üç boyutlu düşünme, dijital
+    tasarım, 3D yazıcı teknolojileri, üretim süreçleri, mühendislik tasarım yaklaşımı ve STEM
+    temelli uygulamaları bir araya getirerek öğrencilerin öğrenme süreçlerini uygulamalı
+    deneyimlerle desteklemektedir.
+  </>,
+  <>
+    Belediyeler, okullar, kamu kurumları ve özel kuruluşlarla gerçekleştirilen iş birlikleri
+    sayesinde D2P Academy, çocukları geleceğin üretim teknolojileriyle buluşturan sürdürülebilir
+    eğitim programları sunmaktadır.
+  </>,
+] as const;
+
 const mainParagraphs = [
   "Günümüzde birçok okul ve eğitim merkezleri robotik kodlama eğitimleri sunmaktadır. Bu eğitimler; algoritmik düşünme, elektronik sistemler ve programlama becerilerinin geliştirilmesinde önemli bir rol üstlenmektedir. D2P Academy ise bu sürecin farklı ancak tamamlayıcı bir boyutuna odaklanır.",
   "Robotik eğitimlerinde öğrenciler, çoğunlukla hazır mekanik parçaları ve elektronik bileşenleri kullanarak sistemler geliştirirken; D2P Academy'de öğrenciler, bu sistemlerin fiziksel parçalarını tasarlamayı, dijital ortamda modellemeyi, prototip üretmeyi ve ürün geliştirme süreçlerini deneyimler.",
@@ -120,6 +157,35 @@ function EducatorCard({ educator }: { educator: Educator }) {
   );
 }
 
+/**
+ * Misyon/Vizyon kartlarında kullanılan hedef ikonu.
+ * Proje genelinde harici ikon kütüphanesi (lucide-react vb.) kullanılmadığından
+ * mevcut tasarım diline uyması için inline SVG olarak tanımlandı.
+ */
+function TargetIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" className="h-6 w-6" aria-hidden>
+      <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="1.8" />
+      <circle cx="12" cy="12" r="5" stroke="currentColor" strokeWidth="1.8" />
+      <circle cx="12" cy="12" r="1.4" fill="currentColor" />
+    </svg>
+  );
+}
+
+function CompassIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" className="h-6 w-6" aria-hidden>
+      <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="1.8" />
+      <path
+        d="M15.5 8.5L13.2 13.2L8.5 15.5L10.8 10.8L15.5 8.5Z"
+        stroke="currentColor"
+        strokeWidth="1.6"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
 export function AboutPageContent() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-sky-50 via-white to-slate-50">
@@ -128,17 +194,67 @@ export function AboutPageContent() {
           <p className="text-sm font-semibold uppercase tracking-[0.18em] text-document-primary">
             Hakkımızda
           </p>
-          <h1 className="mt-2 text-3xl font-black text-navy-950 sm:text-4xl">Eğitim Yaklaşımımız</h1>
+          <h1 className="mt-2 text-3xl font-black text-navy-950 sm:text-4xl">D2P Academy</h1>
           <p className="mt-4 text-base leading-7 text-slate-600 sm:text-lg sm:leading-8">
             Robotik kodlamanın &quot;Nasıl çalışır?&quot; sorusuna, &quot;Nasıl tasarlanır ve
             üretilir?&quot; cevabıyla güç katan tasarım ve üretim odaklı akademi.
           </p>
         </header>
 
-        <section className="mt-12 max-w-3xl space-y-6" aria-labelledby="about-approach">
-          <h2 id="about-approach" className="sr-only">
-            Eğitim yaklaşımı
+        {/* Kurumsal Bilgi & ATH Mühendislik Yapısı */}
+        <section className="mt-12 max-w-3xl space-y-5" aria-labelledby="corporate-info-heading">
+          <h2 id="corporate-info-heading" className="sr-only">
+            Kurumsal kimliğimiz
           </h2>
+          {corporateParagraphs.map((paragraph, index) => (
+            // eslint-disable-next-line react/no-array-index-key
+            <p key={index} className="text-base leading-7 text-slate-700 sm:text-[1.05rem] sm:leading-8">
+              {paragraph}
+            </p>
+          ))}
+        </section>
+
+        {/* Misyon & Vizyon Kartları */}
+        <section className="mt-16" aria-labelledby="mission-vision-heading">
+          <h2 id="mission-vision-heading" className="sr-only">
+            Misyon ve vizyonumuz
+          </h2>
+          <div className="grid gap-6 md:grid-cols-2">
+            <article className="rounded-[1.75rem] border border-sky-200 bg-white p-8 shadow-sm transition hover:-translate-y-1 hover:border-sky-300 hover:shadow-lg hover:shadow-sky-200/40">
+              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-sky-100 text-sky-700">
+                <TargetIcon />
+              </div>
+              <h3 className="mt-5 text-xl font-black text-navy-950">Misyonumuz</h3>
+              <p className="mt-3 text-base leading-7 text-slate-700">
+                Çocukların ve gençlerin hayal güçlerini tasarım ve üretim becerileriyle
+                buluşturarak; problem çözen, sorgulayan, iş birliği yapan ve üreten bireyler
+                olarak yetişmelerine katkı sağlamak.
+              </p>
+            </article>
+
+            <article className="rounded-[1.75rem] border border-sky-200 bg-white p-8 shadow-sm transition hover:-translate-y-1 hover:border-sky-300 hover:shadow-lg hover:shadow-sky-200/40">
+              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-sky-100 text-sky-700">
+                <CompassIcon />
+              </div>
+              <h3 className="mt-5 text-xl font-black text-navy-950">Vizyonumuz</h3>
+              <p className="mt-3 text-base leading-7 text-slate-700">
+                Türkiye&apos;nin tasarım ve üretim odaklı eğitim ekosistemine yön veren,
+                uygulamalı teknoloji eğitimlerinde öncü ve güvenilir bir eğitim platformu olmak.
+              </p>
+            </article>
+          </div>
+        </section>
+
+        {/* Eğitim Yaklaşımımız (Robotik Kodlamadan Farkı) */}
+        <section className="mt-16 max-w-3xl space-y-6" aria-labelledby="about-approach">
+          <div>
+            <p className="text-sm font-semibold uppercase tracking-[0.18em] text-cyan-600">
+              Eğitim Yaklaşımımız
+            </p>
+            <h2 id="about-approach" className="mt-2 text-2xl font-black text-navy-950 sm:text-3xl">
+              Robotik kodlamadan farkımız
+            </h2>
+          </div>
           {mainParagraphs.map((paragraph) => (
             <p key={paragraph} className="text-base leading-7 text-slate-700 sm:text-[1.05rem] sm:leading-8">
               {paragraph}
