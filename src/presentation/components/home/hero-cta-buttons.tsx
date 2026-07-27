@@ -34,14 +34,14 @@ export function HeroCtaButtons() {
     <div className="mt-8 space-y-5">
       <div className="grid items-stretch gap-4 sm:grid-cols-2 sm:gap-5 lg:grid-cols-3">
         <div className="flex h-full flex-col rounded-2xl border border-sky-200/80 bg-white/70 p-4 backdrop-blur-sm sm:p-5">
-          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-document-primary">
+          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-accent-dark">
             Atölye kaydı
           </p>
           <p className="mt-2 flex-1 text-sm leading-6 text-sky-900/80">
             Yaklaşan etkinlikleri inceleyin; veli hesabıyla çocuğunuzu doğrudan kaydedin.
           </p>
           <Link href="/etkinlikler" className="mt-4 inline-flex w-full sm:w-auto">
-            <Button className="min-h-[44px] w-full bg-document-primary hover:bg-document-primary-hover hover:shadow-glow-document sm:w-auto">
+            <Button variant="accent" className="min-h-[44px] w-full sm:w-auto">
               Etkinliklere Göz At
             </Button>
           </Link>
