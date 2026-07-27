@@ -2,12 +2,44 @@ interface Educator {
   id: string;
   name: string;
   title: string;
-  bio: string;
-  image: string;
+  highlights: string[];
+  image?: string;
 }
 
 const educators: Educator[] = [
-  // Gelecekte eklenecek eğitmen profilleri buraya yazılacak.
+  {
+    id: "berk-tepe",
+    name: "Berk Tepe",
+    title: "Otomotiv Mühendisi | Kurucu",
+    highlights: [
+      "10+ yıl 2D ve 3D tasarım deneyimi",
+      "5+ yıl 3D yazıcı ve dijital üretim teknolojileri deneyimi",
+      "CAD modelleme, prototipleme ve üretim süreçleri konusunda uzman",
+    ],
+  },
+  {
+    id: "sude-can-sumer",
+    name: "Sude Can Sümer",
+    title: "Makine Mühendisi",
+    highlights: [
+      "5+ yıl 2D ve 3D tasarım deneyimi",
+      "5+ yıl 3D yazıcı ve dijital üretim teknolojileri deneyimi",
+      "Dijital tasarım, prototipleme ve uygulamalı üretim teknolojileri alanında uzman",
+    ],
+  },
+  {
+    id: "pelin-duran",
+    name: "Pelin Duran",
+    title: "Fen ve Matematik Öğretmeni",
+    highlights: [
+      "Fen Bilgisi ve İlköğretim Matematik Öğretmenliği Çift Anadal Lisans",
+      "Disiplinlerarası (STEM) Eğitimi ve Uygulama Deneyimi",
+      "Yaratıcı Drama ile Öğretim Uzmanlığı",
+      "Zeka ve Akıl Oyunları Eğitimi Uzmanlığı",
+      "Somutlaştırma ve Ürün Tasarımı Odaklı Matematik/Fen Becerileri Uzmanlığı",
+      "Mantık Yürütme, Analitik Düşünme ve Problem Çözme Koçluğu Deneyimi",
+    ],
+  },
 ];
 
 const educationAreas = [
@@ -43,17 +75,46 @@ function EducationAreaCard({ index, title }: { index: number; title: string }) {
   );
 }
 
+function getEducatorInitials(name: string): string {
+  return name
+    .split(/\s+/)
+    .map((part) => part[0])
+    .join("")
+    .slice(0, 2)
+    .toUpperCase();
+}
+
 function EducatorCard({ educator }: { educator: Educator }) {
+  const initials = getEducatorInitials(educator.name);
+
   return (
-    <article className="overflow-hidden rounded-[1.75rem] border border-slate-200 bg-white shadow-sm">
-      <div className="aspect-[4/3] overflow-hidden bg-slate-100">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={educator.image} alt={educator.name} className="h-full w-full object-cover" />
+    <article className="flex h-full flex-col overflow-hidden rounded-[1.75rem] border border-slate-200 bg-white shadow-sm transition hover:-translate-y-1 hover:border-sky-300 hover:shadow-lg hover:shadow-sky-200/40">
+      <div className="aspect-[4/3] overflow-hidden bg-gradient-to-br from-sky-100 via-white to-slate-100">
+        {educator.image ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={educator.image} alt={educator.name} className="h-full w-full object-cover" />
+        ) : (
+          <div className="flex h-full w-full items-center justify-center">
+            <span
+              aria-hidden
+              className="flex h-20 w-20 items-center justify-center rounded-full bg-white text-2xl font-bold text-sky-700 shadow-md ring-4 ring-sky-200/80"
+            >
+              {initials}
+            </span>
+          </div>
+        )}
       </div>
-      <div className="p-6">
+      <div className="flex flex-1 flex-col p-6">
         <h3 className="text-lg font-bold text-navy-950">{educator.name}</h3>
-        <p className="mt-1 text-sm font-semibold text-sky-700">{educator.title}</p>
-        <p className="mt-3 text-sm leading-6 text-slate-600">{educator.bio}</p>
+        <p className="mt-1 text-sm font-semibold leading-snug text-sky-700">{educator.title}</p>
+        <ul className="mt-4 space-y-2.5">
+          {educator.highlights.map((highlight) => (
+            <li key={highlight} className="flex gap-2.5 text-sm leading-6 text-slate-600">
+              <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-secondary" aria-hidden />
+              <span>{highlight}</span>
+            </li>
+          ))}
+        </ul>
       </div>
     </article>
   );
@@ -128,19 +189,13 @@ export function AboutPageContent() {
             </h2>
           </div>
 
-          {educators.length > 0 ? (
-            <ul className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-              {educators.map((educator) => (
-                <li key={educator.id}>
-                  <EducatorCard educator={educator} />
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <p className="mt-8 rounded-[1.75rem] border border-dashed border-slate-200 bg-white px-6 py-10 text-center text-sm leading-6 text-slate-600">
-              Eğitmen profilleri yakında burada paylaşılacak.
-            </p>
-          )}
+          <ul className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {educators.map((educator) => (
+              <li key={educator.id} className="h-full">
+                <EducatorCard educator={educator} />
+              </li>
+            ))}
+          </ul>
         </section>
       </div>
     </div>

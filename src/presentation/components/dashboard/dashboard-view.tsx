@@ -130,7 +130,7 @@ export function DashboardView({ data, isAdmin, isInstructor }: DashboardViewProp
                   label="Not Raporum"
                   variant="outline"
                 />
-                <LogoutButton className="min-h-[44px] w-full px-4 py-2.5 text-sm" variant="outline" />
+                <LogoutButton className="min-h-[44px] w-full px-4 py-2.5 text-sm" variant="primary" />
               </div>
             </div>
           </div>

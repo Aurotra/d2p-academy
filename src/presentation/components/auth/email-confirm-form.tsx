@@ -7,7 +7,7 @@ import { useState } from "react";
 import { AuthShell } from "@/presentation/components/auth/auth-shell";
 import { Button } from "@/presentation/components/ui/button";
 import { sanitizeAuthNextPath } from "@/shared/utils/auth-redirect";
-import { mapAuthErrorToTurkish } from "@/shared/utils/auth-errors";
+import { isEmailConfirmationExpiredNotice, mapAuthErrorToTurkish } from "@/shared/utils/auth-errors";
 import { PARENT_GUIDE_PATH } from "@/shared/constants/parent-guide";
 
 export function EmailConfirmForm() {
@@ -101,9 +101,30 @@ export function EmailConfirmForm() {
           </p>
 
           {error ? (
-            <p className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
-              {error}
-            </p>
+            isEmailConfirmationExpiredNotice(error) ? (
+              <div className="rounded-xl border border-sky-200 bg-sky-50 px-4 py-4 text-sm text-sky-950">
+                <p className="font-semibold text-navy-950">Bu bağlantı artık geçerli değil</p>
+                <p className="mt-2 leading-relaxed text-slate-700">{error}</p>
+                <div className="mt-4 flex flex-col gap-2 sm:flex-row">
+                  <Link
+                    href={loginHref}
+                    className="inline-flex flex-1 items-center justify-center rounded-xl bg-secondary px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-secondary-hover"
+                  >
+                    Veli Girişi
+                  </Link>
+                  <Link
+                    href="/register"
+                    className="inline-flex flex-1 items-center justify-center rounded-xl border-2 border-sky-300 bg-white px-4 py-2.5 text-sm font-semibold text-sky-900 transition hover:bg-sky-50"
+                  >
+                    Yeni onay maili
+                  </Link>
+                </div>
+              </div>
+            ) : (
+              <p className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
+                {error}
+              </p>
+            )
           ) : null}
 
           <Button className="w-full" disabled={isLoading} onClick={() => void handleConfirm()}>

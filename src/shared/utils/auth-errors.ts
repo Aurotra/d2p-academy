@@ -53,7 +53,15 @@ export function mapAuthErrorToTurkish(rawMessage: string): string {
 }
 
 export const EMAIL_CONFIRMATION_EXPIRED_NOTICE =
-  "Onay bağlantısının süresi dolmuş veya daha önce kullanılmış. Veli Girişi ile giriş yapmayı deneyin. Giriş olmuyorsa kayıt sayfasından aynı e-posta ile tekrar kayıt olun; onay maili yeniden gönderilir.";
+  "Bu bağlantının süresi dolmuş veya daha önce kullanılmış olabilir. Hesabınızı zaten onayladıysanız giriş yapmanız yeterli; yeni bir onay mailine ihtiyaç varsa aynı e-posta ile kayıt formundan yeniden talep edebilirsiniz.";
+
+export function isEmailConfirmationExpiredNotice(message: string): boolean {
+  return (
+    message === EMAIL_CONFIRMATION_EXPIRED_NOTICE ||
+    message.toLowerCase().includes("otp_expired") ||
+    message.toLowerCase().includes("süresi dolmuş")
+  );
+}
 
 export function mapAuthQueryErrorToTurkish(errorCode: string | null): string | null {
   if (!errorCode) {
@@ -77,6 +85,6 @@ export const EMAIL_CONFIRMATION_RESENT_NOTICE =
   "Bu e-posta ile daha önce kayıt yapılmış. Onay mailini tekrar gönderdik — lütfen gelen kutunuzu ve Spam klasörünü kontrol edin.";
 
 export const AUTH_CALLBACK_ERROR_NOTICE =
-  "E-posta onayı tamamlanamadı. Bağlantının süresi dolmuş veya daha önce kullanılmış olabilir. Giriş yapmayı deneyin; sorun sürerse kayıt formundan onay mailini yeniden isteyin.";
+  "E-posta onayı bu bağlantıyla tamamlanamadı; süresi dolmuş veya daha önce kullanılmış olabilir. Onayınızı yaptıysanız giriş yapabilirsiniz, yeni mail gerekiyorsa kayıt formundan yeniden talep edebilirsiniz.";
 
 export const AUTH_HASH_ERROR_EVENT = "d2p-auth-hash-error";
