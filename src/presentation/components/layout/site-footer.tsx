@@ -32,6 +32,12 @@ export function SiteFooter() {
               Etkinlikler
             </Link>
             <Link
+              href="/hakkimizda"
+              className="font-semibold text-sky-900 transition hover:text-document-primary"
+            >
+              Hakkımızda
+            </Link>
+            <Link
               href="/galeri"
               className="font-semibold text-sky-900 transition hover:text-document-primary"
             >

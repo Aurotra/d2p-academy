@@ -9,6 +9,7 @@ import { SITE_URL } from "@/shared/constants/site";
 const PUBLIC_PATHS = [
   "/",
   "/etkinlikler",
+  "/hakkimizda",
   "/galeri",
   "/iletisim",
   "/veli-rehberi",
