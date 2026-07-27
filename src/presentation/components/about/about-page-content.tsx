@@ -1,9 +1,15 @@
+interface EducatorImageFit {
+  objectPosition: string;
+  scale?: number;
+}
+
 interface Educator {
   id: string;
   name: string;
   title: string;
   highlights: string[];
   image?: string;
+  imageFit?: EducatorImageFit;
 }
 
 const educators: Educator[] = [
@@ -12,6 +18,7 @@ const educators: Educator[] = [
     name: "Berk Tepe",
     title: "Otomotiv Mühendisi | Kurucu",
     image: "/team/berk-tepe.png",
+    imageFit: { objectPosition: "48% 14%", scale: 1.7 },
     highlights: [
       "10+ yıl 2D ve 3D tasarım deneyimi",
       "5+ yıl 3D yazıcı ve dijital üretim teknolojileri deneyimi",
@@ -23,6 +30,7 @@ const educators: Educator[] = [
     name: "Sude Can Sümer",
     title: "Makine Mühendisi",
     image: "/team/sude-can-sumer.png",
+    imageFit: { objectPosition: "50% 30%", scale: 0.9 },
     highlights: [
       "5+ yıl 2D ve 3D tasarım deneyimi",
       "5+ yıl 3D yazıcı ve dijital üretim teknolojileri deneyimi",
@@ -126,22 +134,28 @@ function getEducatorInitials(name: string): string {
 
 function EducatorCard({ educator }: { educator: Educator }) {
   const initials = getEducatorInitials(educator.name);
+  const imageFit = educator.imageFit ?? { objectPosition: "50% 22%", scale: 1 };
 
   return (
     <article className="flex h-full flex-col overflow-hidden rounded-[1.75rem] border border-slate-200 bg-white shadow-sm transition hover:-translate-y-1 hover:border-sky-300 hover:shadow-lg hover:shadow-sky-200/40">
-      <div className="aspect-[4/3] overflow-hidden bg-gradient-to-br from-sky-100 via-white to-slate-100">
+      <div className="aspect-[3/4] overflow-hidden bg-gradient-to-br from-sky-100 via-white to-slate-100">
         {educator.image ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
             src={educator.image}
             alt={educator.name}
-            className="h-full w-full object-cover object-[center_20%]"
+            className="h-full w-full object-cover"
+            style={{
+              objectPosition: imageFit.objectPosition,
+              transform: imageFit.scale !== 1 ? `scale(${imageFit.scale})` : undefined,
+              transformOrigin: imageFit.objectPosition,
+            }}
           />
         ) : (
-          <div className="flex h-full w-full items-center justify-center">
+          <div className="flex h-full w-full items-center justify-center bg-gradient-to-b from-sky-50 to-slate-100">
             <span
               aria-hidden
-              className="flex h-20 w-20 items-center justify-center rounded-full bg-white text-2xl font-bold text-sky-700 shadow-md ring-4 ring-sky-200/80"
+              className="flex h-24 w-24 items-center justify-center rounded-full bg-white text-3xl font-bold text-sky-700 shadow-md ring-4 ring-sky-200/80"
             >
               {initials}
             </span>
