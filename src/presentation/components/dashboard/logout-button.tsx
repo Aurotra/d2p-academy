@@ -5,7 +5,12 @@ import { useState } from "react";
 
 import { Button } from "@/presentation/components/ui/button";
 
-export function LogoutButton() {
+interface LogoutButtonProps {
+  className?: string;
+  variant?: "primary" | "secondary" | "accent" | "outline" | "ghost";
+}
+
+export function LogoutButton({ className = "", variant = "outline" }: LogoutButtonProps) {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
 
@@ -29,7 +34,7 @@ export function LogoutButton() {
   }
 
   return (
-    <Button variant="secondary" disabled={isLoading} onClick={handleLogout}>
+    <Button variant={variant} className={className} disabled={isLoading} onClick={handleLogout}>
       {isLoading ? "Çıkış yapılıyor..." : "Çıkış Yap"}
     </Button>
   );

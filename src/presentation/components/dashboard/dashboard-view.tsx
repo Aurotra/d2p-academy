@@ -14,6 +14,38 @@ interface DashboardViewProps {
   isInstructor: boolean;
 }
 
+type DashboardActionVariant = "secondary" | "accent" | "document" | "outline";
+
+const dashboardActionClasses: Record<DashboardActionVariant, string> = {
+  secondary:
+    "border border-secondary/20 bg-secondary text-white shadow-md shadow-secondary/20 hover:bg-secondary-hover hover:shadow-glow-secondary",
+  accent:
+    "border border-accent-dark/20 bg-accent text-sky-950 shadow-md shadow-accent/20 hover:bg-accent-dark hover:shadow-glow-accent",
+  document:
+    "border border-document-primary/20 bg-document-primary text-white shadow-md shadow-document-primary/20 hover:bg-document-primary-hover hover:shadow-glow-document",
+  outline:
+    "border-2 border-sky-300/80 bg-white/90 text-sky-950 shadow-sm hover:border-sky-400 hover:bg-white",
+};
+
+function DashboardActionLink({
+  href,
+  label,
+  variant,
+}: {
+  href: string;
+  label: string;
+  variant: DashboardActionVariant;
+}) {
+  return (
+    <Link
+      href={href}
+      className={`inline-flex min-h-[44px] items-center justify-center rounded-xl px-4 py-2.5 text-center text-sm font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-400 focus-visible:ring-offset-2 ${dashboardActionClasses[variant]}`}
+    >
+      {label}
+    </Link>
+  );
+}
+
 const ENROLLMENT_STATUS_LABELS: Record<EnrollmentStatus, string> = {
   registered: "Kayıtlı",
   attended: "Katıldı",
@@ -39,69 +71,68 @@ export function DashboardView({ data, isAdmin, isInstructor }: DashboardViewProp
         </Suspense>
 
         <div
-          className={`flex flex-col gap-4 rounded-[2rem] border border-sky-200 ${BRAND_SURFACE_GRADIENT} p-8 text-sky-950 shadow-xl sm:flex-row sm:items-center sm:justify-between`}
+          className={`rounded-[2rem] border border-sky-200 ${BRAND_SURFACE_GRADIENT} p-6 text-sky-950 shadow-xl sm:p-8`}
         >
-          <div>
-            <div className="flex flex-wrap items-center gap-3">
-              <p className="text-sm font-semibold uppercase tracking-[0.18em] text-sky-700">
-                Öğrenci Paneli
+          <div className="flex flex-col gap-8 lg:flex-row lg:items-start lg:justify-between">
+            <div className="min-w-0 flex-1">
+              <div className="flex flex-wrap items-center gap-2">
+                <p className="text-sm font-semibold uppercase tracking-[0.18em] text-sky-700">
+                  Veli Paneli
+                </p>
+                {isAdmin ? (
+                  <Link
+                    href="/admin"
+                    className="inline-flex items-center justify-center rounded-full bg-primary px-3 py-1 text-xs font-semibold text-white transition hover:bg-primary-hover"
+                  >
+                    Admin
+                  </Link>
+                ) : null}
+                {isInstructor ? (
+                  <Link
+                    href="/instructor"
+                    className="inline-flex items-center justify-center rounded-full bg-violet-600 px-3 py-1 text-xs font-semibold text-white transition hover:bg-violet-700"
+                  >
+                    Eğitmen
+                  </Link>
+                ) : null}
+              </div>
+              <h1 className="mt-3 text-3xl font-black sm:text-4xl">
+                Hoş geldin, {data.profile.fullName?.trim().split(/\s+/)[0] || "veli"}!
+              </h1>
+              <p className="mt-2 max-w-xl text-sm leading-6 text-sky-900/80 sm:text-base">
+                Yaklaşan etkinliklerini ve kazandığın sertifikaları buradan takip edebilirsin.
               </p>
-              {isAdmin ? (
-                <Link
-                  href="/admin"
-                  className="inline-flex items-center justify-center rounded-xl bg-primary px-4 py-2 text-xs font-semibold text-white transition hover:bg-primary-hover hover:shadow-glow-primary"
-                >
-                  Admin Paneli
-                </Link>
-              ) : null}
-              {isInstructor ? (
-                <Link
-                  href="/instructor"
-                  className="inline-flex items-center justify-center rounded-xl bg-violet-600 px-4 py-2 text-xs font-semibold text-white transition hover:bg-violet-700"
-                >
-                  Eğitmen Paneli
-                </Link>
-              ) : null}
             </div>
-            <h1 className="mt-2 text-3xl font-black">
-              Hoş geldin, {data.profile.fullName?.trim().split(/\s+/)[0] || "veli"}!
-            </h1>
-            <p className="mt-2 text-sm text-sky-900/80">
-              Yaklaşan etkinliklerini ve kazandığın sertifikaları buradan takip edebilirsin.
-            </p>
-          </div>
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:flex-wrap">
-            <Link
-              href="/dashboard/profile"
-              className="inline-flex items-center justify-center rounded-xl border-2 border-document-primary bg-white px-5 py-3 text-sm font-semibold text-document-primary transition hover:bg-document-primary/5"
-            >
-              Profilim
-            </Link>
-            <Link
-              href="/dashboard/children"
-              className="inline-flex items-center justify-center rounded-xl border-2 border-document-primary bg-white px-5 py-3 text-sm font-semibold text-document-primary transition hover:bg-document-primary/5"
-            >
-              Çocuk hesapları
-            </Link>
-            <Link
-              href="/dashboard/kurs-talebi"
-              className="inline-flex items-center justify-center rounded-xl border-2 border-amber-600 bg-white px-5 py-3 text-sm font-semibold text-amber-800 transition hover:bg-amber-50"
-            >
-              Kurs talebi
-            </Link>
-            <Link
-              href="/dashboard/documents"
-              className="inline-flex items-center justify-center rounded-xl bg-document-primary px-5 py-3 text-sm font-semibold text-white transition hover:bg-document-primary-hover hover:shadow-glow-document"
-            >
-              Dökümanlar
-            </Link>
-            <Link
-              href="/dashboard/report"
-              className="inline-flex items-center justify-center rounded-xl border-2 border-document-primary bg-white px-5 py-3 text-sm font-semibold text-document-primary transition hover:bg-document-primary/5"
-            >
-              Not Raporum
-            </Link>
-            <LogoutButton />
+
+            <div className="w-full shrink-0 lg:max-w-md">
+              <p className="mb-3 text-xs font-semibold uppercase tracking-[0.16em] text-sky-800/70">
+                Hızlı erişim
+              </p>
+              <div className="grid grid-cols-2 gap-2 sm:gap-3">
+                <DashboardActionLink
+                  href="/dashboard/children"
+                  label="Çocuk hesapları"
+                  variant="secondary"
+                />
+                <DashboardActionLink
+                  href="/dashboard/kurs-talebi"
+                  label="Kurs talebi"
+                  variant="accent"
+                />
+                <DashboardActionLink href="/dashboard/profile" label="Profilim" variant="outline" />
+                <DashboardActionLink
+                  href="/dashboard/documents"
+                  label="Dökümanlar"
+                  variant="document"
+                />
+                <DashboardActionLink
+                  href="/dashboard/report"
+                  label="Not Raporum"
+                  variant="outline"
+                />
+                <LogoutButton className="min-h-[44px] w-full px-4 py-2.5 text-sm" variant="outline" />
+              </div>
+            </div>
           </div>
         </div>
 
