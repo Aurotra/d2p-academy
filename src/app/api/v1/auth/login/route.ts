@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { signInWithEmail } from "@/core/use-cases/authenticate-user";
+import { isAuthEmailAwaitingConfirmation } from "@/infrastructure/auth/check-auth-email-awaiting-confirmation";
 import { clearStudentSessionCookie } from "@/infrastructure/auth/clear-student-session-cookie";
 import { SupabaseAuthRepository } from "@/infrastructure/repositories/supabase-auth-repository";
 import { createSupabaseServerClient } from "@/infrastructure/supabase/create-server-client";
@@ -11,10 +12,19 @@ interface LoginRequestBody {
   password?: string;
 }
 
+function isInvalidLoginCredentialsMessage(message: string): boolean {
+  const normalized = message.toLowerCase();
+  return (
+    normalized.includes("invalid login credentials") || normalized.includes("invalid credentials")
+  );
+}
+
 export async function POST(request: Request) {
+  let email = "";
+
   try {
     const body = (await request.json()) as LoginRequestBody;
-    const email = body.email?.trim() ?? "";
+    email = body.email?.trim() ?? "";
     const password = body.password ?? "";
 
     if (!email || !password) {
@@ -37,7 +47,19 @@ export async function POST(request: Request) {
     clearStudentSessionCookie(response);
     return response;
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Giriş sırasında hata oluştu.";
-    return NextResponse.json({ error: mapAuthErrorToTurkish(message) }, { status: 401 });
+    const rawMessage = error instanceof Error ? error.message : "Giriş sırasında hata oluştu.";
+
+    if (isInvalidLoginCredentialsMessage(rawMessage)) {
+      const awaitingConfirmation = await isAuthEmailAwaitingConfirmation(email);
+      if (awaitingConfirmation) {
+        return NextResponse.json(
+          { error: mapAuthErrorToTurkish("email not confirmed") },
+          { status: 401 },
+        );
+      }
+    }
+
+    const message = mapAuthErrorToTurkish(rawMessage);
+    return NextResponse.json({ error: message }, { status: 401 });
   }
 }
