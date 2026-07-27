@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, type CSSProperties } from "react";
+import { useEffect, useMemo, useState, type CSSProperties } from "react";
 
 import type { GalleryHomePhoto } from "@/core/domain/gallery";
 
@@ -12,9 +12,11 @@ interface GalleryHomeSliderProps {
 function GalleryPhotoCard({
   photo,
   ariaHidden = false,
+  onBroken,
 }: {
   photo: GalleryHomePhoto;
   ariaHidden?: boolean;
+  onBroken: (photoId: string) => void;
 }) {
   return (
     <li className="w-[200px] shrink-0 sm:w-[220px]" aria-hidden={ariaHidden || undefined}>
@@ -30,20 +32,58 @@ function GalleryPhotoCard({
           className="h-[150px] w-full object-cover sm:h-[160px]"
           loading="lazy"
           draggable={false}
+          onError={() => onBroken(photo.id)}
         />
       </Link>
     </li>
   );
 }
 
-export function GalleryHomeSlider({ photos }: GalleryHomeSliderProps) {
-  const marqueePhotos = useMemo(() => [...photos, ...photos], [photos]);
-  const marqueeDuration = useMemo(
-    () => `${Math.max(photos.length * 5, 28)}s`,
-    [photos.length],
+export function GalleryHomeSlider({ photos: initialPhotos }: GalleryHomeSliderProps) {
+  const [photos, setPhotos] = useState(initialPhotos);
+  const [brokenIds, setBrokenIds] = useState<Set<string>>(() => new Set());
+
+  useEffect(() => {
+    setPhotos(initialPhotos);
+  }, [initialPhotos]);
+
+  useEffect(() => {
+    void fetch("/api/v1/gallery/home-photos", { cache: "no-store" })
+      .then((response) => response.json())
+      .then((payload: { data?: GalleryHomePhoto[] }) => {
+        if (payload.data?.length) {
+          setPhotos(payload.data);
+          setBrokenIds(new Set());
+        }
+      })
+      .catch(() => {
+        // SSR photos remain visible.
+      });
+  }, []);
+
+  const visiblePhotos = useMemo(
+    () => photos.filter((photo) => !brokenIds.has(photo.id)),
+    [photos, brokenIds],
   );
 
-  if (photos.length === 0) {
+  const marqueePhotos = useMemo(() => [...visiblePhotos, ...visiblePhotos], [visiblePhotos]);
+  const marqueeDuration = useMemo(
+    () => `${Math.max(visiblePhotos.length * 5, 28)}s`,
+    [visiblePhotos.length],
+  );
+
+  function markBroken(photoId: string) {
+    setBrokenIds((current) => {
+      if (current.has(photoId)) {
+        return current;
+      }
+      const next = new Set(current);
+      next.add(photoId);
+      return next;
+    });
+  }
+
+  if (visiblePhotos.length === 0) {
     return null;
   }
 
@@ -71,19 +111,20 @@ export function GalleryHomeSlider({ photos }: GalleryHomeSliderProps) {
           className="relative mt-6 overflow-hidden [mask-image:linear-gradient(to_right,transparent,black_6%,black_94%,transparent)]"
           style={{ "--gallery-marquee-duration": marqueeDuration } as CSSProperties}
         >
-          {photos.length > 1 ? (
+          {visiblePhotos.length > 1 ? (
             <ul className="gallery-marquee-track flex w-max gap-3">
               {marqueePhotos.map((photo, index) => (
                 <GalleryPhotoCard
                   key={`${photo.id}-${index}`}
                   photo={photo}
-                  ariaHidden={index >= photos.length}
+                  ariaHidden={index >= visiblePhotos.length}
+                  onBroken={markBroken}
                 />
               ))}
             </ul>
           ) : (
             <ul className="flex gap-3 overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-              <GalleryPhotoCard photo={photos[0]} />
+              <GalleryPhotoCard photo={visiblePhotos[0]} onBroken={markBroken} />
             </ul>
           )}
         </div>

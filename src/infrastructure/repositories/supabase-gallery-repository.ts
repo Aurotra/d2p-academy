@@ -8,8 +8,9 @@ import type {
   GalleryHomePhoto,
   GalleryPhoto,
 } from "@/core/domain/gallery";
+import { extractGalleryStoragePath } from "@/shared/utils/gallery-storage-path";
 
-const SIGNED_URL_SECONDS = 60 * 60; // 1 hour
+const SIGNED_URL_SECONDS = 60 * 60 * 24; // 24 hours
 
 interface AlbumRow {
   id: string;
@@ -134,22 +135,38 @@ export class SupabaseGalleryRepository {
     return data.signedUrl;
   }
 
-  private async withSignedPhotoUrls(photos: GalleryPhoto[]): Promise<GalleryPhoto[]> {
-    return Promise.all(
-      photos.map(async (photo) => {
-        const signedImage = (await this.signPath(photo.storagePath)) || photo.imageUrl;
-        const signedThumb =
-          (await this.signPath(photo.thumbStoragePath)) ||
-          photo.thumbUrl ||
-          signedImage;
+  private async resolveSignedPhoto(photo: GalleryPhoto): Promise<GalleryPhoto | null> {
+    const displayPath =
+      photo.storagePath?.trim() ||
+      extractGalleryStoragePath(photo.imageUrl) ||
+      extractGalleryStoragePath(photo.thumbUrl);
 
-        return {
-          ...photo,
-          imageUrl: signedImage,
-          thumbUrl: signedThumb,
-        };
-      }),
-    );
+    const thumbPath =
+      photo.thumbStoragePath?.trim() ||
+      extractGalleryStoragePath(photo.thumbUrl) ||
+      displayPath;
+
+    if (!displayPath) {
+      return null;
+    }
+
+    const signedImage = await this.signPath(displayPath);
+    if (!signedImage) {
+      return null;
+    }
+
+    const signedThumb = (thumbPath ? await this.signPath(thumbPath) : null) || signedImage;
+
+    return {
+      ...photo,
+      imageUrl: signedImage,
+      thumbUrl: signedThumb,
+    };
+  }
+
+  private async withSignedPhotoUrls(photos: GalleryPhoto[]): Promise<GalleryPhoto[]> {
+    const results = await Promise.all(photos.map((photo) => this.resolveSignedPhoto(photo)));
+    return results.filter((photo): photo is GalleryPhoto => photo !== null);
   }
 
   private async resolveAlbumCover(album: GalleryAlbum, photos: GalleryPhoto[]): Promise<GalleryAlbum> {
@@ -233,7 +250,7 @@ export class SupabaseGalleryRepository {
       )
       .is("deleted_at", null)
       .order("created_at", { ascending: false })
-      .limit(Math.max(limit * 3, limit));
+      .limit(Math.max(limit * 5, limit));
 
     if (error) {
       throw new Error(`Ana sayfa galeri fotoğrafları alınamadı: ${error.message}`);
@@ -265,25 +282,30 @@ export class SupabaseGalleryRepository {
       return album && album.is_published && !album.deleted_at;
     });
 
-    const signed = await this.withSignedPhotoUrls(rows.map(mapPhoto));
-    const limited = signed.slice(0, limit);
+    const resolved = await Promise.all(
+      rows.map(async (row) => {
+        const photo = await this.resolveSignedPhoto(mapPhoto(row));
+        if (!photo) {
+          return null;
+        }
 
-    return limited.map((photo, index) => {
-      const row = rows[index];
-      const album = Array.isArray(row.gallery_albums)
-        ? (row.gallery_albums[0] ?? null)
-        : row.gallery_albums;
+        const album = Array.isArray(row.gallery_albums)
+          ? (row.gallery_albums[0] ?? null)
+          : row.gallery_albums;
 
-      return {
-        id: photo.id,
-        imageUrl: photo.imageUrl,
-        thumbUrl: photo.thumbUrl,
-        altText: photo.altText || photo.caption || album?.title || "Eğitim fotoğrafı",
-        albumTitle: album?.title ?? "Albüm",
-        albumSlug: album?.slug ?? "",
-        locationName: album?.location_name ?? null,
-      } satisfies GalleryHomePhoto;
-    });
+        return {
+          id: photo.id,
+          imageUrl: photo.thumbUrl || photo.imageUrl,
+          thumbUrl: photo.thumbUrl,
+          altText: photo.altText || photo.caption || album?.title || "Eğitim fotoğrafı",
+          albumTitle: album?.title ?? "Albüm",
+          albumSlug: album?.slug ?? "",
+          locationName: album?.location_name ?? null,
+        } satisfies GalleryHomePhoto;
+      }),
+    );
+
+    return resolved.filter((photo): photo is GalleryHomePhoto => photo !== null).slice(0, limit);
   }
 
   async listAllAlbums(includeDeleted = false): Promise<GalleryAlbum[]> {
