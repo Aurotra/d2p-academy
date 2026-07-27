@@ -1,19 +1,60 @@
 import type { ReactNode } from "react";
 
+type LearningValueAccent = "document" | "accent" | "primary" | "secondary";
+
 interface LearningValueCardProps {
   icon: ReactNode;
   title: string;
   description: string;
+  accent: LearningValueAccent;
 }
 
-function LearningValueCard({ icon, title, description }: LearningValueCardProps) {
+const accentStyles: Record<
+  LearningValueAccent,
+  { card: string; glow: string; icon: string }
+> = {
+  document: {
+    card: "border-document-primary/25 bg-gradient-to-br from-white via-sky-50/80 to-document-primary/10 shadow-lg shadow-document-primary/15 hover:border-document-primary/40 hover:shadow-glow-document",
+    glow: "bg-document-primary/30",
+    icon: "bg-document-primary/15 text-document-primary",
+  },
+  accent: {
+    card: "border-accent-dark/25 bg-gradient-to-br from-white via-amber-50/70 to-accent/25 shadow-lg shadow-accent/20 hover:border-accent-dark/40 hover:shadow-glow-accent",
+    glow: "bg-accent/40",
+    icon: "bg-accent/25 text-accent-dark",
+  },
+  primary: {
+    card: "border-primary/25 bg-gradient-to-br from-white via-rose-50/70 to-primary/10 shadow-lg shadow-primary/15 hover:border-primary/40 hover:shadow-glow-primary",
+    glow: "bg-primary/30",
+    icon: "bg-primary/15 text-primary",
+  },
+  secondary: {
+    card: "border-secondary/25 bg-gradient-to-br from-white via-teal-50/70 to-secondary/10 shadow-lg shadow-secondary/15 hover:border-secondary/40 hover:shadow-glow-secondary",
+    glow: "bg-secondary/30",
+    icon: "bg-secondary/15 text-secondary",
+  },
+};
+
+function LearningValueCard({ icon, title, description, accent }: LearningValueCardProps) {
+  const styles = accentStyles[accent];
+
   return (
-    <article className="rounded-[1.75rem] border border-slate-200 bg-white p-6 shadow-sm transition hover:-translate-y-1 hover:border-sky-300 hover:shadow-lg hover:shadow-sky-200/40">
-      <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-sky-100 text-sky-700">
+    <article
+      className={`relative overflow-hidden rounded-[1.75rem] border p-6 transition hover:-translate-y-1 ${styles.card}`}
+    >
+      <div
+        aria-hidden
+        className={`pointer-events-none absolute -right-8 -top-8 h-28 w-28 rounded-full blur-3xl ${styles.glow}`}
+      />
+      <div
+        aria-hidden
+        className={`pointer-events-none absolute -bottom-10 -left-6 h-24 w-24 rounded-full blur-3xl ${styles.glow} opacity-60`}
+      />
+      <div className={`relative flex h-12 w-12 items-center justify-center rounded-2xl ${styles.icon}`}>
         {icon}
       </div>
-      <h3 className="mt-5 text-lg font-bold text-navy-950">{title}</h3>
-      <p className="mt-3 text-sm leading-6 text-slate-600">{description}</p>
+      <h3 className="relative mt-5 text-lg font-bold text-navy-950">{title}</h3>
+      <p className="relative mt-3 text-sm leading-6 text-slate-600">{description}</p>
     </article>
   );
 }
@@ -62,24 +103,28 @@ function CertificateIcon() {
 
 const learningValues = [
   {
+    accent: "document" as const,
     icon: <DesignIcon />,
     title: "3D Tasarım ve Modelleme",
     description:
       "Hayal gücünü dijital dünyaya aktar. Öğrencilerimize fikirlerini 3 boyutlu olarak çizmeyi ve mühendislik tasarımının temellerini öğretiyoruz.",
   },
   {
+    accent: "accent" as const,
     icon: <PrinterIcon />,
     title: "Fiziksel Üretim (3D Baskı)",
     description:
       "Tasarımlarını ekranda bırakma! D2P atölyelerinde çocuklar, çizdikleri modelleri 3D yazıcılarla dokunabildikleri gerçek ürünlere dönüştürür.",
   },
   {
+    accent: "primary" as const,
     icon: <GearIcon />,
     title: "Gerçek Dünya Problem Çözümü",
     description:
       "Sadece oyuncak değil, çözüm üretiyoruz. Öğrencilerimiz çevrelerindeki sorunları tespit edip, onlara mühendislik yaklaşımıyla pratik çözümler geliştirir.",
   },
   {
+    accent: "secondary" as const,
     icon: <CertificateIcon />,
     title: "Doğrulanabilir Başarı ve Portfolyo",
     description:
@@ -100,10 +145,11 @@ export function LearningValuesSection() {
           </h2>
         </div>
 
-        <div className="mt-10 grid gap-6 md:grid-cols-2 xl:grid-cols-4">
+        <div className="mt-10 grid gap-6 md:grid-cols-2 xl:grid-cols-4 xl:gap-8">
           {learningValues.map((item) => (
             <LearningValueCard
               key={item.title}
+              accent={item.accent}
               icon={item.icon}
               title={item.title}
               description={item.description}
