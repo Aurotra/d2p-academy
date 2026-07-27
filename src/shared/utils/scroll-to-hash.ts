@@ -13,6 +13,11 @@ export function scrollToHash(hash: string, behavior: ScrollBehavior = "smooth") 
   }
 
   try {
+    if (id === "hero") {
+      window.scrollTo({ top: 0, left: 0, behavior });
+      return true;
+    }
+
     const element = document.getElementById(id);
     if (!element) {
       return false;
