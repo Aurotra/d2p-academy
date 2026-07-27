@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useRef } from "react";
+import { useMemo, type CSSProperties } from "react";
 
 import type { GalleryHomePhoto } from "@/core/domain/gallery";
 
@@ -9,35 +9,42 @@ interface GalleryHomeSliderProps {
   photos: GalleryHomePhoto[];
 }
 
+function GalleryPhotoCard({
+  photo,
+  ariaHidden = false,
+}: {
+  photo: GalleryHomePhoto;
+  ariaHidden?: boolean;
+}) {
+  return (
+    <li className="w-[200px] shrink-0 sm:w-[220px]" aria-hidden={ariaHidden || undefined}>
+      <Link
+        href={photo.albumSlug ? `/galeri/${photo.albumSlug}` : "/galeri"}
+        className="block overflow-hidden rounded-2xl border border-slate-200 bg-slate-50 shadow-sm transition hover:border-sky-300 hover:shadow-md"
+        tabIndex={ariaHidden ? -1 : undefined}
+      >
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={photo.imageUrl}
+          alt={ariaHidden ? "" : photo.altText}
+          className="h-[150px] w-full object-cover sm:h-[160px]"
+          loading="lazy"
+          draggable={false}
+        />
+      </Link>
+    </li>
+  );
+}
+
 export function GalleryHomeSlider({ photos }: GalleryHomeSliderProps) {
-  const scrollerRef = useRef<HTMLUListElement>(null);
-
-  useEffect(() => {
-    if (photos.length <= 1) return;
-    const scroller = scrollerRef.current;
-    if (!scroller) return;
-
-    const timer = window.setInterval(() => {
-      const maxScroll = scroller.scrollWidth - scroller.clientWidth;
-      if (maxScroll <= 0) return;
-      const next = scroller.scrollLeft + 280;
-      scroller.scrollTo({
-        left: next >= maxScroll - 8 ? 0 : next,
-        behavior: "smooth",
-      });
-    }, 3800);
-
-    return () => window.clearInterval(timer);
-  }, [photos.length]);
+  const marqueePhotos = useMemo(() => [...photos, ...photos], [photos]);
+  const marqueeDuration = useMemo(
+    () => `${Math.max(photos.length * 5, 28)}s`,
+    [photos.length],
+  );
 
   if (photos.length === 0) {
     return null;
-  }
-
-  function scrollBy(direction: -1 | 1) {
-    const scroller = scrollerRef.current;
-    if (!scroller) return;
-    scroller.scrollBy({ left: direction * 280, behavior: "smooth" });
   }
 
   return (
@@ -60,49 +67,25 @@ export function GalleryHomeSlider({ photos }: GalleryHomeSliderProps) {
           </Link>
         </div>
 
-        <div className="relative mt-6">
+        <div
+          className="relative mt-6 overflow-hidden [mask-image:linear-gradient(to_right,transparent,black_6%,black_94%,transparent)]"
+          style={{ "--gallery-marquee-duration": marqueeDuration } as CSSProperties}
+        >
           {photos.length > 1 ? (
-            <>
-              <button
-                type="button"
-                aria-label="Sola kaydır"
-                onClick={() => scrollBy(-1)}
-                className="absolute left-0 top-1/2 z-10 hidden h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-700 shadow-sm transition hover:bg-slate-50 md:flex"
-              >
-                ‹
-              </button>
-              <button
-                type="button"
-                aria-label="Sağa kaydır"
-                onClick={() => scrollBy(1)}
-                className="absolute right-0 top-1/2 z-10 hidden h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-700 shadow-sm transition hover:bg-slate-50 md:flex"
-              >
-                ›
-              </button>
-            </>
-          ) : null}
-
-          <ul
-            ref={scrollerRef}
-            className="flex gap-3 overflow-x-auto scroll-smooth pb-1 [-ms-overflow-style:none] [scrollbar-width:none] md:px-10 [&::-webkit-scrollbar]:hidden"
-          >
-            {photos.map((photo) => (
-              <li key={photo.id} className="w-[200px] shrink-0 sm:w-[220px]">
-                <Link
-                  href={photo.albumSlug ? `/galeri/${photo.albumSlug}` : "/galeri"}
-                  className="block overflow-hidden rounded-2xl border border-slate-200 bg-slate-50 shadow-sm transition hover:border-sky-300 hover:shadow-md"
-                >
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={photo.imageUrl}
-                    alt={photo.altText}
-                    className="h-[150px] w-full object-cover sm:h-[160px]"
-                    loading="lazy"
-                  />
-                </Link>
-              </li>
-            ))}
-          </ul>
+            <ul className="gallery-marquee-track flex w-max gap-3">
+              {marqueePhotos.map((photo, index) => (
+                <GalleryPhotoCard
+                  key={`${photo.id}-${index}`}
+                  photo={photo}
+                  ariaHidden={index >= photos.length}
+                />
+              ))}
+            </ul>
+          ) : (
+            <ul className="flex gap-3 overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+              <GalleryPhotoCard photo={photos[0]} />
+            </ul>
+          )}
         </div>
       </div>
     </section>

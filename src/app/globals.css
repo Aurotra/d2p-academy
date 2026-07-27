@@ -96,6 +96,31 @@ body {
 }
 
 @layer components {
+  @keyframes gallery-marquee {
+    from {
+      transform: translateX(0);
+    }
+
+    to {
+      transform: translateX(-50%);
+    }
+  }
+
+  .gallery-marquee-track {
+    animation: gallery-marquee var(--gallery-marquee-duration, 40s) linear infinite;
+    will-change: transform;
+  }
+
+  .gallery-marquee-track:hover {
+    animation-play-state: paused;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .gallery-marquee-track {
+      animation: none;
+    }
+  }
+
   /* Primary action buttons (Kayıt Ol, CTA) */
   .bg-cyan-500,
   .bg-primary {
