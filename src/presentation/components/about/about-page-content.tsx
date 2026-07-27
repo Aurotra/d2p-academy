@@ -25,6 +25,7 @@ const educators: Educator[] = [
       "5+ yıl 2D ve 3D tasarım deneyimi",
       "5+ yıl 3D yazıcı ve dijital üretim teknolojileri deneyimi",
       "Dijital tasarım, prototipleme ve uygulamalı üretim teknolojileri alanında uzman",
+      "Marka iletişimi, sosyal medya yönetimi ve içerik stratejisi",
     ],
   },
   {
