@@ -8,8 +8,6 @@ import type {
 } from "@/core/domain/username-student-progress";
 import { BRAND_SURFACE_GRADIENT } from "@/shared/constants/brand-surfaces";
 import { Badge } from "@/presentation/components/ui/badge";
-import { StudentLogoutButton } from "@/presentation/components/student-dashboard/student-logout-button";
-
 interface UsernameStudentDashboardViewProps {
   username: string;
   fullName?: string | null;
@@ -185,7 +183,6 @@ export function UsernameStudentDashboardView({
             >
               Profilim
             </Link>
-            <StudentLogoutButton />
           </div>
         </div>
 

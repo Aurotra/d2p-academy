@@ -138,26 +138,32 @@ export function SiteHeader() {
   const showLoggedInActions = isAuthResolved && isLoggedIn;
 
   return (
-    <header className={`sticky top-0 z-40 ${BRAND_SURFACE_HEADER}`}>
-      <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4 sm:px-6 lg:px-8">
-        <div className="flex shrink-0 items-center self-center">
+    <header className={`sticky top-0 z-40 isolate ${BRAND_SURFACE_HEADER}`}>
+      <div className="mx-auto flex max-w-7xl items-center gap-3 px-4 py-4 sm:gap-4 sm:px-6 lg:gap-6 lg:px-8">
+        <div className="flex shrink-0 items-center">
           <BrandLogo height={48} />
         </div>
 
-        <nav className="hidden items-center gap-8 md:flex" aria-label="Ana menü">
-          {navItems.map((item) => (
-            <Link
-              key={item.href}
-              href={item.href}
-              className="text-sm font-medium text-slate-800 transition hover:text-primary"
-              onClick={(event) => handleSamePageHashNav(event, item.href, pathname)}
-            >
-              {item.label}
-            </Link>
-          ))}
+        <nav
+          className="site-header-nav hidden min-w-0 flex-1 justify-center lg:flex"
+          aria-label="Ana menü"
+        >
+          <ul className="mx-auto flex w-max items-center gap-x-3 xl:gap-x-5 2xl:gap-x-6">
+            {navItems.map((item) => (
+              <li key={item.href} className="shrink-0">
+                <Link
+                  href={item.href}
+                  className="whitespace-nowrap text-xs font-medium text-slate-800 transition hover:text-primary xl:text-sm"
+                  onClick={(event) => handleSamePageHashNav(event, item.href, pathname)}
+                >
+                  {item.label}
+                </Link>
+              </li>
+            ))}
+          </ul>
         </nav>
 
-        <div className="hidden min-h-[40px] items-center gap-3 md:flex">
+        <div className="hidden min-h-[40px] shrink-0 items-center gap-2 xl:gap-3 lg:flex">
           {showLoggedInActions ? (
             <>
               {userDisplayName ? (
@@ -201,7 +207,7 @@ export function SiteHeader() {
 
         <button
           type="button"
-          className="inline-flex items-center justify-center rounded-xl border border-sky-200 bg-white/80 p-2.5 text-slate-800 shadow-sm transition hover:border-primary/30 hover:text-primary md:hidden"
+          className="ml-auto inline-flex shrink-0 items-center justify-center rounded-xl border border-sky-200 bg-white/80 p-2.5 text-slate-800 shadow-sm transition hover:border-primary/30 hover:text-primary lg:hidden"
           aria-label={isMobileMenuOpen ? "Menüyü kapat" : "Menüyü aç"}
           aria-expanded={isMobileMenuOpen}
           aria-controls="mobile-main-menu"
@@ -215,13 +221,13 @@ export function SiteHeader() {
         <>
           <button
             type="button"
-            className="fixed inset-0 z-30 bg-sky-900/20 backdrop-blur-[2px] md:hidden"
+            className="fixed inset-0 z-30 bg-sky-900/20 backdrop-blur-[2px] lg:hidden"
             aria-label="Menüyü kapat"
             onClick={closeMobileMenu}
           />
           <nav
             id="mobile-main-menu"
-            className="relative z-40 border-t border-sky-200/80 bg-gradient-to-b from-sky-50 to-sky-100/95 px-4 py-5 shadow-lg shadow-sky-200/40 md:hidden sm:px-6"
+            className="relative z-40 border-t border-sky-200/80 bg-gradient-to-b from-sky-50 to-sky-100/95 px-4 py-5 shadow-lg shadow-sky-200/40 lg:hidden sm:px-6"
             aria-label="Mobil menü"
           >
             <ul className="space-y-1">

@@ -6,7 +6,6 @@ import { EVENT_TYPE_LABELS } from "@/core/domain/event";
 import { BRAND_SURFACE_GRADIENT } from "@/shared/constants/brand-surfaces";
 import { Badge } from "@/presentation/components/ui/badge";
 import { DashboardEnrollHandler } from "@/presentation/components/dashboard/dashboard-enroll-handler";
-import { LogoutButton } from "@/presentation/components/dashboard/logout-button";
 
 interface DashboardViewProps {
   data: StudentDashboardData;
@@ -130,7 +129,6 @@ export function DashboardView({ data, isAdmin, isInstructor }: DashboardViewProp
                   label="Not Raporum"
                   variant="outline"
                 />
-                <LogoutButton className="min-h-[44px] w-full px-4 py-2.5 text-sm" variant="primary" />
               </div>
             </div>
           </div>

@@ -147,6 +147,21 @@ body {
     color: var(--accent-dark);
     box-shadow: inset 0 0 0 1px rgb(255 183 3 / 0.3);
   }
+
+  /*
+   * Chromium flex overflow: allow centered nav to scroll instead of overlapping
+   * logo/auth actions when the viewport is narrower than the link row.
+   */
+  .site-header-nav {
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+
+  .site-header-nav::-webkit-scrollbar {
+    display: none;
+  }
 }
 
 @media print {

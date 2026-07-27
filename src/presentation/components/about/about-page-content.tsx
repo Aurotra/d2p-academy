@@ -11,6 +11,7 @@ const educators: Educator[] = [
     id: "berk-tepe",
     name: "Berk Tepe",
     title: "Otomotiv Mühendisi | Kurucu",
+    image: "/team/berk-tepe.png",
     highlights: [
       "10+ yıl 2D ve 3D tasarım deneyimi",
       "5+ yıl 3D yazıcı ve dijital üretim teknolojileri deneyimi",
@@ -21,6 +22,7 @@ const educators: Educator[] = [
     id: "sude-can-sumer",
     name: "Sude Can Sümer",
     title: "Makine Mühendisi",
+    image: "/team/sude-can-sumer.png",
     highlights: [
       "5+ yıl 2D ve 3D tasarım deneyimi",
       "5+ yıl 3D yazıcı ve dijital üretim teknolojileri deneyimi",
@@ -130,7 +132,11 @@ function EducatorCard({ educator }: { educator: Educator }) {
       <div className="aspect-[4/3] overflow-hidden bg-gradient-to-br from-sky-100 via-white to-slate-100">
         {educator.image ? (
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={educator.image} alt={educator.name} className="h-full w-full object-cover" />
+          <img
+            src={educator.image}
+            alt={educator.name}
+            className="h-full w-full object-cover object-[center_20%]"
+          />
         ) : (
           <div className="flex h-full w-full items-center justify-center">
             <span
