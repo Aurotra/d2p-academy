@@ -48,7 +48,7 @@ export function HeroCtaButtons() {
         </div>
 
         <div className="flex h-full flex-col rounded-2xl border border-sky-200/80 bg-white/70 p-4 backdrop-blur-sm sm:p-5">
-          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-sky-700">
+          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-secondary">
             Veli hesabı
           </p>
           <p className="mt-2 flex-1 text-sm leading-6 text-sky-900/80">
@@ -58,13 +58,13 @@ export function HeroCtaButtons() {
           </p>
           {isLoggedIn ? (
             <Link href="/dashboard" className="mt-4 inline-flex w-full sm:w-auto">
-              <Button variant="outline" className="min-h-[44px] w-full sm:w-auto">
+              <Button variant="secondary" className="min-h-[44px] w-full sm:w-auto">
                 Panele Git
               </Button>
             </Link>
           ) : (
             <Link href="/register" className="mt-4 inline-flex w-full sm:w-auto">
-              <Button variant="outline" className="min-h-[44px] w-full sm:w-auto">
+              <Button variant="secondary" className="min-h-[44px] w-full sm:w-auto">
                 Veli Hesabı Oluştur
               </Button>
             </Link>
@@ -72,14 +72,14 @@ export function HeroCtaButtons() {
         </div>
 
         <div className="flex h-full flex-col rounded-2xl border border-sky-200/80 bg-white/70 p-4 backdrop-blur-sm sm:col-span-2 sm:p-5 lg:col-span-1">
-          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-sky-800">
+          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-primary">
             Kurumlar için
           </p>
           <p className="mt-2 flex-1 text-sm leading-6 text-sky-900/80">
             Okul, belediye ve kurumlar için toplu eğitim paketi / organizasyon talebi.
           </p>
           <Link href="/kurumsal-talep" className="mt-4 inline-flex w-full sm:w-auto">
-            <Button variant="outline" className="min-h-[44px] w-full sm:w-auto">
+            <Button variant="primary" className="min-h-[44px] w-full sm:w-auto">
               Kurumsal Eğitim Talebi
             </Button>
           </Link>
