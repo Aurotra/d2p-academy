@@ -71,7 +71,7 @@ export function EmailConfirmForm() {
   return (
     <AuthShell
       title="E-posta Onayı"
-      subtitle="Hesabınızı etkinleştirmek için aşağıdaki butona tıklayın."
+      subtitle="Kaydınızı tamamlamak için e-posta onayınızı yapmanız yeterli."
       footerText="Zaten onayladınız mı?"
       footerHref={loginHref}
       footerLinkLabel="Veli Girişi"
@@ -97,7 +97,7 @@ export function EmailConfirmForm() {
       ) : (
         <div className="space-y-4">
           <p className="text-sm leading-relaxed text-slate-600">
-            E-postanızı onaylamak için «E-postamı Onayla» butonuna basın.
+            E-posta adresinizi onaylamak için aşağıdaki butona tıklayabilirsiniz.
           </p>
 
           {error ? (
