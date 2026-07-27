@@ -3,16 +3,11 @@ import { EventCalendarPreview } from "@/presentation/components/home/event-calen
 import { GalleryHomePreview } from "@/presentation/components/home/gallery-home-preview";
 import { HeroSection } from "@/presentation/components/home/hero-section";
 import { LearningValuesSection } from "@/presentation/components/home/learning-values-section";
-import { publicPageMetadata } from "@/shared/seo/metadata";
-import { SITE_DESCRIPTION } from "@/shared/constants/site";
+import { homePageMetadata } from "@/shared/seo/public-pages";
 
 export const dynamic = "force-dynamic";
 
-export const metadata = publicPageMetadata({
-  title: "3D Tasarım, 3D Baskı ve Robotik Eğitimleri",
-  description: SITE_DESCRIPTION,
-  path: "/",
-});
+export const metadata = homePageMetadata;
 
 export default function HomePage() {
   return (

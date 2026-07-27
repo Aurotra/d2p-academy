@@ -2,14 +2,9 @@ import Link from "next/link";
 
 import { CONTACT } from "@/shared/constants/contact";
 import { Button } from "@/presentation/components/ui/button";
-import { publicPageMetadata } from "@/shared/seo/metadata";
+import { contactPageMetadata } from "@/shared/seo/public-pages";
 
-export const metadata = publicPageMetadata({
-  title: "İletişim",
-  description:
-    "D2P Academy iletişim bilgileri. Adres: Pamukkale Teknokent, Denizli. Telefon ve e-posta ile bize ulaşın.",
-  path: "/iletisim",
-});
+export const metadata = contactPageMetadata;
 
 function InstagramIcon({ className = "h-5 w-5" }: { className?: string }) {
   return (

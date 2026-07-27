@@ -1,14 +1,9 @@
 import Link from "next/link";
 
 import { InstitutionRequestForm } from "@/presentation/components/institution/institution-request-form";
-import { publicPageMetadata } from "@/shared/seo/metadata";
+import { institutionRequestPageMetadata } from "@/shared/seo/public-pages";
 
-export const metadata = publicPageMetadata({
-  title: "Kurumsal Eğitim Talebi",
-  description:
-    "Okul, belediye ve kurumlar için D2P Academy toplu eğitim paketi ve atölye organizasyonu talebi.",
-  path: "/kurumsal-talep",
-});
+export const metadata = institutionRequestPageMetadata;
 
 const providedServices = [
   "Eğitmen ve teknik ekip",

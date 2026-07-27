@@ -8,6 +8,7 @@ import { createSupabaseServerClient } from "@/infrastructure/supabase/create-ser
 import { EventEnrollButton } from "@/presentation/components/events/event-enroll-button";
 import { EventJsonLd } from "@/presentation/components/seo/event-json-ld";
 import { Badge } from "@/presentation/components/ui/badge";
+import { eventsPageMetadata } from "@/shared/seo/public-pages";
 import { publicPageMetadata } from "@/shared/seo/metadata";
 import {
   eventLocationLabel,
@@ -25,11 +26,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const client = await createSupabaseServerClient();
 
   if (!client) {
-    return publicPageMetadata({
-      title: "Etkinlik",
-      description: "D2P Academy etkinlik detayı.",
-      path: "/etkinlikler",
-    });
+    return eventsPageMetadata;
   }
 
   const event = await new SupabaseEventRepository(client).getPublishedBySlug(slug);
@@ -39,14 +36,22 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   }
 
   const location = eventLocationLabel(event);
+  const eventTypeLabel = EVENT_TYPE_LABELS[event.eventType].toLowerCase();
   const description =
     event.description.trim() ||
-    `${event.title} — ${location}. D2P Academy ${EVENT_TYPE_LABELS[event.eventType].toLowerCase()} programı.`;
+    `${event.title} — ${location}. Denizli'de D2P Academy ${eventTypeLabel} atölye programı; kayıt ve tarih bilgileri.`;
 
   return publicPageMetadata({
-    title: event.title,
+    title: `${event.title} — Denizli Atölye Etkinliği`,
     description: description.slice(0, 160),
     path: `/etkinlikler/${slug}`,
+    keywords: [
+      event.title,
+      `${eventTypeLabel} atölyesi`,
+      "Denizli çocuk etkinliği",
+      "D2P Academy kayıt",
+      location,
+    ],
   });
 }
 

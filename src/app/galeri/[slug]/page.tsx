@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 
 import { createSupabaseServerClient } from "@/infrastructure/supabase/create-server-client";
 import { SupabaseGalleryRepository } from "@/infrastructure/repositories/supabase-gallery-repository";
+import { galleryPageMetadata } from "@/shared/seo/public-pages";
 import { publicPageMetadata } from "@/shared/seo/metadata";
 
 export const dynamic = "force-dynamic";
@@ -24,11 +25,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const { slug } = await params;
   const client = await createSupabaseServerClient();
   if (!client) {
-    return publicPageMetadata({
-      title: "Galeri",
-      description: "D2P Academy eğitim fotoğrafları.",
-      path: "/galeri",
-    });
+    return galleryPageMetadata;
   }
 
   const album = await new SupabaseGalleryRepository(client).getPublishedAlbumBySlug(slug);
@@ -36,12 +33,22 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     return { title: "Albüm bulunamadı" };
   }
 
+  const locationLabel = album.locationName ?? "D2P Academy";
+  const description =
+    album.description ||
+    `${album.title} — ${locationLabel} 3D tasarım ve maker atölye fotoğrafları. D2P Academy eğitim galerisi.`;
+
   return publicPageMetadata({
-    title: album.title,
-    description:
-      album.description ||
-      `${album.locationName ?? "D2P Academy"} eğitim fotoğrafları.`,
+    title: `${album.title} — Atölye Fotoğraf Albümü`,
+    description,
     path: `/galeri/${slug}`,
+    keywords: [
+      album.title,
+      locationLabel,
+      "3D baskı atölye fotoğrafları",
+      "D2P Academy galeri",
+      "Denizli STEM etkinlikleri",
+    ],
   });
 }
 

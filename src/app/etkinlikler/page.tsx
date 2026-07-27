@@ -4,16 +4,11 @@ import { EVENT_TYPE_LABELS } from "@/core/domain/event";
 import { SupabaseEventRepository } from "@/infrastructure/repositories/supabase-event-repository";
 import { createSupabaseServerClient } from "@/infrastructure/supabase/create-server-client";
 import { EventCard } from "@/presentation/components/home/event-card";
-import { publicPageMetadata } from "@/shared/seo/metadata";
+import { eventsPageMetadata } from "@/shared/seo/public-pages";
 
 export const dynamic = "force-dynamic";
 
-export const metadata = publicPageMetadata({
-  title: "Etkinlikler ve Atölyeler",
-  description:
-    "D2P Academy robotik, 3D tasarım, 3D baskı ve maker atölye etkinlikleri. Yaklaşan programları inceleyin ve kayıt olun.",
-  path: "/etkinlikler",
-});
+export const metadata = eventsPageMetadata;
 
 export default async function EventsPage() {
   const client = await createSupabaseServerClient();
