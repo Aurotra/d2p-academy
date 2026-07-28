@@ -142,11 +142,6 @@ export function LoginForm() {
         </Link>
       </p>
 
-      <p className="mt-3 text-center text-sm">
-        <Link href="/" className="text-slate-500 transition hover:text-cyan-700">
-          Ana sayfaya dön
-        </Link>
-      </p>
     </AuthShell>
   );
 }

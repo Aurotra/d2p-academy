@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState, type FormEvent } from "react";
 
@@ -159,11 +158,6 @@ export function InstructorLoginForm() {
         </AuthPortalLink>
       </div>
 
-      <p className="mt-3 text-center text-sm">
-        <Link href="/" className="text-slate-500 transition hover:text-cyan-700">
-          Ana sayfaya dön
-        </Link>
-      </p>
     </AuthShell>
   );
 }
