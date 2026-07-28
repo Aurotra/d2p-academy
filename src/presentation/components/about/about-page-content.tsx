@@ -40,6 +40,8 @@ const educators: Educator[] = [
     id: "pelin-duran",
     name: "Pelin Duran",
     title: "Fen ve Matematik Öğretmeni",
+    image: "/team/pelin-duran.png",
+    imageFit: { objectPosition: "42% 24%", scale: 1.2 },
     highlights: [
       "Fen Bilgisi ve İlköğretim Matematik Öğretmenliği Çift Anadal Lisans",
       "Disiplinlerarası (STEM) Eğitimi ve Uygulama Deneyimi",
