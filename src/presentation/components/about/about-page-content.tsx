@@ -17,6 +17,8 @@ const educators: Educator[] = [
     id: "berk-tepe",
     name: "Berk Tepe",
     title: "Otomotiv Mühendisi | Kurucu",
+    image: "/team/berk-tepe.png",
+    imageFit: { objectPosition: "50% 28%", scale: 1.1 },
     highlights: [
       "10+ yıl 2D ve 3D tasarım deneyimi",
       "5+ yıl 3D yazıcı ve dijital üretim teknolojileri deneyimi",
