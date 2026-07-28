@@ -30,7 +30,7 @@ const educators: Educator[] = [
     name: "Sude Can Sümer",
     title: "Makine Mühendisi",
     image: "/team/sude-can-sumer.png",
-    imageFit: { objectPosition: "50% 30%", scale: 0.9 },
+    imageFit: { objectPosition: "50% 30%", scale: 1 },
     highlights: [
       "5+ yıl 2D ve 3D tasarım deneyimi",
       "5+ yıl 3D yazıcı ve dijital üretim teknolojileri deneyimi",
@@ -137,6 +137,7 @@ function getEducatorInitials(name: string): string {
 function EducatorCard({ educator }: { educator: Educator }) {
   const initials = getEducatorInitials(educator.name);
   const imageFit = educator.imageFit ?? { objectPosition: "50% 22%", scale: 1 };
+  const imageScale = Math.max(1, imageFit.scale ?? 1);
 
   return (
     <article className="flex h-full flex-col overflow-hidden rounded-[1.75rem] border border-slate-200 bg-white shadow-sm transition hover:-translate-y-1 hover:border-sky-300 hover:shadow-lg hover:shadow-sky-200/40">
@@ -149,7 +150,7 @@ function EducatorCard({ educator }: { educator: Educator }) {
             className="h-full w-full object-cover"
             style={{
               objectPosition: imageFit.objectPosition,
-              transform: imageFit.scale !== 1 ? `scale(${imageFit.scale})` : undefined,
+              transform: imageScale > 1 ? `scale(${imageScale})` : undefined,
               transformOrigin: imageFit.objectPosition,
             }}
           />
