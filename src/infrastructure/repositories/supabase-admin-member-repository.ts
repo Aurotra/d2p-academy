@@ -45,8 +45,9 @@ export class SupabaseAdminMemberRepository {
       request = request.or(`full_name.ilike.${pattern},email.ilike.${pattern}`);
     }
 
-    let { data: rawData, error } = await request;
-    let data = rawData as ProfileMemberRow[] | null;
+    const queryResult = await request;
+    let data = queryResult.data as ProfileMemberRow[] | null;
+    let error = queryResult.error;
 
     if (error && isMissingInstructorColumnError(error.message)) {
       let fallbackRequest = this.client

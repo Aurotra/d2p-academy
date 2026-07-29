@@ -231,7 +231,6 @@ export function AboutPageContent() {
             Kurumsal kimliğimiz
           </h2>
           {corporateParagraphs.map((paragraph, index) => (
-            // eslint-disable-next-line react/no-array-index-key
             <p key={index} className="text-base leading-7 text-slate-700 sm:text-[1.05rem] sm:leading-8">
               {paragraph}
             </p>

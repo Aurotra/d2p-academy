@@ -1,4 +1,5 @@
-import { NextRequest, NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
+import { NextResponse } from "next/server";
 
 import { listPrograms } from "@/infrastructure/programs/program-repository";
 import { createSupabaseServerClient } from "@/infrastructure/supabase/create-server-client";

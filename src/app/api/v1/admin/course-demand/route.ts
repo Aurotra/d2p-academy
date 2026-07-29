@@ -1,4 +1,5 @@
-import { NextRequest, NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
+import { NextResponse } from "next/server";
 
 import type { CourseDemandStatus } from "@/core/domain/course-demand";
 import { requireAdminApiAccess } from "@/infrastructure/auth/require-admin-api-access";

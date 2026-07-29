@@ -34,6 +34,35 @@ Tarayıcıda [http://localhost:3000](http://localhost:3000) adresini açın.
 | `npm run format` | Prettier ile formatlama |
 | `npm run format:check` | Prettier kontrolü |
 | `npm run typecheck` | TypeScript tip kontrolü |
+| `npm run test` | Birim testleri (Vitest) |
+| `npm run check:env` | Production env doğrulama |
+
+## Production ortam değişkenleri
+
+Zorunlu server değişkenleri:
+
+- `SUPABASE_SERVICE_ROLE_KEY` — öğrenci oturumu, rate limit, sitemap
+- `STUDENT_JWT_SECRET` — en az 32 karakter
+- `RESEND_API_KEY` — kayıt onayı ve bildirim mailleri
+
+Doğrulama: `npm run check:env` (production shell'de env yüklüyken).
+
+Detaylı liste: `.env.example` ve `supabase/README.md`.
+
+## CI
+
+GitHub Actions (`/.github/workflows/ci.yml`): typecheck, lint, test, build.
+
+## Supabase
+
+Migration'lar `supabase/migrations/` altında. Canlıya uygulama:
+
+```bash
+supabase link --project-ref <ref>
+supabase db push
+```
+
+Son kritik migration'lar: **051** (üye işlem logları), **052** (e-posta onay RPC).
 
 ## Mimari
 

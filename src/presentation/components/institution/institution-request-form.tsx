@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useState } from "react";
+import { type FormEvent, useState } from "react";
 
 import { KvkkConsentFields } from "@/presentation/components/legal/kvkk-consent-fields";
 import { Button } from "@/presentation/components/ui/button";

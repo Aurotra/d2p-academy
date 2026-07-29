@@ -10,7 +10,10 @@
     "lint:fix": "next lint --fix",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "check:env": "node scripts/check-production-env.mjs"
   },
   "dependencies": {
     "@sparticuz/chromium-min": "^149.0.0",
@@ -18,7 +21,7 @@
     "@supabase/supabase-js": "^2.49.8",
     "bcryptjs": "^3.0.3",
     "jose": "^6.2.3",
-    "next": "^15.3.3",
+    "next": "^15.5.19",
     "puppeteer-core": "^25.3.0",
     "qrcode": "^1.5.4",
     "react": "^19.1.0",
@@ -35,10 +38,11 @@
     "@types/react": "^19.1.6",
     "@types/react-dom": "^19.1.5",
     "eslint": "^9.28.0",
-    "eslint-config-next": "^15.3.3",
+    "eslint-config-next": "^15.5.19",
     "eslint-config-prettier": "^10.1.5",
     "prettier": "^3.5.3",
     "tailwindcss": "^4.1.8",
-    "typescript": "^5.8.3"
+    "typescript": "^5.8.3",
+    "vitest": "^3.2.4"
   }
 }

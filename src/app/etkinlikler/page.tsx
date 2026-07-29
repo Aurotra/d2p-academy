@@ -1,6 +1,5 @@
 import Link from "next/link";
 
-import { EVENT_TYPE_LABELS } from "@/core/domain/event";
 import { SupabaseEventRepository } from "@/infrastructure/repositories/supabase-event-repository";
 import { createSupabaseServerClient } from "@/infrastructure/supabase/create-server-client";
 import { EventCard } from "@/presentation/components/home/event-card";

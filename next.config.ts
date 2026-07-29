@@ -8,7 +8,7 @@ const nextConfig: NextConfig = {
     "/api/v1/admin/certificates": ["./src/lib/certificates/**/*"],
   },
   eslint: {
-    ignoreDuringBuilds: true,
+    ignoreDuringBuilds: false,
   },
   typescript: {
     ignoreBuildErrors: false,

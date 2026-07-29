@@ -1,3 +1,5 @@
+-- DEPRECATED: Bu dosya güncel değildir. Yeni kurulum için supabase/migrations + `supabase db push` kullanın.
+-- Repoda 52 migration vardır (051 member audit, 052 auth email RPC dahil).
 -- ============================================================
 -- D2P ACADEMY - TUM VERITABANI KURULUMU (BOS PROJE ICIN)
 -- Supabase Dashboard > SQL Editor > yapistir > Run

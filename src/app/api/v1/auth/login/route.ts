@@ -2,6 +2,10 @@ import { NextResponse } from "next/server";
 
 import { signInWithEmail } from "@/core/use-cases/authenticate-user";
 import { isAuthEmailAwaitingConfirmation } from "@/infrastructure/auth/check-auth-email-awaiting-confirmation";
+import {
+  clearParentLoginRateLimit,
+  enforceParentLoginRateLimit,
+} from "@/infrastructure/auth/auth-login-rate-limit";
 import { clearStudentSessionCookie } from "@/infrastructure/auth/clear-student-session-cookie";
 import { SupabaseAuthRepository } from "@/infrastructure/repositories/supabase-auth-repository";
 import { createSupabaseServerClient } from "@/infrastructure/supabase/create-server-client";
@@ -31,6 +35,11 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "E-posta ve şifre zorunludur." }, { status: 400 });
     }
 
+    const rateLimited = await enforceParentLoginRateLimit(request, email);
+    if (rateLimited) {
+      return rateLimited;
+    }
+
     const client = await createSupabaseServerClient();
 
     if (!client) {
@@ -42,6 +51,8 @@ export async function POST(request: Request) {
 
     const repository = new SupabaseAuthRepository(client);
     const result = await signInWithEmail(repository, { email, password });
+
+    await clearParentLoginRateLimit(request, email);
 
     const response = NextResponse.json({ data: result });
     clearStudentSessionCookie(response);

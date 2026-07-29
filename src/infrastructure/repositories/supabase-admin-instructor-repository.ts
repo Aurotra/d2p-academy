@@ -41,11 +41,12 @@ export class SupabaseAdminInstructorRepository {
 
   async listAll(): Promise<AdminInstructorRecord[]> {
     const baseSelect = "id, full_name, email, role, is_active, created_at";
-    let { data: rawData, error } = await this.client
+    const queryResult = await this.client
       .from("profiles")
       .select(`${baseSelect}, is_instructor`)
       .order("full_name", { ascending: true });
-    let data = rawData as InstructorRow[] | null;
+    let data = queryResult.data as InstructorRow[] | null;
+    let error = queryResult.error;
 
     if (error && isMissingInstructorColumnError(error.message)) {
       const fallback = await this.client.from("profiles").select(baseSelect).order("full_name", {
