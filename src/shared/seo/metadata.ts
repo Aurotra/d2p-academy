@@ -18,12 +18,14 @@ export function publicPageMetadata(input: {
   description: string;
   path: string;
   keywords?: string[];
+  absoluteTitle?: boolean;
 }): Metadata {
   const canonicalPath = input.path.startsWith("/") ? input.path : `/${input.path}`;
   const canonicalUrl = absoluteUrl(canonicalPath);
+  const title = input.absoluteTitle ? { absolute: input.title } : input.title;
 
   return {
-    title: input.title,
+    title,
     description: input.description,
     keywords: input.keywords,
     alternates: {

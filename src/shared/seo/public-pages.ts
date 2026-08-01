@@ -4,18 +4,19 @@ const denizliStemKeywords = [
   "Denizli çocuk atölyesi",
   "3D tasarım eğitimi",
   "3D baskı atölyesi",
-  "robotik eğitim",
-  "STEM eğitimi",
   "maker atölye",
+  "STEM eğitimi",
+  "tasarım ve üretim eğitimi",
   "D2P Academy",
 ] as const;
 
 export const homePageMetadata = publicPageMetadata({
-  title: "Denizli 3D Tasarım, 3D Baskı ve Robotik Atölye Eğitimleri",
+  title: "Denizli 3D Tasarım ve 3D Baskı Atölye Eğitimleri",
   description:
-    "D2P Academy, Denizli'de çocuk ve gençlere 3D tasarım, 3D baskı, prototipleme ve STEM atölye eğitimleri sunar. Robotik kodlamayı tamamlayan tasarım ve üretim odaklı programlar.",
+    "D2P Academy, Denizli'de çocuk ve gençlere 3D tasarım, 3D baskı, prototipleme ve maker atölye eğitimleri sunar. Tasarım ve üretim odaklı STEM programları.",
   path: "/",
   keywords: [...denizliStemKeywords],
+  absoluteTitle: true,
 });
 
 export const eventsPageMetadata = publicPageMetadata({
