@@ -53,9 +53,22 @@ function emailLayout(content: string): string {
 
 export function buildInstructorRoleGrantedEmail(input: {
   recipientName: string;
+  memberRole?: "parent" | "student" | "admin" | "instructor";
 }): { subject: string; html: string } {
   const loginUrl = `${SITE_URL}/login`;
   const name = escapeHtml(input.recipientName);
+  const accessNote =
+    input.memberRole === "admin"
+      ? "Mevcut e-posta adresiniz ve şifrenizle giriş yapın. <strong>Admin paneli</strong> erişiminiz korunur; ayrıca <strong>Eğitmen Paneli</strong> bağlantısı aktif olur."
+      : input.memberRole === "student"
+        ? "Mevcut e-posta adresiniz ve şifrenizle üye girişi yapın; panelinizde <strong>Eğitmen Paneli</strong> bağlantısını göreceksiniz."
+        : "Mevcut e-posta adresiniz ve şifrenizle veli girişi yapın; panelinizde <strong>Eğitmen Paneli</strong> bağlantısını göreceksiniz.";
+  const loginLabel =
+    input.memberRole === "admin" ? "Giriş Yap" : input.memberRole === "student" ? "Üye Girişi" : "Veli Girişi";
+  const passwordNote =
+    input.memberRole === "admin"
+      ? "Şifrenizi bilmiyorsanız giriş sayfasındaki “şifremi unuttum” akışını kullanabilirsiniz."
+      : "Şifrenizi bilmiyorsanız giriş sayfasındaki “şifremi unuttum” akışını kullanabilir veya D2P Academy ile iletişime geçebilirsiniz.";
 
   const content = `
     <h1 style="margin:0 0 12px;font-size:22px;line-height:1.3;color:#0f172a;">Eğitmen Paneli Erişiminiz Açıldı</h1>
@@ -63,15 +76,14 @@ export function buildInstructorRoleGrantedEmail(input: {
       Merhaba <strong>${name}</strong>, D2P Academy hesabınıza <strong>eğitmen yetkisi</strong> tanımlandı.
     </p>
     <p style="margin:0 0 16px;font-size:15px;line-height:1.6;color:#475569;">
-      Mevcut e-posta adresiniz ve şifrenizle veli girişi yapın; panelinizde Eğitmen Paneli bağlantısını
-      göreceksiniz. Size atanmış etkinliklerde günlük yoklama alabilirsiniz.
+      ${accessNote} Size atanmış etkinliklerde günlük yoklama alabilirsiniz.
     </p>
     <p style="margin:0;font-size:14px;line-height:1.6;color:#475569;">
       Giriş adresi: <a href="${loginUrl}" style="color:${BRAND_PRIMARY};font-weight:bold;">${loginUrl}</a>
     </p>
-    <a href="${loginUrl}" style="display:inline-block;margin-top:20px;padding:12px 20px;background-color:${BRAND_PRIMARY};color:#ffffff;text-decoration:none;border-radius:10px;font-size:14px;font-weight:bold;">Veli Girişi</a>
+    <a href="${loginUrl}" style="display:inline-block;margin-top:20px;padding:12px 20px;background-color:${BRAND_PRIMARY};color:#ffffff;text-decoration:none;border-radius:10px;font-size:14px;font-weight:bold;">${loginLabel}</a>
     <p style="margin:20px 0 0;font-size:13px;line-height:1.6;color:#64748b;">
-      Şifrenizi bilmiyorsanız veli giriş sayfasındaki “şifremi unuttum” akışını kullanabilir veya D2P Academy ile iletişime geçebilirsiniz.
+      ${passwordNote}
     </p>
   `;
 
@@ -84,8 +96,12 @@ export function buildInstructorRoleGrantedEmail(input: {
 export async function sendInstructorRoleGrantedEmail(input: {
   recipientName: string;
   email: string;
+  memberRole?: "parent" | "student" | "admin" | "instructor";
 }): Promise<void> {
-  const email = buildInstructorRoleGrantedEmail({ recipientName: input.recipientName });
+  const email = buildInstructorRoleGrantedEmail({
+    recipientName: input.recipientName,
+    memberRole: input.memberRole,
+  });
   await sendResendEmail({
     to: input.email,
     subject: email.subject,

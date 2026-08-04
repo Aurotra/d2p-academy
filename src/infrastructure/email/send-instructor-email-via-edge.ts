@@ -14,6 +14,19 @@ export async function sendInstructorEmailViaEdge(input: {
   });
 
   if (error) {
+    const context = (error as { context?: Response }).context;
+    if (context) {
+      try {
+        const payload = (await context.json()) as { error?: string };
+        if (payload.error) {
+          throw new Error(payload.error);
+        }
+      } catch (parseError) {
+        if (parseError instanceof Error && parseError.message !== error.message) {
+          throw parseError;
+        }
+      }
+    }
     throw new Error(`E-posta servisi hatası: ${error.message}`);
   }
 

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { sendInstructorGrantedNotification } from "@/infrastructure/email/send-instructor-notification-email";
+import { getInstructorNotificationTarget } from "@/infrastructure/auth/get-instructor-notification-target";
 import { getAdminAccess } from "@/infrastructure/auth/get-admin-access";
 import { requireAdminApiAccess } from "@/infrastructure/auth/require-admin-api-access";
 import { promoteMemberToInstructor } from "@/infrastructure/auth/set-user-role";
@@ -22,9 +23,11 @@ export async function POST(
 
   try {
     const member = await promoteMemberToInstructor(id);
+    const target = await getInstructorNotificationTarget(id);
     const emailResult = await sendInstructorGrantedNotification({
-      recipientName: member.fullName,
-      email: member.email,
+      recipientName: target.fullName,
+      email: target.email,
+      memberRole: target.role,
     });
 
     if (!emailResult.emailSent) {

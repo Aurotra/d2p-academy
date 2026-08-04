@@ -29,8 +29,18 @@ function emailLayout(content: string): string {
 </html>`;
 }
 
-function buildGrantedEmail(name: string): { subject: string; html: string } {
+function buildGrantedEmail(
+  name: string,
+  memberRole?: InstructorEmailRequest["memberRole"],
+): { subject: string; html: string } {
   const loginUrl = `${SITE_URL}/login`;
+  const accessNote =
+    memberRole === "admin"
+      ? "Mevcut e-posta adresiniz ve şifrenizle giriş yapın. <strong>Admin paneli</strong> erişiminiz korunur; ayrıca <strong>Eğitmen Paneli</strong> bağlantısı aktif olur."
+      : memberRole === "student"
+        ? "Mevcut e-posta adresiniz ve şifrenizle üye girişi yapın; panelinizde <strong>Eğitmen Paneli</strong> bağlantısını göreceksiniz."
+        : "Mevcut e-posta adresiniz ve şifrenizle veli girişi yapın; panelinizde <strong>Eğitmen Paneli</strong> bağlantısını göreceksiniz.";
+
   return {
     subject: "D2P Academy | Eğitmen paneli erişiminiz açıldı",
     html: emailLayout(`
@@ -39,7 +49,7 @@ function buildGrantedEmail(name: string): { subject: string; html: string } {
         Merhaba <strong>${escapeHtml(name)}</strong>, D2P Academy hesabınıza <strong>eğitmen yetkisi</strong> tanımlandı.
       </p>
       <p style="margin:0 0 16px;font-size:15px;line-height:1.6;color:#475569;">
-        Mevcut e-posta adresiniz ve şifrenizle veli girişi yapın; panelinizde Eğitmen Paneli bağlantısını göreceksiniz.
+        ${accessNote}
       </p>
       <p style="margin:0;font-size:14px;"><a href="${loginUrl}" style="color:${BRAND_PRIMARY};font-weight:bold;">${loginUrl}</a></p>
     `),
@@ -100,7 +110,7 @@ Deno.serve(async (request) => {
 
     const message =
       body.kind === "granted"
-        ? buildGrantedEmail(recipientName)
+        ? buildGrantedEmail(recipientName, body.memberRole)
         : buildRevokedEmail(recipientName, body.memberRole ?? "parent");
 
     await sendResendEmail({

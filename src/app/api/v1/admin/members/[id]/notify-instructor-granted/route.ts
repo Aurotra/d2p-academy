@@ -1,0 +1,47 @@
+import { NextResponse } from "next/server";
+
+import { getInstructorNotificationTarget } from "@/infrastructure/auth/get-instructor-notification-target";
+import { requireAdminApiAccess } from "@/infrastructure/auth/require-admin-api-access";
+import { sendInstructorGrantedNotification } from "@/infrastructure/email/send-instructor-notification-email";
+
+export async function POST(
+  _request: Request,
+  context: { params: Promise<{ id: string }> },
+) {
+  const access = await requireAdminApiAccess();
+  if (access.response) return access.response;
+
+  const { id } = await context.params;
+
+  try {
+    const target = await getInstructorNotificationTarget(id);
+    const emailResult = await sendInstructorGrantedNotification({
+      recipientName: target.fullName,
+      email: target.email,
+      memberRole: target.role,
+    });
+
+    if (!emailResult.emailSent) {
+      console.error("[notify-instructor-granted] E-posta hatası:", emailResult.emailError);
+      return NextResponse.json(
+        {
+          error: emailResult.emailError ?? "Bildirim e-postası gönderilemedi.",
+          emailSent: false,
+        },
+        { status: 502 },
+      );
+    }
+
+    return NextResponse.json({
+      data: {
+        fullName: target.fullName,
+        email: target.email,
+        emailSent: true,
+        delivery: emailResult.delivery,
+      },
+    });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Bildirim e-postası gönderilemedi.";
+    return NextResponse.json({ error: message }, { status: 400 });
+  }
+}

@@ -48,6 +48,35 @@ export function AdminInstructorsManager({ initialInstructors }: AdminInstructors
     }
   }
 
+  async function resendInstructorNotification(instructor: AdminInstructorRecord) {
+    setPendingId(instructor.id);
+    setError(null);
+    setSuccess(null);
+
+    try {
+      const response = await fetch(`/api/v1/admin/members/${instructor.id}/notify-instructor-granted`, {
+        method: "POST",
+      });
+      const payload = (await response.json()) as {
+        error?: string;
+        data?: { fullName?: string; email?: string };
+      };
+
+      if (!response.ok) {
+        throw new Error(payload.error ?? "Bildirim e-postası gönderilemedi.");
+      }
+
+      const name = payload.data?.fullName ?? instructor.fullName;
+      const email = payload.data?.email ?? instructor.email;
+      setSuccess(`${name} için eğitmen bildirimi ${email} adresine gönderildi.`);
+      router.refresh();
+    } catch (notifyError) {
+      setError(notifyError instanceof Error ? notifyError.message : "E-posta gönderilemedi.");
+    } finally {
+      setPendingId(null);
+    }
+  }
+
   async function revokeInstructorRole(instructor: AdminInstructorRecord) {
     if (
       !window.confirm(
@@ -174,6 +203,14 @@ export function AdminInstructorsManager({ initialInstructors }: AdminInstructors
                   >
                     {instructor.isActive ? "Aktif" : "Pasif"}
                   </span>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    disabled={pendingId === instructor.id}
+                    onClick={() => void resendInstructorNotification(instructor)}
+                  >
+                    {pendingId === instructor.id ? "Gönderiliyor..." : "Bildirim gönder"}
+                  </Button>
                   <Button
                     type="button"
                     variant="outline"

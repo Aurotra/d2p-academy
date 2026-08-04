@@ -82,6 +82,36 @@ export function AdminMembersTable({ members }: { members: AdminMember[] }) {
     }
   }
 
+  async function resendInstructorNotification(member: AdminMember) {
+    setPendingId(member.id);
+    setError(null);
+    setSuccess(null);
+    setWarning(null);
+
+    try {
+      const response = await fetch(`/api/v1/admin/members/${member.id}/notify-instructor-granted`, {
+        method: "POST",
+      });
+      const payload = (await response.json()) as {
+        error?: string;
+        data?: { fullName?: string; email?: string };
+      };
+
+      if (!response.ok) {
+        throw new Error(payload.error ?? "Bildirim e-postası gönderilemedi.");
+      }
+
+      const name = payload.data?.fullName ?? member.fullName;
+      const email = payload.data?.email ?? member.email ?? "kayıtlı e-posta";
+      setSuccess(`${name} için eğitmen bildirimi ${email} adresine gönderildi.`);
+      router.refresh();
+    } catch (notifyError) {
+      setError(notifyError instanceof Error ? notifyError.message : "E-posta gönderilemedi.");
+    } finally {
+      setPendingId(null);
+    }
+  }
+
   async function revokeInstructorRole(member: AdminMember) {
     const roleNote =
       member.role === "admin"
@@ -225,6 +255,14 @@ export function AdminMembersTable({ members }: { members: AdminMember[] }) {
                           <span className="inline-flex rounded-full bg-violet-100 px-3 py-1 text-xs font-bold text-violet-900">
                             Aktif
                           </span>
+                          <Button
+                            type="button"
+                            variant="outline"
+                            disabled={pendingId === member.id}
+                            onClick={() => void resendInstructorNotification(member)}
+                          >
+                            {pendingId === member.id ? "Gönderiliyor..." : "Bildirim gönder"}
+                          </Button>
                           <Button
                             type="button"
                             variant="outline"

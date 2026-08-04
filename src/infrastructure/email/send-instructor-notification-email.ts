@@ -8,6 +8,7 @@ import { isResendConfigured } from "@/infrastructure/email/send-resend-email";
 export async function sendInstructorGrantedNotification(input: {
   recipientName: string;
   email: string;
+  memberRole?: "parent" | "student" | "admin" | "instructor";
 }): Promise<{ emailSent: boolean; emailError: string | null; delivery: "vercel" | "supabase" }> {
   if (isResendConfigured()) {
     try {
