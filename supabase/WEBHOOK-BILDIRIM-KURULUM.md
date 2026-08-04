@@ -24,9 +24,9 @@ Bu rehber, `grades`, `documents` ve `registrations` tablolarına yeni kayıt ekl
 
 ## 2. Resend domain ayarı
 
-Gönderici adresi: **D2P Academy &lt;bildirim@d2pacademy.com&gt;**
+Gönderici adresi: **D2P Academy &lt;info@d2p.com.tr&gt;**
 
-1. Resend → **Domains** → `d2pacademy.com` ekleyin
+1. Resend → **Domains** → `d2p.com.tr` ekleyin
 2. DNS kayıtlarını (SPF, DKIM) domain sağlayıcınıza girin
 3. Domain **Verified** olunca e-postalar gönderilebilir
 
@@ -57,10 +57,11 @@ Function'ı deploy edin:
 ```cmd
 supabase functions deploy notify-user --no-verify-jwt
 supabase functions deploy send-instructor-email --no-verify-jwt
+supabase functions deploy send-event-instructor-assignment --no-verify-jwt
 supabase functions deploy send-signup-confirmation-email --no-verify-jwt
 ```
 
-`send-instructor-email` eğitmen yetkisi bildirimleri için zorunludur (Vercel Resend başarısız olursa yedek kanal).
+`send-instructor-email` eğitmen yetkisi bildirimleri için; `send-event-instructor-assignment` etkinlik atama bildirimleri için zorunludur.
 
 Deploy sonrası URL örneği:
 
@@ -147,7 +148,7 @@ Supabase Dashboard → **Database** → **Webhooks** → **Create a new hook**
 
 - Inline CSS (e-posta istemcileri için)
 - Ana vurgu rengi: `#2563eb`
-- Logo: `https://d2pacademy.com/logo.png`
+- Logo: `https://www.d2p.com.tr/d2p-logo.svg`
 - Footer: `© 2025 D2P Academy | ATH Mühendislik`
 
 Şablon dosyası: `supabase/functions/notify-user/email-templates.ts`

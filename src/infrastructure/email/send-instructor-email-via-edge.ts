@@ -40,7 +40,10 @@ export async function invokeSupabaseEdgeFunction<TResponse>(
     throw new Error(payload.error);
   }
 
-  if (functionName === "send-instructor-email" && payload?.ok !== true) {
+  if (
+    (functionName === "send-instructor-email" || functionName === "send-event-instructor-assignment") &&
+    payload?.ok !== true
+  ) {
     throw new Error(
       `${functionName} beklenmeyen yanıt döndü: ${rawBody || "boş yanıt"}. Function deploy edilmiş mi?`,
     );

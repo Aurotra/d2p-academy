@@ -12,6 +12,7 @@ import {
 } from "@/core/domain/admin-event";
 import { EVENT_TYPE_LABELS, type EventType } from "@/core/domain/event";
 import { EventCategoryPicker } from "@/presentation/components/admin/event-category-picker";
+import { AdminFeedbackToast } from "@/presentation/components/admin/admin-feedback-toast";
 import { Badge } from "@/presentation/components/ui/badge";
 import { Button } from "@/presentation/components/ui/button";
 import { Input } from "@/presentation/components/ui/input";
@@ -336,6 +337,8 @@ export function AdminEventsManager() {
   const [editingEventId, setEditingEventId] = useState<string | null>(null);
   const [editForm, setEditForm] = useState<EventFormState | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
+  const [warning, setWarning] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [savingEventId, setSavingEventId] = useState<string | null>(null);
@@ -421,6 +424,8 @@ export function AdminEventsManager() {
     submitEvent.preventDefault();
     setIsSaving(true);
     setError(null);
+    setSuccess(null);
+    setWarning(null);
 
     try {
       const payload = buildEventPayload(createForm);
@@ -430,13 +435,25 @@ export function AdminEventsManager() {
         body: JSON.stringify(payload),
       });
 
-      const responsePayload = (await response.json()) as { error?: string };
+      const responsePayload = (await response.json()) as {
+        error?: string;
+        notificationSummary?: string;
+        instructorNotifications?: { sent: number; attempted: number; failed: unknown[] };
+      };
 
       if (!response.ok) {
         throw new Error(responsePayload.error ?? "Etkinlik oluşturulamadı.");
       }
 
       setCreateForm(defaultForm);
+      setSuccess("Etkinlik oluşturuldu.");
+      if (responsePayload.notificationSummary) {
+        if ((responsePayload.instructorNotifications?.failed.length ?? 0) > 0) {
+          setWarning(responsePayload.notificationSummary);
+        } else if (responsePayload.instructorNotifications?.sent) {
+          setSuccess(`Etkinlik oluşturuldu.\n${responsePayload.notificationSummary}`);
+        }
+      }
       await loadData();
     } catch (saveError) {
       setError(saveError instanceof Error ? saveError.message : "Kayıt başarısız.");
@@ -451,6 +468,8 @@ export function AdminEventsManager() {
 
     setSavingEventId(editingEventId);
     setError(null);
+    setSuccess(null);
+    setWarning(null);
 
     try {
       const payload = buildEventPayload(editForm);
@@ -460,10 +479,26 @@ export function AdminEventsManager() {
         body: JSON.stringify(payload),
       });
 
-      const responsePayload = (await response.json()) as { error?: string };
+      const responsePayload = (await response.json()) as {
+        error?: string;
+        notificationSummary?: string;
+        instructorNotifications?: { sent: number; attempted: number; failed: unknown[] };
+      };
 
       if (!response.ok) {
         throw new Error(responsePayload.error ?? "Etkinlik güncellenemedi.");
+      }
+
+      if (responsePayload.notificationSummary) {
+        if ((responsePayload.instructorNotifications?.failed.length ?? 0) > 0) {
+          setWarning(`Etkinlik güncellendi.\n${responsePayload.notificationSummary}`);
+        } else if (responsePayload.instructorNotifications?.sent) {
+          setSuccess(`Etkinlik güncellendi.\n${responsePayload.notificationSummary}`);
+        } else {
+          setSuccess("Etkinlik güncellendi.");
+        }
+      } else {
+        setSuccess("Etkinlik güncellendi.");
       }
 
       cancelEditing();
@@ -518,8 +553,21 @@ export function AdminEventsManager() {
     }
   }
 
+  function clearFeedback() {
+    setError(null);
+    setSuccess(null);
+    setWarning(null);
+  }
+
   return (
     <div className="space-y-6">
+      <AdminFeedbackToast
+        success={success}
+        error={error}
+        warning={warning}
+        onDismiss={clearFeedback}
+      />
+
       <div className="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm">
         <h2 className="text-xl font-bold text-navy-950">Yeni Etkinlik Oluştur</h2>
         <form onSubmit={handleCreate} className="mt-6 space-y-4">
@@ -535,12 +583,6 @@ export function AdminEventsManager() {
           </Button>
         </form>
       </div>
-
-      {error ? (
-        <p className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-          {error}
-        </p>
-      ) : null}
 
       <div className="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm">
         <h2 className="text-xl font-bold text-navy-950">Etkinlik Listesi</h2>
