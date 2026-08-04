@@ -174,14 +174,22 @@ export class SupabaseAdminEventRepository implements AdminEventRepository {
   async listCategories(): Promise<EventCategoryOption[]> {
     const { data, error } = await this.client
       .from("event_categories")
-      .select("id, name, slug")
-      .order("sort_order", { ascending: true });
+      .select("id, name, slug, color, description, group_name, sort_order")
+      .order("sort_order", { ascending: true })
+      .order("name", { ascending: true });
 
     if (error) {
       throw new Error(`Kategoriler alınamadı: ${error.message}`);
     }
 
-    return data as EventCategoryOption[];
+    return (data ?? []).map((row) => ({
+      id: row.id,
+      name: row.name,
+      slug: row.slug,
+      color: row.color,
+      description: row.description ?? null,
+      groupName: row.group_name ?? "Genel",
+    }));
   }
 
   async listAll(): Promise<AdminEventRecord[]> {

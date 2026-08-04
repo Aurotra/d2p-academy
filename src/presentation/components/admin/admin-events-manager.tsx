@@ -11,6 +11,7 @@ import {
   type InstructorOption,
 } from "@/core/domain/admin-event";
 import { EVENT_TYPE_LABELS, type EventType } from "@/core/domain/event";
+import { EventCategoryPicker } from "@/presentation/components/admin/event-category-picker";
 import { Badge } from "@/presentation/components/ui/badge";
 import { Button } from "@/presentation/components/ui/button";
 import { Input } from "@/presentation/components/ui/input";
@@ -207,20 +208,12 @@ function EventFormFields({
           required
         />
       </div>
-      <Select
-        id={`${idPrefix}-category`}
-        name={`${idPrefix}-category`}
-        label="Kategori"
+      <EventCategoryPicker
+        idPrefix={idPrefix}
+        categories={categories}
         value={form.categoryId}
-        onChange={(e) => setForm({ ...form, categoryId: e.target.value })}
-      >
-        <option value="">Kategori seçin</option>
-        {categories.map((category) => (
-          <option key={category.id} value={category.id}>
-            {category.name}
-          </option>
-        ))}
-      </Select>
+        onChange={(categoryId) => setForm({ ...form, categoryId })}
+      />
       <div className="md:col-span-2">
         <p className="mb-2 text-sm font-medium text-navy-900">Eğitmenler</p>
         {instructors.length === 0 ? (
