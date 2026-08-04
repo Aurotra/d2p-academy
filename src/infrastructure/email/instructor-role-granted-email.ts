@@ -97,12 +97,12 @@ export async function sendInstructorRoleGrantedEmail(input: {
   recipientName: string;
   email: string;
   memberRole?: "parent" | "student" | "admin" | "instructor";
-}): Promise<void> {
+}): Promise<{ id: string }> {
   const email = buildInstructorRoleGrantedEmail({
     recipientName: input.recipientName,
     memberRole: input.memberRole,
   });
-  await sendResendEmail({
+  return sendResendEmail({
     to: input.email,
     subject: email.subject,
     html: email.html,

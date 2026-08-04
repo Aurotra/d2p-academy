@@ -59,7 +59,12 @@ export function AdminInstructorsManager({ initialInstructors }: AdminInstructors
       });
       const payload = (await response.json()) as {
         error?: string;
-        data?: { fullName?: string; email?: string };
+        data?: {
+          fullName?: string;
+          email?: string;
+          delivery?: string;
+          resendId?: string | null;
+        };
       };
 
       if (!response.ok) {
@@ -68,7 +73,11 @@ export function AdminInstructorsManager({ initialInstructors }: AdminInstructors
 
       const name = payload.data?.fullName ?? instructor.fullName;
       const email = payload.data?.email ?? instructor.email;
-      setSuccess(`${name} için eğitmen bildirimi ${email} adresine gönderildi.`);
+      const deliveryNote = payload.data?.delivery ? ` (${payload.data.delivery})` : "";
+      const resendNote = payload.data?.resendId ? ` Resend ID: ${payload.data.resendId}.` : "";
+      setSuccess(
+        `${name} için eğitmen bildirimi ${email} adresine gönderildi${deliveryNote}.${resendNote} Gelen kutusu ve spam klasörünü kontrol edin.`,
+      );
       router.refresh();
     } catch (notifyError) {
       setError(notifyError instanceof Error ? notifyError.message : "E-posta gönderilemedi.");

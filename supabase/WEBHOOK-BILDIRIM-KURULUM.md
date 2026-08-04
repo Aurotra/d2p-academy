@@ -56,7 +56,11 @@ Function'ı deploy edin:
 
 ```cmd
 supabase functions deploy notify-user --no-verify-jwt
+supabase functions deploy send-instructor-email --no-verify-jwt
+supabase functions deploy send-signup-confirmation-email --no-verify-jwt
 ```
+
+`send-instructor-email` eğitmen yetkisi bildirimleri için zorunludur (Vercel Resend başarısız olursa yedek kanal).
 
 Deploy sonrası URL örneği:
 

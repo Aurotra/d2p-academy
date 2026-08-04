@@ -27,6 +27,7 @@ export async function POST(
         {
           error: emailResult.emailError ?? "Bildirim e-postası gönderilemedi.",
           emailSent: false,
+          attemptedChannels: emailResult.attemptedChannels,
         },
         { status: 502 },
       );
@@ -38,6 +39,8 @@ export async function POST(
         email: target.email,
         emailSent: true,
         delivery: emailResult.delivery,
+        resendId: emailResult.resendId,
+        attemptedChannels: emailResult.attemptedChannels,
       },
     });
   } catch (error) {

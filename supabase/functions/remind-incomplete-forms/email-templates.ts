@@ -123,6 +123,9 @@ export async function sendResendEmail(input: {
     throw new Error("RESEND_API_KEY tanımlı değil.");
   }
 
+  const from =
+    Deno.env.get("RESEND_FROM_EMAIL")?.trim() || "D2P Academy <bildirim@d2pacademy.com>";
+
   const response = await fetch("https://api.resend.com/emails", {
     method: "POST",
     headers: {
@@ -130,15 +133,21 @@ export async function sendResendEmail(input: {
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      from: "D2P Academy <info@d2p.com.tr>",
+      from,
       to: [input.to],
       subject: input.subject,
       html: input.html,
+      reply_to: "info@d2p.com.tr",
     }),
   });
 
   if (!response.ok) {
     const errorBody = await response.text();
     throw new Error(`Resend hatası: ${errorBody}`);
+  }
+
+  const payload = (await response.json()) as { id?: string };
+  if (!payload.id) {
+    throw new Error("Resend beklenmeyen yanıt döndü.");
   }
 }
