@@ -60,7 +60,7 @@ export function LiveSupportWidget() {
       type="button"
       aria-label="Canlı destek"
       disabled={!isReady}
-      className="fixed bottom-5 right-5 z-50 flex items-center gap-2 rounded-full bg-primary px-4 py-3 text-sm font-semibold text-white shadow-xl shadow-primary/30 transition hover:bg-primary-hover hover:shadow-glow-primary disabled:cursor-wait disabled:opacity-80"
+      className="fixed bottom-24 right-5 z-50 flex items-center gap-2 rounded-full bg-primary px-4 py-3 text-sm font-semibold text-white shadow-xl shadow-primary/30 transition hover:bg-primary-hover hover:shadow-glow-primary disabled:cursor-wait disabled:opacity-80"
       onClick={handleClick}
     >
       <span

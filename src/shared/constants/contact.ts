@@ -20,4 +20,23 @@ export const CONTACT = {
   workingHours: "Pazartesi–Cuma, 09:00–18:00",
   instagramHandle: "d2p_academy",
   instagramUrl: "https://www.instagram.com/d2p_academy/",
+  whatsappLabel: "7/24 WhatsApp Destek Hattı",
 } as const;
+
+export const WHATSAPP_SUPPORT_MESSAGES = {
+  default: "Merhaba, D2P Academy hakkında yardıma ihtiyacım var.",
+  register:
+    "Merhaba, D2P Academy veli kaydı sırasında yardıma ihtiyacım var. Sorunumu paylaşmak istiyorum.",
+  login: "Merhaba, D2P Academy giriş işlemi sırasında yardıma ihtiyacım var.",
+  confirm: "Merhaba, D2P Academy e-posta onayı konusunda yardıma ihtiyacım var.",
+} as const;
+
+export type WhatsAppSupportContext = keyof typeof WHATSAPP_SUPPORT_MESSAGES;
+
+export function getWhatsAppSupportUrl(
+  context: WhatsAppSupportContext = "default",
+): string {
+  const phone = CONTACT.phoneTel.replace(/\D/g, "");
+  const text = encodeURIComponent(WHATSAPP_SUPPORT_MESSAGES[context]);
+  return `https://wa.me/${phone}?text=${text}`;
+}

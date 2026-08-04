@@ -6,6 +6,7 @@ import type { ReactNode } from "react";
 
 import { AuthHashHandler } from "@/presentation/components/auth/auth-hash-handler";
 import { LiveSupportWidget } from "@/presentation/components/layout/live-support-widget";
+import { WhatsAppSupportWidget } from "@/presentation/components/layout/whatsapp-support-widget";
 import { SiteFooter } from "@/presentation/components/layout/site-footer";
 import { SiteHeader } from "@/presentation/components/layout/site-header";
 import { SiteAuthProvider } from "@/presentation/providers/site-auth-provider";
@@ -51,6 +52,7 @@ export function SiteChrome({ children }: SiteChromeProps) {
             <SiteHeader />
             <main>{children}</main>
             <SiteFooter />
+            <WhatsAppSupportWidget />
             <LiveSupportWidget />
           </>
         )}

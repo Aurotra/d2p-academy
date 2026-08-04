@@ -5,6 +5,7 @@ import { useEffect, useState, type FormEvent } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 
 import { AuthPortalLink } from "@/presentation/components/auth/auth-portal-link";
+import { WhatsAppSupportLink } from "@/presentation/components/layout/whatsapp-support-widget";
 import { AuthShell } from "@/presentation/components/auth/auth-shell";
 import { Button } from "@/presentation/components/ui/button";
 import { Input } from "@/presentation/components/ui/input";
@@ -140,6 +141,11 @@ export function LoginForm() {
         <Link href={PARENT_GUIDE_PATH} className="font-semibold text-secondary hover:text-secondary-hover">
           İlk kez mi kayıt oluyorsunuz? Veli kayıt rehberi →
         </Link>
+      </p>
+
+      <p className="mt-4 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-center text-sm leading-6 text-emerald-950">
+        Giriş veya onay sorunu mu var?{" "}
+        <WhatsAppSupportLink context="login">7/24 WhatsApp destek hattı</WhatsAppSupportLink>
       </p>
 
     </AuthShell>

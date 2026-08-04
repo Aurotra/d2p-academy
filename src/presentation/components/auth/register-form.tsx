@@ -5,6 +5,7 @@ import { useState, type FormEvent } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 
 import { AuthShell } from "@/presentation/components/auth/auth-shell";
+import { WhatsAppSupportLink } from "@/presentation/components/layout/whatsapp-support-widget";
 import { Button } from "@/presentation/components/ui/button";
 import { Input } from "@/presentation/components/ui/input";
 import {
@@ -164,6 +165,11 @@ export function RegisterForm() {
         <Link href={PARENT_GUIDE_PATH} className="font-semibold text-secondary hover:text-secondary-hover">
           Adım adım veli kayıt rehberi →
         </Link>
+      </p>
+
+      <p className="mt-4 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-center text-sm leading-6 text-emerald-950">
+        Kayıtta sorun mu yaşıyorsunuz?{" "}
+        <WhatsAppSupportLink context="register">7/24 WhatsApp destek hattı</WhatsAppSupportLink>
       </p>
 
     </AuthShell>
