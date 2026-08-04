@@ -51,6 +51,7 @@ export function AdminMembersFilters() {
           <option value="all">Tümü</option>
           <option value="parent">Veliler</option>
           <option value="student">Üye öğrenciler</option>
+          <option value="admin">Adminler</option>
         </Select>
       </div>
       <div className="flex gap-2">

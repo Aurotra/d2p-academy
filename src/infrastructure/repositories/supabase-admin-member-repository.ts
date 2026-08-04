@@ -32,7 +32,7 @@ export class SupabaseAdminMemberRepository {
       .select(`${baseSelect}, is_instructor`)
       .is("username", null)
       .is("parent_id", null)
-      .in("role", ["parent", "student", "instructor"])
+      .in("role", ["parent", "student", "instructor", "admin"])
       .order("created_at", { ascending: false });
 
     if (input.role && input.role !== "all") {
@@ -55,7 +55,7 @@ export class SupabaseAdminMemberRepository {
         .select(baseSelect)
         .is("username", null)
         .is("parent_id", null)
-        .in("role", ["parent", "student", "instructor"])
+        .in("role", ["parent", "student", "instructor", "admin"])
         .order("created_at", { ascending: false });
 
       if (input.role && input.role !== "all") {

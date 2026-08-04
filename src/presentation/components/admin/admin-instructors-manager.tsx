@@ -123,8 +123,8 @@ export function AdminInstructorsManager({ initialInstructors }: AdminInstructors
           <Link href="/admin/members" className="font-semibold text-document-primary hover:underline">
             Veliler ve Üyeler
           </Link>{" "}
-          listesinden mevcut bir hesaba <strong>Eğitmen yap</strong> demektir. Veli/üye rolü
-          korunur; aynı hesap hem veli hem eğitmen paneline girebilir.
+          listesinden mevcut bir hesaba <strong>Eğitmen yap</strong> demektir. Veli, üye veya admin
+          rolü korunur; aynı hesap hem mevcut paneline hem Eğitmen Paneli&apos;ne girebilir.
         </p>
       </div>
 

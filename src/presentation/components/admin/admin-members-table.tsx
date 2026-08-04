@@ -17,6 +17,7 @@ function formatDate(value: string): string {
 function roleLabel(role: string): string {
   if (role === "parent") return "Veli";
   if (role === "student") return "Üye öğrenci";
+  if (role === "admin") return "Admin";
   if (role === "instructor") return "Eğitmen (eski kayıt)";
   return role;
 }
@@ -25,7 +26,9 @@ function promoteConfirmMessage(member: AdminMember): string {
   const roleNote =
     member.role === "parent"
       ? "Veli paneli erişimi korunur; ayrıca Eğitmen Paneli açılır."
-      : "Üye paneli erişimi korunur; ayrıca Eğitmen Paneli açılır.";
+      : member.role === "admin"
+        ? "Admin paneli erişimi korunur; ayrıca Eğitmen Paneli açılır ve etkinlik atama listesinde görünür."
+        : "Üye paneli erişimi korunur; ayrıca Eğitmen Paneli açılır.";
 
   return `${member.fullName} için eğitmen yetkisi verilecek. ${roleNote}\n\nDevam edilsin mi?`;
 }
@@ -80,9 +83,14 @@ export function AdminMembersTable({ members }: { members: AdminMember[] }) {
   }
 
   async function revokeInstructorRole(member: AdminMember) {
+    const roleNote =
+      member.role === "admin"
+        ? "Admin paneli erişimi korunur"
+        : "Veli/üye paneli erişimi korunur";
+
     if (
       !window.confirm(
-        `${member.fullName} için eğitmen yetkisi geri alınacak. Veli/üye paneli erişimi korunur; atanmış etkinliklerden eğitmen ataması kaldırılır. Devam edilsin mi?`,
+        `${member.fullName} için eğitmen yetkisi geri alınacak. ${roleNote}; atanmış etkinliklerden eğitmen ataması kaldırılır. Devam edilsin mi?`,
       )
     ) {
       return;
@@ -187,7 +195,9 @@ export function AdminMembersTable({ members }: { members: AdminMember[] }) {
                             ? "bg-sky-100 text-sky-900"
                             : member.role === "student"
                               ? "bg-amber-100 text-amber-900"
-                              : "bg-violet-100 text-violet-900"
+                              : member.role === "admin"
+                                ? "bg-violet-100 text-violet-900"
+                                : "bg-slate-100 text-slate-700"
                         }`}
                       >
                         {roleLabel(member.role)}

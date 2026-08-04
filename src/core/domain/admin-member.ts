@@ -1,4 +1,4 @@
-export type AdminMemberRole = "parent" | "student";
+export type AdminMemberRole = "parent" | "student" | "admin";
 
 export interface AdminMember {
   id: string;
