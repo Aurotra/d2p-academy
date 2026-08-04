@@ -139,6 +139,26 @@ export async function demoteInstructorToMember(userId: string): Promise<{
     throw new Error("Bu hesap eğitmen değil.");
   }
 
+  const { count: junctionCount, error: junctionCountError } = await serviceClient
+    .from("event_instructors")
+    .select("event_id", { count: "exact", head: true })
+    .eq("instructor_id", userId);
+
+  if (junctionCountError) {
+    throw new Error(`Etkinlik atamaları kontrol edilemedi: ${junctionCountError.message}`);
+  }
+
+  if ((junctionCount ?? 0) > 0) {
+    const { error: removeAssignmentsError } = await serviceClient
+      .from("event_instructors")
+      .delete()
+      .eq("instructor_id", userId);
+
+    if (removeAssignmentsError) {
+      throw new Error(`Etkinlik atamaları kaldırılamadı: ${removeAssignmentsError.message}`);
+    }
+  }
+
   const { count: assignedEventCount, error: eventCountError } = await serviceClient
     .from("events")
     .select("id", { count: "exact", head: true })

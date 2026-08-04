@@ -21,7 +21,7 @@ export async function getEventAttendanceAccess(
 
   const { data: event, error } = await client
     .from("events")
-    .select("id, instructor_id")
+    .select("id")
     .eq("id", eventId)
     .maybeSingle();
 
@@ -35,8 +35,28 @@ export async function getEventAttendanceAccess(
   }
 
   const instructorAccess = await getInstructorAccess(client);
-  if (instructorAccess.authorized && event.instructor_id === user.id) {
-    return { authorized: true, userId: user.id, canEdit: true, role: "instructor" };
+  if (instructorAccess.authorized) {
+    const { data: assignment, error: assignmentError } = await client
+      .from("event_instructors")
+      .select("event_id")
+      .eq("event_id", eventId)
+      .eq("instructor_id", user.id)
+      .maybeSingle();
+
+    if (!assignmentError && assignment) {
+      return { authorized: true, userId: user.id, canEdit: true, role: "instructor" };
+    }
+
+    const { data: legacyEvent, error: legacyError } = await client
+      .from("events")
+      .select("id")
+      .eq("id", eventId)
+      .eq("instructor_id", user.id)
+      .maybeSingle();
+
+    if (!legacyError && legacyEvent) {
+      return { authorized: true, userId: user.id, canEdit: true, role: "instructor" };
+    }
   }
 
   return { authorized: false, reason: "forbidden" };

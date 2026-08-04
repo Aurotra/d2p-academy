@@ -12,10 +12,13 @@ import type { AdminEventRepository } from "@/core/use-cases/manage-admin-events"
 import { slugify } from "@/shared/utils/slugify";
 import { normalizeProgramCode } from "@/shared/utils/program-code";
 
-interface CategoryRow {
-  id: string;
-  name: string;
-  slug: string;
+interface InstructorAssignmentRow {
+  sort_order: number;
+  instructor_id: string;
+  instructor:
+    | { id: string; full_name: string }
+    | { id: string; full_name: string }[]
+    | null;
 }
 
 interface EventRow {
@@ -36,14 +39,67 @@ interface EventRow {
   cover_image_url: string | null;
   instructor_id: string | null;
   event_categories: { name: string } | { name: string }[] | null;
-  instructor: { full_name: string } | { full_name: string }[] | null;
+  event_instructors: InstructorAssignmentRow[] | null;
+}
+
+const EVENT_SELECT = `
+  id,
+  title,
+  slug,
+  description,
+  event_type,
+  category_id,
+  start_at,
+  end_at,
+  location_name,
+  is_online,
+  meeting_url,
+  max_capacity,
+  status,
+  program_code,
+  cover_image_url,
+  instructor_id,
+  event_categories ( name ),
+  event_instructors (
+    sort_order,
+    instructor_id,
+    instructor:profiles ( id, full_name )
+  )
+`;
+
+function unwrapOne<T>(value: T | T[] | null): T | null {
+  if (!value) {
+    return null;
+  }
+  return Array.isArray(value) ? (value[0] ?? null) : value;
+}
+
+function mapInstructors(
+  rows: InstructorAssignmentRow[] | null,
+): Pick<AdminEventRecord, "instructorIds" | "instructorNames" | "instructorId" | "instructorName"> {
+  const sorted = [...(rows ?? [])].sort((a, b) => a.sort_order - b.sort_order);
+  const instructorIds: string[] = [];
+  const instructorNames: string[] = [];
+
+  for (const row of sorted) {
+    const instructor = unwrapOne(row.instructor);
+    instructorIds.push(row.instructor_id);
+    if (instructor?.full_name) {
+      instructorNames.push(instructor.full_name);
+    }
+  }
+
+  return {
+    instructorIds,
+    instructorNames,
+    instructorId: instructorIds[0] ?? null,
+    instructorName: instructorNames.length > 0 ? instructorNames.join(", ") : null,
+  };
 }
 
 function mapEvent(row: EventRow): AdminEventRecord {
-  const category = Array.isArray(row.event_categories)
-    ? (row.event_categories[0] ?? null)
-    : row.event_categories;
-  const instructor = Array.isArray(row.instructor) ? (row.instructor[0] ?? null) : row.instructor;
+  const category = unwrapOne(row.event_categories);
+  const instructors = mapInstructors(row.event_instructors);
 
   return {
     id: row.id,
@@ -62,14 +118,54 @@ function mapEvent(row: EventRow): AdminEventRecord {
     status: row.status,
     programCode: row.program_code,
     coverImageUrl: row.cover_image_url,
-    instructorId: row.instructor_id,
-    instructorName: instructor?.full_name ?? null,
+    ...instructors,
   };
 }
 
 function buildUniqueSlug(title: string, existingSlug?: string): string {
   const base = slugify(title) || "etkinlik";
   return existingSlug ?? `${base}-${Date.now().toString(36)}`;
+}
+
+async function replaceEventInstructors(
+  client: SupabaseClient,
+  eventId: string,
+  instructorIds: string[],
+): Promise<void> {
+  const uniqueIds = [...new Set(instructorIds.filter(Boolean))];
+
+  const { error: deleteError } = await client
+    .from("event_instructors")
+    .delete()
+    .eq("event_id", eventId);
+
+  if (deleteError) {
+    throw new Error(`Eğitmen atamaları güncellenemedi: ${deleteError.message}`);
+  }
+
+  if (uniqueIds.length === 0) {
+    const { error: clearPrimaryError } = await client
+      .from("events")
+      .update({ instructor_id: null })
+      .eq("id", eventId);
+
+    if (clearPrimaryError) {
+      throw new Error(`Eğitmen atamaları güncellenemedi: ${clearPrimaryError.message}`);
+    }
+    return;
+  }
+
+  const { error: insertError } = await client.from("event_instructors").insert(
+    uniqueIds.map((instructorId, index) => ({
+      event_id: eventId,
+      instructor_id: instructorId,
+      sort_order: index,
+    })),
+  );
+
+  if (insertError) {
+    throw new Error(`Eğitmen atamaları kaydedilemedi: ${insertError.message}`);
+  }
 }
 
 export class SupabaseAdminEventRepository implements AdminEventRepository {
@@ -91,28 +187,7 @@ export class SupabaseAdminEventRepository implements AdminEventRepository {
   async listAll(): Promise<AdminEventRecord[]> {
     const { data, error } = await this.client
       .from("events")
-      .select(
-        `
-        id,
-        title,
-        slug,
-        description,
-        event_type,
-        category_id,
-        start_at,
-        end_at,
-        location_name,
-        is_online,
-        meeting_url,
-        max_capacity,
-        status,
-        program_code,
-        cover_image_url,
-        instructor_id,
-        event_categories ( name ),
-        instructor:profiles!events_instructor_id_fkey ( full_name )
-      `,
-      )
+      .select(EVENT_SELECT)
       .order("start_at", { ascending: false });
 
     if (error) {
@@ -145,37 +220,28 @@ export class SupabaseAdminEventRepository implements AdminEventRepository {
         max_capacity: input.maxCapacity,
         status: input.status,
         program_code: programCode,
-        instructor_id: input.instructorId ?? null,
+        instructor_id: input.instructorIds[0] ?? null,
       })
-      .select(
-        `
-        id,
-        title,
-        slug,
-        description,
-        event_type,
-        category_id,
-        start_at,
-        end_at,
-        location_name,
-        is_online,
-        meeting_url,
-        max_capacity,
-        status,
-        program_code,
-        cover_image_url,
-        instructor_id,
-        event_categories ( name ),
-        instructor:profiles!events_instructor_id_fkey ( full_name )
-      `,
-      )
+      .select("id")
       .single();
 
     if (error || !data) {
       throw new Error(`Etkinlik oluşturulamadı: ${error?.message ?? "Bilinmeyen hata"}`);
     }
 
-    return mapEvent(data as EventRow);
+    await replaceEventInstructors(this.client, data.id, input.instructorIds);
+
+    const { data: created, error: fetchError } = await this.client
+      .from("events")
+      .select(EVENT_SELECT)
+      .eq("id", data.id)
+      .single();
+
+    if (fetchError || !created) {
+      throw new Error(`Etkinlik oluşturulamadı: ${fetchError?.message ?? "Bilinmeyen hata"}`);
+    }
+
+    return mapEvent(created as EventRow);
   }
 
   async update(input: UpdateEventInput): Promise<AdminEventRecord> {
@@ -196,34 +262,23 @@ export class SupabaseAdminEventRepository implements AdminEventRepository {
       payload.program_code =
         input.programCode === null ? null : normalizeProgramCode(input.programCode);
     }
-    if (input.instructorId !== undefined) payload.instructor_id = input.instructorId;
+
+    if (Object.keys(payload).length > 0) {
+      const { error } = await this.client.from("events").update(payload).eq("id", input.id);
+
+      if (error) {
+        throw new Error(`Etkinlik güncellenemedi: ${error.message}`);
+      }
+    }
+
+    if (input.instructorIds !== undefined) {
+      await replaceEventInstructors(this.client, input.id, input.instructorIds);
+    }
 
     const { data, error } = await this.client
       .from("events")
-      .update(payload)
+      .select(EVENT_SELECT)
       .eq("id", input.id)
-      .select(
-        `
-        id,
-        title,
-        slug,
-        description,
-        event_type,
-        category_id,
-        start_at,
-        end_at,
-        location_name,
-        is_online,
-        meeting_url,
-        max_capacity,
-        status,
-        program_code,
-        cover_image_url,
-        instructor_id,
-        event_categories ( name ),
-        instructor:profiles!events_instructor_id_fkey ( full_name )
-      `,
-      )
       .single();
 
     if (error || !data) {

@@ -6,6 +6,11 @@ import {
 } from "@/lib/certificates/generate-pdf";
 import { SITE_URL } from "@/shared/constants/site";
 
+interface InstructorAssignmentRow {
+  sort_order: number;
+  instructor: { full_name: string } | { full_name: string }[] | null;
+}
+
 interface CertificatePdfSourceRow {
   id: string;
   certificate_code: string;
@@ -16,13 +21,13 @@ interface CertificatePdfSourceRow {
         title: string;
         location_name: string | null;
         is_online: boolean;
-        instructor: { full_name: string } | { full_name: string }[] | null;
+        event_instructors: InstructorAssignmentRow[] | null;
       }
     | {
         title: string;
         location_name: string | null;
         is_online: boolean;
-        instructor: { full_name: string } | { full_name: string }[] | null;
+        event_instructors: InstructorAssignmentRow[] | null;
       }[]
     | null;
 }
@@ -52,10 +57,20 @@ function resolveLocationLabel(event: {
   return name && name.length > 0 ? name : "D2P Academy";
 }
 
+function resolveInstructorNames(
+  assignments: InstructorAssignmentRow[] | null | undefined,
+): string {
+  const names = [...(assignments ?? [])]
+    .sort((a, b) => a.sort_order - b.sort_order)
+    .map((row) => pickOne(row.instructor)?.full_name)
+    .filter((name): name is string => Boolean(name));
+
+  return names.length > 0 ? names.join(" & ") : "D2P Academy";
+}
+
 function buildTemplateData(row: CertificatePdfSourceRow): CertificateTemplateData {
   const profile = pickOne(row.profiles);
   const event = pickOne(row.events);
-  const instructor = pickOne(event?.instructor);
   const eventTitle = event?.title ?? "Eğitim Programı";
   const isDiscovery = eventTitle.toLowerCase().includes("discovery");
 
@@ -69,7 +84,7 @@ function buildTemplateData(row: CertificatePdfSourceRow): CertificateTemplateDat
     badgeName: isDiscovery ? "Discovery Explorer" : "Katılım Rozeti",
     issueDate: formatIssueDate(row.issued_at),
     locationName: resolveLocationLabel(event),
-    instructorName: instructor?.full_name ?? "D2P Academy",
+    instructorName: resolveInstructorNames(event?.event_instructors),
     instructorTitle: "ATH Mühendislik - D2P Academy",
     badgeImageUrl: `${SITE_URL}/badges/discovery-explorer.png`,
     verificationUrl: `${SITE_URL}/dogrula/${encodeURIComponent(row.certificate_code)}`,
@@ -92,7 +107,10 @@ export async function issueCertificatePdf(
         title,
         location_name,
         is_online,
-        instructor:profiles!events_instructor_id_fkey ( full_name )
+        event_instructors (
+          sort_order,
+          instructor:profiles ( full_name )
+        )
       )
     `,
     )

@@ -39,7 +39,7 @@ type EventFormState = {
   maxCapacity: string;
   programCode: string;
   status: EventStatus;
-  instructorId: string;
+  instructorIds: string[];
 };
 
 const defaultForm: EventFormState = {
@@ -55,7 +55,7 @@ const defaultForm: EventFormState = {
   maxCapacity: "",
   programCode: "",
   status: "draft",
-  instructorId: "",
+  instructorIds: [],
 };
 
 function formatDateTime(value: string | Date): string {
@@ -118,7 +118,7 @@ function eventRecordToForm(event: AdminEventRecord): EventFormState {
     maxCapacity: event.maxCapacity?.toString() ?? "",
     programCode: event.programCode ?? "",
     status: event.status,
-    instructorId: event.instructorId ?? "",
+    instructorIds: event.instructorIds ?? [],
   };
 }
 
@@ -146,7 +146,17 @@ function buildEventPayload(form: EventFormState) {
     maxCapacity: form.maxCapacity ? Number(form.maxCapacity) : null,
     programCode,
     status: form.status,
-    instructorId: form.instructorId || null,
+    instructorIds: form.instructorIds,
+  };
+}
+
+function toggleInstructor(form: EventFormState, instructorId: string): EventFormState {
+  const isSelected = form.instructorIds.includes(instructorId);
+  return {
+    ...form,
+    instructorIds: isSelected
+      ? form.instructorIds.filter((id) => id !== instructorId)
+      : [...form.instructorIds, instructorId],
   };
 }
 
@@ -211,20 +221,40 @@ function EventFormFields({
           </option>
         ))}
       </Select>
-      <Select
-        id={`${idPrefix}-instructor`}
-        name={`${idPrefix}-instructor`}
-        label="Eğitmen"
-        value={form.instructorId}
-        onChange={(e) => setForm({ ...form, instructorId: e.target.value })}
-      >
-        <option value="">Eğitmen seçin</option>
-        {instructors.map((instructor) => (
-          <option key={instructor.id} value={instructor.id}>
-            {instructor.fullName} ({instructor.email})
-          </option>
-        ))}
-      </Select>
+      <div className="md:col-span-2">
+        <p className="mb-2 text-sm font-medium text-navy-900">Eğitmenler</p>
+        {instructors.length === 0 ? (
+          <p className="text-sm text-slate-500">Henüz eğitmen tanımlı değil.</p>
+        ) : (
+          <div className="grid gap-2 rounded-xl border border-slate-200 bg-slate-50/60 p-3 sm:grid-cols-2">
+            {instructors.map((instructor) => {
+              const inputId = `${idPrefix}-instructor-${instructor.id}`;
+              const isChecked = form.instructorIds.includes(instructor.id);
+
+              return (
+                <label
+                  key={instructor.id}
+                  htmlFor={inputId}
+                  className="flex cursor-pointer items-start gap-2 rounded-lg border border-transparent px-2 py-1.5 text-sm text-navy-900 transition hover:border-slate-200 hover:bg-white"
+                >
+                  <input
+                    id={inputId}
+                    type="checkbox"
+                    checked={isChecked}
+                    onChange={() => setForm(toggleInstructor(form, instructor.id))}
+                    className="mt-0.5"
+                  />
+                  <span>
+                    <span className="font-medium">{instructor.fullName}</span>
+                    <span className="block text-xs text-slate-500">{instructor.email}</span>
+                  </span>
+                </label>
+              );
+            })}
+          </div>
+        )}
+        <p className="mt-1 text-xs text-slate-500">Bir etkinliğe birden fazla eğitmen atayabilirsiniz.</p>
+      </div>
       <Select
         id={`${idPrefix}-status`}
         name={`${idPrefix}-status`}
@@ -597,7 +627,10 @@ export function AdminEventsManager() {
                           <p className="mt-1 text-sm text-slate-500">{event.locationName}</p>
                         ) : null}
                         <p className="mt-1 text-sm text-slate-500">
-                          Eğitmen: {event.instructorName ?? "Atanmadı"}
+                          Eğitmen{event.instructorNames.length > 1 ? "ler" : ""}:{" "}
+                          {event.instructorNames.length > 0
+                            ? event.instructorNames.join(", ")
+                            : "Atanmadı"}
                         </p>
                       </div>
                       <div className="flex flex-wrap gap-2">

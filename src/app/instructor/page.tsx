@@ -27,11 +27,32 @@ export default async function InstructorHomePage() {
     redirect("/login?redirectTo=/instructor");
   }
 
-  const { data: events, error } = await client
-    .from("events")
-    .select("id, title, start_at, end_at, status, location_name")
+  const { data: assignments, error } = await client
+    .from("event_instructors")
+    .select(
+      `
+      event_id,
+      events (
+        id,
+        title,
+        start_at,
+        end_at,
+        status,
+        location_name
+      )
+    `,
+    )
     .eq("instructor_id", access.profile.id)
-    .order("start_at", { ascending: false });
+    .order("created_at", { ascending: false });
+
+  const events =
+    assignments
+      ?.map((row) => {
+        const event = Array.isArray(row.events) ? row.events[0] : row.events;
+        return event ?? null;
+      })
+      .filter((event): event is NonNullable<typeof event> => event !== null)
+      .sort((a, b) => new Date(b.start_at).getTime() - new Date(a.start_at).getTime()) ?? [];
 
   return (
     <div className="space-y-6">

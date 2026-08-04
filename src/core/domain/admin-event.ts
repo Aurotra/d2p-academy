@@ -26,7 +26,11 @@ export interface AdminEventRecord {
   status: EventStatus;
   programCode: string | null;
   coverImageUrl: string | null;
+  instructorIds: string[];
+  instructorNames: string[];
+  /** @deprecated İlk eğitmen — geriye dönük uyumluluk */
   instructorId: string | null;
+  /** @deprecated Virgülle ayrılmış eğitmen adları */
   instructorName: string | null;
 }
 
@@ -49,7 +53,7 @@ export interface CreateEventInput {
   maxCapacity: number | null;
   status: EventStatus;
   programCode: string | null;
-  instructorId: string | null;
+  instructorIds: string[];
 }
 
 export interface UpdateEventInput extends Partial<CreateEventInput> {
