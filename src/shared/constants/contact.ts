@@ -38,5 +38,6 @@ export function getWhatsAppSupportUrl(
 ): string {
   const phone = CONTACT.phoneTel.replace(/\D/g, "");
   const text = encodeURIComponent(WHATSAPP_SUPPORT_MESSAGES[context]);
-  return `https://wa.me/${phone}?text=${text}`;
+  // web.whatsapp.com opens in the browser; wa.me often forces the desktop app on Windows.
+  return `https://web.whatsapp.com/send?phone=${phone}&text=${text}`;
 }
