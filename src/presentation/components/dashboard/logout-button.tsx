@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 import { Button } from "@/presentation/components/ui/button";
+import { performSiteSignOut } from "@/shared/utils/perform-site-sign-out";
 
 interface LogoutButtonProps {
   className?: string;
@@ -18,14 +19,7 @@ export function LogoutButton({ className = "", variant = "outline" }: LogoutButt
     setIsLoading(true);
 
     try {
-      const response = await fetch("/api/v1/auth/logout", {
-        method: "POST",
-      });
-
-      if (!response.ok) {
-        throw new Error("Çıkış yapılamadı.");
-      }
-
+      await performSiteSignOut("email");
       router.push("/login");
       router.refresh();
     } catch {

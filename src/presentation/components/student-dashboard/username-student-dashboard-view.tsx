@@ -8,6 +8,7 @@ import type {
 } from "@/core/domain/username-student-progress";
 import { BRAND_SURFACE_GRADIENT } from "@/shared/constants/brand-surfaces";
 import { Badge } from "@/presentation/components/ui/badge";
+import { EnrollmentFormProgress } from "@/presentation/components/dashboard/enrollment-form-progress";
 import { StudentOnboardingGuide } from "@/presentation/components/student-dashboard/student-onboarding-guide";
 interface UsernameStudentDashboardViewProps {
   username: string;
@@ -36,6 +37,25 @@ const STATUS_LABELS: Record<string, string> = {
   no_show: "Gelmedi",
 };
 
+function EnrollmentAction({ item }: { item: EnrollmentSummary }) {
+  if (item.certificateCode) {
+    return (
+      <p className="mt-3 text-sm font-semibold text-amber-800">
+        Sertifika bekleniyor
+      </p>
+    );
+  }
+
+  return (
+    <Link
+      href={`/student-dashboard/enrollments/${item.enrollmentId}/forms`}
+      className="mt-3 inline-flex text-sm font-semibold text-document-primary hover:underline"
+    >
+      Formları doldur →
+    </Link>
+  );
+}
+
 function EnrollmentsSection({ enrollments }: { enrollments: EnrollmentSummary[] }) {
   if (enrollments.length === 0) {
     return (
@@ -58,12 +78,16 @@ function EnrollmentsSection({ enrollments }: { enrollments: EnrollmentSummary[] 
           </div>
           <h3 className="mt-2 font-semibold text-navy-950">{item.eventTitle}</h3>
           <p className="mt-1 text-sm text-slate-600">{formatDate(item.eventDate)}</p>
-          <Link
-            href={`/student-dashboard/enrollments/${item.enrollmentId}/forms`}
-            className="mt-3 inline-flex text-sm font-semibold text-document-primary hover:underline"
-          >
-            Formları doldur →
-          </Link>
+          {item.status !== "cancelled" ? (
+            <EnrollmentFormProgress
+              intakeCompleted={item.intakeCompleted}
+              consentsCompleted={item.consentsCompleted}
+              preTestCompleted={item.preTestCompleted}
+              postTestCompleted={item.postTestCompleted}
+              requiresSurveys={item.requiresSurveys}
+            />
+          ) : null}
+          <EnrollmentAction item={item} />
         </li>
       ))}
     </ul>

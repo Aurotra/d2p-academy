@@ -82,7 +82,7 @@ export function SiteHeader() {
     sessionKind,
     userDisplayName,
     panelHref,
-    clearSession,
+    signOut,
   } = useSiteAuth();
 
   const closeMobileMenu = useCallback(() => {
@@ -116,20 +116,18 @@ export function SiteHeader() {
   }, [isMobileMenuOpen, closeMobileMenu]);
 
   async function handleLogout() {
+    const redirectKind = sessionKind;
     setIsLoggingOut(true);
     closeMobileMenu();
 
     try {
-      const endpoint =
-        sessionKind === "student" ? "/api/v1/auth/student-logout" : "/api/v1/auth/logout";
-      const response = await fetch(endpoint, { method: "POST" });
-      if (!response.ok) {
-        throw new Error("Çıkış yapılamadı.");
-      }
-      clearSession();
-      router.push(sessionKind === "student" ? "/student-login" : "/");
+      await signOut();
+      const destination = redirectKind === "student" ? "/student-login" : "/";
+      router.push(destination);
       router.refresh();
     } catch {
+      // Keep current session UI if logout fails.
+    } finally {
       setIsLoggingOut(false);
     }
   }

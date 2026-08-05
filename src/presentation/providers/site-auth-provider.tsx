@@ -14,6 +14,7 @@ import {
 import { profileHasInstructorCapability } from "@/infrastructure/auth/instructor-capability";
 import { createSupabaseBrowserClient } from "@/infrastructure/supabase/create-browser-client";
 import { SESSION_CHANGED_EVENT } from "@/shared/utils/session-events";
+import { performSiteSignOut } from "@/shared/utils/perform-site-sign-out";
 
 export type SiteSessionKind = "email" | "student";
 
@@ -26,6 +27,7 @@ interface SiteAuthContextValue {
   isInstructor: boolean;
   panelHref: string;
   refreshSession: () => Promise<void>;
+  signOut: () => Promise<void>;
   clearSession: () => void;
 }
 
@@ -45,6 +47,12 @@ export function SiteAuthProvider({ children }: { children: ReactNode }) {
     setUserRole(null);
     setIsInstructor(false);
   }, []);
+
+  const signOut = useCallback(async () => {
+    const activeSessionKind = sessionKind;
+    await performSiteSignOut(activeSessionKind);
+    clearSession();
+  }, [sessionKind, clearSession]);
 
   const refreshSession = useCallback(async () => {
     const client = createSupabaseBrowserClient();
@@ -170,6 +178,7 @@ export function SiteAuthProvider({ children }: { children: ReactNode }) {
       isInstructor,
       panelHref,
       refreshSession,
+      signOut,
       clearSession,
     }),
     [
@@ -180,6 +189,7 @@ export function SiteAuthProvider({ children }: { children: ReactNode }) {
       isInstructor,
       panelHref,
       refreshSession,
+      signOut,
       clearSession,
     ],
   );

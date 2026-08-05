@@ -69,12 +69,7 @@ export function buildEnrollmentFormStatusLabel(input: {
   requiresSurveys?: boolean;
 }): string {
   const requiresSurveys = input.requiresSurveys !== false;
-  const steps = [
-    { label: "Tanışma", done: Boolean(input.intakeCompleted), required: true },
-    { label: "Onaylar", done: Boolean(input.consentsCompleted), required: true },
-    { label: "Ön test", done: Boolean(input.preTestCompleted), required: requiresSurveys },
-    { label: "Son test", done: Boolean(input.postTestCompleted), required: requiresSurveys },
-  ].filter((step) => step.required);
+  const steps = getEnrollmentFormSteps(input, requiresSurveys);
 
   const missing = steps.filter((step) => !step.done).map((step) => step.label);
   if (missing.length === 0) {
@@ -84,4 +79,38 @@ export function buildEnrollmentFormStatusLabel(input: {
     return "Formlar eksik";
   }
   return `Eksik: ${missing.join(", ")}`;
+}
+
+function getEnrollmentFormSteps(
+  input: {
+    intakeCompleted?: boolean;
+    consentsCompleted?: boolean;
+    preTestCompleted?: boolean;
+    postTestCompleted?: boolean;
+  },
+  requiresSurveys: boolean,
+) {
+  return [
+    { label: "Tanışma", done: Boolean(input.intakeCompleted), required: true },
+    { label: "Onaylar", done: Boolean(input.consentsCompleted), required: true },
+    { label: "Ön test", done: Boolean(input.preTestCompleted), required: requiresSurveys },
+    { label: "Son test", done: Boolean(input.postTestCompleted), required: requiresSurveys },
+  ].filter((step) => step.required);
+}
+
+export function getEnrollmentFormCompletionPercent(input: {
+  intakeCompleted?: boolean;
+  consentsCompleted?: boolean;
+  preTestCompleted?: boolean;
+  postTestCompleted?: boolean;
+  requiresSurveys?: boolean;
+}): number {
+  const requiresSurveys = input.requiresSurveys !== false;
+  const steps = getEnrollmentFormSteps(input, requiresSurveys);
+  if (steps.length === 0) {
+    return 100;
+  }
+
+  const completed = steps.filter((step) => step.done).length;
+  return Math.round((completed / steps.length) * 100);
 }

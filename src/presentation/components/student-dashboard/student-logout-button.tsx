@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 import { Button } from "@/presentation/components/ui/button";
-import { notifySessionChanged } from "@/shared/utils/session-events";
+import { performSiteSignOut } from "@/shared/utils/perform-site-sign-out";
 
 export function StudentLogoutButton() {
   const router = useRouter();
@@ -13,8 +13,7 @@ export function StudentLogoutButton() {
   async function handleLogout() {
     setIsLoading(true);
     try {
-      await fetch("/api/v1/auth/student-logout", { method: "POST" });
-      notifySessionChanged();
+      await performSiteSignOut("student");
       router.push("/student-login");
       router.refresh();
     } catch {
