@@ -19,6 +19,7 @@ import {
 } from "@/core/domain/participant-forms";
 import { MEDIA_CONSENT_BLOCK_MESSAGE, SURVEY_FORM_VERSIONS } from "@/shared/constants/participant-forms";
 import { calculateProgress, isProfileComplete } from "@/lib/utils/progress";
+import { isPostTestUnlocked } from "@/shared/utils/post-test-unlock";
 
 function asRecord(value: unknown): Record<string, unknown> {
   if (!value || typeof value !== "object" || Array.isArray(value)) {
@@ -60,11 +61,15 @@ interface EnrollmentOwnerRow {
   id: string;
   user_id: string;
   event_id: string;
+  status: string;
   student_code: string | null;
   intake_form_completed_at: string | null;
   pre_test_completed_at: string | null;
   post_test_completed_at: string | null;
-  events: { title: string; program_code: string | null } | { title: string; program_code: string | null }[] | null;
+  events:
+    | { title: string; program_code: string | null; end_at: string }
+    | { title: string; program_code: string | null; end_at: string }[]
+    | null;
 }
 
 export class SupabaseParticipantFormsRepository {
@@ -81,11 +86,12 @@ export class SupabaseParticipantFormsRepository {
         id,
         user_id,
         event_id,
+        status,
         student_code,
         intake_form_completed_at,
         pre_test_completed_at,
         post_test_completed_at,
-        events ( title, program_code )
+        events ( title, program_code, end_at )
       `,
       )
       .eq("id", enrollmentId)
@@ -117,7 +123,7 @@ export class SupabaseParticipantFormsRepository {
       throw new Error("Profil bilgisi alınamadı.");
     }
 
-    const [{ data: consents }, { data: health }, { data: intake }, { data: surveys }, { data: certificate }] =
+    const [{ data: consents }, { data: health }, { data: intake }, { data: surveys }, { data: certificate }, { data: presentAttendance }] =
       await Promise.all([
         this.client
           .from("consent_records")
@@ -143,9 +149,21 @@ export class SupabaseParticipantFormsRepository {
           .eq("enrollment_id", enrollmentId)
           .eq("status", "active")
           .maybeSingle(),
+        this.client
+          .from("enrollment_attendance")
+          .select("id")
+          .eq("enrollment_id", enrollmentId)
+          .eq("status", "present")
+          .limit(1)
+          .maybeSingle(),
       ]);
 
     const event = Array.isArray(enrollment.events) ? enrollment.events[0] : enrollment.events;
+    const postTestUnlocked = isPostTestUnlocked({
+      enrollmentStatus: enrollment.status,
+      hasPresentAttendance: Boolean(presentAttendance?.id),
+      eventEndAt: event?.end_at ?? null,
+    });
     const gradeLevel = profile.grade_level ?? "";
     const profileProgressInput = {
       full_name: profile.full_name,
@@ -171,6 +189,8 @@ export class SupabaseParticipantFormsRepository {
       eventId: enrollment.event_id,
       eventTitle: event?.title ?? "Eğitim",
       studentCode: enrollment.student_code,
+      enrollmentStatus: enrollment.status,
+      postTestUnlocked,
       intakeFormCompletedAt: enrollment.intake_form_completed_at,
       preTestCompletedAt: enrollment.pre_test_completed_at,
       postTestCompletedAt: enrollment.post_test_completed_at,
@@ -540,7 +560,28 @@ export class SupabaseParticipantFormsRepository {
     userId: string,
     input: SubmitPostTestInput,
   ): Promise<{ ok: true }> {
-    await this.requireOwnedEnrollment(enrollmentId, userId);
+    const enrollment = await this.requireOwnedEnrollment(enrollmentId, userId);
+
+    const { data: presentAttendance } = await this.client
+      .from("enrollment_attendance")
+      .select("id")
+      .eq("enrollment_id", enrollmentId)
+      .eq("status", "present")
+      .limit(1)
+      .maybeSingle();
+
+    const event = Array.isArray(enrollment.events) ? enrollment.events[0] : enrollment.events;
+    const postTestUnlocked = isPostTestUnlocked({
+      enrollmentStatus: enrollment.status,
+      hasPresentAttendance: Boolean(presentAttendance?.id),
+      eventEndAt: event?.end_at ?? null,
+    });
+
+    if (!postTestUnlocked) {
+      throw new Error(
+        "Son test henüz açılmadı. Etkinliğe katıldıktan veya etkinlik bittikten sonra doldurabilirsiniz.",
+      );
+    }
 
     const { data: profile } = await this.client
       .from("profiles")

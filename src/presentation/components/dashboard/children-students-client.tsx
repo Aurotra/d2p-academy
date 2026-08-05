@@ -24,6 +24,7 @@ export type ChildProgressPreview = {
     consentsCompleted?: boolean;
     preTestCompleted?: boolean;
     postTestCompleted?: boolean;
+    postTestUnlocked?: boolean;
     requiresSurveys?: boolean;
   }>;
   certificates: Array<{ code: string; issuedAt: string; pdfUrl?: string | null }>;

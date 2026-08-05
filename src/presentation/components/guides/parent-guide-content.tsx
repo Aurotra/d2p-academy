@@ -12,7 +12,7 @@ const checklist = [
   "Yayınlanmış etkinlik varsa: Çocuk hesapları → Etkinliğe kaydet.",
   "Uygun etkinlik yoksa: Panel → Kurs talebi ile program ve tarih tercihi bırakın.",
   "Kayıt oluştuktan hemen sonra Detay → Formları doldur sayfasına geçin.",
-  "Tanışma → Onaylar → (varsa) Son test adımlarını kayıt günü tamamlayın.",
+  "Tanışma ve ön test (F01–F02) ile onayları (F05–F07) kayıt öncesi tamamlayın. Son test (F03) etkinlik sonrası açılır.",
   "Profili düzenle ile bilgileri %100 yapın (sertifika için zorunlu).",
 ];
 
@@ -75,12 +75,12 @@ const faqItems = [
   {
     question: "Hangi formlar var, sırası ne?",
     answer:
-      "1) Tanışma (F01 — deneyim ve motivasyon), 2) Onaylar (F05, F06, F07 — özellikle F06 medya izinleri), 3) Gerekirse Son test (5–8. sınıflar), 4) Sertifika onay. Tanışma bitmeden Onaylar açılmaz; kayıttan sonra mümkün olan en kısa sürede tamamlayın.",
+      "1) Tanışma (F01 + 5–8. sınıflarda ön test F02), 2) Onaylar (F05, F06, F07), 3) Etkinlik sonrası son test (F03 — 5–8. sınıflar), 4) Sertifika onay. Tanışma bitmeden Onaylar açılmaz; son test yoklamada «geldi» işaretlendiğinde veya etkinlik bittiğinde açılır.",
   },
   {
     question: "Formları ne zaman doldurmalıyım?",
     answer:
-      "Etkinliğe kayıt yaptıktan hemen sonra, aynı gün. Etkinlik başlamadan önce Tanışma ve Onaylar tamamlanmış olmalıdır; aksi halde kayıt süreci yarım kalır ve sertifika için gerekli adımlar ilerlemez.",
+      "Etkinliğe kayıt yaptıktan hemen sonra Tanışma ve Onaylar adımlarını tamamlayın. Son test (F03) etkinlik günü yoklama alındıktan veya etkinlik süresi bittikten sonra açılır.",
   },
   {
     question: "Sertifikayı ne zaman alırız?",

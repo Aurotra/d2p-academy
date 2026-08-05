@@ -93,7 +93,7 @@ function resolveSteps(context: ParentOnboardingContext): OnboardingStep[] {
       id: "forms",
       title: "Katılımcı formlarını doldurun",
       description:
-        "Tanışma ve onay formlarını tamamlayın; gerekirse ön/son test adımlarını bitirin. Etkinlik gününe hazır olun.",
+        "Tanışma ve onay formlarını etkinlik öncesi tamamlayın; ön test (F02) kayıt sırasında. Son test (F03) etkinlik/yoklama sonrası açılır.",
       status: formsStatus,
       href: context.pendingFormsEnrollment
         ? `/dashboard/children/${context.pendingFormsEnrollment.childId}/enrollments/${context.pendingFormsEnrollment.enrollmentId}/forms`

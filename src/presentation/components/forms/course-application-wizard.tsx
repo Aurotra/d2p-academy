@@ -255,7 +255,7 @@ export function CourseApplicationWizard({
       } else if (!consentsReady) {
         setStep(2);
       } else if (next.requiresSurveys && !next.postTestCompletedAt) {
-        setStep(3);
+        setStep(next.postTestUnlocked ? 3 : 4);
       } else {
         setStep(4);
       }
@@ -335,7 +335,14 @@ export function CourseApplicationWizard({
       setSuccess(`Onaylar kaydedildi. D2P öğrenci kodunuz: ${payload.data.studentCode}`);
       const next = await loadState();
       if (next?.requiresSurveys) {
-        setStep(3);
+        if (next.postTestUnlocked) {
+          setStep(3);
+        } else {
+          setStep(4);
+          setSuccess(
+            `Onaylar kaydedildi. D2P öğrenci kodunuz: ${payload.data.studentCode}. Son test (F03), etkinliğe katıldıktan veya etkinlik bittikten sonra açılacak.`,
+          );
+        }
       } else {
         setStep(4);
         if (next && !next.profileComplete) {
@@ -545,8 +552,11 @@ export function CourseApplicationWizard({
   const coreConsentsAccepted = areCoreConsentsAccepted(state);
   const tanismaDone = Boolean(state.intakeFormCompletedAt) && Boolean(state.preTestCompletedAt);
   const sonTestDone = Boolean(state.postTestCompletedAt);
+  const postTestUnlocked = state.postTestUnlocked;
   const sertifikaDone = Boolean(state.hasActiveCertificate);
-  const formsDone = onaylarDone && tanismaDone && sonTestDone;
+  const registrationDone = onaylarDone && tanismaDone;
+  const formsDone =
+    registrationDone && (!state.requiresSurveys || sonTestDone);
   const profileReady = state.profileComplete;
   const readyForCertificateQueue = formsDone && profileReady;
 
@@ -556,16 +566,20 @@ export function CourseApplicationWizard({
     ? "idle"
     : sonTestDone
       ? "done"
-      : state.requiresSurveys
-        ? "action"
-        : "done";
-  const sertifikaTone: StepTone = !formsDone
+      : !state.requiresSurveys
+        ? "done"
+        : postTestUnlocked
+          ? "action"
+          : "pending";
+  const sertifikaTone: StepTone = !registrationDone
     ? "idle"
-    : sertifikaDone
-      ? "done"
-      : profileReady
-        ? "pending"
-        : "action";
+    : state.requiresSurveys && !sonTestDone
+      ? "idle"
+      : sertifikaDone
+        ? "done"
+        : profileReady
+          ? "pending"
+          : "action";
 
   const wizardComplete = readyForCertificateQueue;
 
@@ -576,13 +590,13 @@ export function CourseApplicationWizard({
       id: 3,
       label: "Son test",
       tone: sonTestTone,
-      enabled: onaylarDone && state.requiresSurveys,
+      enabled: onaylarDone && state.requiresSurveys && postTestUnlocked,
     },
     {
       id: 4,
       label: "Sertifika onay",
       tone: sertifikaTone,
-      enabled: onaylarDone && sonTestDone,
+      enabled: registrationDone && (!state.requiresSurveys || sonTestDone),
     },
   ];
 
@@ -876,10 +890,11 @@ export function CourseApplicationWizard({
 
       {step === 3 ? (
         state.requiresSurveys ? (
+          postTestUnlocked ? (
         <section className="space-y-4 rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm">
           <h2 className="text-xl font-bold text-navy-950">Son Test (F03)</h2>
           <p className="text-sm text-slate-600">
-            Eğitim bitiminde doldurun. Tamamlanmadan admin sertifika veremez.
+            Eğitim sonrası doldurun. Tamamlanmadan admin sertifika veremez.
           </p>
 
           <h3 className="text-lg font-bold text-navy-950">Bölüm A — Ölçek maddeleri</h3>
@@ -944,6 +959,20 @@ export function CourseApplicationWizard({
             {isSaving ? "Kaydediliyor..." : "Son Testi Kaydet"}
           </Button>
         </section>
+          ) : (
+            <section className="space-y-3 rounded-[2rem] border border-amber-200 bg-amber-50 p-6 shadow-sm">
+              <h2 className="text-xl font-bold text-navy-950">Son Test (F03)</h2>
+              <p className="text-sm text-amber-950">
+                Son test henüz açılmadı. Etkinlik günü yoklamada «geldi» işaretlendiğinde, admin
+                katılımı onayladığında veya etkinlik süresi bittiğinde bu adım açılır.
+              </p>
+              {registrationDone ? (
+                <p className="text-sm text-amber-900">
+                  Kayıt formlarınız tamam. Etkinlik sonrası bu sayfadan son testi doldurabilirsiniz.
+                </p>
+              ) : null}
+            </section>
+          )
         ) : (
           <section className="space-y-3 rounded-[2rem] border border-emerald-200 bg-emerald-50 p-6 shadow-sm">
             <h2 className="text-xl font-bold text-navy-950">Son Test</h2>
@@ -1005,6 +1034,28 @@ export function CourseApplicationWizard({
               >
                 Profil / kendini tanıtma adımını tamamla →
               </Link>
+            </div>
+          ) : registrationDone && state.requiresSurveys && !sonTestDone && !postTestUnlocked ? (
+            <div className="space-y-2 text-sm text-amber-950">
+              <p>
+                Kayıt formlarınız (tanışma, onaylar, ön test) tamam. Son test (F03), etkinliğe
+                katıldıktan veya etkinlik bittikten sonra açılacak.
+              </p>
+            </div>
+          ) : registrationDone && state.requiresSurveys && !sonTestDone && postTestUnlocked ? (
+            <div className="space-y-2 text-sm text-red-900">
+              <p>Son test (F03) açıldı; sertifika için bu adımı tamamlayın.</p>
+              <button
+                type="button"
+                className="font-bold text-document-primary underline"
+                onClick={() => {
+                  setError(null);
+                  setSuccess(null);
+                  setStep(3);
+                }}
+              >
+                Son test adımına git →
+              </button>
             </div>
           ) : readyForCertificateQueue ? (
             <p className="text-sm text-amber-950">

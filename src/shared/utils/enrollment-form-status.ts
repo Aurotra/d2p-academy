@@ -66,6 +66,7 @@ export function buildEnrollmentFormStatusLabel(input: {
   consentsCompleted?: boolean;
   preTestCompleted?: boolean;
   postTestCompleted?: boolean;
+  postTestUnlocked?: boolean;
   requiresSurveys?: boolean;
 }): string {
   const requiresSurveys = input.requiresSurveys !== false;
@@ -87,14 +88,21 @@ function getEnrollmentFormSteps(
     consentsCompleted?: boolean;
     preTestCompleted?: boolean;
     postTestCompleted?: boolean;
+    postTestUnlocked?: boolean;
   },
   requiresSurveys: boolean,
 ) {
+  const postTestUnlocked = Boolean(input.postTestUnlocked);
+
   return [
     { label: "Tanışma", done: Boolean(input.intakeCompleted), required: true },
     { label: "Onaylar", done: Boolean(input.consentsCompleted), required: true },
     { label: "Ön test", done: Boolean(input.preTestCompleted), required: requiresSurveys },
-    { label: "Son test", done: Boolean(input.postTestCompleted), required: requiresSurveys },
+    {
+      label: "Son test",
+      done: Boolean(input.postTestCompleted),
+      required: requiresSurveys && postTestUnlocked,
+    },
   ].filter((step) => step.required);
 }
 
@@ -103,6 +111,7 @@ export function getEnrollmentFormCompletionPercent(input: {
   consentsCompleted?: boolean;
   preTestCompleted?: boolean;
   postTestCompleted?: boolean;
+  postTestUnlocked?: boolean;
   requiresSurveys?: boolean;
 }): number {
   const requiresSurveys = input.requiresSurveys !== false;

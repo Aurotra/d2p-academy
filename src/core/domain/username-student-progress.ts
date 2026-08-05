@@ -8,6 +8,7 @@ export interface EnrollmentSummary {
   consentsCompleted?: boolean;
   preTestCompleted?: boolean;
   postTestCompleted?: boolean;
+  postTestUnlocked?: boolean;
   requiresSurveys?: boolean;
 }
 

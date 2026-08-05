@@ -110,6 +110,7 @@ export default async function DashboardChildrenPage() {
             consentsCompleted: Boolean(item.consentsCompleted),
             preTestCompleted: Boolean(item.preTestCompleted),
             postTestCompleted: Boolean(item.postTestCompleted),
+            postTestUnlocked: Boolean(item.postTestUnlocked),
             requiresSurveys: item.requiresSurveys !== false,
           })),
           certificates: (progress?.certificates ?? []).map((item) => ({

@@ -37,6 +37,15 @@ const STATUS_LABELS: Record<string, string> = {
   no_show: "Gelmedi",
 };
 
+function isRegistrationComplete(item: EnrollmentSummary): boolean {
+  const requiresSurveys = item.requiresSurveys !== false;
+  return (
+    Boolean(item.intakeCompleted) &&
+    Boolean(item.consentsCompleted) &&
+    (!requiresSurveys || Boolean(item.preTestCompleted))
+  );
+}
+
 function EnrollmentAction({ item }: { item: EnrollmentSummary }) {
   if (item.certificateCode) {
     return (
@@ -46,14 +55,42 @@ function EnrollmentAction({ item }: { item: EnrollmentSummary }) {
     );
   }
 
-  return (
-    <Link
-      href={`/student-dashboard/enrollments/${item.enrollmentId}/forms`}
-      className="mt-3 inline-flex text-sm font-semibold text-document-primary hover:underline"
-    >
-      Formları doldur →
-    </Link>
-  );
+  const requiresSurveys = item.requiresSurveys !== false;
+  const registrationDone = isRegistrationComplete(item);
+  const postTestPending =
+    requiresSurveys && item.postTestUnlocked && !item.postTestCompleted;
+
+  if (!registrationDone) {
+    return (
+      <Link
+        href={`/student-dashboard/enrollments/${item.enrollmentId}/forms`}
+        className="mt-3 inline-flex text-sm font-semibold text-document-primary hover:underline"
+      >
+        Formları doldur →
+      </Link>
+    );
+  }
+
+  if (postTestPending) {
+    return (
+      <Link
+        href={`/student-dashboard/enrollments/${item.enrollmentId}/forms`}
+        className="mt-3 inline-flex text-sm font-semibold text-document-primary hover:underline"
+      >
+        Son testi doldur (F03) →
+      </Link>
+    );
+  }
+
+  if (requiresSurveys && !item.postTestCompleted && !item.postTestUnlocked) {
+    return (
+      <p className="mt-3 text-sm text-slate-600">
+        Kayıt formları tamam. Son test, etkinlik sonrası açılacak.
+      </p>
+    );
+  }
+
+  return null;
 }
 
 function EnrollmentsSection({ enrollments }: { enrollments: EnrollmentSummary[] }) {
@@ -84,6 +121,7 @@ function EnrollmentsSection({ enrollments }: { enrollments: EnrollmentSummary[] 
               consentsCompleted={item.consentsCompleted}
               preTestCompleted={item.preTestCompleted}
               postTestCompleted={item.postTestCompleted}
+              postTestUnlocked={item.postTestUnlocked}
               requiresSurveys={item.requiresSurveys}
             />
           ) : null}
