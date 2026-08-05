@@ -53,7 +53,6 @@ export type EnrollableEventOption = {
   id: string;
   title: string;
   slug: string;
-  description: string;
   eventType: EventType;
   categoryName: string | null;
   categoryColor: string | null;
@@ -817,9 +816,6 @@ function EnrollStudentDialog({
                   <p className="mt-3 text-base font-bold leading-snug text-navy-950">{item.title}</p>
                   <p className="mt-2 text-sm font-medium text-slate-700">{formatEventSchedule(item)}</p>
                   <p className="mt-1 text-sm text-slate-600">{formatEventLocation(item)}</p>
-                  {item.description.trim() ? (
-                    <p className="mt-3 text-sm leading-6 text-slate-600">{item.description.trim()}</p>
-                  ) : null}
                   <Link
                     href={`/etkinlikler/${item.slug}`}
                     className="mt-3 inline-flex text-sm font-semibold text-document-primary hover:underline"

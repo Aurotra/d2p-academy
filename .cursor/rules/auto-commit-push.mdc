@@ -1,0 +1,27 @@
+---
+description: Otomatik commit ve push — kod değişikliği bitince sorulmadan yap
+alwaysApply: true
+---
+
+# Otomatik commit + push
+
+Kod değişikliği içeren bir görev tamamlandığında, kullanıcı ayrıca istemeden bile **commit ve push yap**.
+
+## Ne zaman
+
+- Özellik, düzeltme veya refactor bittiğinde ve working tree'de anlamlı değişiklik varsa
+- Kullanıcı «commit + push» demese bile uygula
+- Sadece soru/inceleme cevabı verildiyse ve dosya değişmediyse commit yapma
+
+## Nasıl
+
+1. `git status`, `git diff`, `git log` ile durumu kontrol et
+2. Anlamlı, kısa commit mesajı yaz (fix:/feat: öneki)
+3. İlgili dosyaları stage et; `.env`, secret ve `supabase/.temp` dosyalarını ekleme
+4. Commit et, ardından `git push origin main` (veya aktif branch)
+5. Push sonrası kısaca commit hash ve özet bildir
+
+## Güvenlik
+
+- Force push, hard reset, git config değişikliği yapma
+- Kullanıcı açıkça «commit yapma» derse bu kuralı o tur için uygulama

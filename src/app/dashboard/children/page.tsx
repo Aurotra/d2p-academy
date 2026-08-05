@@ -44,7 +44,7 @@ export default async function DashboardChildrenPage() {
   const { data: eventRows } = await supabase
     .from("events")
     .select(
-      "id, title, slug, description, event_type, start_at, end_at, location_name, is_online, event_categories ( name, color )",
+      "id, title, slug, event_type, start_at, end_at, location_name, is_online, event_categories ( name, color )",
     )
     .eq("status", "published")
     .gte("end_at", new Date().toISOString())
@@ -60,7 +60,6 @@ export default async function DashboardChildrenPage() {
       id: event.id,
       title: event.title,
       slug: event.slug,
-      description: event.description ?? "",
       eventType: event.event_type as EnrollableEventOption["eventType"],
       categoryName: category?.name ?? null,
       categoryColor: category?.color ?? null,
