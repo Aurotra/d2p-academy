@@ -32,14 +32,23 @@ export async function POST(request: Request) {
     const repository = new SupabaseAdminEventRepository(access.client);
     const event = await createAdminEvent(repository, body);
 
+    const instructorIds = body.instructorIds ?? [];
     let instructorNotifications = null;
-    if (body.instructorIds.length > 0) {
-      instructorNotifications = await notifyEventInstructorsAssigned(event, body.instructorIds);
-      if (instructorNotifications.failed.length > 0) {
-        console.error(
-          "[admin/events POST] Eğitmen bildirim hataları:",
-          instructorNotifications.failed,
-        );
+    let notificationError: string | null = null;
+
+    if (instructorIds.length > 0) {
+      try {
+        instructorNotifications = await notifyEventInstructorsAssigned(event, instructorIds);
+        if (instructorNotifications.failed.length > 0) {
+          console.error(
+            "[admin/events POST] Eğitmen bildirim hataları:",
+            instructorNotifications.failed,
+          );
+        }
+      } catch (notifyError) {
+        notificationError =
+          notifyError instanceof Error ? notifyError.message : "Eğitmen bildirimi gönderilemedi.";
+        console.error("[admin/events POST] Eğitmen bildirimi hatası:", notificationError);
       }
     }
 
@@ -49,6 +58,7 @@ export async function POST(request: Request) {
       notificationSummary: instructorNotifications
         ? formatInstructorNotificationSummary(instructorNotifications)
         : "",
+      notificationError,
     }, { status: 201 });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Etkinlik oluşturulamadı.";

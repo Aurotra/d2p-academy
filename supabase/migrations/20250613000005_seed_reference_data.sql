@@ -14,5 +14,5 @@ on conflict (slug) do nothing;
 
 insert into public.schools (name, slug, city, district, contact_email, is_active)
 values
-  ('D2P Demo Okulu', 'd2p-demo-okulu', 'Istanbul', 'Kadikoy', 'demo@d2pacademy.com', true)
+  ('D2P Demo Okulu', 'd2p-demo-okulu', 'Istanbul', 'Kadikoy', 'demo@d2p.com.tr', true)
 on conflict (slug) do nothing;

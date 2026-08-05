@@ -1,12 +1,17 @@
 import "server-only";
 
+import {
+  EMAIL_FROM_ADDRESS,
+  EMAIL_REPLY_TO,
+} from "@/shared/constants/email-brand";
+
 /** Resend'de doğrulanmış domain adresi. Vercel + Supabase secrets'ta RESEND_FROM_EMAIL ile override edilebilir. */
 export function getResendFromAddress(): string {
   const configured = process.env.RESEND_FROM_EMAIL?.trim();
   if (configured) {
     return configured;
   }
-  return "D2P Academy <bildirim@d2pacademy.com>";
+  return EMAIL_FROM_ADDRESS;
 }
 
 export interface ResendSendResult {
@@ -30,7 +35,7 @@ export async function postResendEmail(input: {
       to: [input.to],
       subject: input.subject,
       html: input.html,
-      reply_to: "info@d2p.com.tr",
+      reply_to: EMAIL_REPLY_TO,
     }),
   });
 

@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 import type { AdminInstructorRecord } from "@/core/domain/admin-instructor";
+import { AdminFeedbackToast } from "@/presentation/components/admin/admin-feedback-toast";
 import { Button } from "@/presentation/components/ui/button";
 
 function formatDate(value: string): string {
@@ -76,7 +77,7 @@ export function AdminInstructorsManager({ initialInstructors }: AdminInstructors
       const deliveryNote = payload.data?.delivery ? ` (${payload.data.delivery})` : "";
       const resendNote = payload.data?.resendId ? ` Resend ID: ${payload.data.resendId}.` : "";
       setSuccess(
-        `${name} için eğitmen bildirimi ${email} adresine gönderildi${deliveryNote}.${resendNote} Gelen kutusu ve spam klasörünü kontrol edin.`,
+        `${name} için eğitmen bildirimi gönderildi.\n${email}${deliveryNote}.${resendNote}\nGelen kutusu ve spam klasörünü kontrol edin.`,
       );
       router.refresh();
     } catch (notifyError) {
@@ -152,8 +153,15 @@ export function AdminInstructorsManager({ initialInstructors }: AdminInstructors
     }
   }
 
+  function clearFeedback() {
+    setError(null);
+    setSuccess(null);
+  }
+
   return (
     <div className="space-y-6">
+      <AdminFeedbackToast success={success} error={error} onDismiss={clearFeedback} />
+
       <div className="rounded-[1.75rem] border border-sky-200 bg-sky-50/70 p-6">
         <h2 className="text-lg font-bold text-navy-950">Eğitmen nasıl eklenir?</h2>
         <p className="mt-2 text-sm text-slate-700">
@@ -165,17 +173,6 @@ export function AdminInstructorsManager({ initialInstructors }: AdminInstructors
           rolü korunur; aynı hesap hem mevcut paneline hem Eğitmen Paneli&apos;ne girebilir.
         </p>
       </div>
-
-      {error ? (
-        <p className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-          {error}
-        </p>
-      ) : null}
-      {success ? (
-        <p className="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">
-          {success}
-        </p>
-      ) : null}
 
       <div className="overflow-hidden rounded-[1.75rem] border border-slate-200 bg-white shadow-sm">
         <div className="border-b border-slate-100 bg-slate-50 px-5 py-4">

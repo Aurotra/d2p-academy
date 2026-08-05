@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 import type { AdminMember } from "@/core/domain/admin-member";
+import { AdminFeedbackToast } from "@/presentation/components/admin/admin-feedback-toast";
 import { Button } from "@/presentation/components/ui/button";
 
 function formatDate(value: string): string {
@@ -111,7 +112,7 @@ export function AdminMembersTable({ members }: { members: AdminMember[] }) {
       const deliveryNote = payload.data?.delivery ? ` (${payload.data.delivery})` : "";
       const resendNote = payload.data?.resendId ? ` Resend ID: ${payload.data.resendId}.` : "";
       setSuccess(
-        `${name} için eğitmen bildirimi ${email} adresine gönderildi${deliveryNote}.${resendNote} Gelen kutusu ve spam klasörünü kontrol edin.`,
+        `${name} için eğitmen bildirimi gönderildi.\n${email}${deliveryNote}.${resendNote}\nGelen kutusu ve spam klasörünü kontrol edin.`,
       );
       router.refresh();
     } catch (notifyError) {
@@ -182,23 +183,20 @@ export function AdminMembersTable({ members }: { members: AdminMember[] }) {
     }
   }
 
+  function clearFeedback() {
+    setError(null);
+    setSuccess(null);
+    setWarning(null);
+  }
+
   return (
     <div className="space-y-4">
-      {error ? (
-        <p className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-          {error}
-        </p>
-      ) : null}
-      {success ? (
-        <p className="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">
-          {success}
-        </p>
-      ) : null}
-      {warning ? (
-        <p className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
-          {warning}
-        </p>
-      ) : null}
+      <AdminFeedbackToast
+        success={success}
+        error={error}
+        warning={warning}
+        onDismiss={clearFeedback}
+      />
 
       <div className="overflow-hidden rounded-[1.75rem] border border-slate-200 bg-white shadow-sm">
         <div className="overflow-x-auto">

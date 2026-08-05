@@ -329,6 +329,43 @@ function EventFormFields({
   );
 }
 
+function formatNotificationFeedback(payload: {
+  notificationSummary?: string;
+  notificationError?: string | null;
+  instructorNotifications?: {
+    sent: number;
+    attempted: number;
+    failed: Array<{ fullName: string; email: string; emailError: string | null }>;
+  };
+}): { success: string | null; warning: string | null } {
+  if (payload.notificationError) {
+    return {
+      success: "Etkinlik kaydedildi.",
+      warning: `Eğitmen bildirimi gönderilemedi: ${payload.notificationError}`,
+    };
+  }
+
+  if (!payload.notificationSummary) {
+    return { success: "Etkinlik kaydedildi.", warning: null };
+  }
+
+  const failedDetails = payload.instructorNotifications?.failed
+    .map((item) => `${item.fullName} (${item.email}): ${item.emailError ?? "hata"}`)
+    .join("\n");
+
+  if ((payload.instructorNotifications?.failed.length ?? 0) > 0) {
+    return {
+      success: "Etkinlik kaydedildi.",
+      warning: `${payload.notificationSummary}${failedDetails ? `\n${failedDetails}` : ""}`,
+    };
+  }
+
+  return {
+    success: `Etkinlik kaydedildi.\n${payload.notificationSummary}`,
+    warning: null,
+  };
+}
+
 export function AdminEventsManager() {
   const [events, setEvents] = useState<AdminEventRecord[]>([]);
   const [categories, setCategories] = useState<EventCategoryOption[]>([]);
@@ -342,6 +379,7 @@ export function AdminEventsManager() {
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [savingEventId, setSavingEventId] = useState<string | null>(null);
+  const [notifyingEventId, setNotifyingEventId] = useState<string | null>(null);
   const editCardRef = useRef<HTMLDivElement | null>(null);
 
   async function loadData() {
@@ -438,7 +476,12 @@ export function AdminEventsManager() {
       const responsePayload = (await response.json()) as {
         error?: string;
         notificationSummary?: string;
-        instructorNotifications?: { sent: number; attempted: number; failed: unknown[] };
+        notificationError?: string | null;
+        instructorNotifications?: {
+          sent: number;
+          attempted: number;
+          failed: Array<{ fullName: string; email: string; emailError: string | null }>;
+        };
       };
 
       if (!response.ok) {
@@ -446,14 +489,9 @@ export function AdminEventsManager() {
       }
 
       setCreateForm(defaultForm);
-      setSuccess("Etkinlik oluşturuldu.");
-      if (responsePayload.notificationSummary) {
-        if ((responsePayload.instructorNotifications?.failed.length ?? 0) > 0) {
-          setWarning(responsePayload.notificationSummary);
-        } else if (responsePayload.instructorNotifications?.sent) {
-          setSuccess(`Etkinlik oluşturuldu.\n${responsePayload.notificationSummary}`);
-        }
-      }
+      const feedback = formatNotificationFeedback(responsePayload);
+      setSuccess(feedback.success);
+      setWarning(feedback.warning);
       await loadData();
     } catch (saveError) {
       setError(saveError instanceof Error ? saveError.message : "Kayıt başarısız.");
@@ -482,24 +520,21 @@ export function AdminEventsManager() {
       const responsePayload = (await response.json()) as {
         error?: string;
         notificationSummary?: string;
-        instructorNotifications?: { sent: number; attempted: number; failed: unknown[] };
+        notificationError?: string | null;
+        instructorNotifications?: {
+          sent: number;
+          attempted: number;
+          failed: Array<{ fullName: string; email: string; emailError: string | null }>;
+        };
       };
 
       if (!response.ok) {
         throw new Error(responsePayload.error ?? "Etkinlik güncellenemedi.");
       }
 
-      if (responsePayload.notificationSummary) {
-        if ((responsePayload.instructorNotifications?.failed.length ?? 0) > 0) {
-          setWarning(`Etkinlik güncellendi.\n${responsePayload.notificationSummary}`);
-        } else if (responsePayload.instructorNotifications?.sent) {
-          setSuccess(`Etkinlik güncellendi.\n${responsePayload.notificationSummary}`);
-        } else {
-          setSuccess("Etkinlik güncellendi.");
-        }
-      } else {
-        setSuccess("Etkinlik güncellendi.");
-      }
+      const feedback = formatNotificationFeedback(responsePayload);
+      setSuccess(feedback.success);
+      setWarning(feedback.warning);
 
       cancelEditing();
       await loadData();
@@ -550,6 +585,50 @@ export function AdminEventsManager() {
       await loadData();
     } catch (deleteError) {
       setError(deleteError instanceof Error ? deleteError.message : "Silme başarısız.");
+    }
+  }
+
+  async function notifyEventInstructors(event: AdminEventRecord) {
+    if (event.instructorIds.length === 0) {
+      setWarning("Bu etkinliğe atanmış eğitmen yok.");
+      return;
+    }
+
+    setNotifyingEventId(event.id);
+    setError(null);
+    setSuccess(null);
+    setWarning(null);
+
+    try {
+      const response = await fetch(`/api/v1/admin/events/${event.id}/notify-instructors`, {
+        method: "POST",
+      });
+      const payload = (await response.json()) as {
+        error?: string;
+        data?: {
+          notificationSummary?: string;
+          instructorNotifications?: {
+            sent: number;
+            attempted: number;
+            failed: Array<{ fullName: string; email: string; emailError: string | null }>;
+          };
+        };
+      };
+
+      if (!response.ok) {
+        throw new Error(payload.error ?? "Eğitmen bildirimi gönderilemedi.");
+      }
+
+      const feedback = formatNotificationFeedback({
+        notificationSummary: payload.data?.notificationSummary,
+        instructorNotifications: payload.data?.instructorNotifications,
+      });
+      setSuccess(feedback.success?.replace("kaydedildi", "bildirimi tamamlandı") ?? "Eğitmen bildirimi gönderildi.");
+      setWarning(feedback.warning);
+    } catch (notifyError) {
+      setError(notifyError instanceof Error ? notifyError.message : "Bildirim gönderilemedi.");
+    } finally {
+      setNotifyingEventId(null);
     }
   }
 
@@ -637,6 +716,18 @@ export function AdminEventsManager() {
                         >
                           Yoklama
                         </Link>
+                        {event.instructorIds.length > 0 ? (
+                          <Button
+                            type="button"
+                            variant="outline"
+                            disabled={notifyingEventId === event.id}
+                            onClick={() => void notifyEventInstructors(event)}
+                          >
+                            {notifyingEventId === event.id
+                              ? "Gönderiliyor..."
+                              : "Eğitmenlere bildirim gönder"}
+                          </Button>
+                        ) : null}
                       </div>
                     </form>
                   ) : (
@@ -688,6 +779,18 @@ export function AdminEventsManager() {
                         >
                           Yoklama
                         </Link>
+                        {event.instructorIds.length > 0 ? (
+                          <Button
+                            type="button"
+                            variant="outline"
+                            disabled={notifyingEventId === event.id}
+                            onClick={() => void notifyEventInstructors(event)}
+                          >
+                            {notifyingEventId === event.id
+                              ? "Gönderiliyor..."
+                              : "Eğitmenlere bildirim gönder"}
+                          </Button>
+                        ) : null}
                         {event.status === "published" ? (
                           <Button
                             variant="secondary"

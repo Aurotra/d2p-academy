@@ -1,7 +1,7 @@
 const BRAND_PRIMARY = "#2563eb";
-const LOGO_URL = "https://d2pacademy.com/logo.png";
-const FOOTER_TEXT = "© 2025 D2P Academy | ATH Mühendislik";
 const SITE_URL = "https://www.d2p.com.tr";
+const LOGO_URL = `${SITE_URL}/d2p-logo.svg`;
+const FOOTER_TEXT = "© 2025 D2P Academy | ATH Mühendislik";
 
 function emailLayout(content: string): string {
   return `<!DOCTYPE html>
@@ -124,7 +124,7 @@ export async function sendResendEmail(input: {
   }
 
   const from =
-    Deno.env.get("RESEND_FROM_EMAIL")?.trim() || "D2P Academy <bildirim@d2pacademy.com>";
+    Deno.env.get("RESEND_FROM_EMAIL")?.trim() || "D2P Academy <info@d2p.com.tr>";
 
   const response = await fetch("https://api.resend.com/emails", {
     method: "POST",

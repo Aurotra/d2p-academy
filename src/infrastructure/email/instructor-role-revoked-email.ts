@@ -1,10 +1,11 @@
 import "server-only";
 
 import { sendResendEmail } from "@/infrastructure/email/send-resend-email";
+import { EMAIL_LOGO_URL } from "@/shared/constants/email-brand";
 import { SITE_URL } from "@/shared/constants/site";
 
 const BRAND_PRIMARY = "#2563eb";
-const LOGO_URL = "https://d2pacademy.com/logo.png";
+const LOGO_URL = EMAIL_LOGO_URL;
 const FOOTER_TEXT = "© 2025 D2P Academy | ATH Mühendislik";
 
 function escapeHtml(value: string): string {
