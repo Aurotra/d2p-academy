@@ -74,6 +74,14 @@ export function buildEnrollmentFormStatusLabel(input: {
 
   const missing = steps.filter((step) => !step.done).map((step) => step.label);
   if (missing.length === 0) {
+    const requiresSurveys = input.requiresSurveys !== false;
+    if (
+      requiresSurveys &&
+      !input.postTestCompleted &&
+      !input.postTestUnlocked
+    ) {
+      return "Kayıt tamam — etkinlik sonrası son test";
+    }
     return "Formlar tamam";
   }
   if (missing.length === steps.length) {

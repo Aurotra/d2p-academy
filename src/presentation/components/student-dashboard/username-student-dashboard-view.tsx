@@ -91,8 +91,8 @@ function EnrollmentAction({ item }: { item: EnrollmentSummary }) {
 
   if (requiresSurveys && !item.postTestCompleted && !item.postTestUnlocked) {
     return (
-      <p className="mt-3 text-sm text-slate-600">
-        Kayıt formları tamam. Son test, eğitmen ders yoklamasını tamamladığında açılacak.
+      <p className="mt-3 text-sm font-semibold text-emerald-800">
+        Etkinliğe kayıt tamamlandı. Son test (F03) etkinlik sonrası açılacak.
       </p>
     );
   }

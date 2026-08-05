@@ -341,11 +341,14 @@ export function CourseApplicationWizard({
         } else {
           setStep(4);
           setSuccess(
-            `Onaylar kaydedildi. D2P öğrenci kodunuz: ${payload.data.studentCode}. Son test (F03), eğitmen zorunlu ders yoklamasını tamamladığında açılacak.`,
+            `Etkinliğe kaydınız tamamlandı. D2P öğrenci kodunuz: ${payload.data.studentCode}`,
           );
         }
       } else {
         setStep(4);
+        setSuccess(
+          `Etkinliğe kaydınız tamamlandı. D2P öğrenci kodunuz: ${payload.data.studentCode}`,
+        );
         if (next && !next.profileComplete) {
           setError(profileCertificateBlockMessage(next.profileProgressPercent));
         }
@@ -572,7 +575,9 @@ export function CourseApplicationWizard({
         ? "done"
         : postTestUnlocked
           ? "action"
-          : "pending";
+          : "idle";
+  const registrationCompletePendingPostTest =
+    registrationDone && state.requiresSurveys && !sonTestDone && !postTestUnlocked;
   const sertifikaTone: StepTone = !registrationDone
     ? "idle"
     : state.requiresSurveys && !sonTestDone
@@ -596,9 +601,14 @@ export function CourseApplicationWizard({
     },
     {
       id: 4,
-      label: "Sertifika onay",
-      tone: sertifikaTone,
-      enabled: registrationDone && (!state.requiresSurveys || sonTestDone),
+      label: registrationCompletePendingPostTest || (registrationDone && !formsDone)
+        ? "Kayıt tamam"
+        : "Sertifika onay",
+      tone:
+        registrationCompletePendingPostTest || (registrationDone && !formsDone && !sertifikaDone)
+          ? "done"
+          : sertifikaTone,
+      enabled: registrationDone,
     },
   ];
 
@@ -989,9 +999,11 @@ export function CourseApplicationWizard({
 
       {step === 4 ? (
         <section
-          className={`space-y-3 rounded-[2rem] border p-6 shadow-sm ${
+          className={`space-y-4 rounded-[2rem] border p-6 shadow-sm ${
             sertifikaDone
               ? "border-emerald-200 bg-emerald-50"
+              : registrationCompletePendingPostTest || (registrationDone && !formsDone)
+                ? "border-emerald-200 bg-emerald-50"
               : coreConsentsAccepted && !mediaConsentGranted
                 ? "border-red-200 bg-red-50"
               : formsDone && !profileReady
@@ -1001,7 +1013,11 @@ export function CourseApplicationWizard({
                   : "border-slate-200 bg-slate-50"
           }`}
         >
-          <h2 className="text-xl font-bold text-navy-950">Sertifika onay</h2>
+          <h2 className="text-xl font-bold text-navy-950">
+            {registrationCompletePendingPostTest || (registrationDone && !formsDone && !sertifikaDone)
+              ? "Kayıt tamamlandı"
+              : "Sertifika onay"}
+          </h2>
           {sertifikaDone ? (
             <p className="text-sm text-emerald-900">
               Sertifikanız onaylandı ve oluşturuldu. Öğrenci panelindeki Sertifikalarım
@@ -1022,6 +1038,87 @@ export function CourseApplicationWizard({
                 Onaylar adımına git →
               </button>
             </div>
+          ) : registrationCompletePendingPostTest ? (
+            <div className="space-y-4 text-sm">
+              <p className="text-base font-semibold text-emerald-950">
+                {state.eventTitle} etkinliğine kayıt işleminiz başarıyla tamamlandı.
+              </p>
+              {state.studentCode ? (
+                <p className="rounded-xl border border-emerald-300 bg-white px-4 py-3 font-mono text-sm font-bold text-navy-950">
+                  D2P öğrenci kodu: {state.studentCode}
+                </p>
+              ) : null}
+              <div className="rounded-xl border border-emerald-200 bg-white/80 px-4 py-3 text-emerald-950">
+                <p className="font-semibold">Tamamlanan kayıt adımları</p>
+                <ul className="mt-2 list-disc space-y-1 pl-5">
+                  <li>Tanışma formu (F01)</li>
+                  <li>Ön test (F02)</li>
+                  <li>Veli onayları (F05, F06, F07)</li>
+                </ul>
+              </div>
+              <div className="rounded-xl border border-slate-200 bg-white px-4 py-3 text-slate-700">
+                <p className="font-semibold text-navy-950">Etkinlik sonrası</p>
+                <ul className="mt-2 list-disc space-y-1 pl-5">
+                  <li>Etkinlik günü eğitmen ders yoklaması alır.</li>
+                  <li>
+                    Zorunlu katılım onaylandığında son test (F03) açılır; öğrenci panelinden veya
+                    bu sayfadan doldurabilirsiniz.
+                  </li>
+                  <li>Sertifika için profilin %100 tamamlanmış olması gerekir.</li>
+                </ul>
+              </div>
+              {!profileReady ? (
+                <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-amber-950">
+                  <p className="font-semibold">Profil hatırlatması</p>
+                  <p className="mt-1">
+                    {profileCertificateBlockMessage(state.profileProgressPercent)}
+                  </p>
+                  <Link
+                    href={profileHref}
+                    className="mt-2 inline-flex font-bold text-document-primary underline"
+                  >
+                    Profili tamamla →
+                  </Link>
+                </div>
+              ) : null}
+            </div>
+          ) : registrationDone && !state.requiresSurveys && !sertifikaDone ? (
+            <div className="space-y-4 text-sm">
+              <p className="text-base font-semibold text-emerald-950">
+                {state.eventTitle} etkinliğine kayıt işleminiz başarıyla tamamlandı.
+              </p>
+              {state.studentCode ? (
+                <p className="rounded-xl border border-emerald-300 bg-white px-4 py-3 font-mono text-sm font-bold text-navy-950">
+                  D2P öğrenci kodu: {state.studentCode}
+                </p>
+              ) : null}
+              <div className="rounded-xl border border-emerald-200 bg-white/80 px-4 py-3 text-emerald-950">
+                <p className="font-semibold">Tamamlanan kayıt adımları</p>
+                <ul className="mt-2 list-disc space-y-1 pl-5">
+                  <li>Tanışma formu (F01)</li>
+                  <li>Veli onayları (F05, F06, F07)</li>
+                </ul>
+              </div>
+              {!profileReady ? (
+                <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-amber-950">
+                  <p className="font-semibold">Sertifika için profili tamamlayın</p>
+                  <p className="mt-1">
+                    {profileCertificateBlockMessage(state.profileProgressPercent)}
+                  </p>
+                  <Link
+                    href={profileHref}
+                    className="inline-flex font-bold text-document-primary underline"
+                  >
+                    Profili tamamla →
+                  </Link>
+                </div>
+              ) : (
+                <p className="text-emerald-900">
+                  Kayıt formlarınız ve profiliniz tamam. Sertifika süreci etkinlik sonrası
+                  değerlendirilecek.
+                </p>
+              )}
+            </div>
           ) : formsDone && !profileReady ? (
             <div className="space-y-2 text-sm text-red-900">
               <p className="font-semibold">
@@ -1037,13 +1134,6 @@ export function CourseApplicationWizard({
               >
                 Profil / kendini tanıtma adımını tamamla →
               </Link>
-            </div>
-          ) : registrationDone && state.requiresSurveys && !sonTestDone && !postTestUnlocked ? (
-            <div className="space-y-2 text-sm text-amber-950">
-              <p>
-                Kayıt formlarınız (tanışma, onaylar, ön test) tamam. Son test (F03), eğitmen ders
-                yoklamasında zorunlu katılımı onayladığında açılacak.
-              </p>
             </div>
           ) : registrationDone && state.requiresSurveys && !sonTestDone && postTestUnlocked ? (
             <div className="space-y-2 text-sm text-red-900">
