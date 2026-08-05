@@ -27,43 +27,43 @@ export function SiteFooter() {
           <div className="flex flex-wrap gap-x-4 gap-y-2">
             <Link
               href="/etkinlikler"
-              className="font-semibold text-sky-900 transition hover:text-document-primary"
+              className="inline-flex min-h-11 items-center font-semibold text-sky-900 transition hover:text-document-primary"
             >
               Etkinlikler
             </Link>
             <Link
               href="/hakkimizda"
-              className="font-semibold text-sky-900 transition hover:text-document-primary"
+              className="inline-flex min-h-11 items-center font-semibold text-sky-900 transition hover:text-document-primary"
             >
               Hakkımızda
             </Link>
             <Link
               href="/galeri"
-              className="font-semibold text-sky-900 transition hover:text-document-primary"
+              className="inline-flex min-h-11 items-center font-semibold text-sky-900 transition hover:text-document-primary"
             >
               Galeri
             </Link>
             <Link
               href="/iletisim"
-              className="font-semibold text-sky-900 transition hover:text-document-primary"
+              className="inline-flex min-h-11 items-center font-semibold text-sky-900 transition hover:text-document-primary"
             >
               İletişim
             </Link>
             <Link
               href={PARENT_GUIDE_PATH}
-              className="font-semibold text-sky-900 transition hover:text-document-primary"
+              className="inline-flex min-h-11 items-center font-semibold text-sky-900 transition hover:text-document-primary"
             >
               Veli Rehberi
             </Link>
             <Link
               href="/kvkk"
-              className="font-semibold text-sky-900 transition hover:text-document-primary"
+              className="inline-flex min-h-11 items-center font-semibold text-sky-900 transition hover:text-document-primary"
             >
               KVKK
             </Link>
             <Link
               href="/gizlilik"
-              className="font-semibold text-sky-900 transition hover:text-document-primary"
+              className="inline-flex min-h-11 items-center font-semibold text-sky-900 transition hover:text-document-primary"
             >
               Gizlilik
             </Link>
@@ -72,7 +72,7 @@ export function SiteFooter() {
             href={CONTACT.instagramUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 font-semibold text-sky-900 transition hover:text-document-primary"
+            className="inline-flex min-h-11 items-center gap-2 font-semibold text-sky-900 transition hover:text-document-primary"
           >
             <InstagramIcon />
             Instagram · @{CONTACT.instagramHandle}

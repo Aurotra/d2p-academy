@@ -207,7 +207,7 @@ export function SiteHeader() {
 
         <button
           type="button"
-          className="ml-auto inline-flex shrink-0 items-center justify-center rounded-xl border border-sky-200 bg-white/80 p-2.5 text-slate-800 shadow-sm transition hover:border-primary/30 hover:text-primary lg:hidden"
+          className="ml-auto inline-flex min-h-11 min-w-11 shrink-0 items-center justify-center rounded-xl border border-sky-200 bg-white/80 p-2.5 text-slate-800 shadow-sm transition hover:border-primary/30 hover:text-primary lg:hidden"
           aria-label={isMobileMenuOpen ? "Menüyü kapat" : "Menüyü aç"}
           aria-expanded={isMobileMenuOpen}
           aria-controls="mobile-main-menu"
@@ -227,7 +227,7 @@ export function SiteHeader() {
           />
           <nav
             id="mobile-main-menu"
-            className="relative z-40 border-t border-sky-200/80 bg-gradient-to-b from-sky-50 to-sky-100/95 px-4 py-5 shadow-lg shadow-sky-200/40 lg:hidden sm:px-6"
+            className="fixed inset-x-0 bottom-0 top-20 z-40 overflow-y-auto overscroll-contain border-t border-sky-200/80 bg-gradient-to-b from-sky-50 to-sky-100/95 px-4 py-5 shadow-lg shadow-sky-200/40 lg:hidden sm:px-6"
             aria-label="Mobil menü"
           >
             <ul className="space-y-1">

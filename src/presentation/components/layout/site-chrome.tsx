@@ -50,7 +50,7 @@ export function SiteChrome({ children }: SiteChromeProps) {
         ) : (
           <>
             <SiteHeader />
-            <main>{children}</main>
+            <main className="pb-24 sm:pb-0">{children}</main>
             <SiteFooter />
             <WhatsAppSupportWidget />
             <LiveSupportWidget />

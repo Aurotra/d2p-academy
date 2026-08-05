@@ -60,13 +60,14 @@ export function LiveSupportWidget() {
       type="button"
       aria-label="Canlı destek"
       disabled={!isReady}
-      className="fixed bottom-24 right-5 z-50 flex items-center gap-2 rounded-full bg-primary px-4 py-3 text-sm font-semibold text-white shadow-xl shadow-primary/30 transition hover:bg-primary-hover hover:shadow-glow-primary disabled:cursor-wait disabled:opacity-80"
+      className="fixed bottom-[4.75rem] right-4 z-50 flex min-h-11 items-center gap-2 rounded-full bg-primary px-3 py-3 text-sm font-semibold text-white shadow-xl shadow-primary/30 transition hover:bg-primary-hover hover:shadow-glow-primary disabled:cursor-wait disabled:opacity-80 sm:bottom-24 sm:right-5 sm:px-4"
       onClick={handleClick}
     >
       <span
-        className={`inline-flex h-2 w-2 rounded-full ${isReady ? "bg-emerald-400" : "animate-pulse bg-amber-300"}`}
+        className={`inline-flex h-2.5 w-2.5 rounded-full ${isReady ? "bg-emerald-400" : "animate-pulse bg-amber-300"}`}
       />
-      {isReady ? "Canlı Destek" : "Bağlanıyor..."}
+      <span className="hidden sm:inline">{isReady ? "Canlı Destek" : "Bağlanıyor..."}</span>
+      <span className="sr-only sm:hidden">{isReady ? "Canlı Destek" : "Bağlanıyor..."}</span>
     </button>
   );
 }

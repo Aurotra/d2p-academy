@@ -765,20 +765,20 @@ function Dialog({
   children: ReactNode;
 }) {
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 px-4">
-      <div className="w-full max-w-sm rounded-[1.5rem] border border-sky-200 bg-white p-6 shadow-xl">
-        <div className="mb-4 flex items-center justify-between gap-3">
+    <div className="fixed inset-0 z-50 flex items-end justify-center bg-slate-900/40 p-4 sm:items-center">
+      <div className="flex max-h-[min(90dvh,calc(100dvh-2rem))] w-full max-w-sm flex-col overflow-hidden rounded-[1.5rem] border border-sky-200 bg-white shadow-xl">
+        <div className="flex shrink-0 items-center justify-between gap-3 border-b border-slate-100 px-6 py-4">
           <h2 className="text-base font-bold text-navy-950">{title}</h2>
           <button
             type="button"
             onClick={onClose}
             aria-label="Kapat"
-            className="rounded-lg px-2 py-1 text-slate-400 transition hover:bg-slate-100 hover:text-slate-700"
+            className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-xl text-slate-500 transition hover:bg-slate-100 hover:text-slate-700"
           >
             ✕
           </button>
         </div>
-        {children}
+        <div className="overflow-y-auto overscroll-contain px-6 py-4">{children}</div>
       </div>
     </div>
   );

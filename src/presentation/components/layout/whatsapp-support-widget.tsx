@@ -45,10 +45,11 @@ export function WhatsAppSupportWidget() {
       target="_blank"
       rel="noopener noreferrer"
       aria-label={CONTACT.whatsappLabel}
-      className="fixed bottom-5 right-5 z-50 flex max-w-[calc(100vw-2.5rem)] items-center gap-2.5 rounded-full bg-[#25D366] px-4 py-3 text-sm font-semibold text-white shadow-xl shadow-emerald-900/25 transition hover:bg-[#20bd5a] hover:shadow-emerald-900/35 sm:max-w-none"
+      className="fixed bottom-4 right-4 z-50 flex min-h-11 max-w-[calc(100vw-2rem)] items-center gap-2 rounded-full bg-[#25D366] px-3 py-3 text-sm font-semibold text-white shadow-xl shadow-emerald-900/25 transition hover:bg-[#20bd5a] hover:shadow-emerald-900/35 sm:bottom-5 sm:right-5 sm:max-w-none sm:gap-2.5 sm:px-4"
     >
       <WhatsAppIcon />
-      <span className="truncate">{CONTACT.whatsappLabel}</span>
+      <span className="hidden truncate sm:inline">{CONTACT.whatsappLabel}</span>
+      <span className="sr-only sm:hidden">{CONTACT.whatsappLabel}</span>
     </Link>
   );
 }

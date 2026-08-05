@@ -70,7 +70,7 @@ export function AdminFeedbackToast({
           <button
             type="button"
             onClick={onDismiss}
-            className="shrink-0 rounded-lg px-2 py-1 text-xs font-semibold opacity-70 transition hover:bg-black/5 hover:opacity-100"
+            className="inline-flex min-h-11 min-w-11 shrink-0 items-center justify-center rounded-lg px-2 text-xs font-semibold opacity-70 transition hover:bg-black/5 hover:opacity-100"
           >
             Kapat
           </button>

@@ -201,7 +201,7 @@ export function RegistrationEditableRow({
               variant="secondary"
               disabled={isSaving}
               onClick={() => void handleSave()}
-              className="min-h-[40px] px-3 py-2 text-xs"
+              className="min-h-[44px] px-3 py-2 text-xs"
             >
               {isSaving ? "Kaydediliyor..." : "Kaydet"}
             </Button>
@@ -210,7 +210,7 @@ export function RegistrationEditableRow({
               variant="ghost"
               disabled={isSaving}
               onClick={resetForm}
-              className="min-h-[40px] px-3 py-2 text-xs"
+              className="min-h-[44px] px-3 py-2 text-xs"
             >
               İptal
             </Button>
@@ -265,7 +265,7 @@ export function RegistrationEditableRow({
             type="button"
             variant="outline"
             onClick={() => setIsEditing(true)}
-            className="min-h-[36px] w-fit px-3 py-1.5 text-xs"
+              className="min-h-[44px] w-fit px-3 py-2 text-xs"
           >
             Düzenle
           </Button>

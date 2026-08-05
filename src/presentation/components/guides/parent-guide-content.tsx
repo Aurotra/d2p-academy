@@ -136,8 +136,8 @@ export function ParentGuideContent() {
             Giriş yaptıktan sonra <strong>Panel → Çocuk hesapları → + Çocuk ekle</strong> yolunu
             izleyin.
           </p>
-          <div className="mt-4 overflow-hidden rounded-xl border border-slate-200">
-            <table className="w-full text-left text-sm">
+          <div className="mt-4 overflow-x-auto rounded-xl border border-slate-200">
+            <table className="min-w-[32rem] w-full text-left text-sm">
               <thead className="bg-slate-50 text-slate-600">
                 <tr>
                   <th className="px-4 py-3 font-semibold">Bilgi</th>
@@ -176,8 +176,8 @@ export function ParentGuideContent() {
 
         <section>
           <h2 className="text-xl font-bold text-slate-900">3. Veli girişi mi, öğrenci girişi mi?</h2>
-          <div className="mt-4 overflow-hidden rounded-xl border border-slate-200">
-            <table className="w-full text-left text-sm">
+          <div className="mt-4 overflow-x-auto rounded-xl border border-slate-200">
+            <table className="min-w-[32rem] w-full text-left text-sm">
               <thead className="bg-slate-50 text-slate-600">
                 <tr>
                   <th className="px-4 py-3 font-semibold" />
@@ -288,8 +288,8 @@ export function ParentGuideContent() {
           </div>
 
           <p className="mt-4">Açılan sayfada adım adım şu bölümler gelir:</p>
-          <div className="mt-4 overflow-hidden rounded-xl border border-slate-200">
-            <table className="w-full text-left text-sm">
+          <div className="mt-4 overflow-x-auto rounded-xl border border-slate-200">
+            <table className="min-w-[32rem] w-full text-left text-sm">
               <thead className="bg-slate-50 text-slate-600">
                 <tr>
                   <th className="px-4 py-3 font-semibold">Adım</th>
