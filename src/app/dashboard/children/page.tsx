@@ -43,17 +43,33 @@ export default async function DashboardChildrenPage() {
 
   const { data: eventRows } = await supabase
     .from("events")
-    .select("id, title, start_at, end_at")
+    .select(
+      "id, title, slug, description, event_type, start_at, end_at, location_name, is_online, event_categories ( name, color )",
+    )
     .eq("status", "published")
     .gte("end_at", new Date().toISOString())
     .order("start_at", { ascending: true })
     .limit(40);
 
-  const upcomingEvents: EnrollableEventOption[] = (eventRows ?? []).map((event) => ({
-    id: event.id,
-    title: event.title,
-    startAt: event.start_at,
-  }));
+  const upcomingEvents: EnrollableEventOption[] = (eventRows ?? []).map((event) => {
+    const category = Array.isArray(event.event_categories)
+      ? event.event_categories[0]
+      : event.event_categories;
+
+    return {
+      id: event.id,
+      title: event.title,
+      slug: event.slug,
+      description: event.description ?? "",
+      eventType: event.event_type as EnrollableEventOption["eventType"],
+      categoryName: category?.name ?? null,
+      categoryColor: category?.color ?? null,
+      startAt: event.start_at,
+      endAt: event.end_at,
+      locationName: event.location_name,
+      isOnline: Boolean(event.is_online),
+    };
+  });
 
   const baseStudents = data ?? [];
 

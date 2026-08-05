@@ -6,9 +6,13 @@ import { useEffect, useState, type FormEvent, type ReactNode } from "react";
 
 import { Button } from "@/presentation/components/ui/button";
 import { Input } from "@/presentation/components/ui/input";
-import { Select } from "@/presentation/components/ui/select";
 import { tryBuildStudentUsernameFromIdentity } from "@/shared/utils/student-username";
 import { buildEnrollmentFormStatusLabel } from "@/shared/utils/enrollment-form-status";
+import { EVENT_TYPE_LABELS, type EventType } from "@/core/domain/event";
+import {
+  eventLocationLabel,
+  formatEventDateTimeRange,
+} from "@/shared/utils/event-format";
 
 export type ChildProgressPreview = {
   enrollments: Array<{
@@ -48,7 +52,15 @@ export type ChildStudent = {
 export type EnrollableEventOption = {
   id: string;
   title: string;
+  slug: string;
+  description: string;
+  eventType: EventType;
+  categoryName: string | null;
+  categoryColor: string | null;
   startAt: string;
+  endAt: string;
+  locationName: string | null;
+  isOnline: boolean;
 };
 
 const STATUS_LABELS: Record<string, string> = {
@@ -78,8 +90,15 @@ function formatDate(value: string): string {
   }).format(date);
 }
 
-function formatEventOption(event: EnrollableEventOption): string {
-  return `${event.title} · ${formatDate(event.startAt)}`;
+function formatEventSchedule(event: EnrollableEventOption): string {
+  return formatEventDateTimeRange(new Date(event.startAt), new Date(event.endAt));
+}
+
+function formatEventLocation(event: EnrollableEventOption): string {
+  return eventLocationLabel({
+    isOnline: event.isOnline,
+    locationName: event.locationName,
+  });
 }
 
 function emptyPreview(): ChildProgressPreview {
@@ -675,8 +694,13 @@ function EnrollStudentDialog({
   useEffect(() => {
     if (initialEventId) {
       setEventId(initialEventId);
+      return;
     }
-  }, [initialEventId]);
+
+    if (events.length === 1) {
+      setEventId(events[0]?.id ?? "");
+    }
+  }, [initialEventId, events]);
 
   async function handleSubmit(event: FormEvent) {
     event.preventDefault();
@@ -726,7 +750,7 @@ function EnrollStudentDialog({
   }
 
   return (
-    <Dialog title={`${student.full_name} — etkinliğe kaydet`} onClose={onClose}>
+    <Dialog title={`${student.full_name} — etkinliğe kaydet`} onClose={onClose} size="lg">
       {events.length === 0 ? (
         <div className="space-y-4">
           <p className="text-sm text-slate-600">
@@ -745,20 +769,69 @@ function EnrollStudentDialog({
           </p>
         </div>
       ) : (
-        <form onSubmit={handleSubmit} className="space-y-3">
-          <Select
-            label="Etkinlik"
-            value={eventId}
-            onChange={(e) => setEventId(e.target.value)}
-            required
-          >
-            <option value="">Etkinlik seçin</option>
-            {events.map((item) => (
-              <option key={item.id} value={item.id}>
-                {formatEventOption(item)}
-              </option>
-            ))}
-          </Select>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <p className="text-sm leading-6 text-slate-600">
+            <strong className="font-semibold text-navy-950">{student.full_name}</strong> bu etkinliğe
+            kaydedilecek. Kayıt sonrası tanışma ve onay formları açılır.
+          </p>
+
+          <fieldset className="space-y-3">
+            <legend className="text-sm font-semibold text-navy-950">Etkinlik seçin</legend>
+            {events.map((item) => {
+              const selected = eventId === item.id;
+              return (
+                <label
+                  key={item.id}
+                  className={`block cursor-pointer rounded-2xl border p-4 transition ${
+                    selected
+                      ? "border-document-primary bg-sky-50/60 ring-2 ring-document-primary/15"
+                      : "border-slate-200 bg-white hover:border-sky-300"
+                  }`}
+                >
+                  <input
+                    type="radio"
+                    name="enroll-event"
+                    value={item.id}
+                    checked={selected}
+                    onChange={() => setEventId(item.id)}
+                    className="sr-only"
+                  />
+                  <div className="flex flex-wrap gap-2">
+                    <span className="inline-flex rounded-full bg-cyan-100 px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-wide text-cyan-900">
+                      {EVENT_TYPE_LABELS[item.eventType]}
+                    </span>
+                    {item.categoryName ? (
+                      <span
+                        className="inline-flex rounded-full px-2.5 py-0.5 text-[11px] font-bold text-white"
+                        style={{ backgroundColor: item.categoryColor ?? "#2563eb" }}
+                      >
+                        {item.categoryName}
+                      </span>
+                    ) : null}
+                    {item.isOnline ? (
+                      <span className="inline-flex rounded-full bg-slate-100 px-2.5 py-0.5 text-[11px] font-bold text-slate-700">
+                        Online
+                      </span>
+                    ) : null}
+                  </div>
+                  <p className="mt-3 text-base font-bold leading-snug text-navy-950">{item.title}</p>
+                  <p className="mt-2 text-sm font-medium text-slate-700">{formatEventSchedule(item)}</p>
+                  <p className="mt-1 text-sm text-slate-600">{formatEventLocation(item)}</p>
+                  {item.description.trim() ? (
+                    <p className="mt-3 text-sm leading-6 text-slate-600">{item.description.trim()}</p>
+                  ) : null}
+                  <Link
+                    href={`/etkinlikler/${item.slug}`}
+                    className="mt-3 inline-flex text-sm font-semibold text-document-primary hover:underline"
+                    onClick={(clickEvent) => clickEvent.stopPropagation()}
+                  >
+                    Etkinlik detayını gör →
+                  </Link>
+                </label>
+              );
+            })}
+          </fieldset>
+
           {error ? <p className="text-sm text-red-600">{error}</p> : null}
           <DialogActions
             onClose={onClose}
@@ -776,16 +849,22 @@ function Dialog({
   title,
   onClose,
   children,
+  size = "sm",
 }: {
   title: string;
   onClose: () => void;
   children: ReactNode;
+  size?: "sm" | "lg";
 }) {
+  const widthClass = size === "lg" ? "max-w-xl" : "max-w-sm";
+
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center bg-slate-900/40 p-4 sm:items-center">
-      <div className="flex max-h-[min(90dvh,calc(100dvh-2rem))] w-full max-w-sm flex-col overflow-hidden rounded-[1.5rem] border border-sky-200 bg-white shadow-xl">
-        <div className="flex shrink-0 items-center justify-between gap-3 border-b border-slate-100 px-6 py-4">
-          <h2 className="text-base font-bold text-navy-950">{title}</h2>
+      <div
+        className={`flex max-h-[min(90dvh,calc(100dvh-2rem))] w-full ${widthClass} flex-col overflow-hidden rounded-[1.5rem] border border-sky-200 bg-white shadow-xl`}
+      >
+        <div className="flex shrink-0 items-start justify-between gap-3 border-b border-slate-100 px-6 py-4">
+          <h2 className="pr-2 text-base font-bold leading-snug text-navy-950">{title}</h2>
           <button
             type="button"
             onClick={onClose}

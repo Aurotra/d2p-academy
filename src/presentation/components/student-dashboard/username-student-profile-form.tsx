@@ -2,20 +2,20 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useEffect, useState, type FormEvent } from "react";
 
 import { Button } from "@/presentation/components/ui/button";
 import { Input } from "@/presentation/components/ui/input";
 import { Select } from "@/presentation/components/ui/select";
-import { Textarea } from "@/presentation/components/ui/textarea";
 import {
   AVATAR_OPTIONS,
   CODING_EXPERIENCE_OPTIONS,
   GRADE_LEVEL_OPTIONS,
   INTEREST_OPTIONS,
-  LIKERT_OPTIONS,
 } from "@/shared/constants/profile-options";
-import { calculateProgress } from "@/lib/utils/progress";
+import { calculateProgress, isProfileComplete } from "@/lib/utils/progress";
+import { ProfileMotivationFields } from "@/presentation/components/profile/profile-motivation-fields";
 
 type ProfileForm = {
   full_name: string;
@@ -52,12 +52,16 @@ export function UsernameStudentProfileForm({
   title = "Profilim",
   backHref = "/student-dashboard",
   backLabel = "Panele dön",
+  redirectOnCompleteHref,
 }: {
   apiPath?: string;
   title?: string;
   backHref?: string;
   backLabel?: string;
+  /** Tam profil kaydından sonra yönlendirilecek sayfa (ör. veli akışında etkinlikler). */
+  redirectOnCompleteHref?: string;
 } = {}) {
+  const router = useRouter();
   const [form, setForm] = useState<ProfileForm>(emptyForm);
   const [progress, setProgress] = useState(0);
   const [error, setError] = useState<string | null>(null);
@@ -163,7 +167,35 @@ export function UsernameStudentProfileForm({
         profile_avatar_url: form.profile_avatar_url || null,
       });
       setProgress(nextProgress);
-      setSuccess("Profil kaydedildi.");
+
+      const profileComplete = isProfileComplete({
+        full_name: form.full_name,
+        gender: form.gender,
+        grade_level: form.grade_level,
+        school_name: form.school_name,
+        city_district: form.city_district,
+        experience_data: {
+          coding_experience: form.coding_experience,
+          proje_sayisi: form.proje_sayisi === "" ? null : Number(form.proje_sayisi),
+        },
+        interests: form.interests,
+        motivation_data: {
+          hedef: form.hedef,
+          beklenti: form.beklenti === "" ? null : Number(form.beklenti),
+        },
+        profile_avatar_url: form.profile_avatar_url || null,
+      });
+
+      if (profileComplete && redirectOnCompleteHref) {
+        router.push(redirectOnCompleteHref);
+        return;
+      }
+
+      setSuccess(
+        profileComplete
+          ? "Profil kaydedildi."
+          : `Profil kaydedildi. Etkinliklere geçmek için profilin %100 dolu olmalı (şu an %${nextProgress}).`,
+      );
     } catch (saveError) {
       setError(saveError instanceof Error ? saveError.message : "Kayıt hatası.");
     } finally {
@@ -274,23 +306,16 @@ export function UsernameStudentProfileForm({
           })}
         </div>
       </fieldset>
-      <Textarea
-        label="Hedefin"
-        value={form.hedef}
-        onChange={(e) => setForm((f) => ({ ...f, hedef: e.target.value }))}
-      />
-      <Select
-        label="Beklenti"
-        value={form.beklenti}
-        onChange={(e) => setForm((f) => ({ ...f, beklenti: e.target.value }))}
-      >
-        <option value="">Seçiniz</option>
-        {LIKERT_OPTIONS.map((option) => (
-          <option key={option.value} value={String(option.value)}>
-            {option.label}
-          </option>
-        ))}
-      </Select>
+      <fieldset>
+        <legend className="mb-3 text-sm font-semibold text-navy-900">Motivasyon</legend>
+        <ProfileMotivationFields
+          hedef={form.hedef}
+          beklenti={form.beklenti === "" ? "" : Number(form.beklenti)}
+          onHedefChange={(value) => setForm((f) => ({ ...f, hedef: value }))}
+          onBeklentiChange={(value) => setForm((f) => ({ ...f, beklenti: String(value) }))}
+          beklentiName="profile-beklenti"
+        />
+      </fieldset>
 
       <fieldset>
         <legend className="mb-2 text-sm font-medium text-navy-900">Avatar</legend>

@@ -56,3 +56,21 @@ export const LIKERT_OPTIONS = [
   { value: 4, label: "4" },
   { value: 5, label: "5 - Çok yüksek" },
 ] as const;
+
+export const PROFILE_GOAL_LABEL = "Bu eğitimde ne öğrenmek veya üretmek istiyorsunuz?";
+export const PROFILE_GOAL_PLACEHOLDER =
+  "Örn. 3D yazıcıda kendi tasarımımı basmak, bir günlük problem için prototip geliştirmek…";
+export const PROFILE_GOAL_HELPER = "Kısa bir cümle yeterli; en fazla 300 karakter.";
+
+export const PROFILE_D2P_EXPECTATION_LABEL = "D2P Academy eğitiminden beklentiniz";
+export const PROFILE_D2P_EXPECTATION_HELPER =
+  "Bu atölyede ne kadar yeni beceri kazanmayı veya gelişmeyi umuyorsunuz?";
+
+/** Anlamlı uçlar: genel LIKERT_OPTIONS yerine profil formlarında kullanılır. */
+export const D2P_EXPECTATION_LIKERT_OPTIONS = [
+  { value: 1, label: "1 — Henüz emin değilim / çok düşük beklenti" },
+  { value: 2, label: "2 — Biraz öğrenmeyi umuyorum" },
+  { value: 3, label: "3 — Orta düzeyde gelişim bekliyorum" },
+  { value: 4, label: "4 — İyi derecede gelişim bekliyorum" },
+  { value: 5, label: "5 — Çok şey öğrenmeyi ve gelişmeyi umuyorum" },
+] as const;

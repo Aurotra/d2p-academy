@@ -61,6 +61,7 @@ export default async function ParentChildProfilePage({ params }: PageProps) {
           title="Çocuk profili"
           backHref="/dashboard/children"
           backLabel="Çocuk hesaplarına dön"
+          redirectOnCompleteHref="/etkinlikler"
         />
       </div>
     </section>

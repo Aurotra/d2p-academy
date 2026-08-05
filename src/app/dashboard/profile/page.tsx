@@ -8,17 +8,16 @@ import { useEffect, useMemo, useState, type FormEvent } from "react";
 import type { StudentProfileData } from "@/core/domain/student-profile";
 import { SupabaseStudentProfileRepository } from "@/infrastructure/repositories/supabase-student-profile-repository";
 import { createSupabaseBrowserClient } from "@/infrastructure/supabase/create-browser-client";
+import { ProfileMotivationFields } from "@/presentation/components/profile/profile-motivation-fields";
 import { ProfileProgressBar } from "@/presentation/components/profile/profile-progress-bar";
 import { Button } from "@/presentation/components/ui/button";
 import { Input } from "@/presentation/components/ui/input";
 import { Select } from "@/presentation/components/ui/select";
-import { Textarea } from "@/presentation/components/ui/textarea";
 import {
   AVATAR_OPTIONS,
   CODING_EXPERIENCE_OPTIONS,
   GRADE_LEVEL_OPTIONS,
   INTEREST_OPTIONS,
-  LIKERT_OPTIONS,
 } from "@/shared/constants/profile-options";
 
 type AlertState =
@@ -325,44 +324,23 @@ export default function DashboardProfilePage() {
 
           <fieldset className="rounded-[1.75rem] border border-slate-200 bg-white p-6 shadow-sm">
             <legend className="px-2 text-lg font-bold text-slate-900">Bölüm D — Motivasyon</legend>
-            <div className="mt-4 space-y-4">
-              <Textarea
-                label="D2P Academy'den beklentiniz / hedefiniz (max 300 karakter)"
-                maxLength={300}
-                value={form.motivation_data.hedef}
-                onChange={(e) =>
+            <div className="mt-4">
+              <ProfileMotivationFields
+                hedef={form.motivation_data.hedef}
+                beklenti={form.motivation_data.beklenti}
+                onHedefChange={(value) =>
                   setForm({
                     ...form,
-                    motivation_data: { ...form.motivation_data, hedef: e.target.value },
+                    motivation_data: { ...form.motivation_data, hedef: value },
+                  })
+                }
+                onBeklentiChange={(value) =>
+                  setForm({
+                    ...form,
+                    motivation_data: { ...form.motivation_data, beklenti: value },
                   })
                 }
               />
-              <p className="text-xs text-slate-500">{form.motivation_data.hedef.length}/300</p>
-              <div>
-                <p className="mb-2 text-sm font-medium text-slate-900">Beklenti Düzeyi (1-5)</p>
-                <div className="space-y-2">
-                  {LIKERT_OPTIONS.map((option) => (
-                    <label key={option.value} className="flex items-center gap-2 text-sm">
-                      <input
-                        type="radio"
-                        name="beklenti"
-                        value={option.value}
-                        checked={form.motivation_data.beklenti === option.value}
-                        onChange={() =>
-                          setForm({
-                            ...form,
-                            motivation_data: {
-                              ...form.motivation_data,
-                              beklenti: option.value,
-                            },
-                          })
-                        }
-                      />
-                      {option.label}
-                    </label>
-                  ))}
-                </div>
-              </div>
             </div>
           </fieldset>
 
