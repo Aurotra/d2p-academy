@@ -27,7 +27,7 @@ export default async function InstructorAttendancePage({ params }: InstructorAtt
   }
 
   const access = await getEventAttendanceAccess(client, eventId);
-  if (!access.authorized || access.role !== "instructor") {
+  if (!access.authorized) {
     redirect("/instructor");
   }
 

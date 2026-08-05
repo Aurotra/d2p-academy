@@ -34,7 +34,9 @@ export interface EventAttendanceSheet {
   requiredLessonCount: number;
   totalLessonCount: number;
   students: AttendanceStudentRow[];
+  /** Yoklama işaretleme (etkinlik tarihleri içinde). */
   canEdit: boolean;
+  attendanceOpen: boolean;
 }
 
 export interface UpsertAttendanceInput {

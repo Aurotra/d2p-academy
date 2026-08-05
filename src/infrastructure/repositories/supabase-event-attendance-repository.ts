@@ -7,6 +7,7 @@ import type {
 } from "@/core/domain/event-attendance";
 import { formatStudentContact } from "@/shared/utils/format-student-contact";
 import { formatEventSessionLabel } from "@/shared/utils/event-session-labels";
+import { isEventAttendanceOpen } from "@/shared/utils/event-attendance-window";
 
 interface EventRow {
   id: string;
@@ -138,6 +139,8 @@ export class SupabaseEventAttendanceRepository {
       }
     }
 
+    const attendanceOpen = isEventAttendanceOpen(eventRow.start_at, eventRow.end_at);
+
     return {
       eventId: eventRow.id,
       eventTitle: eventRow.title,
@@ -169,7 +172,8 @@ export class SupabaseEventAttendanceRepository {
           attendanceComplete: totalLessonCount > 0 && presentCount >= requiredLessonCount,
         };
       }),
-      canEdit: options.canEdit,
+      canEdit: options.canEdit && attendanceOpen,
+      attendanceOpen,
     };
   }
 
@@ -178,6 +182,20 @@ export class SupabaseEventAttendanceRepository {
     actorId: string,
     input: UpsertAttendanceInput,
   ): Promise<void> {
+    const { data: event, error: eventError } = await this.client
+      .from("events")
+      .select("start_at, end_at")
+      .eq("id", eventId)
+      .maybeSingle();
+
+    if (eventError || !event) {
+      throw new Error("Etkinlik bulunamadı.");
+    }
+
+    if (!isEventAttendanceOpen(event.start_at, event.end_at)) {
+      throw new Error("Yoklama işaretleme yalnızca etkinlik tarihleri arasında yapılabilir.");
+    }
+
     const { data: session, error: sessionError } = await this.client
       .from("event_sessions")
       .select("id, event_id")

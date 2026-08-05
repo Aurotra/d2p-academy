@@ -61,8 +61,8 @@ export default async function InstructorHomePage() {
         </p>
         <h1 className="mt-2 text-2xl font-bold text-slate-900">Etkinliklerim</h1>
         <p className="mt-2 text-sm text-slate-600">
-          Size atanmış etkinliklerde ders saati bazlı yoklama alabilirsiniz. Her ders için öğrencinin
-          sınıfta olup olmadığını işaretleyin.
+          Size atanmış etkinliklerde kayıtlı öğrencileri görebilir, etkinlik tarihlerinde ders saati
+          bazlı yoklama alabilirsiniz.
         </p>
       </div>
 
@@ -97,7 +97,7 @@ export default async function InstructorHomePage() {
                     href={`/instructor/events/${event.id}/attendance`}
                     className="inline-flex items-center justify-center rounded-xl bg-document-primary px-5 py-3 text-sm font-semibold text-white transition hover:bg-document-primary-hover"
                   >
-                    Yoklama Al
+                    Kayıtlılar ve yoklama
                   </Link>
                 </div>
               </article>
