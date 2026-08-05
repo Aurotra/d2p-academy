@@ -977,12 +977,7 @@ export function CourseApplicationWizard({
             </p>
           ) : coreConsentsAccepted && !mediaConsentGranted ? (
             <div className="space-y-2 text-sm text-red-900">
-              <p className="font-semibold">{MEDIA_CONSENT_BLOCK_MESSAGE}</p>
-              <p>
-                Eğitimlerimizde güvenlik, proje kaydı ve kurumsal raporlama için görsel / medya
-                izinleri zorunludur. Lütfen Onaylar adımına dönüp F06 matrisinde tüm kalemlerde
-                “İzin veriyorum” seçeneğini işaretleyin.
-              </p>
+              <p className="leading-6">{MEDIA_CONSENT_BLOCK_MESSAGE}</p>
               <button
                 type="button"
                 className="font-bold text-document-primary underline"

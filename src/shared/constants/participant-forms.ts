@@ -87,7 +87,7 @@ export const MEDIA_CONSENT_EXPLANATION =
   "D2P Academy eğitimleri uygulamalı çalışma, proje sunumu ve güvenli kayıt tutma gerektirir. Eğitim sırasında çekilen fotoğraf ve videolar; çocuğunuzun gelişimini belgelemek, eğitim kalitesini izlemek, kurumsal raporlama yapmak ve programın tanıtımında (web sitesi, sosyal medya, basılı materyaller) kullanmak için gereklidir. Bu nedenle F06 kapsamındaki tüm kalemlerde “İzin veriyorum” seçilmesi zorunludur.";
 
 export const MEDIA_CONSENT_BLOCK_MESSAGE =
-  "Görsel ve medya izinlerinin tamamına onay vermeden eğitime katılım tamamlanamaz ve kayıt sertifika onayına gönderilemez. Lütfen tüm kalemlerde “İzin veriyorum” seçeneğini işaretleyin.";
+  "Görsel ve medya izinlerinin tamamına onay vermeden eğitime katılım tamamlanamaz ve kayıt sertifika onayına gönderilemez. D2P eğitimleri, yapısı gereği interaktif görsel ve işitsel kayıtlar içermektedir. Eğitime katılımınızın ve sertifika süreçlerinizin tamamlanabilmesi için eğitim içi görsel ve medya kullanım koşullarını kabul etmeniz gerekmektedir. Konuyla ilgili detaylı bilgi ve sorularınız için D2P ekibiyle iletişime geçebilirsiniz.";
 
 export const PARTICIPANT_LIKERT_OPTIONS = LIKERT_OPTIONS;
 
