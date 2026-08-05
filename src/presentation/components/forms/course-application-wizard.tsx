@@ -17,6 +17,7 @@ import { Input } from "@/presentation/components/ui/input";
 import { Textarea } from "@/presentation/components/ui/textarea";
 import { profileCertificateBlockMessage } from "@/lib/utils/progress";
 import Link from "next/link";
+import { formatPostTestDeadlineLabel } from "@/shared/utils/post-test-unlock";
 import {
   CONSENT_DOCUMENTS,
   CONSENT_TEXT_VERSIONS,
@@ -340,7 +341,7 @@ export function CourseApplicationWizard({
         } else {
           setStep(4);
           setSuccess(
-            `Onaylar kaydedildi. D2P öğrenci kodunuz: ${payload.data.studentCode}. Son test (F03), etkinliğe katıldıktan veya etkinlik bittikten sonra açılacak.`,
+            `Onaylar kaydedildi. D2P öğrenci kodunuz: ${payload.data.studentCode}. Son test (F03), eğitmen zorunlu ders yoklamasını tamamladığında açılacak.`,
           );
         }
       } else {
@@ -553,6 +554,7 @@ export function CourseApplicationWizard({
   const tanismaDone = Boolean(state.intakeFormCompletedAt) && Boolean(state.preTestCompletedAt);
   const sonTestDone = Boolean(state.postTestCompletedAt);
   const postTestUnlocked = state.postTestUnlocked;
+  const postTestDeadlineLabel = formatPostTestDeadlineLabel(state.postTestDeadlineAt);
   const sertifikaDone = Boolean(state.hasActiveCertificate);
   const registrationDone = onaylarDone && tanismaDone;
   const formsDone =
@@ -895,6 +897,7 @@ export function CourseApplicationWizard({
           <h2 className="text-xl font-bold text-navy-950">Son Test (F03)</h2>
           <p className="text-sm text-slate-600">
             Eğitim sonrası doldurun. Tamamlanmadan admin sertifika veremez.
+            {postTestDeadlineLabel ? ` Son tarih: ${postTestDeadlineLabel}.` : ""}
           </p>
 
           <h3 className="text-lg font-bold text-navy-950">Bölüm A — Ölçek maddeleri</h3>
@@ -963,8 +966,8 @@ export function CourseApplicationWizard({
             <section className="space-y-3 rounded-[2rem] border border-amber-200 bg-amber-50 p-6 shadow-sm">
               <h2 className="text-xl font-bold text-navy-950">Son Test (F03)</h2>
               <p className="text-sm text-amber-950">
-                Son test henüz açılmadı. Etkinlik günü yoklamada «geldi» işaretlendiğinde, admin
-                katılımı onayladığında veya etkinlik süresi bittiğinde bu adım açılır.
+                Son test henüz açılmadı. Eğitmen, ders çizelgesinde zorunlu katılım sayısına ulaştığınızı
+                işaretlediğinde bu adım açılır.
               </p>
               {registrationDone ? (
                 <p className="text-sm text-amber-900">
@@ -1038,13 +1041,16 @@ export function CourseApplicationWizard({
           ) : registrationDone && state.requiresSurveys && !sonTestDone && !postTestUnlocked ? (
             <div className="space-y-2 text-sm text-amber-950">
               <p>
-                Kayıt formlarınız (tanışma, onaylar, ön test) tamam. Son test (F03), etkinliğe
-                katıldıktan veya etkinlik bittikten sonra açılacak.
+                Kayıt formlarınız (tanışma, onaylar, ön test) tamam. Son test (F03), eğitmen ders
+                yoklamasında zorunlu katılımı onayladığında açılacak.
               </p>
             </div>
           ) : registrationDone && state.requiresSurveys && !sonTestDone && postTestUnlocked ? (
             <div className="space-y-2 text-sm text-red-900">
               <p>Son test (F03) açıldı; sertifika için bu adımı tamamlayın.</p>
+              {postTestDeadlineLabel ? (
+                <p className="text-amber-900">Son tarih: {postTestDeadlineLabel}</p>
+              ) : null}
               <button
                 type="button"
                 className="font-bold text-document-primary underline"

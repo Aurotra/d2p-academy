@@ -30,6 +30,10 @@ interface EventRow {
   category_id: string | null;
   start_at: string;
   end_at: string;
+  daily_lesson_start: string;
+  daily_lesson_end: string;
+  lesson_duration_minutes: number;
+  required_lesson_count: number | null;
   location_name: string | null;
   is_online: boolean;
   meeting_url: string | null;
@@ -51,6 +55,10 @@ const EVENT_SELECT = `
   category_id,
   start_at,
   end_at,
+  daily_lesson_start,
+  daily_lesson_end,
+  lesson_duration_minutes,
+  required_lesson_count,
   location_name,
   is_online,
   meeting_url,
@@ -97,6 +105,10 @@ function mapInstructors(
   };
 }
 
+function normalizeTimeValue(value: string): string {
+  return value.slice(0, 5);
+}
+
 function mapEvent(row: EventRow): AdminEventRecord {
   const category = unwrapOne(row.event_categories);
   const instructors = mapInstructors(row.event_instructors);
@@ -111,6 +123,10 @@ function mapEvent(row: EventRow): AdminEventRecord {
     categoryName: category?.name ?? null,
     startAt: new Date(row.start_at),
     endAt: new Date(row.end_at),
+    dailyLessonStart: normalizeTimeValue(row.daily_lesson_start ?? "09:00"),
+    dailyLessonEnd: normalizeTimeValue(row.daily_lesson_end ?? "17:00"),
+    lessonDurationMinutes: row.lesson_duration_minutes ?? 60,
+    requiredLessonCount: row.required_lesson_count,
     locationName: row.location_name,
     isOnline: row.is_online,
     meetingUrl: row.meeting_url,
@@ -125,6 +141,13 @@ function mapEvent(row: EventRow): AdminEventRecord {
 function buildUniqueSlug(title: string, existingSlug?: string): string {
   const base = slugify(title) || "etkinlik";
   return existingSlug ?? `${base}-${Date.now().toString(36)}`;
+}
+
+async function syncEventSessions(client: SupabaseClient, eventId: string): Promise<void> {
+  const { error } = await client.rpc("sync_event_sessions", { p_event_id: eventId });
+  if (error) {
+    throw new Error(`Ders çizelgesi oluşturulamadı: ${error.message}`);
+  }
 }
 
 async function replaceEventInstructors(
@@ -222,6 +245,10 @@ export class SupabaseAdminEventRepository implements AdminEventRepository {
         category_id: input.categoryId,
         start_at: input.startAt,
         end_at: input.endAt,
+        daily_lesson_start: input.dailyLessonStart,
+        daily_lesson_end: input.dailyLessonEnd,
+        lesson_duration_minutes: input.lessonDurationMinutes,
+        required_lesson_count: input.requiredLessonCount,
         location_name: input.locationName,
         is_online: input.isOnline,
         meeting_url: input.meetingUrl,
@@ -238,6 +265,7 @@ export class SupabaseAdminEventRepository implements AdminEventRepository {
     }
 
     await replaceEventInstructors(this.client, data.id, input.instructorIds);
+    await syncEventSessions(this.client, data.id);
 
     const { data: created, error: fetchError } = await this.client
       .from("events")
@@ -261,6 +289,14 @@ export class SupabaseAdminEventRepository implements AdminEventRepository {
     if (input.categoryId !== undefined) payload.category_id = input.categoryId;
     if (input.startAt !== undefined) payload.start_at = input.startAt;
     if (input.endAt !== undefined) payload.end_at = input.endAt;
+    if (input.dailyLessonStart !== undefined) payload.daily_lesson_start = input.dailyLessonStart;
+    if (input.dailyLessonEnd !== undefined) payload.daily_lesson_end = input.dailyLessonEnd;
+    if (input.lessonDurationMinutes !== undefined) {
+      payload.lesson_duration_minutes = input.lessonDurationMinutes;
+    }
+    if (input.requiredLessonCount !== undefined) {
+      payload.required_lesson_count = input.requiredLessonCount;
+    }
     if (input.locationName !== undefined) payload.location_name = input.locationName;
     if (input.isOnline !== undefined) payload.is_online = input.isOnline;
     if (input.meetingUrl !== undefined) payload.meeting_url = input.meetingUrl;
@@ -281,6 +317,17 @@ export class SupabaseAdminEventRepository implements AdminEventRepository {
 
     if (input.instructorIds !== undefined) {
       await replaceEventInstructors(this.client, input.id, input.instructorIds);
+    }
+
+    const scheduleTouched =
+      input.startAt !== undefined ||
+      input.endAt !== undefined ||
+      input.dailyLessonStart !== undefined ||
+      input.dailyLessonEnd !== undefined ||
+      input.lessonDurationMinutes !== undefined;
+
+    if (scheduleTouched) {
+      await syncEventSessions(this.client, input.id);
     }
 
     const { data, error } = await this.client

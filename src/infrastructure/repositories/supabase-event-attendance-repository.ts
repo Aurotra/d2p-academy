@@ -6,14 +6,21 @@ import type {
   UpsertAttendanceInput,
 } from "@/core/domain/event-attendance";
 import { formatStudentContact } from "@/shared/utils/format-student-contact";
-import { listEventAttendanceDates } from "@/shared/utils/event-attendance-dates";
+import { formatEventSessionLabel } from "@/shared/utils/event-session-labels";
 
 interface EventRow {
   id: string;
   title: string;
   start_at: string;
   end_at: string;
-  instructor_id: string | null;
+  required_lesson_count: number | null;
+}
+
+interface SessionRow {
+  id: string;
+  session_index: number;
+  starts_at: string;
+  ends_at: string;
 }
 
 interface EnrollmentRow {
@@ -26,12 +33,10 @@ interface EnrollmentRow {
     | null;
 }
 
-interface AttendanceRow {
+interface SessionAttendanceRow {
   enrollment_id: string;
-  attendance_date: string;
+  session_id: string;
   status: AttendanceStatus;
-  notes: string | null;
-  marked_at: string;
 }
 
 function unwrapOne<T>(value: T | T[] | null): T | null {
@@ -50,7 +55,7 @@ export class SupabaseEventAttendanceRepository {
   ): Promise<EventAttendanceSheet | null> {
     const { data: event, error: eventError } = await this.client
       .from("events")
-      .select("id, title, start_at, end_at, instructor_id")
+      .select("id, title, start_at, end_at, required_lesson_count")
       .eq("id", eventId)
       .maybeSingle();
 
@@ -59,9 +64,22 @@ export class SupabaseEventAttendanceRepository {
     }
 
     const eventRow = event as EventRow;
-    const dates = listEventAttendanceDates(
-      new Date(eventRow.start_at),
-      new Date(eventRow.end_at),
+
+    const { data: sessionRows, error: sessionsError } = await this.client
+      .from("event_sessions")
+      .select("id, session_index, starts_at, ends_at")
+      .eq("event_id", eventId)
+      .order("session_index", { ascending: true });
+
+    if (sessionsError) {
+      throw new Error(`Ders çizelgesi alınamadı: ${sessionsError.message}`);
+    }
+
+    const sessions = (sessionRows ?? []) as SessionRow[];
+    const totalLessonCount = sessions.length;
+    const requiredLessonCount = Math.min(
+      eventRow.required_lesson_count ?? totalLessonCount,
+      totalLessonCount,
     );
 
     const { data: enrollments, error: enrollmentsError } = await this.client
@@ -89,31 +107,33 @@ export class SupabaseEventAttendanceRepository {
 
     const enrollmentRows = (enrollments ?? []) as EnrollmentRow[];
     const enrollmentIds = enrollmentRows.map((row) => row.id);
+    const sessionIds = sessions.map((row) => row.id);
 
     const attendanceByEnrollment = new Map<string, Record<string, AttendanceStatus | null>>();
 
     for (const row of enrollmentRows) {
       const map: Record<string, AttendanceStatus | null> = {};
-      for (const date of dates) {
-        map[date] = null;
+      for (const session of sessions) {
+        map[session.id] = null;
       }
       attendanceByEnrollment.set(row.id, map);
     }
 
-    if (enrollmentIds.length > 0) {
+    if (enrollmentIds.length > 0 && sessionIds.length > 0) {
       const { data: attendanceRows, error: attendanceError } = await this.client
-        .from("enrollment_attendance")
-        .select("enrollment_id, attendance_date, status, notes, marked_at")
-        .in("enrollment_id", enrollmentIds);
+        .from("enrollment_session_attendance")
+        .select("enrollment_id, session_id, status")
+        .in("enrollment_id", enrollmentIds)
+        .in("session_id", sessionIds);
 
       if (attendanceError) {
         throw new Error(`Yoklama kayıtları alınamadı: ${attendanceError.message}`);
       }
 
-      for (const row of (attendanceRows ?? []) as AttendanceRow[]) {
+      for (const row of (attendanceRows ?? []) as SessionAttendanceRow[]) {
         const map = attendanceByEnrollment.get(row.enrollment_id);
-        if (map && row.attendance_date in map) {
-          map[row.attendance_date] = row.status;
+        if (map && row.session_id in map) {
+          map[row.session_id] = row.status;
         }
       }
     }
@@ -123,16 +143,30 @@ export class SupabaseEventAttendanceRepository {
       eventTitle: eventRow.title,
       startAt: eventRow.start_at,
       endAt: eventRow.end_at,
-      dates,
+      sessions: sessions.map((session) => ({
+        id: session.id,
+        sessionIndex: session.session_index,
+        startsAt: session.starts_at,
+        endsAt: session.ends_at,
+        label: formatEventSessionLabel(session.starts_at, session.ends_at),
+      })),
+      requiredLessonCount,
+      totalLessonCount,
       students: enrollmentRows.map((row) => {
         const profile = unwrapOne(row.profiles);
+        const attendance = attendanceByEnrollment.get(row.id) ?? {};
+        const presentCount = Object.values(attendance).filter((status) => status === "present")
+          .length;
+
         return {
           enrollmentId: row.id,
           studentId: profile?.id ?? row.user_id,
           studentName: profile?.full_name ?? "Öğrenci",
           studentContact: formatStudentContact(profile?.email, profile?.username),
           enrollmentStatus: row.status,
-          attendance: attendanceByEnrollment.get(row.id) ?? {},
+          attendance,
+          presentCount,
+          attendanceComplete: totalLessonCount > 0 && presentCount >= requiredLessonCount,
         };
       }),
       canEdit: options.canEdit,
@@ -144,61 +178,49 @@ export class SupabaseEventAttendanceRepository {
     actorId: string,
     input: UpsertAttendanceInput,
   ): Promise<void> {
-    const dates = await this.getAllowedDatesForEnrollment(eventId, input.enrollmentId);
-    if (!dates.includes(input.attendanceDate)) {
-      throw new Error("Bu tarih etkinlik planı dışında.");
+    const { data: session, error: sessionError } = await this.client
+      .from("event_sessions")
+      .select("id, event_id")
+      .eq("id", input.sessionId)
+      .maybeSingle();
+
+    if (sessionError || !session || session.event_id !== eventId) {
+      throw new Error("Bu ders bu etkinliğe ait değil.");
     }
 
-    const { error } = await this.client.from("enrollment_attendance").upsert(
-      {
-        enrollment_id: input.enrollmentId,
-        attendance_date: input.attendanceDate,
-        status: input.status,
-        notes: input.notes?.trim() || null,
-        marked_by: actorId,
-        marked_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-      },
-      { onConflict: "enrollment_id,attendance_date" },
-    );
-
-    if (error) {
-      throw new Error(`Yoklama kaydedilemedi: ${error.message}`);
-    }
-
-    if (input.status === "present") {
-      await this.client
-        .from("enrollments")
-        .update({ status: "attended", updated_at: new Date().toISOString() })
-        .eq("id", input.enrollmentId)
-        .eq("status", "registered");
-    }
-  }
-
-  private async getAllowedDatesForEnrollment(
-    eventId: string,
-    enrollmentId: string,
-  ): Promise<string[]> {
     const { data: enrollment, error: enrollmentError } = await this.client
       .from("enrollments")
-      .select("event_id")
-      .eq("id", enrollmentId)
+      .select("id, event_id")
+      .eq("id", input.enrollmentId)
       .maybeSingle();
 
     if (enrollmentError || !enrollment || enrollment.event_id !== eventId) {
       throw new Error("Kayıt bu etkinliğe ait değil.");
     }
 
-    const { data: event, error: eventError } = await this.client
-      .from("events")
-      .select("start_at, end_at")
-      .eq("id", eventId)
-      .maybeSingle();
+    const { error } = await this.client.from("enrollment_session_attendance").upsert(
+      {
+        enrollment_id: input.enrollmentId,
+        session_id: input.sessionId,
+        status: input.status,
+        notes: input.notes?.trim() || null,
+        marked_by: actorId,
+        marked_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      },
+      { onConflict: "enrollment_id,session_id" },
+    );
 
-    if (eventError || !event) {
-      throw new Error("Etkinlik bulunamadı.");
+    if (error) {
+      throw new Error(`Yoklama kaydedilemedi: ${error.message}`);
     }
 
-    return listEventAttendanceDates(new Date(event.start_at), new Date(event.end_at));
+    const { error: unlockError } = await this.client.rpc("maybe_unlock_enrollment_post_test", {
+      p_enrollment_id: input.enrollmentId,
+    });
+
+    if (unlockError) {
+      throw new Error(`Son test kilidi güncellenemedi: ${unlockError.message}`);
+    }
   }
 }

@@ -19,6 +19,10 @@ export interface AdminEventRecord {
   categoryName: string | null;
   startAt: Date;
   endAt: Date;
+  dailyLessonStart: string;
+  dailyLessonEnd: string;
+  lessonDurationMinutes: number;
+  requiredLessonCount: number | null;
   locationName: string | null;
   isOnline: boolean;
   meetingUrl: string | null;
@@ -47,6 +51,10 @@ export interface CreateEventInput {
   categoryId: string | null;
   startAt: string;
   endAt: string;
+  dailyLessonStart: string;
+  dailyLessonEnd: string;
+  lessonDurationMinutes: number;
+  requiredLessonCount: number | null;
   locationName: string | null;
   isOnline: boolean;
   meetingUrl: string | null;

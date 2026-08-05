@@ -10,6 +10,7 @@ import { BRAND_SURFACE_GRADIENT } from "@/shared/constants/brand-surfaces";
 import { Badge } from "@/presentation/components/ui/badge";
 import { EnrollmentFormProgress } from "@/presentation/components/dashboard/enrollment-form-progress";
 import { StudentOnboardingGuide } from "@/presentation/components/student-dashboard/student-onboarding-guide";
+import { formatPostTestDeadlineLabel } from "@/shared/utils/post-test-unlock";
 interface UsernameStudentDashboardViewProps {
   username: string;
   fullName?: string | null;
@@ -72,20 +73,26 @@ function EnrollmentAction({ item }: { item: EnrollmentSummary }) {
   }
 
   if (postTestPending) {
+    const deadlineLabel = formatPostTestDeadlineLabel(item.postTestDeadlineAt);
     return (
-      <Link
-        href={`/student-dashboard/enrollments/${item.enrollmentId}/forms`}
-        className="mt-3 inline-flex text-sm font-semibold text-document-primary hover:underline"
-      >
-        Son testi doldur (F03) →
-      </Link>
+      <div className="mt-3 space-y-1">
+        <Link
+          href={`/student-dashboard/enrollments/${item.enrollmentId}/forms`}
+          className="inline-flex text-sm font-semibold text-document-primary hover:underline"
+        >
+          Son testi doldur (F03) →
+        </Link>
+        {deadlineLabel ? (
+          <p className="text-xs text-amber-800">Son tarih: {deadlineLabel}</p>
+        ) : null}
+      </div>
     );
   }
 
   if (requiresSurveys && !item.postTestCompleted && !item.postTestUnlocked) {
     return (
       <p className="mt-3 text-sm text-slate-600">
-        Kayıt formları tamam. Son test, etkinlik sonrası açılacak.
+        Kayıt formları tamam. Son test, eğitmen ders yoklamasını tamamladığında açılacak.
       </p>
     );
   }

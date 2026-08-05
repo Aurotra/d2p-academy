@@ -71,6 +71,8 @@ export interface EnrollmentFormProgress {
   studentCode: string | null;
   enrollmentStatus: string;
   postTestUnlocked: boolean;
+  postTestUnlockedAt: string | null;
+  postTestDeadlineAt: string | null;
   intakeFormCompletedAt: string | null;
   preTestCompletedAt: string | null;
   postTestCompletedAt: string | null;

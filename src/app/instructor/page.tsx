@@ -3,7 +3,6 @@ import { redirect } from "next/navigation";
 
 import { getInstructorAccess } from "@/infrastructure/auth/get-instructor-access";
 import { createSupabaseServerClient } from "@/infrastructure/supabase/create-server-client";
-import { listEventAttendanceDates } from "@/shared/utils/event-attendance-dates";
 
 export const dynamic = "force-dynamic";
 
@@ -62,8 +61,8 @@ export default async function InstructorHomePage() {
         </p>
         <h1 className="mt-2 text-2xl font-bold text-slate-900">Etkinliklerim</h1>
         <p className="mt-2 text-sm text-slate-600">
-          Size atanmış etkinliklerde günlük yoklama alabilirsiniz. Her etkinlik günü için öğrencinin
-          gelip gelmediğini işaretleyin.
+          Size atanmış etkinliklerde ders saati bazlı yoklama alabilirsiniz. Her ders için öğrencinin
+          sınıfta olup olmadığını işaretleyin.
         </p>
       </div>
 
@@ -79,13 +78,7 @@ export default async function InstructorHomePage() {
         </div>
       ) : (
         <div className="grid gap-4">
-          {events.map((event) => {
-            const dayCount = listEventAttendanceDates(
-              new Date(event.start_at),
-              new Date(event.end_at),
-            ).length;
-
-            return (
+          {events.map((event) => (
               <article
                 key={event.id}
                 className="rounded-[1.5rem] border border-slate-200 bg-white p-6 shadow-sm"
@@ -97,8 +90,7 @@ export default async function InstructorHomePage() {
                       {formatDateTime(event.start_at)} – {formatDateTime(event.end_at)}
                     </p>
                     <p className="mt-1 text-sm text-slate-500">
-                      {dayCount} yoklama günü
-                      {event.location_name ? ` · ${event.location_name}` : ""}
+                      {event.location_name ? `${event.location_name}` : "Konum belirtilmemiş"}
                     </p>
                   </div>
                   <Link
@@ -109,8 +101,7 @@ export default async function InstructorHomePage() {
                   </Link>
                 </div>
               </article>
-            );
-          })}
+            ))}
         </div>
       )}
     </div>

@@ -63,6 +63,8 @@ interface EnrollmentOwnerRow {
   event_id: string;
   status: string;
   student_code: string | null;
+  post_test_unlocked_at: string | null;
+  post_test_deadline_at: string | null;
   intake_form_completed_at: string | null;
   pre_test_completed_at: string | null;
   post_test_completed_at: string | null;
@@ -88,6 +90,8 @@ export class SupabaseParticipantFormsRepository {
         event_id,
         status,
         student_code,
+        post_test_unlocked_at,
+        post_test_deadline_at,
         intake_form_completed_at,
         pre_test_completed_at,
         post_test_completed_at,
@@ -123,7 +127,7 @@ export class SupabaseParticipantFormsRepository {
       throw new Error("Profil bilgisi alınamadı.");
     }
 
-    const [{ data: consents }, { data: health }, { data: intake }, { data: surveys }, { data: certificate }, { data: presentAttendance }] =
+    const [{ data: consents }, { data: health }, { data: intake }, { data: surveys }, { data: certificate }] =
       await Promise.all([
         this.client
           .from("consent_records")
@@ -149,20 +153,12 @@ export class SupabaseParticipantFormsRepository {
           .eq("enrollment_id", enrollmentId)
           .eq("status", "active")
           .maybeSingle(),
-        this.client
-          .from("enrollment_attendance")
-          .select("id")
-          .eq("enrollment_id", enrollmentId)
-          .eq("status", "present")
-          .limit(1)
-          .maybeSingle(),
       ]);
 
     const event = Array.isArray(enrollment.events) ? enrollment.events[0] : enrollment.events;
     const postTestUnlocked = isPostTestUnlocked({
-      enrollmentStatus: enrollment.status,
-      hasPresentAttendance: Boolean(presentAttendance?.id),
-      eventEndAt: event?.end_at ?? null,
+      postTestUnlockedAt: enrollment.post_test_unlocked_at,
+      postTestDeadlineAt: enrollment.post_test_deadline_at,
     });
     const gradeLevel = profile.grade_level ?? "";
     const profileProgressInput = {
@@ -191,6 +187,8 @@ export class SupabaseParticipantFormsRepository {
       studentCode: enrollment.student_code,
       enrollmentStatus: enrollment.status,
       postTestUnlocked,
+      postTestUnlockedAt: enrollment.post_test_unlocked_at,
+      postTestDeadlineAt: enrollment.post_test_deadline_at,
       intakeFormCompletedAt: enrollment.intake_form_completed_at,
       preTestCompletedAt: enrollment.pre_test_completed_at,
       postTestCompletedAt: enrollment.post_test_completed_at,
@@ -562,24 +560,14 @@ export class SupabaseParticipantFormsRepository {
   ): Promise<{ ok: true }> {
     const enrollment = await this.requireOwnedEnrollment(enrollmentId, userId);
 
-    const { data: presentAttendance } = await this.client
-      .from("enrollment_attendance")
-      .select("id")
-      .eq("enrollment_id", enrollmentId)
-      .eq("status", "present")
-      .limit(1)
-      .maybeSingle();
-
-    const event = Array.isArray(enrollment.events) ? enrollment.events[0] : enrollment.events;
     const postTestUnlocked = isPostTestUnlocked({
-      enrollmentStatus: enrollment.status,
-      hasPresentAttendance: Boolean(presentAttendance?.id),
-      eventEndAt: event?.end_at ?? null,
+      postTestUnlockedAt: enrollment.post_test_unlocked_at,
+      postTestDeadlineAt: enrollment.post_test_deadline_at,
     });
 
     if (!postTestUnlocked) {
       throw new Error(
-        "Son test henüz açılmadı. Etkinliğe katıldıktan veya etkinlik bittikten sonra doldurabilirsiniz.",
+        "Son test henüz açılmadı. Eğitmen zorunlu ders yoklamasını tamamladığında bu adım açılır.",
       );
     }
 

@@ -35,6 +35,10 @@ type EventFormState = {
   categoryId: string;
   startAt: string;
   endAt: string;
+  dailyLessonStart: string;
+  dailyLessonEnd: string;
+  lessonDurationMinutes: string;
+  requiredLessonCount: string;
   locationName: string;
   isOnline: boolean;
   meetingUrl: string;
@@ -51,6 +55,10 @@ const defaultForm: EventFormState = {
   categoryId: "",
   startAt: "",
   endAt: "",
+  dailyLessonStart: "09:00",
+  dailyLessonEnd: "17:00",
+  lessonDurationMinutes: "60",
+  requiredLessonCount: "",
   locationName: "",
   isOnline: false,
   meetingUrl: "",
@@ -114,6 +122,10 @@ function eventRecordToForm(event: AdminEventRecord): EventFormState {
     categoryId: event.categoryId ?? "",
     startAt: toDatetimeLocalValue(event.startAt),
     endAt: toDatetimeLocalValue(event.endAt),
+    dailyLessonStart: event.dailyLessonStart,
+    dailyLessonEnd: event.dailyLessonEnd,
+    lessonDurationMinutes: String(event.lessonDurationMinutes),
+    requiredLessonCount: event.requiredLessonCount?.toString() ?? "",
     locationName: event.locationName ?? "",
     isOnline: event.isOnline,
     meetingUrl: event.meetingUrl ?? "",
@@ -135,6 +147,25 @@ function buildEventPayload(form: EventFormState) {
     }
   }
 
+  const lessonDurationMinutes = Number(form.lessonDurationMinutes);
+  if (!Number.isFinite(lessonDurationMinutes) || lessonDurationMinutes <= 0) {
+    throw new Error("Ders süresi geçerli bir dakika değeri olmalıdır.");
+  }
+
+  const requiredLessonCount = form.requiredLessonCount.trim()
+    ? Number(form.requiredLessonCount)
+    : null;
+  if (
+    requiredLessonCount !== null &&
+    (!Number.isFinite(requiredLessonCount) || requiredLessonCount <= 0)
+  ) {
+    throw new Error("Zorunlu ders sayısı pozitif bir tam sayı olmalıdır.");
+  }
+
+  if (form.dailyLessonEnd <= form.dailyLessonStart) {
+    throw new Error("Günlük ders bitiş saati başlangıçtan sonra olmalıdır.");
+  }
+
   return {
     title: form.title,
     description: form.description,
@@ -142,6 +173,10 @@ function buildEventPayload(form: EventFormState) {
     categoryId: form.categoryId || null,
     startAt: new Date(form.startAt).toISOString(),
     endAt: new Date(form.endAt).toISOString(),
+    dailyLessonStart: form.dailyLessonStart,
+    dailyLessonEnd: form.dailyLessonEnd,
+    lessonDurationMinutes,
+    requiredLessonCount,
     locationName: form.locationName || null,
     isOnline: form.isOnline,
     meetingUrl: form.meetingUrl || null,
@@ -547,6 +582,51 @@ function EventFormFields({
           onChange={(e) => setForm({ ...form, endAt: e.target.value })}
           required
         />
+        <Input
+          id={`${idPrefix}-daily-lesson-start`}
+          name={`${idPrefix}-daily-lesson-start`}
+          label="Günlük ders başlangıcı"
+          type="time"
+          value={form.dailyLessonStart}
+          onChange={(e) => setForm({ ...form, dailyLessonStart: e.target.value })}
+          required
+        />
+        <Input
+          id={`${idPrefix}-daily-lesson-end`}
+          name={`${idPrefix}-daily-lesson-end`}
+          label="Günlük ders bitişi"
+          type="time"
+          value={form.dailyLessonEnd}
+          onChange={(e) => setForm({ ...form, dailyLessonEnd: e.target.value })}
+          required
+        />
+        <Input
+          id={`${idPrefix}-lesson-duration`}
+          name={`${idPrefix}-lesson-duration`}
+          label="Ders süresi (dakika)"
+          type="number"
+          min={15}
+          max={480}
+          step={15}
+          value={form.lessonDurationMinutes}
+          onChange={(e) => setForm({ ...form, lessonDurationMinutes: e.target.value })}
+          required
+        />
+        <div>
+          <Input
+            id={`${idPrefix}-required-lessons`}
+            name={`${idPrefix}-required-lessons`}
+            label="Zorunlu katılım (ders sayısı)"
+            type="number"
+            min={1}
+            value={form.requiredLessonCount}
+            onChange={(e) => setForm({ ...form, requiredLessonCount: e.target.value })}
+            placeholder="Boş = tüm dersler"
+          />
+          <p className="mt-1 text-xs text-slate-500">
+            Eğitmen yoklamada işaretlediği «geldi» sayısı buna ulaşınca öğrencide son test açılır.
+          </p>
+        </div>
         <Input
           id={`${idPrefix}-location`}
           name={`${idPrefix}-location`}

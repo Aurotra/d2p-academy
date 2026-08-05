@@ -9,6 +9,7 @@ export interface EnrollmentSummary {
   preTestCompleted?: boolean;
   postTestCompleted?: boolean;
   postTestUnlocked?: boolean;
+  postTestDeadlineAt?: string | null;
   requiresSurveys?: boolean;
 }
 

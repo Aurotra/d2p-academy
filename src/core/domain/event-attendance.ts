@@ -6,12 +6,12 @@ export const ATTENDANCE_STATUS_LABELS: Record<AttendanceStatus, string> = {
   excused: "İzinli",
 };
 
-export interface AttendanceRecord {
-  enrollmentId: string;
-  attendanceDate: string;
-  status: AttendanceStatus;
-  notes: string | null;
-  markedAt: string;
+export interface EventSessionColumn {
+  id: string;
+  sessionIndex: number;
+  startsAt: string;
+  endsAt: string;
+  label: string;
 }
 
 export interface AttendanceStudentRow {
@@ -21,6 +21,8 @@ export interface AttendanceStudentRow {
   studentContact: string;
   enrollmentStatus: string;
   attendance: Record<string, AttendanceStatus | null>;
+  presentCount: number;
+  attendanceComplete: boolean;
 }
 
 export interface EventAttendanceSheet {
@@ -28,14 +30,16 @@ export interface EventAttendanceSheet {
   eventTitle: string;
   startAt: string;
   endAt: string;
-  dates: string[];
+  sessions: EventSessionColumn[];
+  requiredLessonCount: number;
+  totalLessonCount: number;
   students: AttendanceStudentRow[];
   canEdit: boolean;
 }
 
 export interface UpsertAttendanceInput {
   enrollmentId: string;
-  attendanceDate: string;
+  sessionId: string;
   status: AttendanceStatus;
   notes?: string | null;
 }

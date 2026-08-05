@@ -7,7 +7,7 @@ import { createSupabaseServerClient } from "@/infrastructure/supabase/create-ser
 
 interface AttendanceRequestBody {
   enrollmentId?: string;
-  attendanceDate?: string;
+  sessionId?: string;
   status?: AttendanceStatus;
   notes?: string | null;
 }
@@ -33,10 +33,10 @@ export async function PATCH(
 
   const body = (await request.json()) as AttendanceRequestBody;
   const enrollmentId = body.enrollmentId?.trim() ?? "";
-  const attendanceDate = body.attendanceDate?.trim() ?? "";
+  const sessionId = body.sessionId?.trim() ?? "";
   const status = body.status;
 
-  if (!enrollmentId || !attendanceDate || !status || !VALID_STATUSES.includes(status)) {
+  if (!enrollmentId || !sessionId || !status || !VALID_STATUSES.includes(status)) {
     return NextResponse.json({ error: "Geçersiz yoklama verisi." }, { status: 400 });
   }
 
@@ -44,7 +44,7 @@ export async function PATCH(
     const repository = new SupabaseEventAttendanceRepository(client);
     await repository.upsertAttendance(eventId, access.userId, {
       enrollmentId,
-      attendanceDate,
+      sessionId,
       status,
       notes: body.notes ?? null,
     });

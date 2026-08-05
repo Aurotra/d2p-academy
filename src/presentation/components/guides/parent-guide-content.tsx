@@ -311,7 +311,7 @@ export function ParentGuideContent() {
                 <tr>
                   <td className="px-4 py-3 font-medium text-slate-900">3. Son test</td>
                   <td className="px-4 py-3">Etkinlik sonrası değerlendirme</td>
-                  <td className="px-4 py-3">5–8. sınıflar için; diğer sınıflarda atlanır</td>
+                  <td className="px-4 py-3">Eğitmen ders yoklamasında zorunlu katılım sağlandığında</td>
                 </tr>
                 <tr>
                   <td className="px-4 py-3 font-medium text-slate-900">4. Sertifika onay</td>

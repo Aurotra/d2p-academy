@@ -4,7 +4,6 @@ import { useMemo, useState } from "react";
 
 import type { AttendanceStatus, EventAttendanceSheet } from "@/core/domain/event-attendance";
 import { ATTENDANCE_STATUS_LABELS } from "@/core/domain/event-attendance";
-import { formatAttendanceDateLabel } from "@/shared/utils/event-attendance-dates";
 import { Button } from "@/presentation/components/ui/button";
 
 const STATUS_CYCLE: AttendanceStatus[] = ["present", "absent", "excused"];
@@ -40,15 +39,15 @@ export function EventAttendanceSheetView({ sheet, apiBasePath }: EventAttendance
   const [rows, setRows] = useState(sheet.students);
   const [pendingKey, setPendingKey] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [selectedDate, setSelectedDate] = useState(sheet.dates[0] ?? "");
+  const [selectedSessionId, setSelectedSessionId] = useState(sheet.sessions[0]?.id ?? "");
 
-  const selectedDateLabel = useMemo(
-    () => (selectedDate ? formatAttendanceDateLabel(selectedDate) : ""),
-    [selectedDate],
+  const selectedSession = useMemo(
+    () => sheet.sessions.find((session) => session.id === selectedSessionId) ?? null,
+    [sheet.sessions, selectedSessionId],
   );
 
-  async function saveStatus(enrollmentId: string, attendanceDate: string, status: AttendanceStatus) {
-    const key = `${enrollmentId}:${attendanceDate}`;
+  async function saveStatus(enrollmentId: string, sessionId: string, status: AttendanceStatus) {
+    const key = `${enrollmentId}:${sessionId}`;
     setPendingKey(key);
     setError(null);
 
@@ -56,7 +55,7 @@ export function EventAttendanceSheetView({ sheet, apiBasePath }: EventAttendance
       const response = await fetch(`${apiBasePath}/${sheet.eventId}/attendance`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ enrollmentId, attendanceDate, status }),
+        body: JSON.stringify({ enrollmentId, sessionId, status }),
       });
       const payload = (await response.json()) as { error?: string };
       if (!response.ok) {
@@ -64,21 +63,29 @@ export function EventAttendanceSheetView({ sheet, apiBasePath }: EventAttendance
       }
 
       setRows((current) =>
-        current.map((row) =>
-          row.enrollmentId === enrollmentId
-            ? {
-                ...row,
-                attendance: {
-                  ...row.attendance,
-                  [attendanceDate]: status,
-                },
-                enrollmentStatus:
-                  status === "present" && row.enrollmentStatus === "registered"
-                    ? "attended"
-                    : row.enrollmentStatus,
-              }
-            : row,
-        ),
+        current.map((row) => {
+          if (row.enrollmentId !== enrollmentId) {
+            return row;
+          }
+
+          const attendance = {
+            ...row.attendance,
+            [sessionId]: status,
+          };
+          const presentCount = Object.values(attendance).filter((value) => value === "present")
+            .length;
+
+          return {
+            ...row,
+            attendance,
+            presentCount,
+            attendanceComplete: presentCount >= sheet.requiredLessonCount,
+            enrollmentStatus:
+              presentCount >= sheet.requiredLessonCount && row.enrollmentStatus === "registered"
+                ? "attended"
+                : row.enrollmentStatus,
+          };
+        }),
       );
     } catch (saveError) {
       setError(saveError instanceof Error ? saveError.message : "Kayıt başarısız.");
@@ -87,10 +94,11 @@ export function EventAttendanceSheetView({ sheet, apiBasePath }: EventAttendance
     }
   }
 
-  if (sheet.dates.length === 0) {
+  if (sheet.sessions.length === 0) {
     return (
       <div className="rounded-2xl border border-dashed border-slate-200 bg-white px-6 py-10 text-center text-sm text-slate-600">
-        Etkinlik tarih aralığı geçersiz; yoklama günleri oluşturulamadı.
+        Bu etkinlik için ders çizelgesi oluşturulamadı. Etkinlik tarihleri ve günlük ders saatlerini
+        kontrol edin.
       </div>
     );
   }
@@ -103,27 +111,28 @@ export function EventAttendanceSheetView({ sheet, apiBasePath }: EventAttendance
         </p>
         <h1 className="mt-2 text-2xl font-bold text-slate-900">{sheet.eventTitle}</h1>
         <p className="mt-2 text-sm text-slate-600">
-          {formatDateTime(sheet.startAt)} – {formatDateTime(sheet.endAt)} · {sheet.dates.length} gün
+          {formatDateTime(sheet.startAt)} – {formatDateTime(sheet.endAt)} · {sheet.totalLessonCount}{" "}
+          ders · Zorunlu katılım: {sheet.requiredLessonCount}
         </p>
         <p className="mt-2 text-sm text-slate-500">
-          Etkinlik planındaki her gün için öğrencinin gelip gelmediğini işaretleyin. Hücreye
-          tıklayarak durumu değiştirin: Geldi → Gelmedi → İzinli.
+          Her ders saati için öğrencinin sınıfta olup olmadığını işaretleyin. Zorunlu ders sayısına
+          ulaşan öğrencide son test (F03) otomatik açılır.
         </p>
       </div>
 
       <div className="flex flex-wrap gap-2">
-        {sheet.dates.map((date) => (
+        {sheet.sessions.map((session) => (
           <button
-            key={date}
+            key={session.id}
             type="button"
-            onClick={() => setSelectedDate(date)}
+            onClick={() => setSelectedSessionId(session.id)}
             className={`rounded-full px-4 py-2 text-sm font-semibold transition ${
-              selectedDate === date
+              selectedSessionId === session.id
                 ? "bg-document-primary text-white"
                 : "border border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
             }`}
           >
-            {formatAttendanceDateLabel(date)}
+            {session.label}
           </button>
         ))}
       </div>
@@ -134,91 +143,124 @@ export function EventAttendanceSheetView({ sheet, apiBasePath }: EventAttendance
         </p>
       ) : null}
 
-      <div className="overflow-hidden rounded-[1.75rem] border border-slate-200 bg-white shadow-sm">
-        <div className="border-b border-slate-100 bg-slate-50 px-5 py-4">
-          <h2 className="text-lg font-bold text-slate-900">{selectedDateLabel}</h2>
-          <p className="mt-1 text-sm text-slate-500">{rows.length} kayıtlı öğrenci</p>
-        </div>
-
-        {rows.length === 0 ? (
-          <div className="px-5 py-10 text-center text-sm text-slate-500">
-            Bu etkinlikte kayıtlı öğrenci yok.
+      {selectedSession ? (
+        <div className="overflow-hidden rounded-[1.75rem] border border-slate-200 bg-white shadow-sm">
+          <div className="border-b border-slate-100 bg-slate-50 px-5 py-4">
+            <h2 className="text-lg font-bold text-slate-900">{selectedSession.label}</h2>
+            <p className="mt-1 text-sm text-slate-500">{rows.length} kayıtlı öğrenci</p>
           </div>
-        ) : (
-          <ul className="divide-y divide-slate-100">
-            {rows.map((row) => {
-              const status = row.attendance[selectedDate] ?? null;
-              const key = `${row.enrollmentId}:${selectedDate}`;
-              const isPending = pendingKey === key;
 
-              return (
-                <li
-                  key={row.enrollmentId}
-                  className="flex flex-col gap-3 px-5 py-4 sm:flex-row sm:items-center sm:justify-between"
-                >
-                  <div>
-                    <p className="font-semibold text-slate-900">{row.studentName}</p>
-                    <p className="text-sm text-slate-500">{row.studentContact}</p>
-                  </div>
+          {rows.length === 0 ? (
+            <div className="px-5 py-10 text-center text-sm text-slate-500">
+              Bu etkinlikte kayıtlı öğrenci yok.
+            </div>
+          ) : (
+            <ul className="divide-y divide-slate-100">
+              {rows.map((row) => {
+                const status = row.attendance[selectedSession.id] ?? null;
+                const key = `${row.enrollmentId}:${selectedSession.id}`;
+                const isPending = pendingKey === key;
 
-                  {sheet.canEdit ? (
-                    <Button
-                      type="button"
-                      variant="outline"
-                      disabled={isPending}
-                      onClick={() => void saveStatus(row.enrollmentId, selectedDate, nextStatus(status))}
-                      className={`min-w-28 border ${
-                        status ? STATUS_STYLES[status] : "border-slate-200 text-slate-500"
-                      }`}
-                    >
-                      {isPending ? "Kaydediliyor…" : status ? ATTENDANCE_STATUS_LABELS[status] : "İşaretle"}
-                    </Button>
-                  ) : (
-                    <span
-                      className={`inline-flex min-w-28 items-center justify-center rounded-xl border px-4 py-2 text-sm font-semibold ${
-                        status ? STATUS_STYLES[status] : "border-slate-200 text-slate-400"
-                      }`}
-                    >
-                      {status ? ATTENDANCE_STATUS_LABELS[status] : "—"}
-                    </span>
-                  )}
-                </li>
-              );
-            })}
-          </ul>
-        )}
-      </div>
+                return (
+                  <li
+                    key={row.enrollmentId}
+                    className="flex flex-col gap-3 px-5 py-4 sm:flex-row sm:items-center sm:justify-between"
+                  >
+                    <div>
+                      <p className="font-semibold text-slate-900">{row.studentName}</p>
+                      <p className="text-sm text-slate-500">{row.studentContact}</p>
+                      <p className="mt-1 text-xs text-slate-500">
+                        Katılım: {row.presentCount}/{sheet.requiredLessonCount}
+                        {row.attendanceComplete ? " · Son test için uygun" : ""}
+                      </p>
+                    </div>
+
+                    {sheet.canEdit ? (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        disabled={isPending}
+                        onClick={() =>
+                          void saveStatus(row.enrollmentId, selectedSession.id, nextStatus(status))
+                        }
+                        className={`min-w-28 border ${
+                          status ? STATUS_STYLES[status] : "border-slate-200 text-slate-500"
+                        }`}
+                      >
+                        {isPending ? "Kaydediliyor…" : status ? ATTENDANCE_STATUS_LABELS[status] : "İşaretle"}
+                      </Button>
+                    ) : (
+                      <span
+                        className={`inline-flex min-w-28 items-center justify-center rounded-xl border px-4 py-2 text-sm font-semibold ${
+                          status ? STATUS_STYLES[status] : "border-slate-200 text-slate-400"
+                        }`}
+                      >
+                        {status ? ATTENDANCE_STATUS_LABELS[status] : "—"}
+                      </span>
+                    )}
+                  </li>
+                );
+              })}
+            </ul>
+          )}
+        </div>
+      ) : null}
 
       <div className="overflow-x-auto rounded-[1.75rem] border border-slate-200 bg-white shadow-sm">
         <table className="min-w-full text-sm">
           <thead className="bg-slate-50 text-left text-slate-600">
             <tr>
-              <th className="px-4 py-3 font-semibold">Öğrenci</th>
-              {sheet.dates.map((date) => (
-                <th key={date} className="px-3 py-3 text-center font-semibold">
-                  {formatAttendanceDateLabel(date)}
+              <th className="sticky left-0 z-10 bg-slate-50 px-4 py-3 font-semibold">Öğrenci</th>
+              {sheet.sessions.map((session) => (
+                <th key={session.id} className="min-w-28 px-2 py-3 text-center font-semibold">
+                  <span className="block text-xs leading-tight">{session.label}</span>
                 </th>
               ))}
+              <th className="px-3 py-3 text-center font-semibold">Katılım</th>
             </tr>
           </thead>
           <tbody>
             {rows.map((row) => (
               <tr key={row.enrollmentId} className="border-t border-slate-100">
-                <td className="px-4 py-3 font-medium text-slate-900">{row.studentName}</td>
-                {sheet.dates.map((date) => {
-                  const status = row.attendance[date] ?? null;
+                <td className="sticky left-0 z-10 bg-white px-4 py-3 font-medium text-slate-900">
+                  {row.studentName}
+                </td>
+                {sheet.sessions.map((session) => {
+                  const status = row.attendance[session.id] ?? null;
+                  const key = `${row.enrollmentId}:${session.id}`;
+                  const isPending = pendingKey === key;
+
                   return (
-                    <td key={date} className="px-3 py-3 text-center">
-                      <span
-                        className={`inline-flex rounded-full px-2.5 py-1 text-xs font-semibold ${
-                          status ? STATUS_STYLES[status] : "bg-slate-100 text-slate-400"
-                        }`}
-                      >
-                        {status ? ATTENDANCE_STATUS_LABELS[status][0] : "—"}
-                      </span>
+                    <td key={session.id} className="px-2 py-2 text-center">
+                      {sheet.canEdit ? (
+                        <button
+                          type="button"
+                          disabled={isPending}
+                          onClick={() =>
+                            void saveStatus(row.enrollmentId, session.id, nextStatus(status))
+                          }
+                          className={`inline-flex min-h-8 min-w-8 items-center justify-center rounded-full border text-xs font-bold ${
+                            status ? STATUS_STYLES[status] : "border-slate-200 text-slate-400"
+                          }`}
+                          title={status ? ATTENDANCE_STATUS_LABELS[status] : "İşaretle"}
+                        >
+                          {isPending ? "…" : status ? ATTENDANCE_STATUS_LABELS[status][0] : "·"}
+                        </button>
+                      ) : (
+                        <span
+                          className={`inline-flex rounded-full px-2.5 py-1 text-xs font-semibold ${
+                            status ? STATUS_STYLES[status] : "bg-slate-100 text-slate-400"
+                          }`}
+                        >
+                          {status ? ATTENDANCE_STATUS_LABELS[status][0] : "—"}
+                        </span>
+                      )}
                     </td>
                   );
                 })}
+                <td className="px-3 py-3 text-center font-semibold text-slate-700">
+                  {row.presentCount}/{sheet.requiredLessonCount}
+                </td>
               </tr>
             ))}
           </tbody>
