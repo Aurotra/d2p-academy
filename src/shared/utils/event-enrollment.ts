@@ -1,5 +1,5 @@
 export function buildEventEnrollPath(eventId: string): string {
-  return `/dashboard?enroll=${encodeURIComponent(eventId)}`;
+  return `/dashboard/children?enroll=1&eventId=${encodeURIComponent(eventId)}`;
 }
 
 export function buildRegisterForEventPath(eventId: string): string {

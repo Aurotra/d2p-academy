@@ -4,6 +4,7 @@ import { registerParentAccount } from "@/infrastructure/auth/register-parent-acc
 import { logMemberActivity } from "@/infrastructure/audit/log-member-activity";
 import { enforcePublicPostRateLimit } from "@/infrastructure/auth/public-post-rate-limit";
 import { mapAuthErrorToTurkish } from "@/shared/utils/auth-errors";
+import { sanitizeParentAuthNextPath } from "@/shared/utils/auth-redirect";
 
 interface RegisterRequestBody {
   fullName?: string;
@@ -13,11 +14,7 @@ interface RegisterRequestBody {
 }
 
 function sanitizeRedirectPath(path: string | undefined): string {
-  if (!path || !path.startsWith("/") || path.startsWith("//")) {
-    return "/dashboard";
-  }
-
-  return path;
+  return sanitizeParentAuthNextPath(path);
 }
 
 export async function POST(request: Request) {

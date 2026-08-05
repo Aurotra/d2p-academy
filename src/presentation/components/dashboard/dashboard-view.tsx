@@ -110,8 +110,8 @@ export function DashboardView({
               </h1>
               <p className="mt-2 max-w-xl text-sm leading-6 text-sky-900/80 sm:text-base">
                 {showOnboarding
-                  ? "Aşağıdaki adımları izleyerek çocuğunuzu etkinliğe kaydedebilirsiniz."
-                  : "Yaklaşan etkinliklerini ve kazandığın sertifikaları buradan takip edebilirsin."}
+                  ? "Çocuk hesaplarını yönetin; etkinlik kaydı ve formlar çocuğunuzun profili üzerinden ilerler."
+                  : "Çocuklarınızın etkinlik kayıtlarını ve sertifikalarını buradan takip edebilirsiniz."}
               </p>
             </div>
 
@@ -130,7 +130,11 @@ export function DashboardView({
                   label="Kurs talebi"
                   variant="accent"
                 />
-                <DashboardActionLink href="/dashboard/profile" label="Profilim" variant="outline" />
+                <DashboardActionLink
+                  href="/dashboard/children?add=1"
+                  label="Çocuk ekle"
+                  variant="outline"
+                />
                 <DashboardActionLink
                   href="/dashboard/documents"
                   label="Dökümanlar"

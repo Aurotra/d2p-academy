@@ -5,7 +5,7 @@ import { NextResponse } from "next/server";
 
 import {
   mapVerifyOtpErrorToQueryCode,
-  sanitizeAuthNextPath,
+  sanitizeParentAuthNextPath,
 } from "@/shared/utils/auth-redirect";
 import { logMemberActivity } from "@/infrastructure/audit/log-member-activity";
 import { mapAuthErrorToTurkish } from "@/shared/utils/auth-errors";
@@ -20,7 +20,7 @@ export async function POST(request: Request) {
   const body = (await request.json()) as ConfirmEmailRequestBody;
   const tokenHash = body.tokenHash?.trim() ?? "";
   const type = body.type;
-  const next = sanitizeAuthNextPath(body.next);
+  const next = sanitizeParentAuthNextPath(body.next);
 
   if (!tokenHash || !type) {
     return NextResponse.json({ error: "Geçersiz onay bağlantısı." }, { status: 400 });

@@ -14,13 +14,10 @@ import {
   mapAuthErrorToTurkish,
 } from "@/shared/utils/auth-errors";
 import { PARENT_GUIDE_PATH } from "@/shared/constants/parent-guide";
+import { sanitizeParentAuthNextPath } from "@/shared/utils/auth-redirect";
 
 function sanitizeRedirectPath(path: string | null): string {
-  if (!path || !path.startsWith("/") || path.startsWith("//")) {
-    return "/dashboard";
-  }
-
-  return path;
+  return sanitizeParentAuthNextPath(path);
 }
 
 export function RegisterForm() {
@@ -85,9 +82,9 @@ export function RegisterForm() {
     <AuthShell
       title="Hesap Oluştur"
       subtitle={
-        redirectTo.includes("enroll=")
-          ? "Hesabınızı oluşturun; ardından seçtiğiniz etkinliğe otomatik kaydolacaksınız."
-          : "Veli hesabınızı oluşturun; ardından çocuk hesaplarını panelden ekleyebilirsiniz."
+        redirectTo.includes("enroll=") || redirectTo.includes("eventId=")
+          ? "Veli hesabınızı oluşturun; ardından çocuk hesabı ekleyip çocuğunuzu etkinliğe kaydedeceksiniz."
+          : "Veli hesabınızı oluşturun; e-posta onayından sonra çocuk hesabı ekleyerek başlayın."
       }
       footerText="Zaten hesabınız var mı?"
       footerHref={loginHref}

@@ -33,6 +33,22 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Etkinliğe kayıt olmak için giriş yapmalısınız." }, { status: 401 });
     }
 
+    const { data: actorProfile } = await client
+      .from("profiles")
+      .select("role")
+      .eq("id", user.id)
+      .maybeSingle();
+
+    if (actorProfile?.role === "parent") {
+      return NextResponse.json(
+        {
+          error:
+            "Veli hesabı doğrudan etkinliğe kaydolamaz. Çocuk hesapları sayfasından çocuğunuzu kaydedin.",
+        },
+        { status: 400 },
+      );
+    }
+
     const { data: event, error: eventError } = await client
       .from("events")
       .select("id, title, status, end_at")

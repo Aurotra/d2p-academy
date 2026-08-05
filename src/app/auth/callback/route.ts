@@ -5,7 +5,7 @@ import { NextResponse } from "next/server";
 
 import {
   mapVerifyOtpErrorToQueryCode,
-  sanitizeAuthNextPath,
+  sanitizeParentAuthNextPath,
 } from "@/shared/utils/auth-redirect";
 
 function getRedirectOrigin(request: Request): string {
@@ -73,7 +73,7 @@ export async function GET(request: Request) {
   const code = requestUrl.searchParams.get("code");
   const tokenHash = requestUrl.searchParams.get("token_hash");
   const type = requestUrl.searchParams.get("type") as EmailOtpType | null;
-  const next = sanitizeAuthNextPath(requestUrl.searchParams.get("next"));
+  const next = sanitizeParentAuthNextPath(requestUrl.searchParams.get("next"));
 
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;

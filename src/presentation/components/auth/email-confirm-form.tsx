@@ -9,7 +9,7 @@ import { GuestOnly } from "@/presentation/components/auth/guest-only";
 import { Button } from "@/presentation/components/ui/button";
 import { useSiteAuth } from "@/presentation/providers/site-auth-provider";
 import { PARENT_GUIDE_PATH } from "@/shared/constants/parent-guide";
-import { sanitizeAuthNextPath } from "@/shared/utils/auth-redirect";
+import { sanitizeParentAuthNextPath } from "@/shared/utils/auth-redirect";
 import { isEmailConfirmationExpiredNotice, mapAuthErrorToTurkish } from "@/shared/utils/auth-errors";
 
 function PanelLink({ href, className = "" }: { href: string; className?: string }) {
@@ -29,7 +29,7 @@ export function EmailConfirmForm() {
   const { isAuthResolved, isLoggedIn, panelHref } = useSiteAuth();
   const tokenHash = searchParams.get("token_hash")?.trim() ?? "";
   const type = searchParams.get("type")?.trim() ?? "";
-  const nextPath = sanitizeAuthNextPath(searchParams.get("next"));
+  const nextPath = sanitizeParentAuthNextPath(searchParams.get("next"));
   const loginHref = `/login?redirectTo=${encodeURIComponent(nextPath)}`;
 
   const [error, setError] = useState<string | null>(null);

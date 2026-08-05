@@ -20,48 +20,65 @@ interface OnboardingStep {
 
 function resolveSteps(context: ParentOnboardingContext): OnboardingStep[] {
   const hasChild = context.childrenCount > 0;
+  const profileComplete = !hasChild || context.firstChildProfileComplete;
   const hasEnrollment = context.childEnrollmentCount > 0;
   const formsPending = context.pendingFormsEnrollment !== null;
   const hasEvents = context.upcomingEventsCount > 0;
 
-  const browseStatus: StepStatus = hasEnrollment ? "done" : hasChild ? "done" : "current";
-  const childStatus: StepStatus = !hasChild
-    ? hasEnrollment
+  const childStatus: StepStatus = hasChild ? "done" : "current";
+  const profileStatus: StepStatus = !hasChild
+    ? "upcoming"
+    : profileComplete
       ? "done"
-      : browseStatus === "current"
-        ? "upcoming"
-        : "current"
-    : "done";
-  const enrollStatus: StepStatus = !hasEnrollment
-    ? hasChild
-      ? "current"
-      : "upcoming"
-    : "done";
+      : "current";
+  const eventsStatus: StepStatus = !profileComplete
+    ? "upcoming"
+    : hasEnrollment
+      ? "done"
+      : "current";
+  const enrollStatus: StepStatus = !profileComplete
+    ? "upcoming"
+    : hasEnrollment
+      ? "done"
+      : "upcoming";
   const formsStatus: StepStatus = !hasEnrollment
     ? "upcoming"
     : formsPending
       ? "current"
       : "done";
 
+  const profileHref = context.firstChildId
+    ? `/dashboard/children/${context.firstChildId}/profile`
+    : "/dashboard/children?add=1";
+
   const steps: OnboardingStep[] = [
-    {
-      id: "events",
-      title: hasEvents ? "Aktif etkinliklere göz atın" : "Uygun etkinlikleri kontrol edin",
-      description: hasEvents
-        ? "Yayınlanmış etkinliklerden size uygun tarihi seçin; kayıt için önce çocuk hesabı gerekir."
-        : "Şu an kayda açık etkinlik görünmüyor. Takvimi kontrol edin veya kurs talebi bırakın.",
-      status: browseStatus,
-      href: hasEvents ? "/etkinlikler" : "/dashboard/kurs-talebi",
-      actionLabel: hasEvents ? "Etkinlikleri gör" : "Kurs talebi oluştur",
-    },
     {
       id: "child",
       title: "Çocuk hesabı ekleyin",
       description:
-        "Etkinliğe kayıt, çocuğunuzun kullanıcı adlı öğrenci hesabı üzerinden yapılır. Veli panelinden birkaç dakikada ekleyebilirsiniz.",
+        "Etkinliğe kayıt çocuğunuzun kullanıcı adlı öğrenci hesabı üzerinden yapılır. Veli panelinden birkaç dakikada ekleyebilirsiniz.",
       status: childStatus,
       href: "/dashboard/children?add=1",
       actionLabel: "Çocuk ekle",
+    },
+    {
+      id: "profile",
+      title: "Çocuk profilini doldurun",
+      description:
+        "Sınıf, okul ve ilgi alanları gibi bilgiler katılımcı formları ve sertifika süreci için gereklidir. Veli hesabınızı değil, çocuğunuzun profilini tamamlayın.",
+      status: profileStatus,
+      href: profileHref,
+      actionLabel: "Profili doldur",
+    },
+    {
+      id: "events",
+      title: hasEvents ? "Aktif etkinliklere göz atın" : "Uygun etkinlikleri kontrol edin",
+      description: hasEvents
+        ? "Yayınlanmış etkinliklerden size uygun tarihi seçin; kayıt için çocuk hesabı ve profil hazır olmalıdır."
+        : "Şu an kayda açık etkinlik görünmüyor. Takvimi kontrol edin veya kurs talebi bırakın.",
+      status: eventsStatus,
+      href: hasEvents ? "/etkinlikler" : "/dashboard/kurs-talebi",
+      actionLabel: hasEvents ? "Etkinlikleri gör" : "Kurs talebi oluştur",
     },
     {
       id: "enroll",
@@ -125,13 +142,15 @@ export function ParentOnboardingGuide({ context }: ParentOnboardingGuideProps) {
             Başlangıç rehberi
           </p>
           <h2 className="mt-2 text-2xl font-bold text-navy-950">
-            {context.childEnrollmentCount === 0
-              ? "İlk etkinlik kaydınızı birlikte tamamlayalım"
-              : "Kayıt tamam — formları bitirmeniz gerekiyor"}
+            {context.childrenCount === 0
+              ? "Önce çocuk hesabı ekleyelim"
+              : context.childEnrollmentCount === 0
+                ? "Çocuğunuzu etkinliğe kaydetmeye hazırlanalım"
+                : "Kayıt tamam — formları bitirmeniz gerekiyor"}
           </h2>
           <p className="mt-2 text-sm leading-6 text-slate-600">
-            D2P Academy&apos;de asıl adım çocuğunuzu uygun etkinliğe kaydetmektir. Aşağıdaki
-            sırayı takip edin; her adım bir sonrakine hazırlar.
+            Veli hesabı yalnızca panel erişimi içindir. Etkinlik kaydı ve formlar çocuğunuzun
+            hesabı üzerinden ilerler; aşağıdaki sırayı takip edin.
           </p>
           <p className="mt-3 text-xs font-medium text-slate-500">
             {completedCount}/{steps.length} adım tamamlandı

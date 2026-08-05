@@ -5,14 +5,11 @@ import { usePathname, useRouter } from "next/navigation";
 
 import { createSupabaseBrowserClient } from "@/infrastructure/supabase/create-browser-client";
 import { mapAuthQueryErrorToTurkish, AUTH_HASH_ERROR_EVENT } from "@/shared/utils/auth-errors";
+import { sanitizeParentAuthNextPath } from "@/shared/utils/auth-redirect";
 import { SESSION_CHANGED_EVENT } from "@/shared/utils/session-events";
 
 function sanitizeRedirectPath(path: string | null): string {
-  if (!path || !path.startsWith("/") || path.startsWith("//")) {
-    return "/dashboard";
-  }
-
-  return path;
+  return sanitizeParentAuthNextPath(path);
 }
 
 function cleanUrlHash(): string {

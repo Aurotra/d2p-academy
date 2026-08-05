@@ -3,8 +3,13 @@ import { redirect } from "next/navigation";
 import { Suspense } from "react";
 
 import { fetchChildProgress } from "@/infrastructure/repositories/fetch-child-progress";
+import {
+  fetchParentOnboardingContext,
+  shouldShowParentOnboarding,
+} from "@/infrastructure/repositories/fetch-parent-onboarding-context";
 import { createSupabaseServerClient } from "@/infrastructure/supabase/create-server-client";
 import { calculateProgress } from "@/lib/utils/progress";
+import { ParentOnboardingGuide } from "@/presentation/components/dashboard/parent-onboarding-guide";
 import {
   ChildrenStudentsClient,
   type ChildStudent,
@@ -22,6 +27,9 @@ export default async function DashboardChildrenPage() {
   if (!auth?.user) {
     redirect("/login?redirectTo=/dashboard/children");
   }
+
+  const onboardingContext = await fetchParentOnboardingContext(supabase, auth.user.id);
+  const showOnboarding = shouldShowParentOnboarding(onboardingContext);
 
   const { data, error } = await supabase
     .from("profiles")
@@ -137,6 +145,12 @@ export default async function DashboardChildrenPage() {
             .
           </p>
         </div>
+
+        {showOnboarding ? (
+          <div className="mt-8">
+            <ParentOnboardingGuide context={onboardingContext} />
+          </div>
+        ) : null}
 
         <div className="mt-8">
           {error ? (

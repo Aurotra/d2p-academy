@@ -10,6 +10,7 @@ import {
 import { SupabaseStudentDashboardRepository } from "@/infrastructure/repositories/supabase-student-dashboard-repository";
 import { createSupabaseServerClient } from "@/infrastructure/supabase/create-server-client";
 import { DashboardView } from "@/presentation/components/dashboard/dashboard-view";
+import { PARENT_DEFAULT_LANDING_PATH } from "@/shared/utils/auth-redirect";
 
 export const dynamic = "force-dynamic";
 export default async function DashboardPage() {
@@ -30,6 +31,11 @@ export default async function DashboardPage() {
   const repository = new SupabaseStudentDashboardRepository(client);
   const dashboardData = await getStudentDashboard(repository, user.id);
   const onboardingContext = await fetchParentOnboardingContext(client, user.id);
+
+  if (onboardingContext.childrenCount === 0) {
+    redirect(PARENT_DEFAULT_LANDING_PATH);
+  }
+
   const adminAccess = await getAdminAccess(client);
   const instructorAccess = await getInstructorAccess(client);
 

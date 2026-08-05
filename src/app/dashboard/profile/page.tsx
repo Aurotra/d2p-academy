@@ -66,6 +66,11 @@ export default function DashboardProfilePage() {
       const repository = new SupabaseStudentProfileRepository(client);
       const profile = await repository.getByUserId(user.id);
 
+      if (profile?.role === "parent") {
+        router.replace("/dashboard/children");
+        return;
+      }
+
       if (profile) {
         setForm({
           full_name: profile.full_name,

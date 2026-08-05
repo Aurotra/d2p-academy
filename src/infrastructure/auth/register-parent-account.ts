@@ -4,7 +4,7 @@ import type { AuthResult, SignUpInput } from "@/core/domain/auth";
 import { sendSignupConfirmationNotification } from "@/infrastructure/email/send-signup-confirmation-notification";
 import { createServiceRoleClient } from "@/infrastructure/supabase/create-service-role-client";
 import { SITE_URL } from "@/shared/constants/site";
-import { buildEmailConfirmationUrl, sanitizeAuthNextPath } from "@/shared/utils/auth-redirect";
+import { buildEmailConfirmationUrl, sanitizeParentAuthNextPath } from "@/shared/utils/auth-redirect";
 import { mapAuthErrorToTurkish } from "@/shared/utils/auth-errors";
 
 function mapSession(userId: string, email: string) {
@@ -85,7 +85,7 @@ export async function registerParentAccount(input: SignUpInput): Promise<AuthRes
   const serviceClient = createServiceRoleClient();
   const email = input.email.trim().toLowerCase();
   const fullName = input.fullName.trim();
-  const nextPath = sanitizeAuthNextPath(input.redirectTo);
+  const nextPath = sanitizeParentAuthNextPath(input.redirectTo);
   const emailRedirectTo = `${SITE_URL}/auth/callback?next=${encodeURIComponent(nextPath)}`;
 
   const { data, error } = await serviceClient.auth.admin.generateLink({

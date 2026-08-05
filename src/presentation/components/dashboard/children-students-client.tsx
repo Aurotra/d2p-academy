@@ -101,6 +101,7 @@ export function ChildrenStudentsClient({
 }) {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const pendingEventId = searchParams.get("eventId")?.trim() ?? "";
   const [students, setStudents] = useState<ChildStudent[]>(initialStudents);
   const [addOpen, setAddOpen] = useState(false);
   const [resetTarget, setResetTarget] = useState<ChildStudent | null>(null);
@@ -112,8 +113,12 @@ export function ChildrenStudentsClient({
       setAddOpen(true);
     }
 
-    if (searchParams.get("enroll") === "1" && initialStudents.length > 0) {
-      setEnrollTarget(initialStudents[0] ?? null);
+    if (searchParams.get("enroll") === "1") {
+      if (initialStudents.length > 0) {
+        setEnrollTarget(initialStudents[0] ?? null);
+      } else {
+        setAddOpen(true);
+      }
     }
   }, [initialStudents, searchParams]);
 
@@ -364,6 +369,9 @@ export function ChildrenStudentsClient({
           onCreated={(student) => {
             setStudents((prev) => [student, ...prev]);
             setAddOpen(false);
+            if (searchParams.get("enroll") === "1" || pendingEventId) {
+              setEnrollTarget(student);
+            }
           }}
         />
       ) : null}
@@ -376,6 +384,7 @@ export function ChildrenStudentsClient({
         <EnrollStudentDialog
           student={enrollTarget}
           events={upcomingEvents}
+          initialEventId={pendingEventId || undefined}
           onClose={() => setEnrollTarget(null)}
           onEnrolled={(eventTitle, alreadyEnrolled) => {
             if (!alreadyEnrolled) {
@@ -647,19 +656,27 @@ function ResetPasswordDialog({
 function EnrollStudentDialog({
   student,
   events,
+  initialEventId,
   onClose,
   onEnrolled,
 }: {
   student: ChildStudent;
   events: EnrollableEventOption[];
+  initialEventId?: string;
   onClose: () => void;
   onEnrolled: (eventTitle: string, alreadyEnrolled: boolean) => void;
 }) {
   const router = useRouter();
-  const [eventId, setEventId] = useState("");
+  const [eventId, setEventId] = useState(initialEventId ?? "");
   const [error, setError] = useState<string | null>(null);
   const [redirecting, setRedirecting] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+
+  useEffect(() => {
+    if (initialEventId) {
+      setEventId(initialEventId);
+    }
+  }, [initialEventId]);
 
   async function handleSubmit(event: FormEvent) {
     event.preventDefault();

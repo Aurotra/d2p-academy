@@ -2,11 +2,11 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
 
 import { Button } from "@/presentation/components/ui/button";
 import { useSiteAuth } from "@/presentation/providers/site-auth-provider";
 import {
+  buildEventEnrollPath,
   buildLoginForEventPath,
   buildRegisterForEventPath,
 } from "@/shared/utils/event-enrollment";
@@ -16,61 +16,12 @@ interface EventEnrollButtonProps {
   className?: string;
 }
 
-type EnrollState = "idle" | "loading" | "success" | "already" | "error";
-
 export function EventEnrollButton({ eventId, className = "" }: EventEnrollButtonProps) {
   const router = useRouter();
   const { isAuthResolved, isLoggedIn } = useSiteAuth();
-  const [state, setState] = useState<EnrollState>("idle");
-  const [message, setMessage] = useState<string | null>(null);
 
-  async function enroll() {
-    setState("loading");
-    setMessage(null);
-
-    try {
-      const response = await fetch("/api/v1/enrollments", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ eventId }),
-      });
-
-      const payload = (await response.json()) as {
-        error?: string;
-        data?: { alreadyEnrolled?: boolean; eventTitle?: string; enrollmentId?: string };
-      };
-
-      if (response.status === 401) {
-        router.push(buildRegisterForEventPath(eventId));
-        return;
-      }
-
-      if (!response.ok) {
-        throw new Error(payload.error ?? "Etkinliğe kayıt olunamadı.");
-      }
-
-      const enrollmentId = payload.data?.enrollmentId;
-      if (enrollmentId) {
-        setState("success");
-        router.push(`/dashboard/enrollments/${enrollmentId}/forms`);
-        router.refresh();
-        return;
-      }
-
-      if (payload.data?.alreadyEnrolled) {
-        setState("already");
-        setMessage("Bu etkinliğe zaten kayıtlısınız.");
-        return;
-      }
-
-      setState("success");
-      setMessage("Kaydınız alındı. Panelinizde görüntülenecek.");
-      router.push("/dashboard");
-      router.refresh();
-    } catch (error) {
-      setState("error");
-      setMessage(error instanceof Error ? error.message : "Kayıt sırasında hata oluştu.");
-    }
+  function startChildEnrollment() {
+    router.push(buildEventEnrollPath(eventId));
   }
 
   if (!isAuthResolved) {
@@ -92,13 +43,13 @@ export function EventEnrollButton({ eventId, className = "" }: EventEnrollButton
         <p className="text-center text-xs leading-5 text-slate-500">
           Üye değilseniz önce{" "}
           <Link href={buildRegisterForEventPath(eventId)} className="font-semibold text-document-primary">
-            hesap oluşturun
+            veli hesabı oluşturun
           </Link>
           ; hesabınız varsa{" "}
           <Link href={buildLoginForEventPath(eventId)} className="font-semibold text-document-primary">
             giriş yapın
           </Link>
-          .
+          . Kayıt çocuğunuzun hesabı üzerinden tamamlanır.
         </p>
       </div>
     );
@@ -108,25 +59,14 @@ export function EventEnrollButton({ eventId, className = "" }: EventEnrollButton
     <div className={`space-y-2 ${className}`}>
       <Button
         type="button"
-        disabled={state === "loading" || state === "success" || state === "already"}
-        onClick={() => void enroll()}
+        onClick={startChildEnrollment}
         className="min-h-[44px] w-full bg-document-primary hover:bg-document-primary-hover hover:shadow-glow-document"
       >
-        {state === "loading"
-          ? "Kaydediliyor..."
-          : state === "success" || state === "already"
-            ? "Kayıtlı"
-            : "Etkinliğe Kaydol"}
+        Etkinliğe Kaydol
       </Button>
-      {message ? (
-        <p
-          className={`text-center text-xs leading-5 ${
-            state === "error" ? "text-red-600" : "text-emerald-700"
-          }`}
-        >
-          {message}
-        </p>
-      ) : null}
+      <p className="text-center text-xs leading-5 text-slate-500">
+        Çocuk hesabı seçerek kayıt tamamlanır; veli hesabınız etkinliğe kaydolmaz.
+      </p>
     </div>
   );
 }
