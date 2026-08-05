@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState, type FormEvent, type ReactNode } from "react";
 
 import { Button } from "@/presentation/components/ui/button";
@@ -100,11 +100,22 @@ export function ChildrenStudentsClient({
   upcomingEvents: EnrollableEventOption[];
 }) {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [students, setStudents] = useState<ChildStudent[]>(initialStudents);
   const [addOpen, setAddOpen] = useState(false);
   const [resetTarget, setResetTarget] = useState<ChildStudent | null>(null);
   const [enrollTarget, setEnrollTarget] = useState<ChildStudent | null>(null);
   const [expandedId, setExpandedId] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (searchParams.get("add") === "1") {
+      setAddOpen(true);
+    }
+
+    if (searchParams.get("enroll") === "1" && initialStudents.length > 0) {
+      setEnrollTarget(initialStudents[0] ?? null);
+    }
+  }, [initialStudents, searchParams]);
 
   return (
     <div className="space-y-4">
@@ -114,8 +125,30 @@ export function ChildrenStudentsClient({
 
       <div className="overflow-hidden rounded-[1.5rem] border border-slate-200 bg-white shadow-sm">
         {students.length === 0 ? (
-          <div className="p-8 text-center text-sm text-slate-600">
-            Henüz eklenmiş bir çocuk yok. Başlamak için &quot;Çocuk ekle&quot; butonunu kullan.
+          <div className="space-y-4 p-8 text-center">
+            <p className="text-sm font-semibold text-navy-950">Henüz çocuk hesabı eklenmedi</p>
+            <p className="text-sm text-slate-600">
+              Etkinliğe kayıt için önce çocuğunuzun kullanıcı adlı öğrenci hesabını oluşturun.
+              Ardından «Etkinliğe kaydet» ile program seçebilirsiniz.
+            </p>
+            <div className="flex flex-wrap justify-center gap-2">
+              <Button onClick={() => setAddOpen(true)}>+ Çocuk ekle</Button>
+              {upcomingEvents.length > 0 ? (
+                <Link
+                  href="/etkinlikler"
+                  className="inline-flex items-center justify-center rounded-xl border-2 border-sky-800 bg-white px-5 py-3 text-sm font-semibold text-sky-950 shadow-md shadow-sky-200/60 transition hover:border-sky-900 hover:bg-sky-50"
+                >
+                  Etkinlikleri gör
+                </Link>
+              ) : (
+                <Link
+                  href="/dashboard/kurs-talebi"
+                  className="inline-flex items-center justify-center rounded-xl border-2 border-sky-800 bg-white px-5 py-3 text-sm font-semibold text-sky-950 shadow-md shadow-sky-200/60 transition hover:border-sky-900 hover:bg-sky-50"
+                >
+                  Kurs talebi oluştur
+                </Link>
+              )}
+            </div>
           </div>
         ) : (
           <ul className="divide-y divide-slate-100">

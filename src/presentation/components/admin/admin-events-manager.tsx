@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useRef, useState, type FormEvent } from "react";
+import { useEffect, useMemo, useRef, useState, type FormEvent, type ReactNode, type RefObject } from "react";
 
 import {
   EVENT_STATUS_LABELS,
@@ -162,6 +162,284 @@ function toggleInstructor(form: EventFormState, instructorId: string): EventForm
   };
 }
 
+function FormSection({
+  title,
+  description,
+  children,
+}: {
+  title: string;
+  description?: string;
+  children: ReactNode;
+}) {
+  return (
+    <section className="rounded-2xl border border-slate-200 bg-slate-50/50 p-4 sm:p-5">
+      <div className="mb-4">
+        <h3 className="text-sm font-bold uppercase tracking-wide text-slate-700">{title}</h3>
+        {description ? <p className="mt-1 text-xs text-slate-500">{description}</p> : null}
+      </div>
+      <div className="grid gap-4 md:grid-cols-2">{children}</div>
+    </section>
+  );
+}
+
+function AdminActionLink({
+  href,
+  children,
+}: {
+  href: string;
+  children: ReactNode;
+}) {
+  return (
+    <Link
+      href={href}
+      className="inline-flex min-h-[40px] items-center justify-center rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-navy-950 transition hover:border-sky-300 hover:bg-sky-50"
+    >
+      {children}
+    </Link>
+  );
+}
+
+function EventActionBar({
+  event,
+  notifyingEventId,
+  savingEventId,
+  onEdit,
+  onNotify,
+  onPublishToggle,
+  onDelete,
+  showSave,
+  onCancelEdit,
+}: {
+  event: AdminEventRecord;
+  notifyingEventId: string | null;
+  savingEventId: string | null;
+  onEdit?: () => void;
+  onNotify: () => void;
+  onPublishToggle: () => void;
+  onDelete: () => void;
+  showSave?: boolean;
+  onCancelEdit?: () => void;
+}) {
+  const isNotifying = notifyingEventId === event.id;
+  const isSaving = savingEventId === event.id;
+
+  return (
+    <div className="flex flex-col gap-3 border-t border-slate-100 bg-slate-50/60 px-4 py-3 sm:px-5">
+      <div className="flex flex-wrap items-center gap-2">
+        {showSave ? (
+          <>
+            <Button type="submit" disabled={isSaving} className="min-h-[40px] px-4 py-2 text-sm">
+              {isSaving ? "Kaydediliyor..." : "Kaydet"}
+            </Button>
+            {onCancelEdit ? (
+              <Button
+                type="button"
+                variant="ghost"
+                onClick={onCancelEdit}
+                className="min-h-[40px] px-4 py-2 text-sm"
+              >
+                İptal
+              </Button>
+            ) : null}
+          </>
+        ) : onEdit ? (
+          <Button
+            type="button"
+            variant="primary"
+            onClick={onEdit}
+            className="min-h-[40px] px-4 py-2 text-sm"
+          >
+            Düzenle
+          </Button>
+        ) : null}
+        <AdminActionLink href={`/admin/enrollments?event_id=${event.id}`}>Kayıtlar</AdminActionLink>
+        <AdminActionLink href={`/admin/events/${event.id}/attendance`}>Yoklama</AdminActionLink>
+        {event.instructorIds.length > 0 ? (
+          <Button
+            type="button"
+            variant="outline"
+            disabled={isNotifying}
+            onClick={onNotify}
+            className="min-h-[40px] px-4 py-2 text-sm"
+          >
+            {isNotifying ? "Gönderiliyor..." : "Eğitmen bildirimi"}
+          </Button>
+        ) : null}
+      </div>
+      {!showSave ? (
+        <div className="flex flex-wrap items-center gap-2">
+          {event.status === "published" ? (
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={onPublishToggle}
+              className="min-h-[40px] px-4 py-2 text-sm"
+            >
+              Yayından kaldır
+            </Button>
+          ) : (
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={onPublishToggle}
+              className="min-h-[40px] px-4 py-2 text-sm"
+            >
+              Yayınla
+            </Button>
+          )}
+          <Button
+            type="button"
+            variant="ghost"
+            onClick={onDelete}
+            className="min-h-[40px] px-4 py-2 text-sm text-red-700 hover:bg-red-50"
+          >
+            Sil
+          </Button>
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
+function EventMetaItem({ label, value }: { label: string; value: ReactNode }) {
+  return (
+    <div className="min-w-0">
+      <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-400">{label}</p>
+      <p className="mt-1 text-sm text-slate-700">{value}</p>
+    </div>
+  );
+}
+
+function EventListCard({
+  event,
+  isEditing,
+  editForm,
+  setEditForm,
+  categories,
+  instructors,
+  notifyingEventId,
+  savingEventId,
+  editCardRef,
+  onStartEdit,
+  onCancelEdit,
+  onUpdate,
+  onNotify,
+  onPublishToggle,
+  onDelete,
+}: {
+  event: AdminEventRecord;
+  isEditing: boolean;
+  editForm: EventFormState | null;
+  setEditForm: (next: EventFormState) => void;
+  categories: EventCategoryOption[];
+  instructors: InstructorOption[];
+  notifyingEventId: string | null;
+  savingEventId: string | null;
+  editCardRef?: RefObject<HTMLDivElement | null>;
+  onStartEdit: () => void;
+  onCancelEdit: () => void;
+  onUpdate: (submitEvent: FormEvent<HTMLFormElement>) => void;
+  onNotify: () => void;
+  onPublishToggle: () => void;
+  onDelete: () => void;
+}) {
+  return (
+    <article
+      ref={isEditing ? editCardRef : undefined}
+      className={`overflow-hidden rounded-2xl border bg-white shadow-sm transition ${
+        isEditing
+          ? "border-document-primary ring-2 ring-document-primary/15"
+          : "border-slate-200 hover:border-sky-200"
+      }`}
+    >
+      <div className={`px-4 py-4 sm:px-5 ${isEditing ? "bg-sky-50/50" : "bg-white"}`}>
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div className="min-w-0 flex-1">
+            <div className="flex flex-wrap gap-2">
+              <Badge tone="cyan">{EVENT_TYPE_LABELS[event.eventType]}</Badge>
+              <Badge tone="navy">{EVENT_STATUS_LABELS[event.status]}</Badge>
+              {event.programCode ? (
+                <Badge tone="cyan">Kod: {event.programCode}</Badge>
+              ) : (
+                <span className="inline-flex items-center rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold text-amber-900">
+                  Kod eksik
+                </span>
+              )}
+              {event.isOnline ? (
+                <Badge tone="neutral">Online</Badge>
+              ) : null}
+            </div>
+            <h3 className="mt-3 text-lg font-bold text-navy-950">{event.title}</h3>
+          </div>
+        </div>
+
+        {!isEditing ? (
+          <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <EventMetaItem
+              label="Tarih"
+              value={
+                <>
+                  {formatDateTime(event.startAt)}
+                  <span className="block text-slate-500">→ {formatDateTime(event.endAt)}</span>
+                </>
+              }
+            />
+            <EventMetaItem label="Kategori" value={event.categoryName ?? "Kategorisiz"} />
+            <EventMetaItem
+              label="Konum"
+              value={event.isOnline ? "Online etkinlik" : event.locationName ?? "Belirtilmedi"}
+            />
+            <EventMetaItem
+              label="Eğitmen"
+              value={
+                event.instructorNames.length > 0
+                  ? event.instructorNames.join(", ")
+                  : "Atanmadı"
+              }
+            />
+          </div>
+        ) : null}
+      </div>
+
+      {isEditing && editForm ? (
+        <form onSubmit={onUpdate} className="border-t border-slate-100">
+          <div className="space-y-4 px-4 py-5 sm:px-5">
+            <h4 className="text-base font-semibold text-navy-950">Etkinliği düzenle</h4>
+            <EventFormFields
+              form={editForm}
+              setForm={setEditForm}
+              categories={categories}
+              instructors={instructors}
+              idPrefix={`edit-${event.id}`}
+              titleAutoFocus
+            />
+          </div>
+          <EventActionBar
+            event={event}
+            notifyingEventId={notifyingEventId}
+            savingEventId={savingEventId}
+            onNotify={onNotify}
+            onPublishToggle={onPublishToggle}
+            onDelete={onDelete}
+            showSave
+            onCancelEdit={onCancelEdit}
+          />
+        </form>
+      ) : (
+        <EventActionBar
+          event={event}
+          notifyingEventId={notifyingEventId}
+          savingEventId={savingEventId}
+          onEdit={onStartEdit}
+          onNotify={onNotify}
+          onPublishToggle={onPublishToggle}
+          onDelete={onDelete}
+        />
+      )}
+    </article>
+  );
+}
+
 function EventFormFields({
   form,
   setForm,
@@ -178,153 +456,168 @@ function EventFormFields({
   titleAutoFocus?: boolean;
 }) {
   return (
-    <div className="grid gap-4 md:grid-cols-2">
-      <Input
-        id={`${idPrefix}-title`}
-        name={`${idPrefix}-title`}
-        label="Başlık"
-        value={form.title}
-        onChange={(e) => setForm({ ...form, title: e.target.value })}
-        autoFocus={titleAutoFocus}
-        required
-      />
-      <Select
-        id={`${idPrefix}-event-type`}
-        name={`${idPrefix}-event-type`}
-        label="Tür"
-        value={form.eventType}
-        onChange={(e) => setForm({ ...form, eventType: e.target.value as EventType })}
-      >
-        {Object.entries(EVENT_TYPE_LABELS).map(([value, label]) => (
-          <option key={value} value={value}>
-            {label}
-          </option>
-        ))}
-      </Select>
-      <div className="md:col-span-2">
-        <Textarea
-          label="Açıklama"
-          value={form.description}
-          onChange={(e) => setForm({ ...form, description: e.target.value })}
+    <div className="space-y-4">
+      <FormSection title="Temel bilgiler" description="Başlık, tür ve açıklama">
+        <Input
+          id={`${idPrefix}-title`}
+          name={`${idPrefix}-title`}
+          label="Başlık"
+          value={form.title}
+          onChange={(e) => setForm({ ...form, title: e.target.value })}
+          autoFocus={titleAutoFocus}
           required
         />
-      </div>
-      <EventCategoryPicker
-        idPrefix={idPrefix}
-        categories={categories}
-        value={form.categoryId}
-        onChange={(categoryId) => setForm({ ...form, categoryId })}
-      />
-      <div className="md:col-span-2">
-        <p className="mb-2 text-sm font-medium text-navy-900">Eğitmenler</p>
-        {instructors.length === 0 ? (
-          <p className="text-sm text-slate-500">Henüz eğitmen tanımlı değil.</p>
-        ) : (
-          <div className="grid gap-2 rounded-xl border border-slate-200 bg-slate-50/60 p-3 sm:grid-cols-2">
-            {instructors.map((instructor) => {
-              const inputId = `${idPrefix}-instructor-${instructor.id}`;
-              const isChecked = form.instructorIds.includes(instructor.id);
+        <Select
+          id={`${idPrefix}-event-type`}
+          name={`${idPrefix}-event-type`}
+          label="Tür"
+          value={form.eventType}
+          onChange={(e) => setForm({ ...form, eventType: e.target.value as EventType })}
+        >
+          {Object.entries(EVENT_TYPE_LABELS).map(([value, label]) => (
+            <option key={value} value={value}>
+              {label}
+            </option>
+          ))}
+        </Select>
+        <div className="md:col-span-2">
+          <Textarea
+            label="Açıklama"
+            value={form.description}
+            onChange={(e) => setForm({ ...form, description: e.target.value })}
+            required
+          />
+        </div>
+        <div className="md:col-span-2">
+          <EventCategoryPicker
+            idPrefix={idPrefix}
+            categories={categories}
+            value={form.categoryId}
+            onChange={(categoryId) => setForm({ ...form, categoryId })}
+          />
+        </div>
+      </FormSection>
 
-              return (
-                <label
-                  key={instructor.id}
-                  htmlFor={inputId}
-                  className="flex cursor-pointer items-start gap-2 rounded-lg border border-transparent px-2 py-1.5 text-sm text-navy-900 transition hover:border-slate-200 hover:bg-white"
-                >
-                  <input
-                    id={inputId}
-                    type="checkbox"
-                    checked={isChecked}
-                    onChange={() => setForm(toggleInstructor(form, instructor.id))}
-                    className="mt-0.5"
-                  />
-                  <span>
-                    <span className="font-medium">{instructor.fullName}</span>
-                    <span className="block text-xs text-slate-500">{instructor.email}</span>
-                  </span>
-                </label>
-              );
-            })}
-          </div>
-        )}
-        <p className="mt-1 text-xs text-slate-500">Bir etkinliğe birden fazla eğitmen atayabilirsiniz.</p>
-      </div>
-      <Select
-        id={`${idPrefix}-status`}
-        name={`${idPrefix}-status`}
-        label="Durum"
-        value={form.status}
-        onChange={(e) => setForm({ ...form, status: e.target.value as EventStatus })}
-      >
-        {Object.entries(EVENT_STATUS_LABELS).map(([value, label]) => (
-          <option key={value} value={value}>
-            {label}
-          </option>
-        ))}
-      </Select>
-      <Input
-        id={`${idPrefix}-start-at`}
-        name={`${idPrefix}-start-at`}
-        label="Başlangıç"
-        type="datetime-local"
-        value={form.startAt}
-        onChange={(e) => setForm({ ...form, startAt: e.target.value })}
-        required
-      />
-      <Input
-        id={`${idPrefix}-end-at`}
-        name={`${idPrefix}-end-at`}
-        label="Bitiş"
-        type="datetime-local"
-        value={form.endAt}
-        onChange={(e) => setForm({ ...form, endAt: e.target.value })}
-        required
-      />
-      <Input
-        id={`${idPrefix}-location`}
-        name={`${idPrefix}-location`}
-        label="Konum"
-        value={form.locationName}
-        onChange={(e) => setForm({ ...form, locationName: e.target.value })}
-      />
-      <Input
-        id={`${idPrefix}-max-capacity`}
-        name={`${idPrefix}-max-capacity`}
-        label="Kontenjan"
-        type="number"
-        min={1}
-        value={form.maxCapacity}
-        onChange={(e) => setForm({ ...form, maxCapacity: e.target.value })}
-      />
-      <div>
+      <FormSection title="Program ve yayın" description="Durum ve sertifika kodu">
+        <Select
+          id={`${idPrefix}-status`}
+          name={`${idPrefix}-status`}
+          label="Durum"
+          value={form.status}
+          onChange={(e) => setForm({ ...form, status: e.target.value as EventStatus })}
+        >
+          {Object.entries(EVENT_STATUS_LABELS).map(([value, label]) => (
+            <option key={value} value={value}>
+              {label}
+            </option>
+          ))}
+        </Select>
+        <div>
+          <Input
+            id={`${idPrefix}-program-code`}
+            name={`${idPrefix}-program-code`}
+            label="Program kodu"
+            value={form.programCode}
+            onChange={(e) => setForm({ ...form, programCode: e.target.value.toUpperCase() })}
+            placeholder="ör. KYK"
+            maxLength={4}
+          />
+          <p className="mt-1 text-xs text-slate-500" id={`${idPrefix}-program-code-hint`}>
+            Öğrenci ve sertifika kodu için zorunlu (2–4 harf).
+          </p>
+        </div>
+      </FormSection>
+
+      <FormSection title="Tarih ve konum" description="Zaman, yer ve kontenjan">
         <Input
-          id={`${idPrefix}-program-code`}
-          name={`${idPrefix}-program-code`}
-          label="Program kodu"
-          value={form.programCode}
-          onChange={(e) => setForm({ ...form, programCode: e.target.value.toUpperCase() })}
-          placeholder="ör. KYK"
-          maxLength={4}
+          id={`${idPrefix}-start-at`}
+          name={`${idPrefix}-start-at`}
+          label="Başlangıç"
+          type="datetime-local"
+          value={form.startAt}
+          onChange={(e) => setForm({ ...form, startAt: e.target.value })}
+          required
         />
-        <p className="mt-1 text-xs text-slate-500" id={`${idPrefix}-program-code-hint`}>
-          Öğrenci ve sertifika kodu için zorunlu (2–4 harf, ör. KYK, DC).
-        </p>
-      </div>
-      <Input
-        id={`${idPrefix}-meeting-url`}
-        name={`${idPrefix}-meeting-url`}
-        label="Online Toplantı URL"
-        value={form.meetingUrl}
-        onChange={(e) => setForm({ ...form, meetingUrl: e.target.value })}
-      />
-      <label className="flex items-center gap-2 text-sm text-navy-900 md:col-span-2">
-        <input
-          type="checkbox"
-          checked={form.isOnline}
-          onChange={(e) => setForm({ ...form, isOnline: e.target.checked })}
+        <Input
+          id={`${idPrefix}-end-at`}
+          name={`${idPrefix}-end-at`}
+          label="Bitiş"
+          type="datetime-local"
+          value={form.endAt}
+          onChange={(e) => setForm({ ...form, endAt: e.target.value })}
+          required
         />
-        Online etkinlik
-      </label>
+        <Input
+          id={`${idPrefix}-location`}
+          name={`${idPrefix}-location`}
+          label="Konum"
+          value={form.locationName}
+          onChange={(e) => setForm({ ...form, locationName: e.target.value })}
+        />
+        <Input
+          id={`${idPrefix}-max-capacity`}
+          name={`${idPrefix}-max-capacity`}
+          label="Kontenjan"
+          type="number"
+          min={1}
+          value={form.maxCapacity}
+          onChange={(e) => setForm({ ...form, maxCapacity: e.target.value })}
+        />
+        <Input
+          id={`${idPrefix}-meeting-url`}
+          name={`${idPrefix}-meeting-url`}
+          label="Online toplantı URL"
+          value={form.meetingUrl}
+          onChange={(e) => setForm({ ...form, meetingUrl: e.target.value })}
+        />
+        <label className="flex items-center gap-2 self-end text-sm text-navy-900">
+          <input
+            type="checkbox"
+            checked={form.isOnline}
+            onChange={(e) => setForm({ ...form, isOnline: e.target.checked })}
+          />
+          Online etkinlik
+        </label>
+      </FormSection>
+
+      <FormSection title="Eğitmenler" description="Bir veya birden fazla eğitmen seçin">
+        <div className="md:col-span-2">
+          {instructors.length === 0 ? (
+            <p className="text-sm text-slate-500">Henüz eğitmen tanımlı değil.</p>
+          ) : (
+            <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+              {instructors.map((instructor) => {
+                const inputId = `${idPrefix}-instructor-${instructor.id}`;
+                const isChecked = form.instructorIds.includes(instructor.id);
+
+                return (
+                  <label
+                    key={instructor.id}
+                    htmlFor={inputId}
+                    className={`flex cursor-pointer items-start gap-2 rounded-xl border px-3 py-2.5 text-sm transition ${
+                      isChecked
+                        ? "border-document-primary/40 bg-sky-50 text-navy-950"
+                        : "border-slate-200 bg-white text-navy-900 hover:border-slate-300"
+                    }`}
+                  >
+                    <input
+                      id={inputId}
+                      type="checkbox"
+                      checked={isChecked}
+                      onChange={() => setForm(toggleInstructor(form, instructor.id))}
+                      className="mt-0.5"
+                    />
+                    <span>
+                      <span className="font-medium">{instructor.fullName}</span>
+                      <span className="block text-xs text-slate-500">{instructor.email}</span>
+                    </span>
+                  </label>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      </FormSection>
     </div>
   );
 }
@@ -380,7 +673,15 @@ export function AdminEventsManager() {
   const [isSaving, setIsSaving] = useState(false);
   const [savingEventId, setSavingEventId] = useState<string | null>(null);
   const [notifyingEventId, setNotifyingEventId] = useState<string | null>(null);
+  const [createFormOpen, setCreateFormOpen] = useState(false);
+  const [createFormTouched, setCreateFormTouched] = useState(false);
   const editCardRef = useRef<HTMLDivElement | null>(null);
+
+  const eventStats = useMemo(() => {
+    const published = events.filter((event) => event.status === "published").length;
+    const draft = events.filter((event) => event.status === "draft").length;
+    return { total: events.length, published, draft };
+  }, [events]);
 
   async function loadData() {
     setIsLoading(true);
@@ -430,6 +731,12 @@ export function AdminEventsManager() {
   useEffect(() => {
     void loadData();
   }, []);
+
+  useEffect(() => {
+    if (!isLoading && !createFormTouched) {
+      setCreateFormOpen(events.length === 0);
+    }
+  }, [createFormTouched, events.length, isLoading]);
 
   useEffect(() => {
     if (!editingEventId) {
@@ -647,176 +954,96 @@ export function AdminEventsManager() {
         onDismiss={clearFeedback}
       />
 
-      <div className="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm">
-        <h2 className="text-xl font-bold text-navy-950">Yeni Etkinlik Oluştur</h2>
-        <form onSubmit={handleCreate} className="mt-6 space-y-4">
-          <EventFormFields
-            form={createForm}
-            setForm={setCreateForm}
-            categories={categories}
-            instructors={instructors}
-            idPrefix="create"
-          />
-          <Button type="submit" disabled={isSaving}>
-            {isSaving ? "Kaydediliyor..." : "Etkinlik Oluştur"}
-          </Button>
-        </form>
+      <div className="rounded-[2rem] border border-slate-200 bg-white shadow-sm">
+        <button
+          type="button"
+          onClick={() => {
+            setCreateFormTouched(true);
+            setCreateFormOpen((open) => !open);
+          }}
+          className="flex w-full items-center justify-between gap-4 px-6 py-5 text-left"
+        >
+          <div>
+            <h2 className="text-xl font-bold text-navy-950">Yeni Etkinlik Oluştur</h2>
+            <p className="mt-1 text-sm text-slate-500">
+              Formu bölümlere ayırdık: temel bilgiler, program, tarih ve eğitmenler.
+            </p>
+          </div>
+          <span className="text-sm font-semibold text-document-primary">
+            {createFormOpen ? "Gizle" : "Göster"}
+          </span>
+        </button>
+
+        {createFormOpen ? (
+          <form onSubmit={handleCreate} className="space-y-4 border-t border-slate-100 px-6 pb-6 pt-5">
+            <EventFormFields
+              form={createForm}
+              setForm={setCreateForm}
+              categories={categories}
+              instructors={instructors}
+              idPrefix="create"
+            />
+            <div className="flex justify-end border-t border-slate-100 pt-4">
+              <Button type="submit" disabled={isSaving}>
+                {isSaving ? "Kaydediliyor..." : "Etkinlik Oluştur"}
+              </Button>
+            </div>
+          </form>
+        ) : null}
       </div>
 
       <div className="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm">
-        <h2 className="text-xl font-bold text-navy-950">Etkinlik Listesi</h2>
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <h2 className="text-xl font-bold text-navy-950">Etkinlik Listesi</h2>
+            <p className="mt-1 text-sm text-slate-500">
+              Tüm etkinlikler kart görünümünde; işlemler her kartın altında gruplandı.
+            </p>
+          </div>
+          {!isLoading && events.length > 0 ? (
+            <div className="flex flex-wrap gap-2">
+              <Badge tone="neutral">{eventStats.total} toplam</Badge>
+              <Badge tone="cyan">{eventStats.published} yayında</Badge>
+              <Badge tone="navy">{eventStats.draft} taslak</Badge>
+            </div>
+          ) : null}
+        </div>
+
         {isLoading ? (
-          <p className="mt-4 text-sm text-slate-600">Yükleniyor...</p>
+          <p className="mt-6 text-sm text-slate-600">Yükleniyor...</p>
         ) : events.length === 0 ? (
-          <p className="mt-4 text-sm text-slate-600">Henüz etkinlik yok.</p>
+          <p className="mt-6 rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-4 py-8 text-center text-sm text-slate-600">
+            Henüz etkinlik yok. Yukarıdaki formdan ilk etkinliği oluşturabilirsiniz.
+          </p>
         ) : (
-          <div className="mt-4 space-y-4">
+          <div className="mt-6 space-y-4">
             {events.map((event) => {
-              const isEditing = editingEventId === event.id && editForm;
+              const isEditing = editingEventId === event.id && Boolean(editForm);
 
               return (
-                <div
+                <EventListCard
                   key={event.id}
-                  ref={isEditing ? editCardRef : undefined}
-                  className={`rounded-2xl border p-4 ${
-                    isEditing
-                      ? "border-document-primary bg-sky-50/40 ring-2 ring-document-primary/20"
-                      : "border-slate-100 hover:border-cyan-200"
-                  }`}
-                >
-                  {isEditing ? (
-                    <form onSubmit={handleUpdate} className="space-y-4">
-                      <div className="flex flex-wrap items-center justify-between gap-3">
-                        <h3 className="text-lg font-semibold text-navy-950">Etkinliği Düzenle</h3>
-                        <Button type="button" variant="ghost" onClick={cancelEditing}>
-                          İptal
-                        </Button>
-                      </div>
-                      <EventFormFields
-                        form={editForm}
-                        setForm={(next) => setEditForm(next)}
-                        categories={categories}
-                        instructors={instructors}
-                        idPrefix={`edit-${event.id}`}
-                        titleAutoFocus
-                      />
-                      <div className="flex flex-wrap gap-2">
-                        <Button type="submit" disabled={savingEventId === event.id}>
-                          {savingEventId === event.id ? "Kaydediliyor..." : "Değişiklikleri Kaydet"}
-                        </Button>
-                        <Link
-                          href={`/admin/enrollments?event_id=${event.id}`}
-                          className="inline-flex items-center justify-center rounded-xl border-2 border-sky-800 bg-white px-5 py-3 text-sm font-semibold text-sky-950 shadow-md shadow-sky-200/60 transition hover:border-sky-900 hover:bg-sky-50"
-                        >
-                          Kayıtlar
-                        </Link>
-                        <Link
-                          href={`/admin/events/${event.id}/attendance`}
-                          className="inline-flex items-center justify-center rounded-xl border-2 border-sky-800 bg-white px-5 py-3 text-sm font-semibold text-sky-950 shadow-md shadow-sky-200/60 transition hover:border-sky-900 hover:bg-sky-50"
-                        >
-                          Yoklama
-                        </Link>
-                        {event.instructorIds.length > 0 ? (
-                          <Button
-                            type="button"
-                            variant="outline"
-                            disabled={notifyingEventId === event.id}
-                            onClick={() => void notifyEventInstructors(event)}
-                          >
-                            {notifyingEventId === event.id
-                              ? "Gönderiliyor..."
-                              : "Eğitmenlere bildirim gönder"}
-                          </Button>
-                        ) : null}
-                      </div>
-                    </form>
-                  ) : (
-                    <div className="flex flex-wrap items-start justify-between gap-3">
-                      <div>
-                        <div className="flex flex-wrap gap-2">
-                          <Badge tone="cyan">{EVENT_TYPE_LABELS[event.eventType]}</Badge>
-                          <Badge tone="navy">{EVENT_STATUS_LABELS[event.status]}</Badge>
-                          {event.programCode ? (
-                            <Badge tone="cyan">Kod: {event.programCode}</Badge>
-                          ) : (
-                            <span className="inline-flex items-center rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold text-amber-900">
-                              Kod eksik
-                            </span>
-                          )}
-                        </div>
-                        <h3 className="mt-2 font-semibold text-navy-950">{event.title}</h3>
-                        <p className="mt-1 text-sm text-slate-600">
-                          {formatDateTime(event.startAt)} – {formatDateTime(event.endAt)} ·{" "}
-                          {event.categoryName ?? "Kategorisiz"}
-                        </p>
-                        {event.locationName ? (
-                          <p className="mt-1 text-sm text-slate-500">{event.locationName}</p>
-                        ) : null}
-                        <p className="mt-1 text-sm text-slate-500">
-                          Eğitmen{event.instructorNames.length > 1 ? "ler" : ""}:{" "}
-                          {event.instructorNames.length > 0
-                            ? event.instructorNames.join(", ")
-                            : "Atanmadı"}
-                        </p>
-                      </div>
-                      <div className="flex flex-wrap gap-2">
-                        <Button
-                          type="button"
-                          variant="primary"
-                          onClick={() => startEditing(event)}
-                        >
-                          Düzenle
-                        </Button>
-                        <Link
-                          href={`/admin/enrollments?event_id=${event.id}`}
-                          className="inline-flex items-center justify-center rounded-xl border-2 border-sky-800 bg-white px-5 py-3 text-sm font-semibold text-sky-950 shadow-md shadow-sky-200/60 transition hover:border-sky-900 hover:bg-sky-50"
-                        >
-                          Kayıtlar
-                        </Link>
-                        <Link
-                          href={`/admin/events/${event.id}/attendance`}
-                          className="inline-flex items-center justify-center rounded-xl border-2 border-sky-800 bg-white px-5 py-3 text-sm font-semibold text-sky-950 shadow-md shadow-sky-200/60 transition hover:border-sky-900 hover:bg-sky-50"
-                        >
-                          Yoklama
-                        </Link>
-                        {event.instructorIds.length > 0 ? (
-                          <Button
-                            type="button"
-                            variant="outline"
-                            disabled={notifyingEventId === event.id}
-                            onClick={() => void notifyEventInstructors(event)}
-                          >
-                            {notifyingEventId === event.id
-                              ? "Gönderiliyor..."
-                              : "Eğitmenlere bildirim gönder"}
-                          </Button>
-                        ) : null}
-                        {event.status === "published" ? (
-                          <Button
-                            variant="secondary"
-                            onClick={() => void updateStatus(event.id, "draft")}
-                          >
-                            Yayından Kaldır
-                          </Button>
-                        ) : (
-                          <Button
-                            variant="secondary"
-                            onClick={() => void updateStatus(event.id, "published")}
-                          >
-                            Yayınla
-                          </Button>
-                        )}
-                        <Button
-                          variant="secondary"
-                          className="text-navy-950"
-                          onClick={() => void removeEvent(event.id)}
-                        >
-                          Sil
-                        </Button>
-                      </div>
-                    </div>
-                  )}
-                </div>
+                  event={event}
+                  isEditing={isEditing}
+                  editForm={isEditing ? editForm : null}
+                  setEditForm={(next) => setEditForm(next)}
+                  categories={categories}
+                  instructors={instructors}
+                  notifyingEventId={notifyingEventId}
+                  savingEventId={savingEventId}
+                  editCardRef={editCardRef}
+                  onStartEdit={() => startEditing(event)}
+                  onCancelEdit={cancelEditing}
+                  onUpdate={handleUpdate}
+                  onNotify={() => void notifyEventInstructors(event)}
+                  onPublishToggle={() =>
+                    void updateStatus(
+                      event.id,
+                      event.status === "published" ? "draft" : "published",
+                    )
+                  }
+                  onDelete={() => void removeEvent(event.id)}
+                />
               );
             })}
           </div>

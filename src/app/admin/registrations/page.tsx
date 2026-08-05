@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { redirect } from "next/navigation";
 
 import { getAdminAccess } from "@/infrastructure/auth/get-admin-access";
@@ -7,12 +6,6 @@ import {
   RegistrationEditableRow,
   type AdminRegistrationRow,
 } from "@/presentation/components/admin/registration-editable-row";
-import {
-  formatKaklikTimeGroup,
-  KAKLIK_CAMPAIGN_ID,
-  KAKLIK_CAMPAIGN_TITLE,
-  KAKLIK_TIME_GROUPS,
-} from "@/shared/constants/kaklik-campaign";
 
 export const dynamic = "force-dynamic";
 
@@ -23,17 +16,7 @@ function formatDate(value: string): string {
   }).format(new Date(value));
 }
 
-interface AdminRegistrationsPageProps {
-  searchParams: Promise<{ campaign?: string; group?: string }>;
-}
-
-export default async function AdminRegistrationsPage({
-  searchParams,
-}: AdminRegistrationsPageProps) {
-  const params = await searchParams;
-  const campaignFilter = params.campaign?.trim() || null;
-  const groupFilter = params.group?.trim() || null;
-
+export default async function AdminRegistrationsPage() {
   const client = await createSupabaseServerClient();
 
   if (!client) {
@@ -46,32 +29,14 @@ export default async function AdminRegistrationsPage({
     redirect("/login");
   }
 
-  let query = client
+  const { data, error } = await client
     .from("registrations")
     .select(
       "id, full_name, phone, email, grade, course, status, created_at, is_minor, guardian_name, guardian_phone, campaign, time_group",
     )
     .order("created_at", { ascending: false });
 
-  if (campaignFilter) {
-    query = query.eq("campaign", campaignFilter);
-  }
-  if (groupFilter) {
-    query = query.eq("time_group", groupFilter);
-  }
-
-  const { data, error } = await query;
   const registrations = (data ?? []) as AdminRegistrationRow[];
-
-  const filterHref = (next: { campaign?: string | null; group?: string | null }) => {
-    const search = new URLSearchParams();
-    const campaign = next.campaign === undefined ? campaignFilter : next.campaign;
-    const group = next.group === undefined ? groupFilter : next.group;
-    if (campaign) search.set("campaign", campaign);
-    if (group) search.set("group", group);
-    const qs = search.toString();
-    return qs ? `/admin/registrations?${qs}` : "/admin/registrations";
-  };
 
   return (
     <div className="space-y-6">
@@ -84,42 +49,6 @@ export default async function AdminRegistrationsPage({
           Kapatılan ön kayıt formundan gelen başvurular. Yeni kayıtlar veli hesabı ve etkinlik
           kaydı üzerinden alınır.
         </p>
-
-        <div className="mt-4 flex flex-wrap gap-2">
-          <Link
-            href="/admin/registrations"
-            className={`rounded-lg px-3 py-1.5 text-xs font-bold ${
-              !campaignFilter && !groupFilter
-                ? "bg-document-primary text-white"
-                : "bg-slate-100 text-slate-700 hover:bg-slate-200"
-            }`}
-          >
-            Tümü
-          </Link>
-          <Link
-            href={filterHref({ campaign: KAKLIK_CAMPAIGN_ID, group: null })}
-            className={`rounded-lg px-3 py-1.5 text-xs font-bold ${
-              campaignFilter === KAKLIK_CAMPAIGN_ID && !groupFilter
-                ? "bg-document-primary text-white"
-                : "bg-slate-100 text-slate-700 hover:bg-slate-200"
-            }`}
-          >
-            {KAKLIK_CAMPAIGN_TITLE}
-          </Link>
-          {KAKLIK_TIME_GROUPS.map((group) => (
-            <Link
-              key={group.value}
-              href={filterHref({ campaign: KAKLIK_CAMPAIGN_ID, group: group.value })}
-              className={`rounded-lg px-3 py-1.5 text-xs font-bold ${
-                groupFilter === group.value
-                  ? "bg-sky-700 text-white"
-                  : "bg-sky-50 text-sky-900 hover:bg-sky-100"
-              }`}
-            >
-              {formatKaklikTimeGroup(group.value)}
-            </Link>
-          ))}
-        </div>
 
         {error ? (
           <p className="mt-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">

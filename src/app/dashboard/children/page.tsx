@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { Suspense } from "react";
 
 import { fetchChildProgress } from "@/infrastructure/repositories/fetch-child-progress";
 import { createSupabaseServerClient } from "@/infrastructure/supabase/create-server-client";
@@ -143,10 +144,12 @@ export default async function DashboardChildrenPage() {
               Öğrenciler yüklenirken bir hata oluştu.
             </p>
           ) : (
-            <ChildrenStudentsClient
-              initialStudents={students}
-              upcomingEvents={upcomingEvents}
-            />
+            <Suspense fallback={<p className="text-sm text-slate-600">Yükleniyor...</p>}>
+              <ChildrenStudentsClient
+                initialStudents={students}
+                upcomingEvents={upcomingEvents}
+              />
+            </Suspense>
           )}
         </div>
       </div>

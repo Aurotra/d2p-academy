@@ -8,6 +8,7 @@ import type {
 } from "@/core/domain/username-student-progress";
 import { BRAND_SURFACE_GRADIENT } from "@/shared/constants/brand-surfaces";
 import { Badge } from "@/presentation/components/ui/badge";
+import { StudentOnboardingGuide } from "@/presentation/components/student-dashboard/student-onboarding-guide";
 interface UsernameStudentDashboardViewProps {
   username: string;
   fullName?: string | null;
@@ -193,6 +194,12 @@ export function UsernameStudentDashboardView({
           >
             <p className="font-bold">Panel verileri yüklenemedi</p>
             <p className="mt-1">{loadError}</p>
+          </div>
+        ) : null}
+
+        {!loadError && progress.enrollments.length === 0 ? (
+          <div className="mt-8">
+            <StudentOnboardingGuide />
           </div>
         ) : null}
 

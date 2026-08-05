@@ -2,15 +2,19 @@ import Link from "next/link";
 import { Suspense } from "react";
 
 import type { StudentDashboardData, EnrollmentStatus } from "@/core/domain/student-dashboard";
+import type { ParentOnboardingContext } from "@/infrastructure/repositories/fetch-parent-onboarding-context";
 import { EVENT_TYPE_LABELS } from "@/core/domain/event";
 import { BRAND_SURFACE_GRADIENT } from "@/shared/constants/brand-surfaces";
 import { Badge } from "@/presentation/components/ui/badge";
 import { DashboardEnrollHandler } from "@/presentation/components/dashboard/dashboard-enroll-handler";
+import { ParentOnboardingGuide } from "@/presentation/components/dashboard/parent-onboarding-guide";
 
 interface DashboardViewProps {
   data: StudentDashboardData;
   isAdmin: boolean;
   isInstructor: boolean;
+  onboardingContext: ParentOnboardingContext;
+  showOnboarding: boolean;
 }
 
 type DashboardActionVariant = "secondary" | "accent" | "document" | "outline";
@@ -61,7 +65,13 @@ function formatDate(date: Date): string {
   }).format(date);
 }
 
-export function DashboardView({ data, isAdmin, isInstructor }: DashboardViewProps) {
+export function DashboardView({
+  data,
+  isAdmin,
+  isInstructor,
+  onboardingContext,
+  showOnboarding,
+}: DashboardViewProps) {
   return (
     <section className="bg-slate-50 px-4 py-10 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-7xl">
@@ -99,7 +109,9 @@ export function DashboardView({ data, isAdmin, isInstructor }: DashboardViewProp
                 Hoş geldin, {data.profile.fullName?.trim().split(/\s+/)[0] || "veli"}!
               </h1>
               <p className="mt-2 max-w-xl text-sm leading-6 text-sky-900/80 sm:text-base">
-                Yaklaşan etkinliklerini ve kazandığın sertifikaları buradan takip edebilirsin.
+                {showOnboarding
+                  ? "Aşağıdaki adımları izleyerek çocuğunuzu etkinliğe kaydedebilirsiniz."
+                  : "Yaklaşan etkinliklerini ve kazandığın sertifikaları buradan takip edebilirsin."}
               </p>
             </div>
 
@@ -134,6 +146,12 @@ export function DashboardView({ data, isAdmin, isInstructor }: DashboardViewProp
           </div>
         </div>
 
+        {showOnboarding ? (
+          <div className="mt-8">
+            <ParentOnboardingGuide context={onboardingContext} />
+          </div>
+        ) : null}
+
         <div className="mt-8 grid gap-8 lg:grid-cols-2">
           <div className="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm">
             <div className="mb-6 flex items-center justify-between">
@@ -143,12 +161,12 @@ export function DashboardView({ data, isAdmin, isInstructor }: DashboardViewProp
 
             {data.upcomingEnrollments.length === 0 ? (
               <div className="rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-4 py-8 text-center text-sm text-slate-600">
-                <p>Aktif etkinlik kaydın bulunmuyor.</p>
+                <p>Veli hesabınıza bağlı aktif etkinlik kaydı yok.</p>
                 <Link
-                  href="/#events"
+                  href="/dashboard/children"
                   className="mt-3 inline-flex font-semibold text-document-primary hover:underline"
                 >
-                  Ana sayfadaki takvimden etkinliğe kaydol →
+                  Çocuk hesaplarından etkinliğe kaydol →
                 </Link>
               </div>
             ) : (
