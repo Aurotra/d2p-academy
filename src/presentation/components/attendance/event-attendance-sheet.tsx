@@ -5,6 +5,7 @@ import { useMemo, useState } from "react";
 import type { AttendanceStatus, EventAttendanceSheet } from "@/core/domain/event-attendance";
 import { ATTENDANCE_STATUS_LABELS } from "@/core/domain/event-attendance";
 import { formatEventAttendanceWindowLabel } from "@/shared/utils/event-attendance-window";
+import { formatAttendanceCertificateLabel } from "@/shared/utils/enrollment-attendance";
 import { Button } from "@/presentation/components/ui/button";
 
 const STATUS_OPTIONS: AttendanceStatus[] = ["present", "absent", "excused"];
@@ -185,6 +186,13 @@ export function EventAttendanceSheetView({ sheet, apiBasePath }: EventAttendance
                   }`}
                 >
                   <span className="block text-sm font-semibold">{session.label}</span>
+                  {session.timeRange ? (
+                    <span
+                      className={`mt-0.5 block text-[11px] ${active ? "text-white/70" : "text-slate-400"}`}
+                    >
+                      {session.timeRange}
+                    </span>
+                  ) : null}
                   <span
                     className={`mt-0.5 block text-xs ${active ? "text-white/80" : "text-slate-500"}`}
                   >
@@ -201,6 +209,9 @@ export function EventAttendanceSheetView({ sheet, apiBasePath }: EventAttendance
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <div>
                 <h2 className="text-lg font-bold text-slate-900">{selectedSession.label}</h2>
+                {selectedSession.timeRange ? (
+                  <p className="text-xs text-slate-400">{selectedSession.timeRange}</p>
+                ) : null}
                 <p className="text-sm text-slate-500">
                   {markedInSession}/{rows.length} öğrenci işaretlendi
                 </p>
@@ -246,7 +257,12 @@ export function EventAttendanceSheetView({ sheet, apiBasePath }: EventAttendance
                         </div>
                         <p className="mt-1 pl-9 text-sm text-slate-500">{row.studentContact}</p>
                         <p className="mt-1 pl-9 text-xs text-slate-500">
-                          Toplam katılım: {row.presentCount}/{sheet.requiredLessonCount}
+                          Katılım:{" "}
+                          {formatAttendanceCertificateLabel(
+                            row.presentCount,
+                            sheet.requiredLessonCount,
+                            sheet.totalLessonCount,
+                          )}
                           {row.attendanceComplete ? " · F03 için uygun" : ""}
                         </p>
                       </div>
@@ -318,7 +334,11 @@ export function EventAttendanceSheetView({ sheet, apiBasePath }: EventAttendance
                         );
                       })}
                       <td className="px-2 py-2 text-center text-xs font-semibold text-slate-700">
-                        {row.presentCount}/{sheet.requiredLessonCount}
+                        {formatAttendanceCertificateLabel(
+                          row.presentCount,
+                          sheet.requiredLessonCount,
+                          sheet.totalLessonCount,
+                        )}
                       </td>
                     </tr>
                   ))}
@@ -360,7 +380,7 @@ function AttendanceHeader({
         <StatPill label="Öğrenci" value={String(studentCount)} />
         {sessionCount > 0 ? <StatPill label="Ders" value={String(sessionCount)} /> : null}
         {sessionCount > 0 ? (
-          <StatPill label="Zorunlu katılım" value={`${requiredLessonCount} ders`} />
+          <StatPill label="Sertifika eşiği" value={`${requiredLessonCount}/${sessionCount}`} />
         ) : null}
         {sessionCount > 0 ? (
           <StatPill label="F03 için hazır" value={`${completeCount}/${studentCount}`} />

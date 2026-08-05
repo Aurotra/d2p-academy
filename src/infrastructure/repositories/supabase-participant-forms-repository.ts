@@ -20,6 +20,10 @@ import {
 import { MEDIA_CONSENT_BLOCK_MESSAGE, SURVEY_FORM_VERSIONS } from "@/shared/constants/participant-forms";
 import { calculateProgress, isProfileComplete } from "@/lib/utils/progress";
 import { isPostTestUnlocked } from "@/shared/utils/post-test-unlock";
+import {
+  isEnrollmentAttendanceComplete,
+  resolveRequiredLessonCount,
+} from "@/shared/utils/enrollment-attendance";
 
 function asRecord(value: unknown): Record<string, unknown> {
   if (!value || typeof value !== "object" || Array.isArray(value)) {
@@ -69,13 +73,50 @@ interface EnrollmentOwnerRow {
   pre_test_completed_at: string | null;
   post_test_completed_at: string | null;
   events:
-    | { title: string; program_code: string | null; end_at: string }
-    | { title: string; program_code: string | null; end_at: string }[]
+    | {
+        title: string;
+        program_code: string | null;
+        end_at: string;
+        required_lesson_count: number | null;
+        total_lesson_count: number | null;
+      }
+    | {
+        title: string;
+        program_code: string | null;
+        end_at: string;
+        required_lesson_count: number | null;
+        total_lesson_count: number | null;
+      }[]
     | null;
 }
 
 export class SupabaseParticipantFormsRepository {
   constructor(private readonly client: SupabaseClient) {}
+
+  private async countPresentSessions(enrollmentId: string): Promise<number> {
+    const { data, error } = await this.client.rpc("count_enrollment_present_sessions", {
+      p_enrollment_id: enrollmentId,
+    });
+
+    if (error) {
+      throw new Error(`Yoklama durumu alınamadı: ${error.message}`);
+    }
+
+    return typeof data === "number" ? data : 0;
+  }
+
+  private async countEventSessions(eventId: string): Promise<number> {
+    const { count, error } = await this.client
+      .from("event_sessions")
+      .select("id", { count: "exact", head: true })
+      .eq("event_id", eventId);
+
+    if (error) {
+      throw new Error(`Ders çizelgesi alınamadı: ${error.message}`);
+    }
+
+    return count ?? 0;
+  }
 
   async requireOwnedEnrollment(
     enrollmentId: string,
@@ -95,7 +136,7 @@ export class SupabaseParticipantFormsRepository {
         intake_form_completed_at,
         pre_test_completed_at,
         post_test_completed_at,
-        events ( title, program_code, end_at )
+        events ( title, program_code, end_at, required_lesson_count, total_lesson_count )
       `,
       )
       .eq("id", enrollmentId)
@@ -161,6 +202,16 @@ export class SupabaseParticipantFormsRepository {
       postTestDeadlineAt: enrollment.post_test_deadline_at,
     });
     const gradeLevel = profile.grade_level ?? "";
+    const [presentCount, sessionCount] = await Promise.all([
+      this.countPresentSessions(enrollmentId),
+      this.countEventSessions(enrollment.event_id),
+    ]);
+    const requiredLessonCount = resolveRequiredLessonCount(event?.required_lesson_count);
+    const totalLessonCount = event?.total_lesson_count ?? sessionCount;
+    const attendanceComplete = isEnrollmentAttendanceComplete(
+      presentCount,
+      event?.required_lesson_count,
+    );
     const profileProgressInput = {
       full_name: profile.full_name,
       gender: profile.gender,
@@ -220,6 +271,10 @@ export class SupabaseParticipantFormsRepository {
       hasActiveCertificate: Boolean(certificate?.id),
       profileProgressPercent,
       profileComplete: isProfileComplete(profileProgressInput),
+      presentCount,
+      requiredLessonCount,
+      totalLessonCount,
+      attendanceComplete,
     };
   }
 

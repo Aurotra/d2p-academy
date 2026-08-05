@@ -12,6 +12,7 @@ export interface EventSessionColumn {
   startsAt: string;
   endsAt: string;
   label: string;
+  timeRange?: string;
 }
 
 export interface AttendanceStudentRow {

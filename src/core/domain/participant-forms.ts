@@ -102,6 +102,10 @@ export interface EnrollmentFormProgress {
   hasActiveCertificate: boolean;
   profileProgressPercent: number;
   profileComplete: boolean;
+  presentCount: number;
+  requiredLessonCount: number;
+  totalLessonCount: number;
+  attendanceComplete: boolean;
 }
 
 export interface SurveyAnswerSnapshot {

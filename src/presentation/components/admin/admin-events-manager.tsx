@@ -38,6 +38,7 @@ type EventFormState = {
   dailyLessonStart: string;
   dailyLessonEnd: string;
   lessonDurationMinutes: string;
+  totalLessonCount: string;
   requiredLessonCount: string;
   locationName: string;
   isOnline: boolean;
@@ -58,7 +59,8 @@ const defaultForm: EventFormState = {
   dailyLessonStart: "09:00",
   dailyLessonEnd: "17:00",
   lessonDurationMinutes: "60",
-  requiredLessonCount: "",
+  totalLessonCount: "12",
+  requiredLessonCount: "8",
   locationName: "",
   isOnline: false,
   meetingUrl: "",
@@ -125,7 +127,8 @@ function eventRecordToForm(event: AdminEventRecord): EventFormState {
     dailyLessonStart: event.dailyLessonStart,
     dailyLessonEnd: event.dailyLessonEnd,
     lessonDurationMinutes: String(event.lessonDurationMinutes),
-    requiredLessonCount: event.requiredLessonCount?.toString() ?? "",
+    totalLessonCount: event.totalLessonCount?.toString() ?? "12",
+    requiredLessonCount: event.requiredLessonCount?.toString() ?? "8",
     locationName: event.locationName ?? "",
     isOnline: event.isOnline,
     meetingUrl: event.meetingUrl ?? "",
@@ -152,6 +155,14 @@ function buildEventPayload(form: EventFormState) {
     throw new Error("Ders süresi geçerli bir dakika değeri olmalıdır.");
   }
 
+  const totalLessonCount = form.totalLessonCount.trim() ? Number(form.totalLessonCount) : null;
+  if (
+    totalLessonCount !== null &&
+    (!Number.isFinite(totalLessonCount) || totalLessonCount <= 0)
+  ) {
+    throw new Error("Toplam ders sayısı pozitif bir tam sayı olmalıdır.");
+  }
+
   const requiredLessonCount = form.requiredLessonCount.trim()
     ? Number(form.requiredLessonCount)
     : null;
@@ -159,7 +170,15 @@ function buildEventPayload(form: EventFormState) {
     requiredLessonCount !== null &&
     (!Number.isFinite(requiredLessonCount) || requiredLessonCount <= 0)
   ) {
-    throw new Error("Zorunlu ders sayısı pozitif bir tam sayı olmalıdır.");
+    throw new Error("Zorunlu katılım sayısı pozitif bir tam sayı olmalıdır.");
+  }
+
+  if (
+    totalLessonCount !== null &&
+    requiredLessonCount !== null &&
+    requiredLessonCount > totalLessonCount
+  ) {
+    throw new Error("Zorunlu katılım, toplam ders sayısından fazla olamaz.");
   }
 
   if (form.dailyLessonEnd <= form.dailyLessonStart) {
@@ -176,6 +195,7 @@ function buildEventPayload(form: EventFormState) {
     dailyLessonStart: form.dailyLessonStart,
     dailyLessonEnd: form.dailyLessonEnd,
     lessonDurationMinutes,
+    totalLessonCount,
     requiredLessonCount,
     locationName: form.locationName || null,
     isOnline: form.isOnline,
@@ -614,17 +634,34 @@ function EventFormFields({
         />
         <div>
           <Input
+            id={`${idPrefix}-total-lessons`}
+            name={`${idPrefix}-total-lessons`}
+            label="Toplam ders sayısı (yoklama)"
+            type="number"
+            min={1}
+            value={form.totalLessonCount}
+            onChange={(e) => setForm({ ...form, totalLessonCount: e.target.value })}
+            placeholder="Örn. 12"
+          />
+          <p className="mt-1 text-xs text-slate-500">
+            Yoklama 1. Ders, 2. Ders … şeklinde açılır. Boş bırakılırsa etkinlik süresindeki tüm
+            ders slotları oluşturulur.
+          </p>
+        </div>
+        <div>
+          <Input
             id={`${idPrefix}-required-lessons`}
             name={`${idPrefix}-required-lessons`}
-            label="Zorunlu katılım (ders sayısı)"
+            label="Zorunlu katılım (sertifika / F03)"
             type="number"
             min={1}
             value={form.requiredLessonCount}
             onChange={(e) => setForm({ ...form, requiredLessonCount: e.target.value })}
-            placeholder="Boş = tüm dersler"
+            placeholder="Örn. 8"
           />
           <p className="mt-1 text-xs text-slate-500">
-            Eğitmen yoklamada işaretlediği «geldi» sayısı buna ulaşınca öğrencide son test açılır.
+            Öğrencinin en az bu kadar derste «geldi» işaretlenince son test açılır ve sertifika
+            onay listesine düşebilir (ör. 12 dersten 8).
           </p>
         </div>
         <Input

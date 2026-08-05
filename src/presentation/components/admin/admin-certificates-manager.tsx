@@ -35,8 +35,12 @@ export function AdminCertificatesManager() {
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
 
-  const issuablePending = pendingEnrollments.filter((item) => !item.profileIncomplete);
-  const blockedPending = pendingEnrollments.filter((item) => item.profileIncomplete);
+  const issuablePending = pendingEnrollments.filter(
+    (item) => !item.profileIncomplete && !item.attendanceIncomplete,
+  );
+  const blockedPending = pendingEnrollments.filter(
+    (item) => item.profileIncomplete || item.attendanceIncomplete,
+  );
 
   async function loadData() {
     setIsLoading(true);
@@ -175,9 +179,9 @@ export function AdminCertificatesManager() {
       <div className="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm">
         <h2 className="text-xl font-bold text-navy-950">Sertifika Oluştur</h2>
         <p className="mt-2 text-sm text-slate-600">
-          Sadece <strong>zorunlu formları tamamlanmış</strong>, <strong>profili %100</strong> ve
-          henüz sertifikası olmayan kayıtlar burada görünür. Sertifika verirken kayıt otomatik
-          Tamamlandı olur.
+          Sadece <strong>zorunlu formları tamamlanmış</strong>, <strong>profili %100</strong>,{" "}
+          <strong>yoklama eşiğini karşılamış</strong> ve henüz sertifikası olmayan kayıtlar
+          burada görünür. Sertifika verirken kayıt otomatik Tamamlandı olur.
         </p>
         <p className="mt-2 text-sm text-slate-600">
           İptal edilen sertifikaların nedenlerini{" "}
@@ -188,20 +192,25 @@ export function AdminCertificatesManager() {
         </p>
         {issuablePending.length === 0 && !isLoading ? (
           <p className="mt-4 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
-            Sertifika verilecek uygun kayıt yok. Öğrencinin katılımcı formlarını bitirmiş ve
-            profilini %100 tamamlamış olması gerekir.
+            Sertifika verilecek uygun kayıt yok. Öğrencinin katılımcı formlarını bitirmiş,
+            profilini %100 tamamlamış ve zorunlu yoklama eşiğine ulaşmış olması gerekir.
           </p>
         ) : null}
         {blockedPending.length > 0 ? (
           <div className="mt-4 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-950">
             <p className="font-semibold">
-              Formu bitmiş ama profili eksik ({blockedPending.length})
+              Formu bitmiş ama profil veya yoklama eksik ({blockedPending.length})
             </p>
             <ul className="mt-2 list-inside list-disc text-xs">
               {blockedPending.slice(0, 8).map((enrollment) => (
                 <li key={enrollment.id}>
-                  {enrollment.studentName} · {enrollment.eventTitle} · profil %
-                  {enrollment.profileProgress ?? 0}
+                  {enrollment.studentName} · {enrollment.eventTitle}
+                  {enrollment.profileIncomplete
+                    ? ` · profil %${enrollment.profileProgress ?? 0}`
+                    : null}
+                  {enrollment.attendanceIncomplete
+                    ? ` · yoklama ${enrollment.presentCount ?? 0}/${enrollment.requiredLessonCount ?? 8}`
+                    : null}
                 </li>
               ))}
             </ul>

@@ -563,7 +563,8 @@ export function CourseApplicationWizard({
   const formsDone =
     registrationDone && (!state.requiresSurveys || sonTestDone);
   const profileReady = state.profileComplete;
-  const readyForCertificateQueue = formsDone && profileReady;
+  const attendanceReady = state.attendanceComplete;
+  const readyForCertificateQueue = formsDone && profileReady && attendanceReady;
 
   const tanismaTone: StepTone = tanismaDone ? "done" : "action";
   const onaylarTone: StepTone = !tanismaDone ? "idle" : onaylarDone ? "done" : "action";
@@ -580,11 +581,11 @@ export function CourseApplicationWizard({
     registrationDone && state.requiresSurveys && !sonTestDone && !postTestUnlocked;
   const sertifikaTone: StepTone = !registrationDone
     ? "idle"
-    : state.requiresSurveys && !sonTestDone
+      : state.requiresSurveys && !sonTestDone
       ? "idle"
       : sertifikaDone
         ? "done"
-        : profileReady
+        : profileReady && attendanceReady
           ? "pending"
           : "action";
 
@@ -1008,6 +1009,8 @@ export function CourseApplicationWizard({
                 ? "border-red-200 bg-red-50"
               : formsDone && !profileReady
                 ? "border-red-200 bg-red-50"
+              : formsDone && profileReady && !attendanceReady
+                ? "border-red-200 bg-red-50"
                 : readyForCertificateQueue
                   ? "border-amber-200 bg-amber-50"
                   : "border-slate-200 bg-slate-50"
@@ -1152,6 +1155,17 @@ export function CourseApplicationWizard({
               >
                 Son test adımına git →
               </button>
+            </div>
+          ) : formsDone && profileReady && !attendanceReady ? (
+            <div className="space-y-2 text-sm text-red-900">
+              <p className="font-semibold">
+                Sertifika için en az {state.requiredLessonCount} derste «geldi» yoklaması gerekir (
+                {state.totalLessonCount} ders üzerinden).
+              </p>
+              <p>
+                Şu an {state.presentCount}/{state.requiredLessonCount} katılım kayıtlı. Eğitmen
+                yoklamayı işaretledikçe bu sayı güncellenir.
+              </p>
             </div>
           ) : readyForCertificateQueue ? (
             <p className="text-sm text-amber-950">

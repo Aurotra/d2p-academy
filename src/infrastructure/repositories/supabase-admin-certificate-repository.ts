@@ -10,6 +10,10 @@ import type { CertificateStatus } from "@/core/domain/certificate-verification";
 import type { AdminCertificateRepository } from "@/core/use-cases/manage-admin-certificates";
 import { translateCertificateRpcError } from "@/infrastructure/certificates/translate-certificate-rpc-error";
 import {
+  isEnrollmentAttendanceComplete,
+  resolveRequiredLessonCount,
+} from "@/shared/utils/enrollment-attendance";
+import {
   calculateProgress,
   isProfileComplete,
   PROFILE_REQUIRED_FOR_CERTIFICATE_MESSAGE,
@@ -59,8 +63,20 @@ interface PendingEnrollmentRow {
   intake_form_completed_at: string | null;
   pre_test_completed_at: string | null;
   post_test_completed_at: string | null;
+  event_id: string;
   profiles: PendingProfileRow | PendingProfileRow[] | null;
-  events: { title: string } | { title: string }[] | null;
+  events:
+    | {
+        title: string;
+        required_lesson_count: number | null;
+        total_lesson_count: number | null;
+      }
+    | {
+        title: string;
+        required_lesson_count: number | null;
+        total_lesson_count: number | null;
+      }[]
+    | null;
 }
 
 interface IssuedCertificateRow {
@@ -91,6 +107,54 @@ function mapCertificate(row: CertificateRow): AdminCertificateRecord {
 export class SupabaseAdminCertificateRepository implements AdminCertificateRepository {
   constructor(private readonly client: SupabaseClient) {}
 
+  private async fetchPresentCounts(enrollmentIds: string[]): Promise<Map<string, number>> {
+    const counts = new Map<string, number>();
+    if (enrollmentIds.length === 0) {
+      return counts;
+    }
+
+    await Promise.all(
+      enrollmentIds.map(async (enrollmentId) => {
+        const { data, error } = await this.client.rpc("count_enrollment_present_sessions", {
+          p_enrollment_id: enrollmentId,
+        });
+
+        if (error) {
+          throw new Error(`Yoklama sayısı alınamadı: ${error.message}`);
+        }
+
+        counts.set(enrollmentId, typeof data === "number" ? data : 0);
+      }),
+    );
+
+    return counts;
+  }
+
+  private async fetchSessionCountsByEvent(eventIds: string[]): Promise<Map<string, number>> {
+    const counts = new Map<string, number>();
+    const uniqueEventIds = [...new Set(eventIds)];
+    if (uniqueEventIds.length === 0) {
+      return counts;
+    }
+
+    await Promise.all(
+      uniqueEventIds.map(async (eventId) => {
+        const { count, error } = await this.client
+          .from("event_sessions")
+          .select("id", { count: "exact", head: true })
+          .eq("event_id", eventId);
+
+        if (error) {
+          throw new Error(`Ders çizelgesi alınamadı: ${error.message}`);
+        }
+
+        counts.set(eventId, count ?? 0);
+      }),
+    );
+
+    return counts;
+  }
+
   async listAll(): Promise<AdminCertificateRecord[]> {
     const { data, error } = await this.client
       .from("certificates")
@@ -120,6 +184,7 @@ export class SupabaseAdminCertificateRepository implements AdminCertificateRepos
       .select(
         `
         id,
+        event_id,
         completed_at,
         intake_form_completed_at,
         pre_test_completed_at,
@@ -138,7 +203,7 @@ export class SupabaseAdminCertificateRepository implements AdminCertificateRepos
           motivation_data,
           profile_avatar_url
         ),
-        events ( title ),
+        events ( title, required_lesson_count, total_lesson_count ),
         certificates ( id, status )
       `,
       )
@@ -184,33 +249,38 @@ export class SupabaseAdminCertificateRepository implements AdminCertificateRepos
       }
     }
 
-    return rows
-      .filter((row) => {
-        const certificates = Array.isArray(row.certificates)
-          ? row.certificates
-          : row.certificates
-            ? [row.certificates]
-            : [];
-        if (certificates.some((certificate) => certificate.status === "active")) {
-          return false;
-        }
+    const formCompleteRows = rows.filter((row) => {
+      const certificates = Array.isArray(row.certificates)
+        ? row.certificates
+        : row.certificates
+          ? [row.certificates]
+          : [];
+      if (certificates.some((certificate) => certificate.status === "active")) {
+        return false;
+      }
 
-        const profile = Array.isArray(row.profiles) ? (row.profiles[0] ?? null) : row.profiles;
-        if (!profile) {
-          return false;
-        }
+      const profile = Array.isArray(row.profiles) ? (row.profiles[0] ?? null) : row.profiles;
+      if (!profile) {
+        return false;
+      }
 
-        const formStatus = getEnrollmentFormStatus({
-          gradeLevel: profile.grade_level,
-          intakeFormCompletedAt: row.intake_form_completed_at,
-          preTestCompletedAt: row.pre_test_completed_at,
-          postTestCompletedAt: row.post_test_completed_at,
-          consentRecords: consentsByEnrollment.get(row.id) ?? [],
-        });
+      const formStatus = getEnrollmentFormStatus({
+        gradeLevel: profile.grade_level,
+        intakeFormCompletedAt: row.intake_form_completed_at,
+        preTestCompletedAt: row.pre_test_completed_at,
+        postTestCompletedAt: row.post_test_completed_at,
+        consentRecords: consentsByEnrollment.get(row.id) ?? [],
+      });
 
-        return formStatus.allRequiredDone;
-      })
-      .map((row) => {
+      return formStatus.allRequiredDone;
+    });
+
+    const presentCounts = await this.fetchPresentCounts(formCompleteRows.map((row) => row.id));
+    const sessionCounts = await this.fetchSessionCountsByEvent(
+      formCompleteRows.map((row) => row.event_id),
+    );
+
+    return formCompleteRows.map((row) => {
         const profile = Array.isArray(row.profiles) ? (row.profiles[0] ?? null) : row.profiles;
         const event = Array.isArray(row.events) ? (row.events[0] ?? null) : row.events;
         const readyAt =
@@ -243,6 +313,13 @@ export class SupabaseAdminCertificateRepository implements AdminCertificateRepos
           motivation_data: profile.motivation_data,
           profile_avatar_url: profile.profile_avatar_url,
         });
+        const presentCount = presentCounts.get(row.id) ?? 0;
+        const requiredLessonCount = resolveRequiredLessonCount(event?.required_lesson_count);
+        const totalLessonCount = event?.total_lesson_count ?? sessionCounts.get(row.event_id) ?? 0;
+        const attendanceIncomplete = !isEnrollmentAttendanceComplete(
+          presentCount,
+          event?.required_lesson_count,
+        );
 
         return {
           id: row.id,
@@ -252,6 +329,10 @@ export class SupabaseAdminCertificateRepository implements AdminCertificateRepos
           completedAt: new Date(readyAt),
           profileIncomplete,
           profileProgress,
+          attendanceIncomplete,
+          presentCount,
+          requiredLessonCount,
+          totalLessonCount,
         };
       });
   }
@@ -337,6 +418,21 @@ export class SupabaseAdminCertificateRepository implements AdminCertificateRepos
     if (!formStatus.allRequiredDone) {
       throw new Error(
         "Sertifika oluşturulamadı: Katılımcı formları tamamlanmadan sertifika verilemez.",
+      );
+    }
+
+    const { data: attendanceComplete, error: attendanceError } = await this.client.rpc(
+      "enrollment_attendance_complete",
+      { p_enrollment_id: input.enrollmentId },
+    );
+
+    if (attendanceError) {
+      throw new Error(`Sertifika oluşturulamadı: ${attendanceError.message}`);
+    }
+
+    if (!attendanceComplete) {
+      throw new Error(
+        "Sertifika oluşturulamadı: Zorunlu yoklama eşiği karşılanmadan sertifika verilemez.",
       );
     }
 

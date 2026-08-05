@@ -1,10 +1,16 @@
 const ISTANBUL_TIME_ZONE = "Europe/Istanbul";
 
-export function formatEventSessionLabel(startsAt: string, endsAt: string): string {
+/** Yoklama arayüzünde: 1. Ders, 2. Ders … */
+export function formatEventLessonLabel(sessionIndex: number): string {
+  return `${sessionIndex}. Ders`;
+}
+
+/** İsteğe bağlı alt bilgi (saat aralığı). */
+export function formatEventSessionTimeRange(startsAt: string, endsAt: string): string {
   const start = new Date(startsAt);
   const end = new Date(endsAt);
   if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) {
-    return "Ders";
+    return "";
   }
 
   const datePart = new Intl.DateTimeFormat("tr-TR", {
@@ -28,4 +34,9 @@ export function formatEventSessionLabel(startsAt: string, endsAt: string): strin
   }).format(end);
 
   return `${datePart} ${startTime}–${endTime}`;
+}
+
+/** @deprecated Yoklama etiketleri için formatEventLessonLabel kullanın. */
+export function formatEventSessionLabel(startsAt: string, endsAt: string): string {
+  return formatEventSessionTimeRange(startsAt, endsAt) || "Ders";
 }

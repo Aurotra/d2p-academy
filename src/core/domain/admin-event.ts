@@ -22,6 +22,7 @@ export interface AdminEventRecord {
   dailyLessonStart: string;
   dailyLessonEnd: string;
   lessonDurationMinutes: number;
+  totalLessonCount: number | null;
   requiredLessonCount: number | null;
   locationName: string | null;
   isOnline: boolean;
@@ -54,6 +55,7 @@ export interface CreateEventInput {
   dailyLessonStart: string;
   dailyLessonEnd: string;
   lessonDurationMinutes: number;
+  totalLessonCount: number | null;
   requiredLessonCount: number | null;
   locationName: string | null;
   isOnline: boolean;

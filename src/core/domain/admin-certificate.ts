@@ -20,6 +20,11 @@ export interface PendingCertificateEnrollment {
   /** Forms done but profile < 100% — not issuable yet. */
   profileIncomplete?: boolean;
   profileProgress?: number;
+  /** Forms done but yoklama eşiği karşılanmadı — not issuable yet. */
+  attendanceIncomplete?: boolean;
+  presentCount?: number;
+  requiredLessonCount?: number;
+  totalLessonCount?: number;
 }
 
 export interface IssueCertificateInput {

@@ -7,7 +7,11 @@ import type {
   UpsertAttendanceResult,
 } from "@/core/domain/event-attendance";
 import { formatStudentContact } from "@/shared/utils/format-student-contact";
-import { formatEventSessionLabel } from "@/shared/utils/event-session-labels";
+import { formatEventLessonLabel, formatEventSessionTimeRange } from "@/shared/utils/event-session-labels";
+import {
+  isEnrollmentAttendanceComplete,
+  resolveRequiredLessonCount,
+} from "@/shared/utils/enrollment-attendance";
 import { isEventAttendanceOpen } from "@/shared/utils/event-attendance-window";
 import { isStudentParticipantProfile } from "@/shared/utils/student-participant-profile";
 
@@ -17,6 +21,7 @@ interface EventRow {
   start_at: string;
   end_at: string;
   required_lesson_count: number | null;
+  total_lesson_count: number | null;
 }
 
 interface SessionRow {
@@ -58,7 +63,7 @@ export class SupabaseEventAttendanceRepository {
   ): Promise<EventAttendanceSheet | null> {
     const { data: event, error: eventError } = await this.client
       .from("events")
-      .select("id, title, start_at, end_at, required_lesson_count")
+      .select("id, title, start_at, end_at, required_lesson_count, total_lesson_count")
       .eq("id", eventId)
       .maybeSingle();
 
@@ -80,10 +85,7 @@ export class SupabaseEventAttendanceRepository {
 
     const sessions = (sessionRows ?? []) as SessionRow[];
     const totalLessonCount = sessions.length;
-    const requiredLessonCount = Math.min(
-      eventRow.required_lesson_count ?? totalLessonCount,
-      totalLessonCount,
-    );
+    const requiredLessonCount = resolveRequiredLessonCount(eventRow.required_lesson_count);
 
     const { data: enrollments, error: enrollmentsError } = await this.client
       .from("enrollments")
@@ -157,7 +159,8 @@ export class SupabaseEventAttendanceRepository {
         sessionIndex: session.session_index,
         startsAt: session.starts_at,
         endsAt: session.ends_at,
-        label: formatEventSessionLabel(session.starts_at, session.ends_at),
+        label: formatEventLessonLabel(session.session_index),
+        timeRange: formatEventSessionTimeRange(session.starts_at, session.ends_at),
       })),
       requiredLessonCount,
       totalLessonCount,
@@ -175,7 +178,10 @@ export class SupabaseEventAttendanceRepository {
           enrollmentStatus: row.status,
           attendance,
           presentCount,
-          attendanceComplete: totalLessonCount > 0 && presentCount >= requiredLessonCount,
+          attendanceComplete: isEnrollmentAttendanceComplete(
+            presentCount,
+            eventRow.required_lesson_count,
+          ),
         };
       }),
       canEdit: options.canEdit,
@@ -202,7 +208,7 @@ export class SupabaseEventAttendanceRepository {
 
     const { data: session, error: sessionError } = await this.client
       .from("event_sessions")
-      .select("id, event_id, starts_at, ends_at")
+      .select("id, event_id, session_index, starts_at, ends_at")
       .eq("id", input.sessionId)
       .maybeSingle();
 
@@ -276,7 +282,7 @@ export class SupabaseEventAttendanceRepository {
       studentId: profile?.id ?? enrollment.user_id,
       studentName: profile?.full_name ?? "Öğrenci",
       studentEmail: profile?.email ?? null,
-      sessionLabel: formatEventSessionLabel(session.starts_at, session.ends_at),
+      sessionLabel: formatEventLessonLabel(session.session_index),
       previousStatus,
       status: input.status,
       outsideEventWindow,

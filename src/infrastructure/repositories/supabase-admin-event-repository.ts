@@ -33,6 +33,7 @@ interface EventRow {
   daily_lesson_start: string;
   daily_lesson_end: string;
   lesson_duration_minutes: number;
+  total_lesson_count: number | null;
   required_lesson_count: number | null;
   location_name: string | null;
   is_online: boolean;
@@ -58,6 +59,7 @@ const EVENT_SELECT = `
   daily_lesson_start,
   daily_lesson_end,
   lesson_duration_minutes,
+  total_lesson_count,
   required_lesson_count,
   location_name,
   is_online,
@@ -126,6 +128,7 @@ function mapEvent(row: EventRow): AdminEventRecord {
     dailyLessonStart: normalizeTimeValue(row.daily_lesson_start ?? "09:00"),
     dailyLessonEnd: normalizeTimeValue(row.daily_lesson_end ?? "17:00"),
     lessonDurationMinutes: row.lesson_duration_minutes ?? 60,
+    totalLessonCount: row.total_lesson_count,
     requiredLessonCount: row.required_lesson_count,
     locationName: row.location_name,
     isOnline: row.is_online,
@@ -248,6 +251,7 @@ export class SupabaseAdminEventRepository implements AdminEventRepository {
         daily_lesson_start: input.dailyLessonStart,
         daily_lesson_end: input.dailyLessonEnd,
         lesson_duration_minutes: input.lessonDurationMinutes,
+        total_lesson_count: input.totalLessonCount,
         required_lesson_count: input.requiredLessonCount,
         location_name: input.locationName,
         is_online: input.isOnline,
@@ -293,6 +297,9 @@ export class SupabaseAdminEventRepository implements AdminEventRepository {
     if (input.dailyLessonEnd !== undefined) payload.daily_lesson_end = input.dailyLessonEnd;
     if (input.lessonDurationMinutes !== undefined) {
       payload.lesson_duration_minutes = input.lessonDurationMinutes;
+    }
+    if (input.totalLessonCount !== undefined) {
+      payload.total_lesson_count = input.totalLessonCount;
     }
     if (input.requiredLessonCount !== undefined) {
       payload.required_lesson_count = input.requiredLessonCount;
