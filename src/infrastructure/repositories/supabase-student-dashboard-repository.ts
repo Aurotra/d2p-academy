@@ -10,12 +10,14 @@ import type {
   StudentEnrollment,
 } from "@/core/domain/student-dashboard";
 import type { StudentDashboardRepository } from "@/core/use-cases/get-student-dashboard";
+import { isStudentParticipantProfile } from "@/shared/utils/student-participant-profile";
 
 interface ProfileRow {
   id: string;
   full_name: string;
   email: string;
   role: UserRole;
+  username: string | null;
 }
 
 interface EventCategoryRow {
@@ -110,7 +112,7 @@ export class SupabaseStudentDashboardRepository implements StudentDashboardRepos
     const [profileResult, enrollmentsResult, certificatesResult] = await Promise.all([
       this.client
         .from("profiles")
-        .select("id, full_name, email, role")
+        .select("id, full_name, email, role, username")
         .eq("id", userId)
         .single(),
       this.client
@@ -175,25 +177,30 @@ export class SupabaseStudentDashboardRepository implements StudentDashboardRepos
       throw new Error(`Sertifikalar alınamadı: ${certificatesResult.error.message}`);
     }
 
-    const upcomingEnrollments = (enrollmentsResult.data as EnrollmentRow[])
-      .map((row) => {
-        const eventRow = Array.isArray(row.events) ? (row.events[0] ?? null) : row.events;
+    const profileRow = profileResult.data as ProfileRow;
+    const showOwnEnrollments = isStudentParticipantProfile(profileRow);
 
-        if (!eventRow) {
-          return null;
-        }
+    const upcomingEnrollments = showOwnEnrollments
+      ? (enrollmentsResult.data as EnrollmentRow[])
+          .map((row) => {
+            const eventRow = Array.isArray(row.events) ? (row.events[0] ?? null) : row.events;
 
-        const event = mapEvent(eventRow);
+            if (!eventRow) {
+              return null;
+            }
 
-        return {
-          id: row.id,
-          status: row.status,
-          registeredAt: new Date(row.registered_at),
-          event,
-        } satisfies StudentEnrollment;
-      })
-      .filter((enrollment): enrollment is StudentEnrollment => enrollment !== null)
-      .sort((left, right) => left.event.startAt.getTime() - right.event.startAt.getTime());
+            const event = mapEvent(eventRow);
+
+            return {
+              id: row.id,
+              status: row.status,
+              registeredAt: new Date(row.registered_at),
+              event,
+            } satisfies StudentEnrollment;
+          })
+          .filter((enrollment): enrollment is StudentEnrollment => enrollment !== null)
+          .sort((left, right) => left.event.startAt.getTime() - right.event.startAt.getTime())
+      : [];
 
     const certificates = (certificatesResult.data as CertificateRow[]).map((row) => {
       const eventRow = Array.isArray(row.events) ? (row.events[0] ?? null) : row.events;
@@ -209,7 +216,7 @@ export class SupabaseStudentDashboardRepository implements StudentDashboardRepos
     });
 
     return {
-      profile: mapProfile(profileResult.data as ProfileRow),
+      profile: mapProfile(profileRow),
       upcomingEnrollments,
       certificates,
     };

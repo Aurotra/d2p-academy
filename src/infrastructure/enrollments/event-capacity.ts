@@ -1,6 +1,7 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 
 import { tryCreateServiceRoleClient } from "@/infrastructure/supabase/create-service-role-client";
+import { isStudentParticipantProfile } from "@/shared/utils/student-participant-profile";
 
 const ACTIVE_ENROLLMENT_STATUSES = ["registered", "attended", "completed"] as const;
 
@@ -30,9 +31,17 @@ export async function getEventCapacityBlockReason(
     return null;
   }
 
-  const { count, error: countError } = await countClient
+  const { data: enrollmentRows, error: countError } = await countClient
     .from("enrollments")
-    .select("id", { count: "exact", head: true })
+    .select(
+      `
+      id,
+      profiles!inner (
+        role,
+        username
+      )
+    `,
+    )
     .eq("event_id", eventId)
     .in("status", [...ACTIVE_ENROLLMENT_STATUSES]);
 
@@ -40,7 +49,15 @@ export async function getEventCapacityBlockReason(
     throw new Error(countError.message);
   }
 
-  if ((count ?? 0) >= maxCapacity) {
+  const count =
+    enrollmentRows?.filter((row) => {
+      const profile = Array.isArray(row.profiles) ? row.profiles[0] : row.profiles;
+      return profile
+        ? isStudentParticipantProfile(profile as { role?: string; username?: string | null })
+        : false;
+    }).length ?? 0;
+
+  if (count >= maxCapacity) {
     return `Bu etkinliğin kontenjanı dolu (${maxCapacity} kişi).`;
   }
 

@@ -21,7 +21,6 @@ export function ProfileMotivationFields({
   beklenti,
   onHedefChange,
   onBeklentiChange,
-  beklentiName = "beklenti",
 }: ProfileMotivationFieldsProps) {
   return (
     <div className="space-y-4">
@@ -36,23 +35,34 @@ export function ProfileMotivationFields({
         {hedef.length}/300 · {PROFILE_GOAL_HELPER}
       </p>
 
-      <fieldset>
-        <legend className="text-sm font-medium text-slate-900">{PROFILE_D2P_EXPECTATION_LABEL}</legend>
-        <p className="mt-1 text-xs leading-5 text-slate-500">{PROFILE_D2P_EXPECTATION_HELPER}</p>
-        <div className="mt-3 space-y-2">
-          {D2P_EXPECTATION_LIKERT_OPTIONS.map((option) => (
-            <label key={option.value} className="flex items-start gap-2 text-sm leading-6">
-              <input
-                type="radio"
-                name={beklentiName}
-                value={option.value}
-                checked={beklenti === option.value}
-                onChange={() => onBeklentiChange(option.value)}
-                className="mt-1"
-              />
-              <span>{option.label}</span>
-            </label>
-          ))}
+      <fieldset className="space-y-3 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-4">
+        <legend className="px-1 text-sm font-semibold text-slate-900">
+          {PROFILE_D2P_EXPECTATION_LABEL}
+        </legend>
+        <p className="text-xs leading-5 text-slate-500">{PROFILE_D2P_EXPECTATION_HELPER}</p>
+        <div className="grid grid-cols-5 gap-2 sm:flex sm:flex-wrap">
+          {D2P_EXPECTATION_LIKERT_OPTIONS.map((option) => {
+            const selected = beklenti === option.value;
+
+            return (
+              <button
+                key={option.value}
+                type="button"
+                onClick={() => onBeklentiChange(option.value)}
+                aria-pressed={selected}
+                className={`min-h-11 rounded-xl border px-2 py-2 text-center text-xs font-semibold transition sm:min-w-[4.5rem] ${
+                  selected
+                    ? "border-document-primary bg-document-primary text-white"
+                    : "border-slate-200 bg-white text-slate-700 hover:border-sky-300"
+                }`}
+              >
+                <span className="block text-sm">{option.value}</span>
+                <span className="mt-0.5 hidden text-[10px] font-normal leading-tight opacity-90 sm:block">
+                  {option.label.replace(/^\d+\s*[—-]\s*/, "")}
+                </span>
+              </button>
+            );
+          })}
         </div>
       </fieldset>
     </div>

@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 
 import type { AttendanceStatus } from "@/core/domain/event-attendance";
 import { getEventAttendanceAccess } from "@/infrastructure/auth/get-event-attendance-access";
+import { logAttendanceMarked } from "@/infrastructure/audit/log-attendance-marked";
 import { SupabaseEventAttendanceRepository } from "@/infrastructure/repositories/supabase-event-attendance-repository";
 import { createSupabaseServerClient } from "@/infrastructure/supabase/create-server-client";
 
@@ -42,11 +43,35 @@ export async function PATCH(
 
   try {
     const repository = new SupabaseEventAttendanceRepository(client);
-    await repository.upsertAttendance(eventId, access.userId, {
+    const result = await repository.upsertAttendance(eventId, access.userId, {
       enrollmentId,
       sessionId,
       status,
       notes: body.notes ?? null,
+    });
+
+    const { data: actorProfile } = await client
+      .from("profiles")
+      .select("full_name, email")
+      .eq("id", access.userId)
+      .maybeSingle();
+
+    void logAttendanceMarked({
+      actorId: access.userId,
+      actorEmail: actorProfile?.email ?? null,
+      actorName: actorProfile?.full_name ?? null,
+      actorRole: access.role,
+      eventId,
+      eventTitle: result.eventTitle,
+      enrollmentId,
+      studentId: result.studentId,
+      studentName: result.studentName,
+      studentEmail: result.studentEmail,
+      sessionId,
+      sessionLabel: result.sessionLabel,
+      status: result.status,
+      previousStatus: result.previousStatus,
+      outsideEventWindow: result.outsideEventWindow,
     });
 
     return NextResponse.json({ ok: true });

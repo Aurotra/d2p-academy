@@ -124,45 +124,35 @@ export function EventAttendanceSheetView({ sheet, apiBasePath }: EventAttendance
     );
   }
 
-  const prepMode = !sheet.attendanceOpen;
+  const outsideEventWindow = !sheet.attendanceOpen;
 
   return (
     <div className="space-y-6">
       <div className="rounded-[1.75rem] border border-slate-200 bg-white p-6 shadow-sm">
         <p className="text-sm font-semibold uppercase tracking-[0.18em] text-document-primary">
-          {prepMode ? "Kayıtlılar" : "Yoklama"}
+          Yoklama
         </p>
         <h1 className="mt-2 text-2xl font-bold text-slate-900">{sheet.eventTitle}</h1>
         <p className="mt-2 text-sm text-slate-600">
           {formatDateTime(sheet.startAt)} – {formatDateTime(sheet.endAt)} · {sheet.totalLessonCount}{" "}
           ders · Zorunlu katılım: {sheet.requiredLessonCount}
         </p>
-        {prepMode ? (
-          <p className="mt-2 text-sm text-slate-500">
-            Etkinlik öncesi kayıtlı öğrencileri inceleyerek hazırlık yapabilirsiniz. Yoklama işaretleme{" "}
-            <span className="font-medium text-slate-700">
-              {formatEventAttendanceWindowLabel(sheet.startAt, sheet.endAt)}
-            </span>{" "}
-            tarihleri arasında açılır.
-          </p>
-        ) : (
-          <p className="mt-2 text-sm text-slate-500">
-            Her ders saati için öğrencinin sınıfta olup olmadığını işaretleyin. Zorunlu ders sayısına
-            ulaşan öğrencide son test (F03) otomatik açılır.
-          </p>
-        )}
+        <p className="mt-2 text-sm text-slate-500">
+          Her ders saati için öğrencinin sınıfta olup olmadığını işaretleyin. Zorunlu ders sayısına
+          ulaşan öğrencide son test (F03) otomatik açılır. Tüm işaretlemeler işlem loglarına kaydedilir.
+        </p>
       </div>
 
-      {prepMode ? (
-        <div className="rounded-xl border border-sky-200 bg-sky-50 px-4 py-3 text-sm text-sky-900">
-          Yoklama henüz açık değil. Etkinlik günlerinde bu sayfadan ders bazlı yoklama alabilirsiniz.
+      {outsideEventWindow ? (
+        <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-950">
+          Etkinlik tarihleri dışında yoklama işaretleniyor (
+          {formatEventAttendanceWindowLabel(sheet.startAt, sheet.endAt)}). Bu işlemler admin loglarında
+          görüntülenir.
         </div>
       ) : null}
 
-      {prepMode ? <RegisteredStudentsRoster students={rows} /> : null}
+      <RegisteredStudentsRoster students={rows} />
 
-      {!prepMode ? (
-        <>
       <div className="flex flex-wrap gap-2">
         {sheet.sessions.map((session) => (
           <button
@@ -309,8 +299,6 @@ export function EventAttendanceSheetView({ sheet, apiBasePath }: EventAttendance
           </tbody>
         </table>
       </div>
-        </>
-      ) : null}
     </div>
   );
 }

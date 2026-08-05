@@ -45,3 +45,14 @@ export interface UpsertAttendanceInput {
   status: AttendanceStatus;
   notes?: string | null;
 }
+
+export interface UpsertAttendanceResult {
+  eventTitle: string;
+  studentId: string;
+  studentName: string;
+  studentEmail: string | null;
+  sessionLabel: string;
+  previousStatus: AttendanceStatus | null;
+  status: AttendanceStatus;
+  outsideEventWindow: boolean;
+}

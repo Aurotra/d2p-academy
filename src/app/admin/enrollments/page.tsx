@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import type { EnrollmentStatus } from "@/core/domain/student-dashboard";
 import { getAdminAccess } from "@/infrastructure/auth/get-admin-access";
 import { createSupabaseServerClient } from "@/infrastructure/supabase/create-server-client";
+import { isStudentParticipantProfile } from "@/shared/utils/student-participant-profile";
 import {
   EventEnrollmentsTable,
   type EventEnrollmentRow,
@@ -22,11 +23,13 @@ interface EnrollmentListRow {
     full_name: string;
     email: string | null;
     username: string | null;
+    role: string;
   } | {
     id: string;
     full_name: string;
     email: string | null;
     username: string | null;
+    role: string;
   }[] | null;
   certificates:
     | { id: string; status: string }
@@ -63,6 +66,9 @@ function groupByEvent(rows: EnrollmentListRow[]): EventEnrollmentGroup[] {
   for (const row of rows) {
     const event = unwrapOne(row.events);
     const profile = unwrapOne(row.profiles);
+    if (!profile || !isStudentParticipantProfile(profile)) {
+      continue;
+    }
     const eventKey = event?.id ?? "unknown";
     const eventTitle = event?.title ?? "Etkinlik bulunamadı";
     const eventStartAt = event?.start_at ?? null;
@@ -140,7 +146,8 @@ export default async function AdminEnrollmentsPage({ searchParams }: AdminEnroll
         id,
         full_name,
         email,
-        username
+        username,
+        role
       ),
       certificates (
         id,

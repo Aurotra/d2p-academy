@@ -85,6 +85,13 @@ export async function POST(
     .maybeSingle();
 
   if (existing && existing.status !== "cancelled") {
+    await serviceClient
+      .from("enrollments")
+      .update({ status: "cancelled" })
+      .eq("user_id", auth.user.id)
+      .eq("event_id", eventId)
+      .neq("status", "cancelled");
+
     return NextResponse.json({
       data: {
         enrollmentId: existing.id,
@@ -118,6 +125,13 @@ export async function POST(
       console.error("[parent enroll revive]", reviveError.message);
       return NextResponse.json({ error: "Kayıt yenilenemedi." }, { status: 500 });
     }
+
+    await serviceClient
+      .from("enrollments")
+      .update({ status: "cancelled" })
+      .eq("user_id", auth.user.id)
+      .eq("event_id", eventId)
+      .neq("status", "cancelled");
 
     return NextResponse.json({
       data: {
@@ -159,6 +173,13 @@ export async function POST(
     console.error("[parent enroll insert]", insertError.message);
     return NextResponse.json({ error: "Kayıt oluşturulamadı." }, { status: 500 });
   }
+
+  await serviceClient
+    .from("enrollments")
+    .update({ status: "cancelled" })
+    .eq("user_id", auth.user.id)
+    .eq("event_id", eventId)
+    .neq("status", "cancelled");
 
   return NextResponse.json(
     {

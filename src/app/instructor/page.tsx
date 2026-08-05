@@ -61,8 +61,8 @@ export default async function InstructorHomePage() {
         </p>
         <h1 className="mt-2 text-2xl font-bold text-slate-900">Etkinliklerim</h1>
         <p className="mt-2 text-sm text-slate-600">
-          Size atanmış etkinliklerde kayıtlı öğrencileri görebilir, etkinlik tarihlerinde ders saati
-          bazlı yoklama alabilirsiniz.
+          Size atanmış etkinliklerde kayıtlı öğrencileri görebilir ve ders saati bazlı yoklama
+          alabilirsiniz. İşaretlemeler işlem loglarına kaydedilir.
         </p>
       </div>
 

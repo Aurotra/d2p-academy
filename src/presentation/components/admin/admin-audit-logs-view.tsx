@@ -6,8 +6,10 @@ import { useSearchParams } from "next/navigation";
 import type { AdminAuditAction, AdminAuditLogRecord } from "@/core/domain/admin-audit-log";
 import {
   ADMIN_AUDIT_ACTION_LABELS,
+  isAttendanceAction,
   isMemberActivityAction,
 } from "@/core/domain/admin-audit-log";
+import { ATTENDANCE_STATUS_LABELS } from "@/core/domain/event-attendance";
 import { Badge } from "@/presentation/components/ui/badge";
 import { Button } from "@/presentation/components/ui/button";
 
@@ -34,6 +36,7 @@ function badgeTone(action: AdminAuditAction): "neutral" | "cyan" | "navy" {
   if (action === "certificate_revoked") return "neutral";
   if (action === "instructor_granted") return "navy";
   if (action === "instructor_revoked") return "cyan";
+  if (isAttendanceAction(action)) return "navy";
   if (isMemberActivityAction(action)) return "cyan";
   return "cyan";
 }
@@ -99,6 +102,29 @@ function formatLogSummary(log: AdminAuditLogRecord): string {
     }
   }
 
+  if (isAttendanceAction(log.action)) {
+    const sessionLabel =
+      typeof log.metadata.session_label === "string" ? log.metadata.session_label : "Ders";
+    const status =
+      typeof log.metadata.status === "string" &&
+      log.metadata.status in ATTENDANCE_STATUS_LABELS
+        ? ATTENDANCE_STATUS_LABELS[log.metadata.status as keyof typeof ATTENDANCE_STATUS_LABELS]
+        : "—";
+    const previousStatus =
+      typeof log.metadata.previous_status === "string" &&
+      log.metadata.previous_status in ATTENDANCE_STATUS_LABELS
+        ? ATTENDANCE_STATUS_LABELS[
+            log.metadata.previous_status as keyof typeof ATTENDANCE_STATUS_LABELS
+          ]
+        : null;
+    const outsideWindow = log.metadata.outside_event_window === true;
+    const changeNote = previousStatus ? `${previousStatus} → ${status}` : status;
+
+    return `${log.studentName ?? "Öğrenci"} · ${sessionLabel} · ${changeNote}${
+      outsideWindow ? " · etkinlik dışı" : ""
+    } · ${log.eventTitle ?? "Etkinlik"}`;
+  }
+
   if (isInstructorAction(log.action)) {
     return `Üye rolü: ${formatMemberRole(log.metadata.member_role)}`;
   }
@@ -126,6 +152,14 @@ function formatSecondaryLine(log: AdminAuditLogRecord): string | null {
 
   if (log.action === "member_registered" && log.metadata.resent_confirmation === true) {
     return "Mevcut hesap için onay maili yeniden gönderildi.";
+  }
+
+  if (isAttendanceAction(log.action)) {
+    const actorRole =
+      typeof log.metadata.actor_role === "string" ? log.metadata.actor_role : null;
+    if (actorRole) {
+      return `İşaretleyen: ${MEMBER_ROLE_LABELS[actorRole] ?? actorRole}`;
+    }
   }
 
   return null;
@@ -186,6 +220,7 @@ export function AdminAuditLogsView() {
         { id: "institution_request_submitted" as const, label: "Kurum formu" },
         { id: "enrollment_created" as const, label: "Etkinlik kaydı" },
         { id: "intake_form_submitted" as const, label: "Tanıma formu" },
+        { id: "attendance_marked" as const, label: "Yoklama" },
         { id: "certificate_revoked" as const, label: "Sertifika iptalleri" },
         { id: "enrollment_deleted" as const, label: "Kayıt silmeleri" },
         { id: "instructor_granted" as const, label: "Eğitmen verildi" },
@@ -199,8 +234,8 @@ export function AdminAuditLogsView() {
       <div className="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm">
         <h1 className="text-2xl font-bold text-navy-950">İşlem Logları</h1>
         <p className="mt-2 text-sm text-slate-600">
-          Üye hareketleri (kayıt, profil, form, etkinlik) ve admin işlemleri (sertifika, kayıt silme,
-          eğitmen yetkisi) burada listelenir.
+          Üye hareketleri (kayıt, profil, form, etkinlik), yoklama işaretlemeleri ve admin işlemleri
+          (sertifika, kayıt silme, eğitmen yetkisi) burada listelenir.
         </p>
 
         <div className="mt-4 flex flex-wrap gap-2">
@@ -269,7 +304,7 @@ export function AdminAuditLogsView() {
                       {log.reason}
                     </p>
                   ) : null}
-                  {log.actorEmail && isAdminEnrollmentAction(log.action) ? (
+                  {log.actorEmail && (isAdminEnrollmentAction(log.action) || isAttendanceAction(log.action)) ? (
                     <p className="mt-2 text-xs text-slate-500">İşlemi yapan: {log.actorEmail}</p>
                   ) : null}
                   {log.actorEmail && isInstructorAction(log.action) ? (

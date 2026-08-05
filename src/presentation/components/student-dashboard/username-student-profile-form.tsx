@@ -7,7 +7,7 @@ import { useEffect, useState, type FormEvent } from "react";
 
 import { Button } from "@/presentation/components/ui/button";
 import { Input } from "@/presentation/components/ui/input";
-import { Select } from "@/presentation/components/ui/select";
+import { ValueChipGroup } from "@/presentation/components/forms/value-chip-group";
 import {
   AVATAR_OPTIONS,
   CODING_EXPERIENCE_OPTIONS,
@@ -31,6 +31,12 @@ type ProfileForm = {
   profile_avatar_url: string;
   kvkk_accepted: boolean;
 };
+
+const GENDER_OPTIONS = [
+  { value: "male", label: "Erkek" },
+  { value: "female", label: "Kız" },
+  { value: "prefer_not_to_say", label: "Belirtmek istemiyorum" },
+] as const;
 
 const emptyForm: ProfileForm = {
   full_name: "",
@@ -228,28 +234,18 @@ export function UsernameStudentProfileForm({
         onChange={(e) => setForm((f) => ({ ...f, full_name: e.target.value }))}
         required
       />
-      <Select
+      <ValueChipGroup
         label="Cinsiyet"
+        options={GENDER_OPTIONS}
         value={form.gender}
-        onChange={(e) => setForm((f) => ({ ...f, gender: e.target.value }))}
-      >
-        <option value="">Seçiniz</option>
-        <option value="male">Erkek</option>
-        <option value="female">Kız</option>
-        <option value="prefer_not_to_say">Belirtmek istemiyorum</option>
-      </Select>
-      <Select
+        onChange={(value) => setForm((f) => ({ ...f, gender: value }))}
+      />
+      <ValueChipGroup
         label="Sınıf"
+        options={GRADE_LEVEL_OPTIONS}
         value={form.grade_level}
-        onChange={(e) => setForm((f) => ({ ...f, grade_level: e.target.value }))}
-      >
-        <option value="">Seçiniz</option>
-        {GRADE_LEVEL_OPTIONS.map((option) => (
-          <option key={option.value} value={option.value}>
-            {option.label}
-          </option>
-        ))}
-      </Select>
+        onChange={(value) => setForm((f) => ({ ...f, grade_level: value }))}
+      />
       <Input
         label="Okul"
         value={form.school_name}
@@ -260,18 +256,12 @@ export function UsernameStudentProfileForm({
         value={form.city_district}
         onChange={(e) => setForm((f) => ({ ...f, city_district: e.target.value }))}
       />
-      <Select
+      <ValueChipGroup
         label="Kodlama deneyimi"
+        options={CODING_EXPERIENCE_OPTIONS}
         value={form.coding_experience}
-        onChange={(e) => setForm((f) => ({ ...f, coding_experience: e.target.value }))}
-      >
-        <option value="">Seçiniz</option>
-        {CODING_EXPERIENCE_OPTIONS.map((option) => (
-          <option key={option.value} value={option.value}>
-            {option.label}
-          </option>
-        ))}
-      </Select>
+        onChange={(value) => setForm((f) => ({ ...f, coding_experience: value }))}
+      />
       <Input
         label="Tamamlanan proje sayısı (opsiyonel)"
         value={form.proje_sayisi}
@@ -313,7 +303,6 @@ export function UsernameStudentProfileForm({
           beklenti={form.beklenti === "" ? "" : Number(form.beklenti)}
           onHedefChange={(value) => setForm((f) => ({ ...f, hedef: value }))}
           onBeklentiChange={(value) => setForm((f) => ({ ...f, beklenti: String(value) }))}
-          beklentiName="profile-beklenti"
         />
       </fieldset>
 

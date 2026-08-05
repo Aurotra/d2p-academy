@@ -10,7 +10,8 @@ export type AdminAuditAction =
   | "course_demand_submitted"
   | "institution_request_submitted"
   | "enrollment_created"
-  | "intake_form_submitted";
+  | "intake_form_submitted"
+  | "attendance_marked";
 
 export const MEMBER_ACTIVITY_ACTIONS = [
   "member_registered",
@@ -27,6 +28,10 @@ export type MemberActivityAction = (typeof MEMBER_ACTIVITY_ACTIONS)[number];
 
 export function isMemberActivityAction(action: AdminAuditAction): action is MemberActivityAction {
   return (MEMBER_ACTIVITY_ACTIONS as readonly string[]).includes(action);
+}
+
+export function isAttendanceAction(action: AdminAuditAction): boolean {
+  return action === "attendance_marked";
 }
 
 export interface AdminAuditLogRecord {
@@ -56,4 +61,5 @@ export const ADMIN_AUDIT_ACTION_LABELS: Record<AdminAuditAction, string> = {
   institution_request_submitted: "Kurum formu",
   enrollment_created: "Etkinlik kaydı",
   intake_form_submitted: "Tanıma formu",
+  attendance_marked: "Yoklama işaretlendi",
 };

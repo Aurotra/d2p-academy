@@ -8,6 +8,7 @@ import type { StudentProfileData, StudentProfileRecord } from "@/core/domain/stu
 import { SupabaseStudentProfileRepository } from "@/infrastructure/repositories/supabase-student-profile-repository";
 import { createSupabaseBrowserClient } from "@/infrastructure/supabase/create-browser-client";
 import { ProfileMotivationFields } from "@/presentation/components/profile/profile-motivation-fields";
+import { ValueChipGroup } from "@/presentation/components/forms/value-chip-group";
 import { ProfileProgressBar } from "@/presentation/components/profile/profile-progress-bar";
 import { Button } from "@/presentation/components/ui/button";
 import { Input } from "@/presentation/components/ui/input";
@@ -133,32 +134,21 @@ export function AdminStudentProfileEditor({ student }: AdminStudentProfileEditor
               onChange={(e) => setForm({ ...form, full_name: e.target.value })}
               required
             />
-            <div>
-              <p className="mb-2 text-sm font-medium text-slate-900">Cinsiyet</p>
-              <div className="flex flex-wrap gap-4">
-                {[
-                  { value: "male", label: "Erkek" },
-                  { value: "female", label: "Kız" },
-                  { value: "prefer_not_to_say", label: "Belirtmek istemiyorum" },
-                ].map((option) => (
-                  <label key={option.value} className="inline-flex items-center gap-2 text-sm">
-                    <input
-                      type="radio"
-                      name="admin-gender"
-                      value={option.value}
-                      checked={form.gender === option.value}
-                      onChange={() =>
-                        setForm({
-                          ...form,
-                          gender: option.value as StudentProfileData["gender"],
-                        })
-                      }
-                    />
-                    {option.label}
-                  </label>
-                ))}
-              </div>
-            </div>
+            <ValueChipGroup
+              label="Cinsiyet"
+              options={[
+                { value: "male", label: "Erkek" },
+                { value: "female", label: "Kız" },
+                { value: "prefer_not_to_say", label: "Belirtmek istemiyorum" },
+              ]}
+              value={form.gender}
+              onChange={(value) =>
+                setForm({
+                  ...form,
+                  gender: value as StudentProfileData["gender"],
+                })
+              }
+            />
             <Select
               label="Eğitim Düzeyi"
               value={form.grade_level}
@@ -191,31 +181,20 @@ export function AdminStudentProfileEditor({ student }: AdminStudentProfileEditor
         <fieldset className="rounded-[1.75rem] border border-slate-200 bg-white p-6 shadow-sm">
           <legend className="px-2 text-lg font-bold text-slate-900">Bölüm B — Deneyim</legend>
           <div className="mt-4 space-y-4">
-            <div>
-              <p className="mb-2 text-sm font-medium text-slate-900">Kodlama Deneyimi</p>
-              <div className="flex flex-wrap gap-4">
-                {CODING_EXPERIENCE_OPTIONS.map((option) => (
-                  <label key={option.value} className="inline-flex items-center gap-2 text-sm">
-                    <input
-                      type="radio"
-                      name="admin-coding"
-                      value={option.value}
-                      checked={form.experience_data.coding_experience === option.value}
-                      onChange={() =>
-                        setForm({
-                          ...form,
-                          experience_data: {
-                            ...form.experience_data,
-                            coding_experience: option.value,
-                          },
-                        })
-                      }
-                    />
-                    {option.label}
-                  </label>
-                ))}
-              </div>
-            </div>
+            <ValueChipGroup
+              label="Kodlama Deneyimi"
+              options={CODING_EXPERIENCE_OPTIONS}
+              value={form.experience_data.coding_experience}
+              onChange={(value) =>
+                setForm({
+                  ...form,
+                  experience_data: {
+                    ...form.experience_data,
+                    coding_experience: value as StudentProfileData["experience_data"]["coding_experience"],
+                  },
+                })
+              }
+            />
             <Input
               label="Tamamlanan Proje Sayısı (opsiyonel)"
               type="number"
@@ -274,7 +253,6 @@ export function AdminStudentProfileEditor({ student }: AdminStudentProfileEditor
                   motivation_data: { ...form.motivation_data, beklenti: value },
                 })
               }
-              beklentiName="admin-beklenti"
             />
           </div>
         </fieldset>

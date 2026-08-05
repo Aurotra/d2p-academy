@@ -4,10 +4,12 @@ import type {
   AttendanceStatus,
   EventAttendanceSheet,
   UpsertAttendanceInput,
+  UpsertAttendanceResult,
 } from "@/core/domain/event-attendance";
 import { formatStudentContact } from "@/shared/utils/format-student-contact";
 import { formatEventSessionLabel } from "@/shared/utils/event-session-labels";
 import { isEventAttendanceOpen } from "@/shared/utils/event-attendance-window";
+import { isStudentParticipantProfile } from "@/shared/utils/student-participant-profile";
 
 interface EventRow {
   id: string;
@@ -29,8 +31,8 @@ interface EnrollmentRow {
   status: string;
   user_id: string;
   profiles:
-    | { id: string; full_name: string; email: string | null; username: string | null }
-    | { id: string; full_name: string; email: string | null; username: string | null }[]
+    | { id: string; full_name: string; email: string | null; username: string | null; role: string }
+    | { id: string; full_name: string; email: string | null; username: string | null; role: string }[]
     | null;
 }
 
@@ -94,7 +96,8 @@ export class SupabaseEventAttendanceRepository {
           id,
           full_name,
           email,
-          username
+          username,
+          role
         )
       `,
       )
@@ -106,7 +109,10 @@ export class SupabaseEventAttendanceRepository {
       throw new Error(`Kayıtlar alınamadı: ${enrollmentsError.message}`);
     }
 
-    const enrollmentRows = (enrollments ?? []) as EnrollmentRow[];
+    const enrollmentRows = ((enrollments ?? []) as EnrollmentRow[]).filter((row) => {
+      const profile = unwrapOne(row.profiles);
+      return profile ? isStudentParticipantProfile(profile) : false;
+    });
     const enrollmentIds = enrollmentRows.map((row) => row.id);
     const sessionIds = sessions.map((row) => row.id);
 
@@ -172,7 +178,7 @@ export class SupabaseEventAttendanceRepository {
           attendanceComplete: totalLessonCount > 0 && presentCount >= requiredLessonCount,
         };
       }),
-      canEdit: options.canEdit && attendanceOpen,
+      canEdit: options.canEdit,
       attendanceOpen,
     };
   }
@@ -181,10 +187,10 @@ export class SupabaseEventAttendanceRepository {
     eventId: string,
     actorId: string,
     input: UpsertAttendanceInput,
-  ): Promise<void> {
+  ): Promise<UpsertAttendanceResult> {
     const { data: event, error: eventError } = await this.client
       .from("events")
-      .select("start_at, end_at")
+      .select("title, start_at, end_at")
       .eq("id", eventId)
       .maybeSingle();
 
@@ -192,13 +198,11 @@ export class SupabaseEventAttendanceRepository {
       throw new Error("Etkinlik bulunamadı.");
     }
 
-    if (!isEventAttendanceOpen(event.start_at, event.end_at)) {
-      throw new Error("Yoklama işaretleme yalnızca etkinlik tarihleri arasında yapılabilir.");
-    }
+    const outsideEventWindow = !isEventAttendanceOpen(event.start_at, event.end_at);
 
     const { data: session, error: sessionError } = await this.client
       .from("event_sessions")
-      .select("id, event_id")
+      .select("id, event_id, starts_at, ends_at")
       .eq("id", input.sessionId)
       .maybeSingle();
 
@@ -208,13 +212,39 @@ export class SupabaseEventAttendanceRepository {
 
     const { data: enrollment, error: enrollmentError } = await this.client
       .from("enrollments")
-      .select("id, event_id")
+      .select(
+        `
+        id,
+        event_id,
+        user_id,
+        profiles (
+          id,
+          full_name,
+          email
+        )
+      `,
+      )
       .eq("id", input.enrollmentId)
       .maybeSingle();
 
     if (enrollmentError || !enrollment || enrollment.event_id !== eventId) {
       throw new Error("Kayıt bu etkinliğe ait değil.");
     }
+
+    const { data: existingAttendance } = await this.client
+      .from("enrollment_session_attendance")
+      .select("status")
+      .eq("enrollment_id", input.enrollmentId)
+      .eq("session_id", input.sessionId)
+      .maybeSingle();
+
+    const previousStatus = (existingAttendance?.status as AttendanceStatus | undefined) ?? null;
+    const profile = unwrapOne(
+      enrollment.profiles as
+        | { id: string; full_name: string; email: string | null }
+        | { id: string; full_name: string; email: string | null }[]
+        | null,
+    );
 
     const { error } = await this.client.from("enrollment_session_attendance").upsert(
       {
@@ -240,5 +270,16 @@ export class SupabaseEventAttendanceRepository {
     if (unlockError) {
       throw new Error(`Son test kilidi güncellenemedi: ${unlockError.message}`);
     }
+
+    return {
+      eventTitle: event.title,
+      studentId: profile?.id ?? enrollment.user_id,
+      studentName: profile?.full_name ?? "Öğrenci",
+      studentEmail: profile?.email ?? null,
+      sessionLabel: formatEventSessionLabel(session.starts_at, session.ends_at),
+      previousStatus,
+      status: input.status,
+      outsideEventWindow,
+    };
   }
 }

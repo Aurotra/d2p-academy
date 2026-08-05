@@ -5,6 +5,7 @@ import { logMemberActivity } from "@/infrastructure/audit/log-member-activity";
 import { createSupabaseServerClient } from "@/infrastructure/supabase/create-server-client";
 import { mapAuthErrorToTurkish } from "@/shared/utils/auth-errors";
 import { getEventEnrollmentBlockReason } from "@/shared/utils/event-enrollment-window";
+import { isStudentParticipantProfile } from "@/shared/utils/student-participant-profile";
 
 interface EnrollRequestBody {
   eventId?: string;
@@ -35,11 +36,11 @@ export async function POST(request: Request) {
 
     const { data: actorProfile } = await client
       .from("profiles")
-      .select("role")
+      .select("role, username")
       .eq("id", user.id)
       .maybeSingle();
 
-    if (actorProfile?.role === "parent") {
+    if (!actorProfile || !isStudentParticipantProfile(actorProfile)) {
       return NextResponse.json(
         {
           error:
