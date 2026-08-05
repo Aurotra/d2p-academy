@@ -34,7 +34,7 @@ export default async function EventsPage() {
             Atölye ve eğitim programları
           </h1>
           <p className="mt-4 text-base leading-7 text-slate-600">
-            Robotik, 3D tasarım, 3D baskı ve maker atölyelerimizi keşfedin. Detay sayfasından
+            3D tasarım, 3D baskı ve maker atölyelerimizi keşfedin. Detay sayfasından
             programa göz atıp kayıt olabilirsiniz.
           </p>
         </div>

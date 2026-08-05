@@ -22,13 +22,13 @@ export const homePageMetadata = publicPageMetadata({
 export const eventsPageMetadata = publicPageMetadata({
   title: "Denizli Çocuk Atölye Etkinlikleri ve Kayıt",
   description:
-    "Yaklaşan 3D tasarım, 3D baskı, robotik ve maker atölye etkinlikleri. Denizli'de çocuklar için D2P Academy program takvimi, tarihler ve online kayıt.",
+    "Yaklaşan 3D tasarım, 3D baskı ve maker atölye etkinlikleri. Denizli'de çocuklar için D2P Academy program takvimi, tarihler ve online kayıt.",
   path: "/etkinlikler",
   keywords: [
     "Denizli çocuk etkinlikleri",
     "3D tasarım atölyesi",
     "3D baskı kursu",
-    "robotik atölye kayıt",
+    "maker atölye kayıt",
     "maker etkinlik takvimi",
     "D2P Academy etkinlikler",
   ],
@@ -51,7 +51,7 @@ export const parentGuidePageMetadata = publicPageMetadata({
 export const galleryPageMetadata = publicPageMetadata({
   title: "Atölye Galerisi — 3D Tasarım ve Üretim Fotoğrafları",
   description:
-    "D2P Academy atölyelerinden fotoğraflar: 3D yazıcı, dijital tasarım, robotik ve maker etkinliklerinden Denizli eğitim galerisi ve albümler.",
+    "D2P Academy atölyelerinden fotoğraflar: 3D yazıcı, dijital tasarım ve maker etkinliklerinden Denizli eğitim galerisi ve albümler.",
   path: "/galeri",
   keywords: [
     "D2P Academy galeri",

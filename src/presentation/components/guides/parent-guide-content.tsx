@@ -55,7 +55,7 @@ const faqItems = [
   {
     question: "Uygun etkinlik yoksa ne yapmalıyım?",
     answer:
-      "Panel → Kurs talebi sayfasından program (ör. 3D tasarım, robotik) ve tercih ettiğiniz tarih aralığını bırakın. Yeterli talep birikince sınıf açılır; kaydınız panele düşer. Talep durumunu aynı sayfadan takip edebilirsiniz.",
+      "Panel → Kurs talebi sayfasından program (ör. 3D tasarım, prototipleme) ve tercih ettiğiniz tarih aralığını bırakın. Yeterli talep birikince sınıf açılır; kaydınız panele düşer. Talep durumunu aynı sayfadan takip edebilirsiniz.",
   },
   {
     question: "Kurs talebinde çocuk profili seçmeden sadece isim yazdım, sonra ne olur?",
@@ -245,7 +245,7 @@ export function ParentGuideContent() {
                 <strong>Veli Girişi</strong> → <strong>Panel</strong> →{" "}
                 <strong>Kurs talebi</strong>
               </li>
-              <li>Program seçin (ör. 3D tasarım, robotik)</li>
+              <li>Program seçin (ör. 3D tasarım, prototipleme)</li>
               <li>
                 Mümkünse listeden çocuk profilini seçin; henüz profil yoksa adını yazın ve sonra
                 mutlaka Çocuk hesaplarından aynı adla profil oluşturun
