@@ -1,4 +1,3 @@
-import Link from "next/link";
 import type { ReactNode } from "react";
 
 import type { Profile } from "@/core/domain/auth";
@@ -7,14 +6,24 @@ import { BRAND_SURFACE_HEADER } from "@/shared/constants/brand-surfaces";
 import { BrandLogo } from "@/presentation/components/layout/brand-logo";
 import { AdminShellBody } from "@/presentation/components/admin/admin-shell-body";
 import { LogoutButton } from "@/presentation/components/dashboard/logout-button";
+import {
+  PanelShortcutGroup,
+  PanelShortcutLink,
+} from "@/presentation/components/dashboard/panel-shortcut-link";
 
 interface AdminShellProps {
   profile: Profile;
   pendingCounts: AdminPendingCounts;
+  isInstructor: boolean;
   children: ReactNode;
 }
 
-export function AdminShell({ profile, pendingCounts, children }: AdminShellProps) {
+export function AdminShell({
+  profile,
+  pendingCounts,
+  isInstructor,
+  children,
+}: AdminShellProps) {
   return (
     <div className="admin-shell-root min-h-screen bg-slate-50">
       <div className={`${BRAND_SURFACE_HEADER} no-print border-b`}>
@@ -30,10 +39,30 @@ export function AdminShell({ profile, pendingCounts, children }: AdminShellProps
               </p>
             </div>
           </div>
-          <div className="flex items-center gap-3">
-            <Link href="/dashboard" className="text-sm text-sky-800 hover:text-sky-950">
-              Öğrenci Paneli
-            </Link>
+          <div className="flex flex-col gap-3 sm:items-end">
+            <PanelShortcutGroup>
+              <PanelShortcutLink
+                href="/dashboard"
+                title="Veli"
+                caption="Veli paneline git"
+                variant="parent"
+              />
+              {isInstructor ? (
+                <PanelShortcutLink
+                  href="/instructor"
+                  title="Eğitmen"
+                  caption="Eğitmen paneline git"
+                  variant="instructor"
+                />
+              ) : null}
+              <PanelShortcutLink
+                href="/admin"
+                title="Admin"
+                caption="Admin paneline git"
+                variant="admin"
+                isActive
+              />
+            </PanelShortcutGroup>
             <LogoutButton />
           </div>
         </div>

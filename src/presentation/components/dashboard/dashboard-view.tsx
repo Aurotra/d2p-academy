@@ -8,6 +8,10 @@ import { BRAND_SURFACE_GRADIENT } from "@/shared/constants/brand-surfaces";
 import { Badge } from "@/presentation/components/ui/badge";
 import { DashboardEnrollHandler } from "@/presentation/components/dashboard/dashboard-enroll-handler";
 import { ParentOnboardingGuide } from "@/presentation/components/dashboard/parent-onboarding-guide";
+import {
+  PanelShortcutGroup,
+  PanelShortcutLink,
+} from "@/presentation/components/dashboard/panel-shortcut-link";
 
 interface DashboardViewProps {
   data: StudentDashboardData;
@@ -84,25 +88,29 @@ export function DashboardView({
         >
           <div className="flex flex-col gap-8 lg:flex-row lg:items-start lg:justify-between">
             <div className="min-w-0 flex-1">
-              <div className="flex flex-wrap items-center gap-2">
-                <p className="text-sm font-semibold uppercase tracking-[0.18em] text-sky-700">
+              <div className="flex flex-wrap items-start gap-3">
+                <p className="pt-2 text-sm font-semibold uppercase tracking-[0.18em] text-sky-700">
                   Veli Paneli
                 </p>
-                {isAdmin ? (
-                  <Link
-                    href="/admin"
-                    className="inline-flex items-center justify-center rounded-full bg-primary px-3 py-1 text-xs font-semibold text-white transition hover:bg-primary-hover"
-                  >
-                    Admin
-                  </Link>
-                ) : null}
-                {isInstructor ? (
-                  <Link
-                    href="/instructor"
-                    className="inline-flex items-center justify-center rounded-full bg-violet-600 px-3 py-1 text-xs font-semibold text-white transition hover:bg-violet-700"
-                  >
-                    Eğitmen
-                  </Link>
+                {isAdmin || isInstructor ? (
+                  <PanelShortcutGroup>
+                    {isAdmin ? (
+                      <PanelShortcutLink
+                        href="/admin"
+                        title="Admin"
+                        caption="Admin paneline git"
+                        variant="admin"
+                      />
+                    ) : null}
+                    {isInstructor ? (
+                      <PanelShortcutLink
+                        href="/instructor"
+                        title="Eğitmen"
+                        caption="Eğitmen paneline git"
+                        variant="instructor"
+                      />
+                    ) : null}
+                  </PanelShortcutGroup>
                 ) : null}
               </div>
               <h1 className="mt-3 text-3xl font-black sm:text-4xl">

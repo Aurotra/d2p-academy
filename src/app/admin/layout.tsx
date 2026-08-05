@@ -4,6 +4,7 @@ import type { ReactNode } from "react";
 
 import { getAdminPendingCounts } from "@/infrastructure/admin/get-admin-pending-counts";
 import { getAdminAccess } from "@/infrastructure/auth/get-admin-access";
+import { getInstructorAccess } from "@/infrastructure/auth/get-instructor-access";
 import { createSupabaseServerClient } from "@/infrastructure/supabase/create-server-client";
 import { AdminShell } from "@/presentation/components/admin/admin-shell";
 import { NO_INDEX_METADATA } from "@/shared/seo/metadata";
@@ -26,9 +27,14 @@ export default async function AdminLayout({ children }: { children: ReactNode })
   }
 
   const pendingCounts = await getAdminPendingCounts(client);
+  const instructorAccess = await getInstructorAccess(client);
 
   return (
-    <AdminShell profile={access.profile} pendingCounts={pendingCounts}>
+    <AdminShell
+      profile={access.profile}
+      pendingCounts={pendingCounts}
+      isInstructor={instructorAccess.authorized}
+    >
       {children}
     </AdminShell>
   );

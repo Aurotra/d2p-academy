@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import type { ReactNode } from "react";
 
+import { getAdminAccess } from "@/infrastructure/auth/get-admin-access";
 import { getInstructorAccess } from "@/infrastructure/auth/get-instructor-access";
 import { createSupabaseServerClient } from "@/infrastructure/supabase/create-server-client";
 import { InstructorShell } from "@/presentation/components/instructor/instructor-shell";
@@ -24,5 +25,11 @@ export default async function InstructorLayout({ children }: { children: ReactNo
     redirect(access.reason === "unauthenticated" ? "/login?redirectTo=/instructor" : "/dashboard");
   }
 
-  return <InstructorShell profile={access.profile}>{children}</InstructorShell>;
+  const adminAccess = await getAdminAccess(client);
+
+  return (
+    <InstructorShell profile={access.profile} isAdmin={adminAccess.authorized}>
+      {children}
+    </InstructorShell>
+  );
 }

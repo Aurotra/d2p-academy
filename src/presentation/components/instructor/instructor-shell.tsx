@@ -5,13 +5,20 @@ import type { Profile } from "@/core/domain/auth";
 import { BRAND_SURFACE_HEADER } from "@/shared/constants/brand-surfaces";
 import { BrandLogo } from "@/presentation/components/layout/brand-logo";
 import { LogoutButton } from "@/presentation/components/dashboard/logout-button";
+import {
+  PanelShortcutGroup,
+  PanelShortcutLink,
+} from "@/presentation/components/dashboard/panel-shortcut-link";
 
 interface InstructorShellProps {
   profile: Profile;
+  isAdmin: boolean;
   children: ReactNode;
 }
 
-export function InstructorShell({ profile, children }: InstructorShellProps) {
+export function InstructorShell({ profile, isAdmin, children }: InstructorShellProps) {
+  const showParentPanel = profile.role === "parent" || profile.role === "admin";
+
   return (
     <div className="min-h-screen bg-slate-50">
       <div className={`${BRAND_SURFACE_HEADER} border-b`}>
@@ -25,22 +32,41 @@ export function InstructorShell({ profile, children }: InstructorShellProps) {
               <p className="text-sm font-semibold text-sky-950">{profile.fullName}</p>
             </div>
           </div>
-          <div className="flex flex-wrap items-center gap-3">
-            {(profile.role === "parent" || profile.role === "student" || profile.role === "admin") && (
+          <div className="flex flex-col gap-3 sm:items-end">
+            <PanelShortcutGroup>
+              {isAdmin ? (
+                <PanelShortcutLink
+                  href="/admin"
+                  title="Admin"
+                  caption="Admin paneline git"
+                  variant="admin"
+                />
+              ) : null}
+              {showParentPanel ? (
+                <PanelShortcutLink
+                  href="/dashboard"
+                  title="Veli"
+                  caption="Veli paneline git"
+                  variant="parent"
+                />
+              ) : null}
+              <PanelShortcutLink
+                href="/instructor"
+                title="Eğitmen"
+                caption="Eğitmen paneline git"
+                variant="instructor"
+                isActive
+              />
+            </PanelShortcutGroup>
+            <div className="flex flex-wrap items-center gap-3">
               <Link
-                href="/dashboard"
+                href="/instructor"
                 className="text-sm font-semibold text-sky-900 hover:underline"
               >
-                {profile.role === "admin" ? "Admin / Veli Paneli" : "Veli Paneli"}
+                Etkinliklerim
               </Link>
-            )}
-            <Link
-              href="/instructor"
-              className="text-sm font-semibold text-sky-900 hover:underline"
-            >
-              Etkinliklerim
-            </Link>
-            <LogoutButton />
+              <LogoutButton />
+            </div>
           </div>
         </div>
       </div>
