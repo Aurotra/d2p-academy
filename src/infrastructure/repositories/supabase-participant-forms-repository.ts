@@ -78,14 +78,12 @@ interface EnrollmentOwnerRow {
         program_code: string | null;
         end_at: string;
         required_lesson_count: number | null;
-        total_lesson_count: number | null;
       }
     | {
         title: string;
         program_code: string | null;
         end_at: string;
         required_lesson_count: number | null;
-        total_lesson_count: number | null;
       }[]
     | null;
 }
@@ -99,10 +97,34 @@ export class SupabaseParticipantFormsRepository {
     });
 
     if (error) {
+      // Migration 062 henüz uygulanmadıysa formlar yine açılabilsin.
+      if (
+        error.message.includes("count_enrollment_present_sessions") ||
+        error.message.includes("Could not find the function")
+      ) {
+        return 0;
+      }
       throw new Error(`Yoklama durumu alınamadı: ${error.message}`);
     }
 
     return typeof data === "number" ? data : 0;
+  }
+
+  private async fetchTotalLessonCount(eventId: string, sessionCount: number): Promise<number> {
+    const { data, error } = await this.client
+      .from("events")
+      .select("total_lesson_count")
+      .eq("id", eventId)
+      .maybeSingle();
+
+    if (error) {
+      if (error.message.includes("total_lesson_count")) {
+        return sessionCount;
+      }
+      throw new Error(`Etkinlik bilgisi alınamadı: ${error.message}`);
+    }
+
+    return data?.total_lesson_count ?? sessionCount;
   }
 
   private async countEventSessions(eventId: string): Promise<number> {
@@ -136,13 +158,17 @@ export class SupabaseParticipantFormsRepository {
         intake_form_completed_at,
         pre_test_completed_at,
         post_test_completed_at,
-        events ( title, program_code, end_at, required_lesson_count, total_lesson_count )
+        events ( title, program_code, end_at, required_lesson_count )
       `,
       )
       .eq("id", enrollmentId)
       .maybeSingle();
 
-    if (error || !data) {
+    if (error) {
+      throw new Error(`Kayıt bilgisi alınamadı: ${error.message}`);
+    }
+
+    if (!data) {
       throw new Error("Kayıt bulunamadı.");
     }
 
@@ -206,8 +232,8 @@ export class SupabaseParticipantFormsRepository {
       this.countPresentSessions(enrollmentId),
       this.countEventSessions(enrollment.event_id),
     ]);
+    const totalLessonCount = await this.fetchTotalLessonCount(enrollment.event_id, sessionCount);
     const requiredLessonCount = resolveRequiredLessonCount(event?.required_lesson_count);
-    const totalLessonCount = event?.total_lesson_count ?? sessionCount;
     const attendanceComplete = isEnrollmentAttendanceComplete(
       presentCount,
       event?.required_lesson_count,

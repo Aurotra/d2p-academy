@@ -6,6 +6,7 @@ import type { AttendanceStatus, EventAttendanceSheet } from "@/core/domain/event
 import { ATTENDANCE_STATUS_LABELS } from "@/core/domain/event-attendance";
 import { formatEventAttendanceWindowLabel } from "@/shared/utils/event-attendance-window";
 import { formatAttendanceCertificateLabel } from "@/shared/utils/enrollment-attendance";
+import { getLessonButtonPalette } from "@/shared/utils/event-lesson-colors";
 import { Button } from "@/presentation/components/ui/button";
 
 const STATUS_OPTIONS: AttendanceStatus[] = ["present", "absent", "excused"];
@@ -167,36 +168,37 @@ export function EventAttendanceSheetView({ sheet, apiBasePath }: EventAttendance
         <div className="border-b border-slate-100 px-4 py-4 sm:px-5">
           <p className="text-sm font-semibold text-slate-900">Ders seçin</p>
           <p className="mt-1 text-xs text-slate-500">
-            Önce dersi seçin, ardından öğrenciler için Geldi / Gelmedi / İzinli işaretleyin.
+            Kurs {sheet.totalLessonCount} derse bölünür (her ders = 1 saat). Numaraya tıklayıp
+            yoklama alın.
           </p>
-          <div className="mt-3 flex gap-2 overflow-x-auto pb-1">
+          <div className="mt-4 grid grid-cols-3 gap-2 sm:grid-cols-4 md:grid-cols-6">
             {sheet.sessions.map((session) => {
               const active = session.id === selectedSessionId;
               const sessionMarked = rows.filter((row) => row.attendance[session.id] != null).length;
+              const allMarked = rows.length > 0 && sessionMarked === rows.length;
+              const palette = getLessonButtonPalette(session.sessionIndex);
 
               return (
                 <button
                   key={session.id}
                   type="button"
                   onClick={() => setSelectedSessionId(session.id)}
-                  className={`shrink-0 rounded-xl px-4 py-2.5 text-left transition ${
+                  className={`relative flex min-h-[4.5rem] flex-col items-center justify-center rounded-2xl border-2 px-2 py-3 text-center transition ${
                     active
-                      ? "bg-document-primary text-white shadow-sm"
-                      : "border border-slate-200 bg-slate-50 text-slate-700 hover:border-sky-300"
+                      ? `${palette.solid} ring-2 ring-offset-2 ${palette.ring} shadow-md`
+                      : allMarked
+                        ? `${palette.soft} opacity-90`
+                        : `${palette.soft} hover:shadow-sm`
                   }`}
                 >
-                  <span className="block text-sm font-semibold">{session.label}</span>
-                  {session.timeRange ? (
-                    <span
-                      className={`mt-0.5 block text-[11px] ${active ? "text-white/70" : "text-slate-400"}`}
-                    >
-                      {session.timeRange}
-                    </span>
-                  ) : null}
+                  <span className="text-lg font-black leading-none">{session.sessionIndex}</span>
+                  <span className={`mt-1 text-[10px] font-semibold uppercase tracking-wide ${active ? "text-white/90" : "opacity-70"}`}>
+                    Ders
+                  </span>
                   <span
-                    className={`mt-0.5 block text-xs ${active ? "text-white/80" : "text-slate-500"}`}
+                    className={`mt-1.5 text-[10px] font-medium ${active ? "text-white/80" : "text-slate-500"}`}
                   >
-                    {sessionMarked}/{rows.length} işaretlendi
+                    {sessionMarked}/{rows.length}
                   </span>
                 </button>
               );
@@ -209,9 +211,6 @@ export function EventAttendanceSheetView({ sheet, apiBasePath }: EventAttendance
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <div>
                 <h2 className="text-lg font-bold text-slate-900">{selectedSession.label}</h2>
-                {selectedSession.timeRange ? (
-                  <p className="text-xs text-slate-400">{selectedSession.timeRange}</p>
-                ) : null}
                 <p className="text-sm text-slate-500">
                   {markedInSession}/{rows.length} öğrenci işaretlendi
                 </p>
@@ -311,11 +310,17 @@ export function EventAttendanceSheetView({ sheet, apiBasePath }: EventAttendance
                 <thead className="text-left text-slate-600">
                   <tr>
                     <th className="sticky left-0 z-10 bg-white px-3 py-2 font-semibold">Öğrenci</th>
-                    {sheet.sessions.map((session) => (
-                      <th key={session.id} className="min-w-16 px-1 py-2 text-center text-xs font-semibold">
-                        {session.label}
-                      </th>
-                    ))}
+                    {sheet.sessions.map((session) => {
+                      const palette = getLessonButtonPalette(session.sessionIndex);
+                      return (
+                        <th
+                          key={session.id}
+                          className={`min-w-12 px-1 py-2 text-center text-xs font-bold ${palette.soft} border border-white`}
+                        >
+                          {session.sessionIndex}
+                        </th>
+                      );
+                    })}
                     <th className="px-2 py-2 text-center font-semibold">Katılım</th>
                   </tr>
                 </thead>

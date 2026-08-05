@@ -7,7 +7,7 @@ import type {
   UpsertAttendanceResult,
 } from "@/core/domain/event-attendance";
 import { formatStudentContact } from "@/shared/utils/format-student-contact";
-import { formatEventLessonLabel, formatEventSessionTimeRange } from "@/shared/utils/event-session-labels";
+import { formatEventLessonLabel } from "@/shared/utils/event-session-labels";
 import {
   isEnrollmentAttendanceComplete,
   resolveRequiredLessonCount,
@@ -160,7 +160,6 @@ export class SupabaseEventAttendanceRepository {
         startsAt: session.starts_at,
         endsAt: session.ends_at,
         label: formatEventLessonLabel(session.session_index),
-        timeRange: formatEventSessionTimeRange(session.starts_at, session.ends_at),
       })),
       requiredLessonCount,
       totalLessonCount,

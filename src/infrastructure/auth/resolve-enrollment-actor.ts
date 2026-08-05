@@ -90,15 +90,15 @@ export async function resolveEnrollmentActorForEnrollment(
   } = await serverClient.auth.getUser();
 
   if (user) {
-    let service: SupabaseClient;
+    let service: SupabaseClient | null = null;
     try {
       service = createServiceRoleClient();
     } catch {
-      // Fall back to self-only path without parent proxy
-      return { ok: true, actorId: user.id, client: serverClient, via: "email" };
+      service = null;
     }
 
-    const { data: enrollment, error } = await service
+    const enrollmentClient = service ?? serverClient;
+    const { data: enrollment, error } = await enrollmentClient
       .from("enrollments")
       .select("id, user_id")
       .eq("id", enrollmentId)
@@ -145,7 +145,7 @@ export async function resolveEnrollmentActorForEnrollment(
     return {
       ok: true,
       actorId: enrollment.user_id,
-      client: service,
+      client: service ?? serverClient,
       via: "parent",
     };
   }

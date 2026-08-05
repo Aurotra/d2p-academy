@@ -19,6 +19,7 @@ import { Input } from "@/presentation/components/ui/input";
 import { Select } from "@/presentation/components/ui/select";
 import { Textarea } from "@/presentation/components/ui/textarea";
 import { tryNormalizeProgramCode } from "@/shared/utils/program-code";
+import { computeTotalLessonsFromSchedule } from "@/shared/utils/event-lesson-schedule";
 
 interface EventsApiResponse {
   data: Array<Omit<AdminEventRecord, "startAt" | "endAt"> & { startAt: string; endAt: string }>;
@@ -185,6 +186,23 @@ function buildEventPayload(form: EventFormState) {
     throw new Error("Günlük ders bitiş saati başlangıçtan sonra olmalıdır.");
   }
 
+  const autoTotalLessons = computeTotalLessonsFromSchedule({
+    startAt: form.startAt,
+    endAt: form.endAt,
+    dailyLessonStart: form.dailyLessonStart,
+    dailyLessonEnd: form.dailyLessonEnd,
+    lessonDurationMinutes,
+  });
+
+  const resolvedTotalLessonCount =
+    totalLessonCount ?? (autoTotalLessons > 0 ? autoTotalLessons : null);
+
+  if (resolvedTotalLessonCount === null || resolvedTotalLessonCount <= 0) {
+    throw new Error(
+      "Toplam ders sayısı hesaplanamadı. Günlük ders saatlerini kontrol edin veya toplam ders alanını doldurun.",
+    );
+  }
+
   return {
     title: form.title,
     description: form.description,
@@ -195,7 +213,7 @@ function buildEventPayload(form: EventFormState) {
     dailyLessonStart: form.dailyLessonStart,
     dailyLessonEnd: form.dailyLessonEnd,
     lessonDurationMinutes,
-    totalLessonCount,
+    totalLessonCount: resolvedTotalLessonCount,
     requiredLessonCount,
     locationName: form.locationName || null,
     isOnline: form.isOnline,
@@ -510,6 +528,17 @@ function EventFormFields({
   idPrefix: string;
   titleAutoFocus?: boolean;
 }) {
+  const suggestedTotalLessons =
+    form.startAt && form.endAt
+      ? computeTotalLessonsFromSchedule({
+          startAt: form.startAt,
+          endAt: form.endAt,
+          dailyLessonStart: form.dailyLessonStart,
+          dailyLessonEnd: form.dailyLessonEnd,
+          lessonDurationMinutes: Number(form.lessonDurationMinutes) || 60,
+        })
+      : 0;
+
   return (
     <div className="space-y-4">
       <FormSection title="Temel bilgiler" description="Başlık, tür ve açıklama">
@@ -644,8 +673,10 @@ function EventFormFields({
             placeholder="Örn. 12"
           />
           <p className="mt-1 text-xs text-slate-500">
-            Yoklama 1. Ders, 2. Ders … şeklinde açılır. Boş bırakılırsa etkinlik süresindeki tüm
-            ders slotları oluşturulur.
+            Yoklama 1–{form.totalLessonCount.trim() || suggestedTotalLessons || "N"} arası numaralı
+            ders butonları olarak açılır (saat etiketi yok). Boş bırakılırsa günlük ders
+            saatlerinden otomatik hesaplanır
+            {suggestedTotalLessons > 0 ? ` (şu an: ${suggestedTotalLessons} ders)` : ""}.
           </p>
         </div>
         <div>
