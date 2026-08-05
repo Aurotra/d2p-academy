@@ -1,7 +1,6 @@
--- D2P Academy | Migration 056
--- Hourly lesson sessions, session attendance grid, post-test unlock after required attendance.
+-- D2P Academy | Migration 058
+-- Repair: 056 yarım kaldıysa attendance_status enum + kalan objeleri idempotent tamamlar.
 
--- 042 atlanmış ortamlar için (SQL Editor'de tek başına çalıştırılabilir)
 do $$
 begin
   create type public.attendance_status as enum ('present', 'absent', 'excused');
@@ -9,32 +8,6 @@ exception
   when duplicate_object then null;
 end;
 $$;
-
-alter table public.events
-  add column if not exists daily_lesson_start time not null default '09:00',
-  add column if not exists daily_lesson_end time not null default '17:00',
-  add column if not exists lesson_duration_minutes integer not null default 60
-    check (lesson_duration_minutes > 0 and lesson_duration_minutes <= 480),
-  add column if not exists required_lesson_count integer
-    check (required_lesson_count is null or required_lesson_count > 0);
-
-alter table public.enrollments
-  add column if not exists post_test_unlocked_at timestamptz,
-  add column if not exists post_test_deadline_at timestamptz;
-
-create table if not exists public.event_sessions (
-  id uuid primary key default gen_random_uuid(),
-  event_id uuid not null references public.events (id) on delete cascade,
-  session_index integer not null check (session_index > 0),
-  starts_at timestamptz not null,
-  ends_at timestamptz not null,
-  created_at timestamptz not null default timezone('utc', now()),
-  constraint event_sessions_unique_index unique (event_id, session_index),
-  constraint event_sessions_time_order check (ends_at > starts_at)
-);
-
-create index if not exists event_sessions_event_id_idx on public.event_sessions (event_id);
-create index if not exists event_sessions_starts_at_idx on public.event_sessions (starts_at);
 
 create table if not exists public.enrollment_session_attendance (
   id uuid primary key default gen_random_uuid(),
@@ -245,12 +218,18 @@ create policy enrollment_session_attendance_delete
 grant execute on function public.sync_event_sessions(uuid) to authenticated, service_role;
 grant execute on function public.maybe_unlock_enrollment_post_test(uuid) to authenticated, service_role;
 
--- Backfill sessions for existing events.
+-- Etkinliklerde ders çizelgesi yoksa oluştur.
 do $$
 declare
   v_event_id uuid;
 begin
-  for v_event_id in select id from public.events loop
+  for v_event_id in
+    select ev.id
+    from public.events ev
+    where not exists (
+      select 1 from public.event_sessions es where es.event_id = ev.id
+    )
+  loop
     perform public.sync_event_sessions(v_event_id);
   end loop;
 end;
