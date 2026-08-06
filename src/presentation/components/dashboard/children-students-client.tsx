@@ -8,6 +8,8 @@ import { Button } from "@/presentation/components/ui/button";
 import { Input } from "@/presentation/components/ui/input";
 import { tryBuildStudentUsernameFromIdentity } from "@/shared/utils/student-username";
 import { buildEnrollmentFormStatusLabel } from "@/shared/utils/enrollment-form-status";
+import { EnrollmentAttendanceProgress } from "@/presentation/components/dashboard/enrollment-attendance-progress";
+import { EnrollmentFormProgress } from "@/presentation/components/dashboard/enrollment-form-progress";
 import { EVENT_TYPE_LABELS, type EventType } from "@/core/domain/event";
 import {
   eventLocationLabel,
@@ -27,6 +29,10 @@ export type ChildProgressPreview = {
     postTestUnlocked?: boolean;
     postTestDeadlineAt?: string | null;
     requiresSurveys?: boolean;
+    presentCount?: number;
+    requiredLessonCount?: number;
+    totalLessonCount?: number;
+    attendanceComplete?: boolean;
   }>;
   certificates: Array<{ code: string; issuedAt: string; pdfUrl?: string | null }>;
   grades: Array<{
@@ -181,6 +187,10 @@ export function ChildrenStudentsClient({
               const expanded = expandedId === student.id;
               const preview = student.progressPreview ?? emptyPreview();
               const profileProgress = student.profileProgress ?? 0;
+              const activeEnrollment = preview.enrollments.find((item) => item.status !== "cancelled");
+              const attendanceSummary = activeEnrollment
+                ? `${activeEnrollment.presentCount ?? 0}/${activeEnrollment.requiredLessonCount ?? 8} yoklama`
+                : null;
 
               return (
                 <li key={student.id} className="p-5">
@@ -189,7 +199,8 @@ export function ChildrenStudentsClient({
                       <p className="font-semibold text-navy-950">{student.full_name}</p>
                       <p className="text-sm text-slate-500">@{student.username}</p>
                       <p className="mt-1 text-xs text-slate-500">
-                        {student.enrollmentCount ?? 0} etkinlik ·{" "}
+                        {student.enrollmentCount ?? 0} etkinlik
+                        {attendanceSummary ? ` · ${attendanceSummary}` : ""} ·{" "}
                         {student.certificateCount ?? 0} sertifika · profil %{profileProgress}
                         {profileProgress < 100 ? " (sertifika için %100 gerekir)" : ""}
                       </p>
@@ -237,6 +248,24 @@ export function ChildrenStudentsClient({
                                   <p className="mt-0.5 text-xs text-slate-500">
                                     {buildEnrollmentFormStatusLabel(item)}
                                   </p>
+                                  {item.status !== "cancelled" ? (
+                                    <>
+                                      <EnrollmentFormProgress
+                                        intakeCompleted={item.intakeCompleted}
+                                        consentsCompleted={item.consentsCompleted}
+                                        preTestCompleted={item.preTestCompleted}
+                                        postTestCompleted={item.postTestCompleted}
+                                        postTestUnlocked={item.postTestUnlocked}
+                                        requiresSurveys={item.requiresSurveys}
+                                      />
+                                      <EnrollmentAttendanceProgress
+                                        presentCount={item.presentCount}
+                                        requiredLessonCount={item.requiredLessonCount}
+                                        totalLessonCount={item.totalLessonCount}
+                                        attendanceComplete={item.attendanceComplete}
+                                      />
+                                    </>
+                                  ) : null}
                                   {item.status !== "cancelled" &&
                                   !item.enrollmentId.startsWith("temp-") ? (
                                     <Link

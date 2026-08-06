@@ -9,6 +9,7 @@ import type {
 import { BRAND_SURFACE_GRADIENT } from "@/shared/constants/brand-surfaces";
 import { Badge } from "@/presentation/components/ui/badge";
 import { EnrollmentFormProgress } from "@/presentation/components/dashboard/enrollment-form-progress";
+import { EnrollmentAttendanceProgress } from "@/presentation/components/dashboard/enrollment-attendance-progress";
 import { StudentOnboardingGuide } from "@/presentation/components/student-dashboard/student-onboarding-guide";
 import { formatPostTestDeadlineLabel } from "@/shared/utils/post-test-unlock";
 interface UsernameStudentDashboardViewProps {
@@ -123,14 +124,22 @@ function EnrollmentsSection({ enrollments }: { enrollments: EnrollmentSummary[] 
           <h3 className="mt-2 font-semibold text-navy-950">{item.eventTitle}</h3>
           <p className="mt-1 text-sm text-slate-600">{formatDate(item.eventDate)}</p>
           {item.status !== "cancelled" ? (
-            <EnrollmentFormProgress
-              intakeCompleted={item.intakeCompleted}
-              consentsCompleted={item.consentsCompleted}
-              preTestCompleted={item.preTestCompleted}
-              postTestCompleted={item.postTestCompleted}
-              postTestUnlocked={item.postTestUnlocked}
-              requiresSurveys={item.requiresSurveys}
-            />
+            <>
+              <EnrollmentFormProgress
+                intakeCompleted={item.intakeCompleted}
+                consentsCompleted={item.consentsCompleted}
+                preTestCompleted={item.preTestCompleted}
+                postTestCompleted={item.postTestCompleted}
+                postTestUnlocked={item.postTestUnlocked}
+                requiresSurveys={item.requiresSurveys}
+              />
+              <EnrollmentAttendanceProgress
+                presentCount={item.presentCount}
+                requiredLessonCount={item.requiredLessonCount}
+                totalLessonCount={item.totalLessonCount}
+                attendanceComplete={item.attendanceComplete}
+              />
+            </>
           ) : null}
           <EnrollmentAction item={item} />
         </li>

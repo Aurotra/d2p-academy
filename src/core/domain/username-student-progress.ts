@@ -11,6 +11,10 @@ export interface EnrollmentSummary {
   postTestUnlocked?: boolean;
   postTestDeadlineAt?: string | null;
   requiresSurveys?: boolean;
+  presentCount?: number;
+  requiredLessonCount?: number;
+  totalLessonCount?: number;
+  attendanceComplete?: boolean;
 }
 
 export interface CertificateSummary {

@@ -113,6 +113,10 @@ export default async function DashboardChildrenPage() {
             postTestUnlocked: Boolean(item.postTestUnlocked),
             postTestDeadlineAt: item.postTestDeadlineAt ?? null,
             requiresSurveys: item.requiresSurveys !== false,
+            presentCount: item.presentCount ?? 0,
+            requiredLessonCount: item.requiredLessonCount ?? 8,
+            totalLessonCount: item.totalLessonCount ?? 12,
+            attendanceComplete: Boolean(item.attendanceComplete),
           })),
           certificates: (progress?.certificates ?? []).map((item) => ({
             code: item.certificateCode,
