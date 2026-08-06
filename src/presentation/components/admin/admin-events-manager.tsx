@@ -19,7 +19,7 @@ import { Input } from "@/presentation/components/ui/input";
 import { Select } from "@/presentation/components/ui/select";
 import { Textarea } from "@/presentation/components/ui/textarea";
 import { tryNormalizeProgramCode } from "@/shared/utils/program-code";
-import { computeTotalLessonsFromSchedule } from "@/shared/utils/event-lesson-schedule";
+import { computeLessonsPerDay, resolveTotalLessonCount } from "@/shared/utils/event-lesson-schedule";
 
 interface EventsApiResponse {
   data: Array<Omit<AdminEventRecord, "startAt" | "endAt"> & { startAt: string; endAt: string }>;
@@ -174,33 +174,17 @@ function buildEventPayload(form: EventFormState) {
     throw new Error("Zorunlu katılım sayısı pozitif bir tam sayı olmalıdır.");
   }
 
-  if (
-    totalLessonCount !== null &&
-    requiredLessonCount !== null &&
-    requiredLessonCount > totalLessonCount
-  ) {
-    throw new Error("Zorunlu katılım, toplam ders sayısından fazla olamaz.");
-  }
-
   if (form.dailyLessonEnd <= form.dailyLessonStart) {
     throw new Error("Günlük ders bitiş saati başlangıçtan sonra olmalıdır.");
   }
 
-  const autoTotalLessons = computeTotalLessonsFromSchedule({
-    startAt: form.startAt,
-    endAt: form.endAt,
-    dailyLessonStart: form.dailyLessonStart,
-    dailyLessonEnd: form.dailyLessonEnd,
-    lessonDurationMinutes,
-  });
+  const resolvedTotalLessonCount = resolveTotalLessonCount(totalLessonCount);
 
-  const resolvedTotalLessonCount =
-    totalLessonCount ?? (autoTotalLessons > 0 ? autoTotalLessons : null);
-
-  if (resolvedTotalLessonCount === null || resolvedTotalLessonCount <= 0) {
-    throw new Error(
-      "Toplam ders sayısı hesaplanamadı. Günlük ders saatlerini kontrol edin veya toplam ders alanını doldurun.",
-    );
+  if (
+    requiredLessonCount !== null &&
+    requiredLessonCount > resolvedTotalLessonCount
+  ) {
+    throw new Error("Zorunlu katılım, toplam ders sayısından fazla olamaz.");
   }
 
   return {
@@ -528,16 +512,11 @@ function EventFormFields({
   idPrefix: string;
   titleAutoFocus?: boolean;
 }) {
-  const suggestedTotalLessons =
-    form.startAt && form.endAt
-      ? computeTotalLessonsFromSchedule({
-          startAt: form.startAt,
-          endAt: form.endAt,
-          dailyLessonStart: form.dailyLessonStart,
-          dailyLessonEnd: form.dailyLessonEnd,
-          lessonDurationMinutes: Number(form.lessonDurationMinutes) || 60,
-        })
-      : 0;
+  const lessonsPerDay = computeLessonsPerDay(
+    form.dailyLessonStart,
+    form.dailyLessonEnd,
+    Number(form.lessonDurationMinutes) || 60,
+  );
 
   return (
     <div className="space-y-4">
@@ -673,10 +652,9 @@ function EventFormFields({
             placeholder="Örn. 12"
           />
           <p className="mt-1 text-xs text-slate-500">
-            Yoklama 1–{form.totalLessonCount.trim() || suggestedTotalLessons || "N"} arası numaralı
-            ders butonları olarak açılır (saat etiketi yok). Boş bırakılırsa günlük ders
-            saatlerinden otomatik hesaplanır
-            {suggestedTotalLessons > 0 ? ` (şu an: ${suggestedTotalLessons} ders)` : ""}.
+            Kurstaki toplam yoklama dersi (ör. 12 saat = 12 ders). Etkinlik bitiş tarihiyle
+            çarpılmaz. Boş bırakılırsa varsayılan 12 kullanılır
+            {lessonsPerDay > 0 ? ` · Günde en fazla ${lessonsPerDay} slot` : ""}.
           </p>
         </div>
         <div>
