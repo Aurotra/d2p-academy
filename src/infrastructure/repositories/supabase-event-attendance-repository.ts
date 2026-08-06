@@ -13,6 +13,7 @@ import {
   resolveRequiredLessonCount,
 } from "@/shared/utils/enrollment-attendance";
 import { isEventAttendanceOpen } from "@/shared/utils/event-attendance-window";
+import { normalizeTotalLessonCount } from "@/shared/utils/event-lesson-schedule";
 import { isStudentParticipantProfile } from "@/shared/utils/student-participant-profile";
 
 interface EventRow {
@@ -83,8 +84,10 @@ export class SupabaseEventAttendanceRepository {
       throw new Error(`Ders çizelgesi alınamadı: ${sessionsError.message}`);
     }
 
-    const sessions = (sessionRows ?? []) as SessionRow[];
-    const totalLessonCount = sessions.length;
+    const totalLessonCount = normalizeTotalLessonCount(eventRow.total_lesson_count);
+    const sessions = ((sessionRows ?? []) as SessionRow[])
+      .filter((session) => session.session_index <= totalLessonCount)
+      .slice(0, totalLessonCount);
     const requiredLessonCount = resolveRequiredLessonCount(eventRow.required_lesson_count);
 
     const { data: enrollments, error: enrollmentsError } = await this.client
@@ -195,7 +198,7 @@ export class SupabaseEventAttendanceRepository {
   ): Promise<UpsertAttendanceResult> {
     const { data: event, error: eventError } = await this.client
       .from("events")
-      .select("title, start_at, end_at")
+      .select("title, start_at, end_at, total_lesson_count")
       .eq("id", eventId)
       .maybeSingle();
 
@@ -213,6 +216,13 @@ export class SupabaseEventAttendanceRepository {
 
     if (sessionError || !session || session.event_id !== eventId) {
       throw new Error("Bu ders bu etkinliğe ait değil.");
+    }
+
+    const totalLessonCount = normalizeTotalLessonCount(
+      (event as { total_lesson_count?: number | null }).total_lesson_count,
+    );
+    if (session.session_index > totalLessonCount) {
+      throw new Error("Bu ders yoklama kapsamı dışında.");
     }
 
     const { data: enrollment, error: enrollmentError } = await this.client

@@ -24,6 +24,7 @@ import {
   isEnrollmentAttendanceComplete,
   resolveRequiredLessonCount,
 } from "@/shared/utils/enrollment-attendance";
+import { normalizeTotalLessonCount } from "@/shared/utils/event-lesson-schedule";
 
 function asRecord(value: unknown): Record<string, unknown> {
   if (!value || typeof value !== "object" || Array.isArray(value)) {
@@ -124,7 +125,7 @@ export class SupabaseParticipantFormsRepository {
       throw new Error(`Etkinlik bilgisi alınamadı: ${error.message}`);
     }
 
-    return data?.total_lesson_count ?? sessionCount;
+    return normalizeTotalLessonCount(data?.total_lesson_count, sessionCount);
   }
 
   private async countEventSessions(eventId: string): Promise<number> {

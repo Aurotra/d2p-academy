@@ -45,3 +45,15 @@ export function resolveTotalLessonCount(
   }
   return fallback;
 }
+
+/** 064 hatasıyla takvim günü × slot olarak şişen değerleri (ör. 336) düzeltir. */
+export function normalizeTotalLessonCount(
+  explicit: number | null | undefined,
+  fallback: number = DEFAULT_TOTAL_LESSON_COUNT,
+): number {
+  const resolved = resolveTotalLessonCount(explicit, fallback);
+  if (resolved > 60) {
+    return fallback;
+  }
+  return resolved;
+}
