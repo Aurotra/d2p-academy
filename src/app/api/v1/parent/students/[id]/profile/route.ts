@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 
 import { logMemberActivity } from "@/infrastructure/audit/log-member-activity";
 import { createSupabaseServerClient } from "@/infrastructure/supabase/create-server-client";
-import { calculateProgress } from "@/lib/utils/progress";
+import { calculateProgress, isProfileComplete, PROFILE_INCOMPLETE_SAVE_BLOCKED_MESSAGE } from "@/lib/utils/progress";
 
 const PROFILE_SELECT =
   "id, full_name, email, username, gender, grade_level, school_name, city_district, experience_data, interests, motivation_data, profile_avatar_url, kvkk_accepted";
@@ -116,6 +116,34 @@ export async function PATCH(
       payload.profile_avatar_url = body.profile_avatar_url || null;
     }
     if (typeof body.kvkk_accepted === "boolean") payload.kvkk_accepted = body.kvkk_accepted;
+
+    const progressInput = {
+      full_name: (payload.full_name as string | undefined) ?? "",
+      gender: (payload.gender as string | null | undefined) ?? null,
+      grade_level: (payload.grade_level as string | null | undefined) ?? null,
+      school_name: (payload.school_name as string | null | undefined) ?? null,
+      city_district: (payload.city_district as string | null | undefined) ?? null,
+      experience_data: payload.experience_data as {
+        coding_experience?: string | null;
+        proje_sayisi?: number | null;
+      } | null,
+      interests: (payload.interests as string[] | undefined) ?? [],
+      motivation_data: payload.motivation_data as {
+        hedef?: string | null;
+        beklenti?: number | null;
+      } | null,
+      profile_avatar_url: (payload.profile_avatar_url as string | null | undefined) ?? null,
+    };
+
+    if (!isProfileComplete(progressInput)) {
+      const progress = calculateProgress(progressInput);
+      return NextResponse.json(
+        {
+          error: `${PROFILE_INCOMPLETE_SAVE_BLOCKED_MESSAGE} (Şu an %${progress})`,
+        },
+        { status: 400 },
+      );
+    }
 
     const { data, error } = await access.supabase
       .from("profiles")

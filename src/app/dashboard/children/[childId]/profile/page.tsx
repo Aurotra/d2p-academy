@@ -46,13 +46,17 @@ export default async function ParentChildProfilePage({ params }: PageProps) {
           ← Çocuk hesaplarına dön
         </Link>
 
-        <div className="rounded-2xl border border-sky-200 bg-sky-50 px-5 py-4 text-sm text-sky-950">
-          <p className="font-semibold">
-            {child.full_name}
-            {child.username ? ` (@${child.username})` : ""} profilini düzenliyorsunuz.
+        <div className="rounded-2xl border-2 border-amber-300 bg-amber-50 px-5 py-4 text-sm text-amber-950">
+          <p className="text-base font-bold text-amber-900">
+            Profil %100 tamamlanmadan kayıt yapılamaz
           </p>
-          <p className="mt-1 text-sky-900/80">
-            Sertifika verebilmek için profilin %100 dolu olması gerekir.
+          <p className="mt-2 leading-relaxed text-amber-950/90">
+            Kurslara kayıt olabilmek ve sertifika alabilmek için aşağıdaki tüm zorunlu alanları
+            doldurun. Tamamlanan proje sayısı isteğe bağlıdır.
+          </p>
+          <p className="mt-2 font-semibold text-amber-900">
+            {child.full_name}
+            {child.username ? ` (@${child.username})` : ""}
           </p>
         </div>
 
@@ -62,6 +66,7 @@ export default async function ParentChildProfilePage({ params }: PageProps) {
           backHref="/dashboard/children"
           backLabel="Çocuk hesaplarına dön"
           redirectOnCompleteHref="/etkinlikler"
+          requireCompleteToSave
         />
       </div>
     </section>

@@ -5,6 +5,9 @@ const TOTAL_PROFILE_FIELDS = 9;
 export const PROFILE_REQUIRED_FOR_CERTIFICATE_MESSAGE =
   "Öncelikle profilinizdeki kendini tanıtma adımını %100 tamamlayın. Tamamlanan proje sayısı isteğe bağlıdır.";
 
+export const PROFILE_INCOMPLETE_SAVE_BLOCKED_MESSAGE =
+  "Kurslara kayıt olabilmek ve sertifika alabilmek için çocuğunuzun profil bilgilerini %100 tamamlamanız gerekir. Lütfen eksik alanları doldurun.";
+
 function isFilledText(value: string | null | undefined): boolean {
   return Boolean(value?.trim());
 }

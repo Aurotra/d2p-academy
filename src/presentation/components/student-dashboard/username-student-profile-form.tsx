@@ -3,18 +3,20 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useState, type FormEvent } from "react";
+import { useEffect, useMemo, useState, type FormEvent } from "react";
 
+import type { ProfileProgressInput } from "@/core/domain/student-profile";
 import { Button } from "@/presentation/components/ui/button";
 import { Input } from "@/presentation/components/ui/input";
 import { ValueChipGroup } from "@/presentation/components/forms/value-chip-group";
+import { ProfileProgressBar } from "@/presentation/components/profile/profile-progress-bar";
 import {
   AVATAR_OPTIONS,
   CODING_EXPERIENCE_OPTIONS,
   GRADE_LEVEL_OPTIONS,
   INTEREST_OPTIONS,
 } from "@/shared/constants/profile-options";
-import { calculateProgress, isProfileComplete } from "@/lib/utils/progress";
+import { calculateProgress, isProfileComplete, PROFILE_INCOMPLETE_SAVE_BLOCKED_MESSAGE } from "@/lib/utils/progress";
 import { ProfileMotivationFields } from "@/presentation/components/profile/profile-motivation-fields";
 
 type ProfileForm = {
@@ -53,12 +55,33 @@ const emptyForm: ProfileForm = {
   kvkk_accepted: false,
 };
 
+function formToProgressInput(form: ProfileForm): ProfileProgressInput {
+  return {
+    full_name: form.full_name,
+    gender: form.gender,
+    grade_level: form.grade_level,
+    school_name: form.school_name,
+    city_district: form.city_district,
+    experience_data: {
+      coding_experience: form.coding_experience,
+      proje_sayisi: form.proje_sayisi === "" ? null : Number(form.proje_sayisi),
+    },
+    interests: form.interests,
+    motivation_data: {
+      hedef: form.hedef,
+      beklenti: form.beklenti === "" ? null : Number(form.beklenti),
+    },
+    profile_avatar_url: form.profile_avatar_url || null,
+  };
+}
+
 export function UsernameStudentProfileForm({
   apiPath = "/api/v1/student/profile",
   title = "Profilim",
   backHref = "/student-dashboard",
   backLabel = "Panele dön",
   redirectOnCompleteHref,
+  requireCompleteToSave = false,
 }: {
   apiPath?: string;
   title?: string;
@@ -66,6 +89,8 @@ export function UsernameStudentProfileForm({
   backLabel?: string;
   /** Tam profil kaydından sonra yönlendirilecek sayfa (ör. veli akışında etkinlikler). */
   redirectOnCompleteHref?: string;
+  /** Veli çocuk profili: %100 olmadan kayda izin verme. */
+  requireCompleteToSave?: boolean;
 } = {}) {
   const router = useRouter();
   const [form, setForm] = useState<ProfileForm>(emptyForm);
@@ -74,6 +99,10 @@ export function UsernameStudentProfileForm({
   const [success, setSuccess] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+
+  const liveProgressInput = useMemo(() => formToProgressInput(form), [form]);
+  const liveProgress = useMemo(() => calculateProgress(liveProgressInput), [liveProgressInput]);
+  const profileComplete = useMemo(() => isProfileComplete(liveProgressInput), [liveProgressInput]);
 
   useEffect(() => {
     void (async () => {
@@ -120,9 +149,15 @@ export function UsernameStudentProfileForm({
 
   async function handleSubmit(event: FormEvent) {
     event.preventDefault();
-    setSaving(true);
     setError(null);
     setSuccess(null);
+
+    if (requireCompleteToSave && !profileComplete) {
+      setError(PROFILE_INCOMPLETE_SAVE_BLOCKED_MESSAGE);
+      return;
+    }
+
+    setSaving(true);
 
     try {
       const response = await fetch(apiPath, {
@@ -155,42 +190,8 @@ export function UsernameStudentProfileForm({
         throw new Error(payload.error ?? "Kayıt başarısız.");
       }
 
-      const nextProgress = calculateProgress({
-        full_name: form.full_name,
-        gender: form.gender,
-        grade_level: form.grade_level,
-        school_name: form.school_name,
-        city_district: form.city_district,
-        experience_data: {
-          coding_experience: form.coding_experience,
-          proje_sayisi: form.proje_sayisi === "" ? null : Number(form.proje_sayisi),
-        },
-        interests: form.interests,
-        motivation_data: {
-          hedef: form.hedef,
-          beklenti: form.beklenti === "" ? null : Number(form.beklenti),
-        },
-        profile_avatar_url: form.profile_avatar_url || null,
-      });
+      const nextProgress = calculateProgress(liveProgressInput);
       setProgress(nextProgress);
-
-      const profileComplete = isProfileComplete({
-        full_name: form.full_name,
-        gender: form.gender,
-        grade_level: form.grade_level,
-        school_name: form.school_name,
-        city_district: form.city_district,
-        experience_data: {
-          coding_experience: form.coding_experience,
-          proje_sayisi: form.proje_sayisi === "" ? null : Number(form.proje_sayisi),
-        },
-        interests: form.interests,
-        motivation_data: {
-          hedef: form.hedef,
-          beklenti: form.beklenti === "" ? null : Number(form.beklenti),
-        },
-        profile_avatar_url: form.profile_avatar_url || null,
-      });
 
       if (profileComplete && redirectOnCompleteHref) {
         router.push(redirectOnCompleteHref);
@@ -217,16 +218,46 @@ export function UsernameStudentProfileForm({
     <form onSubmit={handleSubmit} className="space-y-4 rounded-[1.5rem] border border-slate-200 bg-white p-6 shadow-sm">
       <div className="flex items-center justify-between gap-3">
         <h2 className="text-lg font-bold text-navy-950">{title}</h2>
-        <span className="rounded-full bg-document-primary/10 px-3 py-1 text-xs font-bold text-document-primary">
-          %{progress}
+        <span
+          className={`rounded-full px-3 py-1 text-xs font-bold ${
+            profileComplete
+              ? "bg-emerald-100 text-emerald-800"
+              : "bg-amber-100 text-amber-900"
+          }`}
+        >
+          %{requireCompleteToSave ? liveProgress : progress}
         </span>
       </div>
-      <p className="text-sm text-slate-600">
-        Sertifika için profilin %100 dolu olmalı.{" "}
-        <Link href={backHref} className="font-semibold text-document-primary underline">
-          {backLabel}
-        </Link>
-      </p>
+
+      {requireCompleteToSave ? (
+        <div className="space-y-3">
+          <ProfileProgressBar data={liveProgressInput} />
+          {!profileComplete ? (
+            <div
+              className="rounded-2xl border-2 border-amber-300 bg-amber-50 px-4 py-4 text-sm leading-6 text-amber-950"
+              role="alert"
+            >
+              <p className="font-bold text-amber-900">Profil %100 tamamlanmalı</p>
+              <p className="mt-2">{PROFILE_INCOMPLETE_SAVE_BLOCKED_MESSAGE}</p>
+              <p className="mt-2 text-xs text-amber-800">
+                Eksik alanları doldurduğunuzda yüzde otomatik güncellenir. Tamamlanmadan
+                kaydedemezsiniz.
+              </p>
+            </div>
+          ) : (
+            <div className="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-900">
+              Profil tamam. Kaydettiğinizde etkinliklere kayıt adımına geçebilirsiniz.
+            </div>
+          )}
+        </div>
+      ) : (
+        <p className="text-sm text-slate-600">
+          Sertifika için profilin %100 dolu olmalı.{" "}
+          <Link href={backHref} className="font-semibold text-document-primary underline">
+            {backLabel}
+          </Link>
+        </p>
+      )}
 
       <Input
         label="Ad Soyad"
@@ -347,11 +378,22 @@ export function UsernameStudentProfileForm({
         KVKK metnini okudum ve kabul ediyorum.
       </label>
 
-      {error ? <p className="text-sm text-red-600">{error}</p> : null}
+      {error ? (
+        <p className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800" role="alert">
+          {error}
+        </p>
+      ) : null}
       {success ? <p className="text-sm text-emerald-700">{success}</p> : null}
 
-      <Button type="submit" disabled={saving}>
-        {saving ? "Kaydediliyor..." : "Kaydet"}
+      <Button
+        type="submit"
+        disabled={saving || (requireCompleteToSave && !profileComplete)}
+      >
+        {saving
+          ? "Kaydediliyor..."
+          : requireCompleteToSave && !profileComplete
+            ? "Profili %100 tamamlayın"
+            : "Kaydet"}
       </Button>
     </form>
   );
