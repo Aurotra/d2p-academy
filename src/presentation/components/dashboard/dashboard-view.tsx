@@ -186,12 +186,6 @@ export function DashboardView({
             {data.upcomingEnrollments.length === 0 ? (
               <div className="rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-4 py-8 text-center text-sm text-slate-600">
                 <p>Veli hesabınıza bağlı aktif etkinlik kaydı yok.</p>
-                <Link
-                  href="/dashboard/children/enrollments"
-                  className="mt-3 inline-flex font-semibold text-document-primary hover:underline"
-                >
-                  Çocuklarımın etkinliklerini gör →
-                </Link>
               </div>
             ) : (
               <ul className="space-y-4">
