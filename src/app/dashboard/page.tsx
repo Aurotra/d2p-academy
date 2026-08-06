@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { getStudentDashboard } from "@/core/use-cases/get-student-dashboard";
 import { getAdminAccess } from "@/infrastructure/auth/get-admin-access";
 import { getInstructorAccess } from "@/infrastructure/auth/get-instructor-access";
+import { fetchParentChildrenEnrollments } from "@/infrastructure/repositories/fetch-parent-children-enrollments";
 import {
   fetchParentOnboardingContext,
   shouldShowParentOnboarding,
@@ -29,7 +30,10 @@ export default async function DashboardPage() {
   }
 
   const repository = new SupabaseStudentDashboardRepository(client);
-  const dashboardData = await getStudentDashboard(repository, user.id);
+  const [dashboardData, childrenEnrollmentsData] = await Promise.all([
+    getStudentDashboard(repository, user.id),
+    fetchParentChildrenEnrollments(user.id),
+  ]);
   const onboardingContext = await fetchParentOnboardingContext(client, user.id);
 
   if (onboardingContext.childrenCount === 0) {
@@ -42,6 +46,7 @@ export default async function DashboardPage() {
   return (
     <DashboardView
       data={dashboardData}
+      childrenEnrollments={childrenEnrollmentsData.enrollments}
       isAdmin={adminAccess.authorized}
       isInstructor={instructorAccess.authorized}
       onboardingContext={onboardingContext}

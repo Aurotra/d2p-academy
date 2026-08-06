@@ -32,6 +32,33 @@ export function getEnrollmentAttendancePercent(
   return Math.min(100, Math.round((presentCount / required) * 100));
 }
 
+export function resolveTotalLessonCountForDisplay(
+  value: number | null | undefined,
+  fallback: number = DEFAULT_TOTAL_LESSON_COUNT,
+): number {
+  if (value != null && value > 0) {
+    return value;
+  }
+  return fallback;
+}
+
+export function getParentAttendancePercent(
+  presentCount: number,
+  totalLessonCount: number | null | undefined,
+): number {
+  const total = resolveTotalLessonCountForDisplay(totalLessonCount);
+  return Math.min(100, Math.round((presentCount / total) * 100));
+}
+
+export function buildParentAttendanceStatusLabel(
+  presentCount: number,
+  totalLessonCount: number | null | undefined,
+): string {
+  const total = resolveTotalLessonCountForDisplay(totalLessonCount);
+  const notAttended = Math.max(total - presentCount, 0);
+  return `${presentCount}/${total} derse katıldı · ${notAttended} derse katılmadı`;
+}
+
 export function buildEnrollmentAttendanceStatusLabel(
   presentCount: number,
   requiredLessonCount: number | null | undefined,

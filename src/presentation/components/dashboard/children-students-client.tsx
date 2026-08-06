@@ -8,8 +8,8 @@ import { Button } from "@/presentation/components/ui/button";
 import { Input } from "@/presentation/components/ui/input";
 import { tryBuildStudentUsernameFromIdentity } from "@/shared/utils/student-username";
 import { buildEnrollmentFormStatusLabel } from "@/shared/utils/enrollment-form-status";
-import { EnrollmentAttendanceProgress } from "@/presentation/components/dashboard/enrollment-attendance-progress";
 import { EnrollmentFormProgress } from "@/presentation/components/dashboard/enrollment-form-progress";
+import { ParentEnrollmentAttendanceProgress } from "@/presentation/components/dashboard/parent-enrollment-attendance-progress";
 import { EVENT_TYPE_LABELS, type EventType } from "@/core/domain/event";
 import {
   eventLocationLabel,
@@ -189,7 +189,7 @@ export function ChildrenStudentsClient({
               const profileProgress = student.profileProgress ?? 0;
               const activeEnrollment = preview.enrollments.find((item) => item.status !== "cancelled");
               const attendanceSummary = activeEnrollment
-                ? `${activeEnrollment.presentCount ?? 0}/${activeEnrollment.requiredLessonCount ?? 8} yoklama`
+                ? `${activeEnrollment.presentCount ?? 0}/${activeEnrollment.totalLessonCount ?? 12} katılım`
                 : null;
 
               return (
@@ -258,11 +258,9 @@ export function ChildrenStudentsClient({
                                         postTestUnlocked={item.postTestUnlocked}
                                         requiresSurveys={item.requiresSurveys}
                                       />
-                                      <EnrollmentAttendanceProgress
+                                      <ParentEnrollmentAttendanceProgress
                                         presentCount={item.presentCount}
-                                        requiredLessonCount={item.requiredLessonCount}
                                         totalLessonCount={item.totalLessonCount}
-                                        attendanceComplete={item.attendanceComplete}
                                       />
                                     </>
                                   ) : null}

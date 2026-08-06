@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Suspense } from "react";
 
 import type { StudentDashboardData, EnrollmentStatus } from "@/core/domain/student-dashboard";
+import type { ParentChildEnrollmentItem } from "@/core/domain/parent-children-enrollments";
 import type { ParentOnboardingContext } from "@/infrastructure/repositories/fetch-parent-onboarding-context";
 import { EVENT_TYPE_LABELS } from "@/core/domain/event";
 import { BRAND_SURFACE_GRADIENT } from "@/shared/constants/brand-surfaces";
@@ -15,6 +16,7 @@ import {
 
 interface DashboardViewProps {
   data: StudentDashboardData;
+  childrenEnrollments: ParentChildEnrollmentItem[];
   isAdmin: boolean;
   isInstructor: boolean;
   onboardingContext: ParentOnboardingContext;
@@ -71,6 +73,7 @@ function formatDate(date: Date): string {
 
 export function DashboardView({
   data,
+  childrenEnrollments,
   isAdmin,
   isInstructor,
   onboardingContext,
@@ -129,9 +132,14 @@ export function DashboardView({
               </p>
               <div className="grid grid-cols-2 gap-2 sm:gap-3">
                 <DashboardActionLink
+                  href="/dashboard/children/enrollments"
+                  label="Çocuk etkinlikleri"
+                  variant="secondary"
+                />
+                <DashboardActionLink
                   href="/dashboard/children"
                   label="Çocuk hesapları"
-                  variant="secondary"
+                  variant="outline"
                 />
                 <DashboardActionLink
                   href="/dashboard/kurs-talebi"
@@ -166,19 +174,23 @@ export function DashboardView({
 
         <div className="mt-8 grid gap-8 lg:grid-cols-2">
           <div className="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm">
-            <div className="mb-6 flex items-center justify-between">
+            <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
               <h2 className="text-xl font-bold text-navy-950">Etkinlik Kayıtlarım</h2>
               <Badge tone="cyan">{data.upcomingEnrollments.length} kayıt</Badge>
             </div>
+            <p className="mb-4 text-xs text-slate-500">
+              Veli hesabınıza doğrudan bağlı kayıtlar. Çocuk kayıtları için yanındaki panele
+              bakın.
+            </p>
 
             {data.upcomingEnrollments.length === 0 ? (
               <div className="rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-4 py-8 text-center text-sm text-slate-600">
                 <p>Veli hesabınıza bağlı aktif etkinlik kaydı yok.</p>
                 <Link
-                  href="/dashboard/children"
+                  href="/dashboard/children/enrollments"
                   className="mt-3 inline-flex font-semibold text-document-primary hover:underline"
                 >
-                  Çocuk hesaplarından etkinliğe kaydol →
+                  Çocuklarımın etkinliklerini gör →
                 </Link>
               </div>
             ) : (
@@ -216,6 +228,70 @@ export function DashboardView({
           </div>
 
           <div className="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm">
+            <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
+              <h2 className="text-xl font-bold text-navy-950">Çocuklarımın Etkinlikleri</h2>
+              <Badge tone="navy">{childrenEnrollments.length} kayıt</Badge>
+            </div>
+
+            {childrenEnrollments.length === 0 ? (
+              <div className="rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-4 py-8 text-center text-sm text-slate-600">
+                <p>Henüz çocuk etkinlik kaydı yok.</p>
+                <Link
+                  href="/dashboard/children"
+                  className="mt-3 inline-flex font-semibold text-document-primary hover:underline"
+                >
+                  Çocuk hesaplarından kayıt oluştur →
+                </Link>
+              </div>
+            ) : (
+              <>
+                <ul className="space-y-4">
+                  {childrenEnrollments.slice(0, 4).map((enrollment) => (
+                    <li
+                      key={enrollment.enrollmentId}
+                      className="rounded-2xl border border-slate-100 p-4 transition hover:border-cyan-200 hover:bg-cyan-50/40"
+                    >
+                      <div className="flex flex-wrap gap-2">
+                        <Badge tone="cyan">{EVENT_TYPE_LABELS[enrollment.eventType]}</Badge>
+                        <Badge tone="neutral">
+                          {ENROLLMENT_STATUS_LABELS[enrollment.status as EnrollmentStatus] ??
+                            enrollment.status}
+                        </Badge>
+                      </div>
+                      <h3 className="mt-3 font-semibold text-navy-950">{enrollment.eventTitle}</h3>
+                      <p className="mt-1 text-sm text-slate-600">
+                        {enrollment.childName}{" "}
+                        <span className="text-slate-400">@{enrollment.childUsername}</span>
+                      </p>
+                      <p className="mt-2 text-sm text-slate-500">
+                        Katılım {enrollment.presentCount}/{enrollment.totalLessonCount}
+                      </p>
+                      <Link
+                        href={`/dashboard/children/${enrollment.childId}/enrollments/${enrollment.enrollmentId}/forms`}
+                        className="mt-3 inline-flex text-sm font-semibold text-document-primary hover:underline"
+                      >
+                        Formları doldur →
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+                {childrenEnrollments.length > 4 ? (
+                  <p className="mt-4 text-xs text-slate-500">
+                    +{childrenEnrollments.length - 4} kayıt daha
+                  </p>
+                ) : null}
+              </>
+            )}
+
+            <Link
+              href="/dashboard/children/enrollments"
+              className="mt-6 inline-flex text-sm font-semibold text-document-primary hover:underline"
+            >
+              Tüm çocuk etkinliklerini gör →
+            </Link>
+          </div>
+
+          <div className="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm lg:col-span-2">
             <div className="mb-6 flex items-center justify-between">
               <h2 className="text-xl font-bold text-navy-950">Sertifikalarım</h2>
               <Badge tone="navy">{data.certificates.length} sertifika</Badge>

@@ -150,12 +150,20 @@ export default async function DashboardChildrenPage() {
         <div
           className={`rounded-[2rem] border border-sky-200 ${BRAND_SURFACE_GRADIENT} p-8 text-sky-950 shadow-xl`}
         >
-          <Link
-            href="/dashboard"
-            className="text-sm font-semibold text-sky-800 transition hover:text-sky-950"
-          >
-            ← Panele dön
-          </Link>
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <Link
+              href="/dashboard"
+              className="text-sm font-semibold text-sky-800 transition hover:text-sky-950"
+            >
+              ← Panele dön
+            </Link>
+            <Link
+              href="/dashboard/children/enrollments"
+              className="text-sm font-semibold text-sky-800 transition hover:text-sky-950"
+            >
+              Çocuk etkinlikleri →
+            </Link>
+          </div>
           <h1 className="mt-3 text-3xl font-black">Çocuklarım</h1>
           <p className="mt-2 text-sm text-sky-900/80">
             Kullanıcı adlı çocuk hesaplarını yönet, etkinliğe kaydet ve gelişimini takip et. Giriş

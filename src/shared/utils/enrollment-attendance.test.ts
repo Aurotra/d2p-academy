@@ -2,7 +2,9 @@ import { describe, expect, it } from "vitest";
 
 import {
   buildEnrollmentAttendanceStatusLabel,
+  buildParentAttendanceStatusLabel,
   getEnrollmentAttendancePercent,
+  getParentAttendancePercent,
   isEnrollmentAttendanceComplete,
 } from "@/shared/utils/enrollment-attendance";
 
@@ -27,5 +29,15 @@ describe("enrollment-attendance", () => {
     expect(buildEnrollmentAttendanceStatusLabel(8, 8, 12, true)).toBe(
       "8/8 derse geldi · Sertifika için yoklama tamam",
     );
+  });
+
+  it("builds parent label without certificate threshold", () => {
+    expect(buildParentAttendanceStatusLabel(3, 12)).toBe(
+      "3/12 derse katıldı · 9 derse katılmadı",
+    );
+  });
+
+  it("calculates parent attendance percent against total lessons", () => {
+    expect(getParentAttendancePercent(6, 12)).toBe(50);
   });
 });
