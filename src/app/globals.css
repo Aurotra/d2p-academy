@@ -95,6 +95,58 @@ body {
   color: var(--foreground);
 }
 
+@layer base {
+  button:not(:disabled),
+  input[type="button"]:not(:disabled),
+  input[type="submit"]:not(:disabled),
+  input[type="reset"]:not(:disabled),
+  [role="button"]:not([aria-disabled="true"]) {
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+  }
+
+  a.inline-flex,
+  a.flex {
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+  }
+
+  @media (pointer: coarse) {
+    button:not(:disabled):active,
+    input[type="button"]:not(:disabled):active,
+    input[type="submit"]:not(:disabled):active,
+    input[type="reset"]:not(:disabled):active,
+    [role="button"]:not([aria-disabled="true"]):active,
+    a.inline-flex:active,
+    a.flex.items-center:active,
+    a.flex.items-center.justify-center:active {
+      transform: scale(0.98);
+      filter: brightness(0.96);
+      transition:
+        transform 150ms ease,
+        filter 150ms ease,
+        background-color 150ms ease,
+        border-color 150ms ease,
+        color 150ms ease,
+        box-shadow 150ms ease;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    button:not(:disabled):active,
+    input[type="button"]:not(:disabled):active,
+    input[type="submit"]:not(:disabled):active,
+    input[type="reset"]:not(:disabled):active,
+    [role="button"]:not([aria-disabled="true"]):active,
+    a.inline-flex:active,
+    a.flex.items-center:active,
+    a.flex.items-center.justify-center:active {
+      transform: none;
+      filter: none;
+    }
+  }
+}
+
 @layer components {
   @keyframes gallery-marquee {
     from {

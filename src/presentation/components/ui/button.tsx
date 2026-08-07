@@ -1,5 +1,7 @@
 import type { ButtonHTMLAttributes } from "react";
 
+import { BUTTON_PRESS_CLASSES } from "@/shared/utils/button-press";
+
 type ButtonVariant = "primary" | "secondary" | "accent" | "outline" | "ghost";
 
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
@@ -27,7 +29,7 @@ export function Button({
   return (
     <button
       type={type}
-      className={`inline-flex items-center justify-center rounded-xl px-5 py-3 text-sm font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-sky-100 disabled:cursor-not-allowed disabled:opacity-60 ${variantClasses[variant]} ${className}`}
+      className={`${BUTTON_PRESS_CLASSES} inline-flex items-center justify-center rounded-xl px-5 py-3 text-sm font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-sky-100 disabled:cursor-not-allowed disabled:opacity-60 disabled:active:scale-100 disabled:active:brightness-100 ${variantClasses[variant]} ${className}`}
       {...props}
     />
   );

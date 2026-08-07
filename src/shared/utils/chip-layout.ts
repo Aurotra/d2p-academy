@@ -1,5 +1,6 @@
-const CHOICE_BUTTON_TOUCH =
-  "touch-manipulation select-none transition duration-150 active:scale-[0.98]";
+import { BUTTON_PRESS_CLASSES } from "@/shared/utils/button-press";
+
+const CHOICE_BUTTON_TOUCH = BUTTON_PRESS_CLASSES;
 
 function getChoiceButtonStateClass(isSelected: boolean): string {
   return isSelected
