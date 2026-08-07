@@ -73,7 +73,7 @@ export async function removeEnrollmentsFromEvent(
     actorEmail: string | null;
     reason: string | null;
   },
-): Promise<{ removed: number }> {
+): Promise<{ removed: number; eventIds: string[] }> {
   const enrollmentIds = Array.from(
     new Set(input.enrollmentIds.map((id) => id.trim()).filter(Boolean)),
   );
@@ -189,5 +189,5 @@ export async function removeEnrollmentsFromEvent(
     );
   }
 
-  return { removed: deletedCount };
+  return { removed: deletedCount, eventIds: [...new Set((rows ?? []).map((row) => row.event_id as string))] };
 }

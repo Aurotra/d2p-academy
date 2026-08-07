@@ -17,6 +17,7 @@ import {
 import { isEventAttendanceOpen } from "@/shared/utils/event-attendance-window";
 import { normalizeTotalLessonCount } from "@/shared/utils/event-lesson-schedule";
 import { isStudentParticipantProfile } from "@/shared/utils/student-participant-profile";
+import { ACTIVE_ENROLLMENT_STATUSES, isActiveEnrollmentStatus } from "@/shared/constants/enrollment-status";
 
 interface EventRow {
   id: string;
@@ -110,7 +111,7 @@ export class SupabaseEventAttendanceRepository {
       `,
       )
       .eq("event_id", eventId)
-      .neq("status", "cancelled")
+      .in("status", [...ACTIVE_ENROLLMENT_STATUSES])
       .order("registered_at", { ascending: true });
 
     if (enrollmentsError) {
@@ -257,6 +258,7 @@ export class SupabaseEventAttendanceRepository {
         id,
         event_id,
         user_id,
+        status,
         profiles (
           id,
           full_name,
@@ -269,6 +271,10 @@ export class SupabaseEventAttendanceRepository {
 
     if (enrollmentError || !enrollment || enrollment.event_id !== eventId) {
       throw new Error("Kayıt bu etkinliğe ait değil.");
+    }
+
+    if (!isActiveEnrollmentStatus(enrollment.status)) {
+      throw new Error("Bu öğrenci etkinlikten çıkarıldığı için yoklama işaretlenemez.");
     }
 
     const { data: existingAttendance } = await this.client
@@ -362,7 +368,7 @@ export class SupabaseEventAttendanceRepository {
       `,
       )
       .eq("event_id", eventId)
-      .neq("status", "cancelled");
+      .in("status", [...ACTIVE_ENROLLMENT_STATUSES]);
 
     if (enrollmentsError) {
       throw new Error(`Kayıtlar alınamadı: ${enrollmentsError.message}`);

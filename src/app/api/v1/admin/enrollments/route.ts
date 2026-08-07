@@ -7,6 +7,7 @@ import { getAdminApiServiceClient } from "@/infrastructure/auth/get-admin-api-se
 import { requireAdminApiAccess } from "@/infrastructure/auth/require-admin-api-access";
 import { getEventCapacityBlockReason } from "@/infrastructure/enrollments/event-capacity";
 import { removeEnrollmentsFromEvent } from "@/infrastructure/enrollments/remove-enrollments-from-event";
+import { revalidateEventAttendancePaths } from "@/infrastructure/enrollments/revalidate-event-attendance";
 import { resolveUsernameForLookup } from "@/shared/utils/student-username";
 
 const ALLOWED_STATUSES: EnrollmentStatus[] = [
@@ -224,11 +225,14 @@ export async function PATCH(request: Request) {
       .from("enrollments")
       .update(payload)
       .in("id", enrollmentIds)
-      .select("id, status, completed_at");
+      .select("id, status, completed_at, event_id");
 
     if (error) {
       return NextResponse.json({ error: error.message }, { status: 400 });
     }
+
+    revalidatePath("/admin/enrollments");
+    revalidateEventAttendancePaths([...new Set((data ?? []).map((row) => row.event_id as string))]);
 
     return NextResponse.json({ data });
   } catch (error) {
@@ -255,6 +259,7 @@ export async function DELETE(request: Request) {
 
     revalidatePath("/admin/enrollments");
     revalidatePath("/admin/events", "layout");
+    revalidateEventAttendancePaths(result.eventIds);
 
     return NextResponse.json({ data: { removed: result.removed } });
   } catch (error) {

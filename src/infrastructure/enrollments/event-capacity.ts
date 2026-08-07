@@ -1,9 +1,8 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 
 import { tryCreateServiceRoleClient } from "@/infrastructure/supabase/create-service-role-client";
+import { ACTIVE_ENROLLMENT_STATUSES } from "@/shared/constants/enrollment-status";
 import { isStudentParticipantProfile } from "@/shared/utils/student-participant-profile";
-
-const ACTIVE_ENROLLMENT_STATUSES = ["registered", "attended", "completed"] as const;
 
 /**
  * Returns an error message if the event is at capacity; null if enrollment is allowed.

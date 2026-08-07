@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 import type { AttendanceStatus, EventAttendanceSheet, EventSessionColumn } from "@/core/domain/event-attendance";
 import { ATTENDANCE_STATUS_LABELS } from "@/core/domain/event-attendance";
@@ -76,6 +76,12 @@ export function EventAttendanceSheetView({ sheet, apiBasePath }: EventAttendance
   const [error, setError] = useState<string | null>(null);
   const [selectedSessionId, setSelectedSessionId] = useState(sheet.sessions[0]?.id ?? "");
   const [showOverview, setShowOverview] = useState(false);
+
+  useEffect(() => {
+    setRows(sheet.students);
+    setSessions(sheet.sessions);
+    setDrafts({});
+  }, [sheet.students, sheet.sessions]);
 
   const selectedSession = useMemo(
     () => sessions.find((session) => session.id === selectedSessionId) ?? null,
