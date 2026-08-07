@@ -13,7 +13,8 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
-    "check:env": "node scripts/check-production-env.mjs"
+    "check:env": "node scripts/check-production-env.mjs",
+    "generate:favicons": "node scripts/generate-favicons.mjs"
   },
   "dependencies": {
     "@sparticuz/chromium-min": "^149.0.0",
@@ -41,6 +42,7 @@
     "eslint-config-next": "^15.5.19",
     "eslint-config-prettier": "^10.1.5",
     "prettier": "^3.5.3",
+    "sharp": "^0.35.3",
     "tailwindcss": "^4.1.8",
     "typescript": "^5.8.3",
     "vitest": "^3.2.4"
