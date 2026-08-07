@@ -34,6 +34,37 @@ function collectCertificates(
   return Array.isArray(row.certificates) ? row.certificates : [row.certificates];
 }
 
+function collectCodesToReclaim(row: EnrollmentRemovalRow): string[] {
+  const codes = new Set<string>();
+
+  if (row.student_code?.trim()) {
+    codes.add(row.student_code.trim().toUpperCase());
+  }
+
+  for (const certificate of collectCertificates(row)) {
+    if (certificate.certificate_code?.trim()) {
+      codes.add(certificate.certificate_code.trim().toUpperCase());
+    }
+  }
+
+  return [...codes];
+}
+
+async function reclaimCertificateCodes(
+  client: SupabaseClient,
+  codes: string[],
+): Promise<void> {
+  for (const code of codes) {
+    const { error } = await client.rpc("reclaim_certificate_sequence", {
+      p_certificate_code: code,
+    });
+
+    if (error) {
+      throw new Error(`Sertifika numarası geri alınamadı (${code}): ${error.message}`);
+    }
+  }
+}
+
 export async function removeEnrollmentsFromEvent(
   client: SupabaseClient,
   input: {
@@ -89,6 +120,14 @@ export async function removeEnrollmentsFromEvent(
     );
   }
 
+  const codesToReclaim = [
+    ...new Set((rows ?? []).flatMap((row) => collectCodesToReclaim(row as EnrollmentRemovalRow))),
+  ];
+
+  if (codesToReclaim.length > 0) {
+    await reclaimCertificateCodes(client, codesToReclaim);
+  }
+
   const revokedCertificateIds = (rows ?? []).flatMap((row) =>
     collectCertificates(row as EnrollmentRemovalRow)
       .filter((certificate) => certificate.status === "revoked")
@@ -126,6 +165,7 @@ export async function removeEnrollmentsFromEvent(
       metadata: {
         previous_status: typedRow.status,
         student_code: typedRow.student_code,
+        reclaimed_codes: codesToReclaim,
         purge_mode: "hard_delete",
         action_label: "enrollment_removed_from_event",
       },

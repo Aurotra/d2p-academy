@@ -292,8 +292,8 @@ export function EventEnrollmentsTable({
             istediğinize emin misiniz?
           </p>
           <p className="mt-1 text-xs text-amber-900/80">
-            Kayıt, yoklama ve form verileri tamamen silinir; öğrenci hiç kayıt olmamış gibi temiz
-            duruma döner. Aktif sertifikası olanlar seçilemez. İşlem loglara yazılır.
+            Kayıt, yoklama ve form verileri tamamen silinir; atanmış kurs/sertifika numaraları serbest
+            bırakılır. Aktif sertifikası olanlar seçilemez. İşlem loglara yazılır.
           </p>
           <ul className="mt-2 list-inside list-disc text-xs text-amber-900/80">
             {bulkRemoveStudents.slice(0, 8).map((student) => (
@@ -378,9 +378,9 @@ export function EventEnrollmentsTable({
             istediğinize emin misiniz?
           </p>
           <p className="mt-1 text-xs text-amber-900/80">
-            Kayıt, yoklama ve form verileri tamamen silinir; öğrenci hiç kayıt olmamış gibi temiz
-            duruma döner. Aktif sertifikası varsa önce sertifikayı iptal etmelisiniz. İşlem loglara
-            yazılır.
+            Kayıt, yoklama ve form verileri tamamen silinir; atanmış kurs/sertifika numarası serbest
+            bırakılır. Öğrenci hiç kayıt olmamış gibi temiz duruma döner. Aktif sertifikası varsa önce
+            sertifikayı iptal etmelisiniz. İşlem loglara yazılır.
           </p>
           <label className="mt-3 block text-xs font-semibold text-amber-900">
             Çıkarma nedeni (opsiyonel)
