@@ -8,10 +8,27 @@ export const dynamic = "force-dynamic";
 
 interface PageProps {
   params: Promise<{ childId: string }>;
+  searchParams: Promise<{ eventId?: string; enroll?: string }>;
 }
 
-export default async function ParentChildProfilePage({ params }: PageProps) {
+function resolveProfileRedirectHref(searchParams: {
+  eventId?: string;
+  enroll?: string;
+}): string {
+  const eventId = searchParams.eventId?.trim();
+  if (eventId) {
+    return `/dashboard/children?enroll=1&eventId=${encodeURIComponent(eventId)}`;
+  }
+  if (searchParams.enroll === "1") {
+    return "/dashboard/children?enroll=1";
+  }
+  return "/etkinlikler";
+}
+
+export default async function ParentChildProfilePage({ params, searchParams }: PageProps) {
   const { childId } = await params;
+  const query = await searchParams;
+  const redirectOnCompleteHref = resolveProfileRedirectHref(query);
 
   const supabase = await createSupabaseServerClient();
   if (!supabase) {
@@ -65,7 +82,7 @@ export default async function ParentChildProfilePage({ params }: PageProps) {
           title="Çocuk profili"
           backHref="/dashboard/children"
           backLabel="Çocuk hesaplarına dön"
-          redirectOnCompleteHref="/etkinlikler"
+          redirectOnCompleteHref={redirectOnCompleteHref}
           requireCompleteToSave
         />
       </div>

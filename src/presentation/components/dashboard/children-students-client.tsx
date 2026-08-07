@@ -416,9 +416,17 @@ export function ChildrenStudentsClient({
           onCreated={(student) => {
             setStudents((prev) => [student, ...prev]);
             setAddOpen(false);
-            if (searchParams.get("enroll") === "1" || pendingEventId) {
-              setEnrollTarget(student);
+
+            const params = new URLSearchParams();
+            if (pendingEventId) {
+              params.set("eventId", pendingEventId);
+            } else if (searchParams.get("enroll") === "1") {
+              params.set("enroll", "1");
             }
+            const query = params.toString();
+            router.push(
+              `/dashboard/children/${student.id}/profile${query ? `?${query}` : ""}`,
+            );
           }}
         />
       ) : null}
