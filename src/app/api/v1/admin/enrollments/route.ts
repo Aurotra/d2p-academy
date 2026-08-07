@@ -1,7 +1,9 @@
 import { NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 import { z } from "zod";
 
 import type { EnrollmentStatus } from "@/core/domain/student-dashboard";
+import { getAdminApiServiceClient } from "@/infrastructure/auth/get-admin-api-service-client";
 import { requireAdminApiAccess } from "@/infrastructure/auth/require-admin-api-access";
 import { getEventCapacityBlockReason } from "@/infrastructure/enrollments/event-capacity";
 import { removeEnrollmentsFromEvent } from "@/infrastructure/enrollments/remove-enrollments-from-event";
@@ -236,7 +238,7 @@ export async function PATCH(request: Request) {
 }
 
 export async function DELETE(request: Request) {
-  const access = await requireAdminApiAccess();
+  const access = await getAdminApiServiceClient();
   if (access.response) return access.response;
 
   try {
@@ -244,26 +246,15 @@ export async function DELETE(request: Request) {
     const enrollmentIds = collectIds(body);
     const reason = body.reason?.trim() || null;
 
-    const {
-      data: { user },
-    } = await access.client.auth.getUser();
-
-    if (!user) {
-      return NextResponse.json({ error: "Giriş gerekli." }, { status: 401 });
-    }
-
-    const { data: actorProfile } = await access.client
-      .from("profiles")
-      .select("email")
-      .eq("id", user.id)
-      .maybeSingle();
-
     const result = await removeEnrollmentsFromEvent(access.client, {
       enrollmentIds,
-      actorId: user.id,
-      actorEmail: actorProfile?.email ?? user.email ?? null,
+      actorId: access.user.id,
+      actorEmail: access.actorEmail,
       reason,
     });
+
+    revalidatePath("/admin/enrollments");
+    revalidatePath("/admin/events", "layout");
 
     return NextResponse.json({ data: { removed: result.removed } });
   } catch (error) {

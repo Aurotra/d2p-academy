@@ -113,7 +113,7 @@ export async function removeEnrollmentsFromEvent(
     const profile = unwrapOne(typedRow.profiles);
     const event = unwrapOne(typedRow.events);
 
-    await audit.logEnrollmentRemovedFromEvent({
+    await audit.logEnrollmentDeleted({
       actorId: input.actorId,
       actorEmail: input.actorEmail,
       reason: input.reason,
@@ -127,15 +127,27 @@ export async function removeEnrollmentsFromEvent(
         previous_status: typedRow.status,
         student_code: typedRow.student_code,
         purge_mode: "hard_delete",
+        action_label: "enrollment_removed_from_event",
       },
     });
   }
 
-  const { error: deleteError } = await client.from("enrollments").delete().in("id", enrollmentIds);
+  const { data: deletedRows, error: deleteError } = await client
+    .from("enrollments")
+    .delete()
+    .in("id", enrollmentIds)
+    .select("id");
 
   if (deleteError) {
     throw new Error(deleteError.message);
   }
 
-  return { removed: enrollmentIds.length };
+  const deletedCount = deletedRows?.length ?? 0;
+  if (deletedCount !== enrollmentIds.length) {
+    throw new Error(
+      `Kayıt silinemedi (${deletedCount}/${enrollmentIds.length}). Yetki veya bağlı veri engeli olabilir.`,
+    );
+  }
+
+  return { removed: deletedCount };
 }

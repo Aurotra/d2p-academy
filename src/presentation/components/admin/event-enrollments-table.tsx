@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import type { EnrollmentStatus } from "@/core/domain/student-dashboard";
 import { Button } from "@/presentation/components/ui/button";
@@ -62,15 +62,25 @@ export function EventEnrollmentsTable({
   const [showBulkRemoveConfirm, setShowBulkRemoveConfirm] = useState(false);
   const [pendingRemoveId, setPendingRemoveId] = useState<string | null>(null);
   const [removeReason, setRemoveReason] = useState("");
+  const [removedIds, setRemovedIds] = useState<Set<string>>(new Set());
+
+  useEffect(() => {
+    setRemovedIds(new Set());
+  }, [enrollments]);
+
+  const visibleEnrollments = useMemo(
+    () => enrollments.filter((row) => !removedIds.has(row.id)),
+    [enrollments, removedIds],
+  );
 
   const selectableIds = useMemo(
-    () => enrollments.filter((row) => canSelectForBulk(row)).map((row) => row.id),
-    [enrollments],
+    () => visibleEnrollments.filter((row) => canSelectForBulk(row)).map((row) => row.id),
+    [visibleEnrollments],
   );
 
   const completableIds = useMemo(
-    () => enrollments.filter((row) => canMarkCompleted(row.status)).map((row) => row.id),
-    [enrollments],
+    () => visibleEnrollments.filter((row) => canMarkCompleted(row.status)).map((row) => row.id),
+    [visibleEnrollments],
   );
 
   const selectedIdsList = useMemo(
@@ -165,6 +175,13 @@ export function EventEnrollmentsTable({
       setPendingRemoveId(null);
       setShowBulkRemoveConfirm(false);
       setRemoveReason("");
+      setRemovedIds((prev) => {
+        const next = new Set(prev);
+        for (const id of ids) {
+          next.add(id);
+        }
+        return next;
+      });
       setSelectedIds((prev) => {
         const next = new Set(prev);
         for (const id of ids) {
@@ -181,15 +198,17 @@ export function EventEnrollmentsTable({
   }
 
   const pendingStudent = pendingSingleId
-    ? enrollments.find((row) => row.id === pendingSingleId)
+    ? visibleEnrollments.find((row) => row.id === pendingSingleId)
     : null;
 
   const pendingRemoveStudent = pendingRemoveId
-    ? enrollments.find((row) => row.id === pendingRemoveId)
+    ? visibleEnrollments.find((row) => row.id === pendingRemoveId)
     : null;
 
-  const bulkCompleteStudents = enrollments.filter((row) => selectedCompletable.includes(row.id));
-  const bulkRemoveStudents = enrollments.filter((row) => selectedIdsList.includes(row.id));
+  const bulkCompleteStudents = visibleEnrollments.filter((row) =>
+    selectedCompletable.includes(row.id),
+  );
+  const bulkRemoveStudents = visibleEnrollments.filter((row) => selectedIdsList.includes(row.id));
 
   return (
     <div>
@@ -424,7 +443,7 @@ export function EventEnrollmentsTable({
             </tr>
           </thead>
           <tbody>
-            {enrollments.map((enrollment) => {
+            {visibleEnrollments.map((enrollment) => {
               const eligible = canMarkCompleted(enrollment.status);
               const selectable = canSelectForBulk(enrollment);
 

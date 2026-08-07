@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 
 import type { EnrollmentStatus } from "@/core/domain/student-dashboard";
+import { getAdminDataClient } from "@/infrastructure/auth/get-admin-data-client";
 import { getAdminAccess } from "@/infrastructure/auth/get-admin-access";
 import { createSupabaseServerClient } from "@/infrastructure/supabase/create-server-client";
 import { isStudentParticipantProfile } from "@/shared/utils/student-participant-profile";
@@ -119,17 +120,19 @@ export default async function AdminEnrollmentsPage({ searchParams }: AdminEnroll
   const eventId = params.event_id?.trim() || null;
   const includeCancelled = params.include_cancelled === "1";
 
-  const client = await createSupabaseServerClient();
+  const sessionClient = await createSupabaseServerClient();
 
-  if (!client) {
+  if (!sessionClient) {
     redirect("/login");
   }
 
-  const access = await getAdminAccess(client);
+  const access = await getAdminAccess(sessionClient);
 
   if (!access.authorized) {
     redirect("/login");
   }
+
+  const client = await getAdminDataClient();
 
   let query = client
     .from("enrollments")
