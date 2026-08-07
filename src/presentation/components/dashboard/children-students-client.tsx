@@ -87,6 +87,11 @@ const PRINT_STATUS_LABELS: Record<string, string> = {
   cancelled: "İptal",
 };
 
+const childActionLinkClass =
+  "inline-flex h-10 w-full items-center justify-center rounded-xl border border-slate-200 bg-white px-3 text-center text-sm font-semibold text-navy-950 transition hover:bg-slate-50";
+
+const childActionButtonClass = "h-10 w-full px-3 text-sm";
+
 function formatDate(value: string): string {
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) {
@@ -151,11 +156,25 @@ export function ChildrenStudentsClient({
 
   return (
     <div className="space-y-4">
-      <div className="flex justify-end">
-        <Button onClick={() => setAddOpen(true)}>+ Çocuk ekle</Button>
-      </div>
-
       <div className="overflow-hidden rounded-[1.5rem] border border-slate-200 bg-white shadow-sm">
+        <div className="flex flex-col gap-3 border-b border-slate-100 bg-slate-50/80 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <p className="text-sm font-semibold text-navy-950">
+              {students.length > 0
+                ? `${students.length} çocuk hesabı`
+                : "Çocuk hesapları"}
+            </p>
+            {students.length > 0 ? (
+              <p className="mt-0.5 text-xs text-slate-500">
+                Detay, kayıt ve profil işlemlerini her satırdan yönetin.
+              </p>
+            ) : null}
+          </div>
+          <Button className="w-full shrink-0 sm:w-auto" onClick={() => setAddOpen(true)}>
+            + Çocuk ekle
+          </Button>
+        </div>
+
         {students.length === 0 ? (
           <div className="space-y-4 p-8 text-center">
             <p className="text-sm font-semibold text-navy-950">Henüz çocuk hesabı eklenmedi</p>
@@ -195,34 +214,68 @@ export function ChildrenStudentsClient({
 
               return (
                 <li key={student.id} className="p-5">
-                  <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                    <div>
-                      <p className="font-semibold text-navy-950">{student.full_name}</p>
-                      <p className="text-sm text-slate-500">@{student.username}</p>
-                      <p className="mt-1 text-xs text-slate-500">
-                        {student.enrollmentCount ?? 0} etkinlik
-                        {attendanceSummary ? ` · ${attendanceSummary}` : ""} ·{" "}
-                        {student.certificateCount ?? 0} sertifika · profil %{profileProgress}
-                        {profileProgress < 100 ? " (sertifika için %100 gerekir)" : ""}
-                      </p>
+                  <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
+                    <div className="min-w-0 flex-1">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <p className="text-base font-semibold text-navy-950 break-words">
+                          {student.full_name}
+                        </p>
+                        <span
+                          className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-bold ${
+                            profileProgress >= 100
+                              ? "bg-emerald-100 text-emerald-800"
+                              : "bg-amber-100 text-amber-900"
+                          }`}
+                        >
+                          Profil %{profileProgress}
+                        </span>
+                      </div>
+                      <p className="mt-1 text-sm text-slate-500">@{student.username}</p>
+                      <div className="mt-3 flex flex-wrap gap-2">
+                        <span className="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-medium text-slate-700">
+                          {student.enrollmentCount ?? 0} etkinlik
+                        </span>
+                        {attendanceSummary ? (
+                          <span className="rounded-full bg-sky-50 px-2.5 py-1 text-xs font-medium text-sky-900">
+                            {attendanceSummary}
+                          </span>
+                        ) : null}
+                        <span className="rounded-full bg-violet-50 px-2.5 py-1 text-xs font-medium text-violet-900">
+                          {student.certificateCount ?? 0} sertifika
+                        </span>
+                        {profileProgress < 100 ? (
+                          <span className="rounded-full bg-amber-50 px-2.5 py-1 text-xs font-medium text-amber-900">
+                            Sertifika için profil %100
+                          </span>
+                        ) : null}
+                      </div>
                     </div>
-                    <div className="flex flex-wrap gap-2">
+                    <div className="grid w-full shrink-0 grid-cols-2 gap-2 xl:w-[32rem] xl:grid-cols-4">
                       <Button
                         variant="outline"
+                        className={childActionButtonClass}
                         onClick={() => setExpandedId(expanded ? null : student.id)}
                       >
                         {expanded ? "Gizle" : "Detay"}
                       </Button>
-                      <Button variant="outline" onClick={() => setEnrollTarget(student)}>
+                      <Button
+                        variant="outline"
+                        className={childActionButtonClass}
+                        onClick={() => setEnrollTarget(student)}
+                      >
                         Etkinliğe kaydet
                       </Button>
                       <Link
                         href={`/dashboard/children/${student.id}/profile`}
-                        className="inline-flex items-center justify-center rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-navy-950 transition hover:bg-slate-50"
+                        className={childActionLinkClass}
                       >
                         Profili düzenle
                       </Link>
-                      <Button variant="outline" onClick={() => setResetTarget(student)}>
+                      <Button
+                        variant="outline"
+                        className={childActionButtonClass}
+                        onClick={() => setResetTarget(student)}
+                      >
                         Şifreyi sıfırla
                       </Button>
                     </div>
