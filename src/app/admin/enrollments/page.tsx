@@ -11,6 +11,7 @@ import {
   type EventEnrollmentRow,
 } from "@/presentation/components/admin/event-enrollments-table";
 import { AdminAddEnrollmentForm } from "@/presentation/components/admin/admin-add-enrollment-form";
+import { ADMIN_ENROLLMENT_VISIBLE_EVENT_STATUSES, isAdminEnrollmentVisibleEventStatus } from "@/shared/constants/event-status";
 
 export const dynamic = "force-dynamic";
 
@@ -18,7 +19,7 @@ interface EnrollmentListRow {
   id: string;
   status: EnrollmentStatus;
   registered_at: string;
-  events: { id: string; title: string; start_at: string } | { id: string; title: string; start_at: string }[] | null;
+  events: { id: string; title: string; start_at: string; status: string } | { id: string; title: string; start_at: string; status: string }[] | null;
   profiles: {
     id: string;
     full_name: string;
@@ -68,6 +69,9 @@ function groupByEvent(rows: EnrollmentListRow[]): EventEnrollmentGroup[] {
     const event = unwrapOne(row.events);
     const profile = unwrapOne(row.profiles);
     if (!profile || !isStudentParticipantProfile(profile)) {
+      continue;
+    }
+    if (!event || !isAdminEnrollmentVisibleEventStatus(event.status)) {
       continue;
     }
     const eventKey = event?.id ?? "unknown";
@@ -141,10 +145,11 @@ export default async function AdminEnrollmentsPage({ searchParams }: AdminEnroll
       id,
       status,
       registered_at,
-      events (
+      events!inner (
         id,
         title,
-        start_at
+        start_at,
+        status
       ),
       profiles (
         id,
@@ -159,6 +164,7 @@ export default async function AdminEnrollmentsPage({ searchParams }: AdminEnroll
       )
     `,
     )
+    .in("events.status", [...ADMIN_ENROLLMENT_VISIBLE_EVENT_STATUSES])
     .order("registered_at", { ascending: false });
 
   if (!includeCancelled) {
@@ -174,12 +180,21 @@ export default async function AdminEnrollmentsPage({ searchParams }: AdminEnroll
   const groups = groupByEvent(rows);
 
   let filteredEventTitle: string | null = null;
+  let filteredEventStatus: string | null = null;
   if (eventId && groups.length > 0) {
     filteredEventTitle = groups[0].eventTitle;
   } else if (eventId) {
-    const { data: event } = await client.from("events").select("title").eq("id", eventId).maybeSingle();
+    const { data: event } = await client
+      .from("events")
+      .select("title, status")
+      .eq("id", eventId)
+      .maybeSingle();
     filteredEventTitle = event?.title ?? null;
+    filteredEventStatus = event?.status ?? null;
   }
+
+  const filteredEventIsVisible =
+    !filteredEventStatus || isAdminEnrollmentVisibleEventStatus(filteredEventStatus);
 
   return (
     <div className="space-y-6">
@@ -245,9 +260,15 @@ export default async function AdminEnrollmentsPage({ searchParams }: AdminEnroll
             Kayıtlar yüklenemedi: {error.message}
           </p>
         ) : null}
+        {eventId && filteredEventTitle && !filteredEventIsVisible ? (
+          <p className="mt-4 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+            Bu etkinlik yayından değil (taslak veya iptal). Kayıtlar yalnızca yayında veya
+            tamamlanmış etkinlikler için listelenir.
+          </p>
+        ) : null}
       </div>
 
-      {eventId && filteredEventTitle ? (
+      {eventId && filteredEventTitle && filteredEventIsVisible ? (
         <AdminAddEnrollmentForm eventId={eventId} eventTitle={filteredEventTitle} />
       ) : null}
 
