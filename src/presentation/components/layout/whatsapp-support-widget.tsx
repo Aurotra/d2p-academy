@@ -1,5 +1,7 @@
+"use client";
+
 import Link from "next/link";
-import type { ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 
 import {
   CONTACT,
@@ -15,6 +17,16 @@ function WhatsAppIcon() {
   );
 }
 
+function useWhatsAppSupportHref(context: WhatsAppSupportContext = "default"): string {
+  const [href, setHref] = useState(() => getWhatsAppSupportUrl(context));
+
+  useEffect(() => {
+    setHref(getWhatsAppSupportUrl(context, { userAgent: navigator.userAgent }));
+  }, [context]);
+
+  return href;
+}
+
 interface WhatsAppSupportLinkProps {
   context?: WhatsAppSupportContext;
   className?: string;
@@ -26,22 +38,21 @@ export function WhatsAppSupportLink({
   className = "font-semibold text-emerald-700 hover:text-emerald-800 hover:underline",
   children,
 }: WhatsAppSupportLinkProps) {
+  const href = useWhatsAppSupportHref(context);
+
   return (
-    <Link
-      href={getWhatsAppSupportUrl(context)}
-      target="_blank"
-      rel="noopener noreferrer"
-      className={className}
-    >
+    <Link href={href} target="_blank" rel="noopener noreferrer" className={className}>
       {children ?? CONTACT.whatsappLabel}
     </Link>
   );
 }
 
 export function WhatsAppSupportWidget() {
+  const href = useWhatsAppSupportHref("default");
+
   return (
     <Link
-      href={getWhatsAppSupportUrl("default")}
+      href={href}
       target="_blank"
       rel="noopener noreferrer"
       aria-label={CONTACT.whatsappLabel}

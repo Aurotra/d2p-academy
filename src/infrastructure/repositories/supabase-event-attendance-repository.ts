@@ -3,6 +3,8 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import type {
   AttendanceStatus,
   EventAttendanceSheet,
+  SubmitSessionAttendanceInput,
+  SubmitSessionAttendanceResult,
   UpsertAttendanceInput,
   UpsertAttendanceResult,
 } from "@/core/domain/event-attendance";
@@ -30,6 +32,7 @@ interface SessionRow {
   session_index: number;
   starts_at: string;
   ends_at: string;
+  attendance_submitted_at: string | null;
 }
 
 interface EnrollmentRow {
@@ -60,7 +63,7 @@ export class SupabaseEventAttendanceRepository {
 
   async getEventAttendanceSheet(
     eventId: string,
-    options: { canEdit: boolean },
+    options: { canEdit: boolean; canEditLockedSessions?: boolean },
   ): Promise<EventAttendanceSheet | null> {
     const { data: event, error: eventError } = await this.client
       .from("events")
@@ -76,7 +79,7 @@ export class SupabaseEventAttendanceRepository {
 
     const { data: sessionRows, error: sessionsError } = await this.client
       .from("event_sessions")
-      .select("id, session_index, starts_at, ends_at")
+      .select("id, session_index, starts_at, ends_at, attendance_submitted_at")
       .eq("event_id", eventId)
       .order("session_index", { ascending: true });
 
@@ -163,6 +166,8 @@ export class SupabaseEventAttendanceRepository {
         startsAt: session.starts_at,
         endsAt: session.ends_at,
         label: formatEventLessonLabel(session.session_index),
+        attendanceSubmittedAt: session.attendance_submitted_at,
+        attendanceLocked: session.attendance_submitted_at != null,
       })),
       requiredLessonCount,
       totalLessonCount,
@@ -188,13 +193,37 @@ export class SupabaseEventAttendanceRepository {
       }),
       canEdit: options.canEdit,
       attendanceOpen,
+      canEditLockedSessions: options.canEditLockedSessions ?? false,
     };
+  }
+
+  private async assertSessionEditable(
+    sessionId: string,
+    eventId: string,
+    allowLocked: boolean,
+  ): Promise<{ session_index: number; attendance_submitted_at: string | null }> {
+    const { data: session, error: sessionError } = await this.client
+      .from("event_sessions")
+      .select("id, event_id, session_index, attendance_submitted_at")
+      .eq("id", sessionId)
+      .maybeSingle();
+
+    if (sessionError || !session || session.event_id !== eventId) {
+      throw new Error("Bu ders bu etkinliğe ait değil.");
+    }
+
+    if (session.attendance_submitted_at && !allowLocked) {
+      throw new Error("Bu ders yoklaması onaylandı ve kilitlendi.");
+    }
+
+    return session;
   }
 
   async upsertAttendance(
     eventId: string,
     actorId: string,
     input: UpsertAttendanceInput,
+    options: { allowLockedSession?: boolean } = {},
   ): Promise<UpsertAttendanceResult> {
     const { data: event, error: eventError } = await this.client
       .from("events")
@@ -208,15 +237,11 @@ export class SupabaseEventAttendanceRepository {
 
     const outsideEventWindow = !isEventAttendanceOpen(event.start_at, event.end_at);
 
-    const { data: session, error: sessionError } = await this.client
-      .from("event_sessions")
-      .select("id, event_id, session_index, starts_at, ends_at")
-      .eq("id", input.sessionId)
-      .maybeSingle();
-
-    if (sessionError || !session || session.event_id !== eventId) {
-      throw new Error("Bu ders bu etkinliğe ait değil.");
-    }
+    const session = await this.assertSessionEditable(
+      input.sessionId,
+      eventId,
+      options.allowLockedSession ?? false,
+    );
 
     const totalLessonCount = normalizeTotalLessonCount(
       (event as { total_lesson_count?: number | null }).total_lesson_count,
@@ -294,6 +319,123 @@ export class SupabaseEventAttendanceRepository {
       sessionLabel: formatEventLessonLabel(session.session_index),
       previousStatus,
       status: input.status,
+      outsideEventWindow,
+    };
+  }
+
+  async submitSessionAttendance(
+    eventId: string,
+    actorId: string,
+    input: SubmitSessionAttendanceInput,
+    options: { allowLockedSession?: boolean } = {},
+  ): Promise<SubmitSessionAttendanceResult> {
+    const { data: event, error: eventError } = await this.client
+      .from("events")
+      .select("title, start_at, end_at, total_lesson_count")
+      .eq("id", eventId)
+      .maybeSingle();
+
+    if (eventError || !event) {
+      throw new Error("Etkinlik bulunamadı.");
+    }
+
+    const session = await this.assertSessionEditable(
+      input.sessionId,
+      eventId,
+      options.allowLockedSession ?? false,
+    );
+
+    const alreadySubmitted = Boolean(session.attendance_submitted_at);
+    if (alreadySubmitted && !options.allowLockedSession) {
+      throw new Error("Bu ders yoklaması zaten onaylanmış.");
+    }
+
+    const { data: enrollments, error: enrollmentsError } = await this.client
+      .from("enrollments")
+      .select(
+        `
+        id,
+        profiles (
+          id,
+          role
+        )
+      `,
+      )
+      .eq("event_id", eventId)
+      .neq("status", "cancelled");
+
+    if (enrollmentsError) {
+      throw new Error(`Kayıtlar alınamadı: ${enrollmentsError.message}`);
+    }
+
+    const enrollmentIds = new Set(
+      ((enrollments ?? []) as EnrollmentRow[])
+        .filter((row) => {
+          const profile = unwrapOne(row.profiles);
+          return profile ? isStudentParticipantProfile(profile) : false;
+        })
+        .map((row) => row.id),
+    );
+    const marksByEnrollment = new Map(
+      input.marks.map((mark) => [mark.enrollmentId, mark.status] as const),
+    );
+
+    if (marksByEnrollment.size !== enrollmentIds.size) {
+      throw new Error("Tüm öğrenciler için yoklama işaretlenmelidir.");
+    }
+
+    for (const enrollmentId of enrollmentIds) {
+      if (!marksByEnrollment.has(enrollmentId)) {
+        throw new Error("Tüm öğrenciler için yoklama işaretlenmelidir.");
+      }
+    }
+
+    const outsideEventWindow = !isEventAttendanceOpen(event.start_at, event.end_at);
+    const now = new Date().toISOString();
+
+    for (const [enrollmentId, status] of marksByEnrollment) {
+      const { error } = await this.client.from("enrollment_session_attendance").upsert(
+        {
+          enrollment_id: enrollmentId,
+          session_id: input.sessionId,
+          status,
+          marked_by: actorId,
+          marked_at: now,
+          updated_at: now,
+        },
+        { onConflict: "enrollment_id,session_id" },
+      );
+
+      if (error) {
+        throw new Error(`Yoklama kaydedilemedi: ${error.message}`);
+      }
+
+      const { error: unlockError } = await this.client.rpc("maybe_unlock_enrollment_post_test", {
+        p_enrollment_id: enrollmentId,
+      });
+
+      if (unlockError) {
+        throw new Error(`Son test kilidi güncellenemedi: ${unlockError.message}`);
+      }
+    }
+
+    const { error: lockError } = await this.client
+      .from("event_sessions")
+      .update({
+        attendance_submitted_at: now,
+        attendance_submitted_by: actorId,
+      })
+      .eq("id", input.sessionId)
+      .is("attendance_submitted_at", null);
+
+    if (!alreadySubmitted && lockError) {
+      throw new Error(`Yoklama onayı kaydedilemedi: ${lockError.message}`);
+    }
+
+    return {
+      eventTitle: event.title,
+      sessionLabel: formatEventLessonLabel(session.session_index),
+      studentCount: marksByEnrollment.size,
       outsideEventWindow,
     };
   }

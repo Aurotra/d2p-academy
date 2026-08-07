@@ -5,6 +5,11 @@ import { z } from "zod";
 import { getEventCapacityBlockReason } from "@/infrastructure/enrollments/event-capacity";
 import { createServiceRoleClient } from "@/infrastructure/supabase/create-service-role-client";
 import { createSupabaseServerClient } from "@/infrastructure/supabase/create-server-client";
+import {
+  isProfileComplete,
+  PROFILE_INCOMPLETE_SAVE_BLOCKED_MESSAGE,
+  profileProgressOptions,
+} from "@/lib/utils/progress";
 import { getEventEnrollmentBlockReason } from "@/shared/utils/event-enrollment-window";
 
 const schema = z.object({
@@ -37,7 +42,9 @@ export async function POST(
 
   const { data: child, error: lookupError } = await supabase
     .from("profiles")
-    .select("id, full_name, username")
+    .select(
+      "id, full_name, username, gender, grade_level, school_name, city_district, experience_data, interests, motivation_data, profile_avatar_url, parent_phone, parent_id",
+    )
     .eq("id", studentId)
     .eq("parent_id", auth.user.id)
     .eq("role", "student")
@@ -50,6 +57,29 @@ export async function POST(
   }
   if (!child) {
     return NextResponse.json({ error: "Öğrenci bulunamadı." }, { status: 404 });
+  }
+
+  if (
+    !isProfileComplete(
+      {
+        full_name: child.full_name,
+        gender: child.gender,
+        grade_level: child.grade_level,
+        school_name: child.school_name,
+        city_district: child.city_district,
+        experience_data: child.experience_data as { coding_experience?: string } | null,
+        interests: child.interests,
+        motivation_data: child.motivation_data as { hedef?: string; beklenti?: number } | null,
+        profile_avatar_url: child.profile_avatar_url,
+        parent_phone: child.parent_phone,
+      },
+      profileProgressOptions(child),
+    )
+  ) {
+    return NextResponse.json(
+      { error: PROFILE_INCOMPLETE_SAVE_BLOCKED_MESSAGE, code: "PROFILE_INCOMPLETE" },
+      { status: 400 },
+    );
   }
 
   let serviceClient;

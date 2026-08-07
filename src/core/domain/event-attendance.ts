@@ -13,6 +13,8 @@ export interface EventSessionColumn {
   endsAt: string;
   label: string;
   timeRange?: string;
+  attendanceSubmittedAt: string | null;
+  attendanceLocked: boolean;
 }
 
 export interface AttendanceStudentRow {
@@ -38,6 +40,8 @@ export interface EventAttendanceSheet {
   /** Yoklama işaretleme (etkinlik tarihleri içinde). */
   canEdit: boolean;
   attendanceOpen: boolean;
+  /** Admin kilitli ders yoklamasını düzenleyebilir. */
+  canEditLockedSessions: boolean;
 }
 
 export interface UpsertAttendanceInput {
@@ -55,5 +59,22 @@ export interface UpsertAttendanceResult {
   sessionLabel: string;
   previousStatus: AttendanceStatus | null;
   status: AttendanceStatus;
+  outsideEventWindow: boolean;
+}
+
+export interface SessionAttendanceMark {
+  enrollmentId: string;
+  status: AttendanceStatus;
+}
+
+export interface SubmitSessionAttendanceInput {
+  sessionId: string;
+  marks: SessionAttendanceMark[];
+}
+
+export interface SubmitSessionAttendanceResult {
+  eventTitle: string;
+  sessionLabel: string;
+  studentCount: number;
   outsideEventWindow: boolean;
 }

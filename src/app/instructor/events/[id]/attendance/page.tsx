@@ -32,7 +32,10 @@ export default async function InstructorAttendancePage({ params }: InstructorAtt
   }
 
   const repository = new SupabaseEventAttendanceRepository(client);
-  const sheet = await repository.getEventAttendanceSheet(eventId, { canEdit: true });
+  const sheet = await repository.getEventAttendanceSheet(eventId, {
+    canEdit: true,
+    canEditLockedSessions: access.role === "admin",
+  });
 
   if (!sheet) {
     redirect("/instructor");

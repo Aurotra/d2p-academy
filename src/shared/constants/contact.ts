@@ -33,11 +33,25 @@ export const WHATSAPP_SUPPORT_MESSAGES = {
 
 export type WhatsAppSupportContext = keyof typeof WHATSAPP_SUPPORT_MESSAGES;
 
+const MOBILE_WHATSAPP_UA =
+  /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini|Mobile/i;
+
+export function isMobileWhatsAppUserAgent(userAgent: string): boolean {
+  return MOBILE_WHATSAPP_UA.test(userAgent);
+}
+
 export function getWhatsAppSupportUrl(
   context: WhatsAppSupportContext = "default",
+  options?: { userAgent?: string },
 ): string {
   const phone = CONTACT.phoneTel.replace(/\D/g, "");
   const text = encodeURIComponent(WHATSAPP_SUPPORT_MESSAGES[context]);
-  // web.whatsapp.com opens in the browser; wa.me often forces the desktop app on Windows.
+  const useMobileLink =
+    options?.userAgent == null || isMobileWhatsAppUserAgent(options.userAgent);
+
+  if (useMobileLink) {
+    return `https://wa.me/${phone}?text=${text}`;
+  }
+
   return `https://web.whatsapp.com/send?phone=${phone}&text=${text}`;
 }

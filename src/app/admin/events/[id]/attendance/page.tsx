@@ -32,7 +32,10 @@ export default async function AdminEventAttendancePage({ params }: AdminAttendan
   }
 
   const repository = new SupabaseEventAttendanceRepository(client);
-  const sheet = await repository.getEventAttendanceSheet(eventId, { canEdit: true });
+  const sheet = await repository.getEventAttendanceSheet(eventId, {
+    canEdit: true,
+    canEditLockedSessions: true,
+  });
 
   if (!sheet) {
     redirect("/admin/events");

@@ -2,6 +2,23 @@ export function buildEventEnrollPath(eventId: string): string {
   return `/dashboard/children?enroll=1&eventId=${encodeURIComponent(eventId)}`;
 }
 
+export function buildChildProfileForEnrollPath(
+  childId: string,
+  options?: { eventId?: string },
+): string {
+  const params = new URLSearchParams();
+  if (options?.eventId) {
+    params.set("eventId", options.eventId);
+  } else {
+    params.set("enroll", "1");
+  }
+  return `/dashboard/children/${childId}/profile?${params.toString()}`;
+}
+
+export function isChildProfileReadyForEnrollment(profileProgress?: number): boolean {
+  return (profileProgress ?? 0) >= 100;
+}
+
 export function buildRegisterForEventPath(eventId: string): string {
   return `/register?redirectTo=${encodeURIComponent(buildEventEnrollPath(eventId))}`;
 }

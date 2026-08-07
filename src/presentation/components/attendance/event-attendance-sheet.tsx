@@ -1,8 +1,8 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 
-import type { AttendanceStatus, EventAttendanceSheet } from "@/core/domain/event-attendance";
+import type { AttendanceStatus, EventAttendanceSheet, EventSessionColumn } from "@/core/domain/event-attendance";
 import { ATTENDANCE_STATUS_LABELS } from "@/core/domain/event-attendance";
 import { formatEventAttendanceWindowLabel } from "@/shared/utils/event-attendance-window";
 import { formatAttendanceCertificateLabel } from "@/shared/utils/enrollment-attendance";
@@ -22,6 +22,8 @@ interface EventAttendanceSheetProps {
   apiBasePath: string;
 }
 
+type SessionDraft = Record<string, AttendanceStatus | null>;
+
 function formatDateTime(value: string): string {
   return new Intl.DateTimeFormat("tr-TR", {
     dateStyle: "medium",
@@ -30,94 +32,183 @@ function formatDateTime(value: string): string {
   }).format(new Date(value));
 }
 
+function buildSessionDraft(
+  rows: EventAttendanceSheet["students"],
+  sessionId: string,
+): SessionDraft {
+  return Object.fromEntries(
+    rows.map((row) => [row.enrollmentId, row.attendance[sessionId] ?? null]),
+  );
+}
+
+function applyDraftToRows(
+  rows: EventAttendanceSheet["students"],
+  sessionId: string,
+  draft: SessionDraft,
+  requiredLessonCount: number,
+): EventAttendanceSheet["students"] {
+  return rows.map((row) => {
+    const status = draft[row.enrollmentId] ?? row.attendance[sessionId] ?? null;
+    const attendance = {
+      ...row.attendance,
+      [sessionId]: status,
+    };
+    const presentCount = Object.values(attendance).filter((value) => value === "present").length;
+
+    return {
+      ...row,
+      attendance,
+      presentCount,
+      attendanceComplete: presentCount >= requiredLessonCount,
+      enrollmentStatus:
+        presentCount >= requiredLessonCount && row.enrollmentStatus === "registered"
+          ? "attended"
+          : row.enrollmentStatus,
+    };
+  });
+}
+
 export function EventAttendanceSheetView({ sheet, apiBasePath }: EventAttendanceSheetProps) {
   const [rows, setRows] = useState(sheet.students);
-  const [pendingKey, setPendingKey] = useState<string | null>(null);
-  const [bulkPending, setBulkPending] = useState(false);
+  const [sessions, setSessions] = useState(sheet.sessions);
+  const [drafts, setDrafts] = useState<Record<string, SessionDraft>>({});
+  const [submitPending, setSubmitPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [selectedSessionId, setSelectedSessionId] = useState(sheet.sessions[0]?.id ?? "");
   const [showOverview, setShowOverview] = useState(false);
 
   const selectedSession = useMemo(
-    () => sheet.sessions.find((session) => session.id === selectedSessionId) ?? null,
-    [sheet.sessions, selectedSessionId],
+    () => sessions.find((session) => session.id === selectedSessionId) ?? null,
+    [sessions, selectedSessionId],
   );
+
+  const getSessionDraft = useCallback(
+    (sessionId: string): SessionDraft => {
+      if (drafts[sessionId]) {
+        return drafts[sessionId];
+      }
+      return buildSessionDraft(rows, sessionId);
+    },
+    [drafts, rows],
+  );
+
+  const isSessionEditable = useCallback(
+    (session: EventSessionColumn) => {
+      if (!sheet.canEdit) {
+        return false;
+      }
+      if (session.attendanceLocked && !sheet.canEditLockedSessions) {
+        return false;
+      }
+      return true;
+    },
+    [sheet.canEdit, sheet.canEditLockedSessions],
+  );
+
+  const sessionDraft = selectedSession ? getSessionDraft(selectedSession.id) : {};
+  const sessionEditable = selectedSession ? isSessionEditable(selectedSession) : false;
 
   const markedInSession = useMemo(() => {
     if (!selectedSession) {
       return 0;
     }
-    return rows.filter((row) => row.attendance[selectedSession.id] != null).length;
-  }, [rows, selectedSession]);
+    const draft = getSessionDraft(selectedSession.id);
+    return Object.values(draft).filter((status) => status != null).length;
+  }, [getSessionDraft, selectedSession]);
+
+  const allMarkedInSession = rows.length > 0 && markedInSession === rows.length;
+  const hasDraftChanges = useMemo(() => {
+    if (!selectedSession) {
+      return false;
+    }
+    const draft = getSessionDraft(selectedSession.id);
+    return rows.some((row) => (draft[row.enrollmentId] ?? null) !== (row.attendance[selectedSession.id] ?? null));
+  }, [getSessionDraft, rows, selectedSession]);
 
   const completeStudents = useMemo(
     () => rows.filter((row) => row.attendanceComplete).length,
     [rows],
   );
 
-  async function saveStatus(enrollmentId: string, sessionId: string, status: AttendanceStatus) {
-    const key = `${enrollmentId}:${sessionId}`;
-    setPendingKey(key);
+  function setDraftStatus(sessionId: string, enrollmentId: string, status: AttendanceStatus) {
+    setDrafts((current) => {
+      const base = current[sessionId] ?? buildSessionDraft(rows, sessionId);
+      const next = { ...base };
+      next[enrollmentId] = next[enrollmentId] === status ? null : status;
+      return { ...current, [sessionId]: next };
+    });
     setError(null);
-
-    try {
-      const response = await fetch(`${apiBasePath}/${sheet.eventId}/attendance`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ enrollmentId, sessionId, status }),
-      });
-      const payload = (await response.json()) as { error?: string };
-      if (!response.ok) {
-        throw new Error(payload.error ?? "Yoklama kaydedilemedi.");
-      }
-
-      setRows((current) =>
-        current.map((row) => {
-          if (row.enrollmentId !== enrollmentId) {
-            return row;
-          }
-
-          const attendance = {
-            ...row.attendance,
-            [sessionId]: status,
-          };
-          const presentCount = Object.values(attendance).filter((value) => value === "present")
-            .length;
-
-          return {
-            ...row,
-            attendance,
-            presentCount,
-            attendanceComplete: presentCount >= sheet.requiredLessonCount,
-            enrollmentStatus:
-              presentCount >= sheet.requiredLessonCount && row.enrollmentStatus === "registered"
-                ? "attended"
-                : row.enrollmentStatus,
-          };
-        }),
-      );
-    } catch (saveError) {
-      setError(saveError instanceof Error ? saveError.message : "Kayıt başarısız.");
-    } finally {
-      setPendingKey(null);
-    }
   }
 
-  async function markAllPresent(sessionId: string) {
-    if (!sheet.canEdit) {
+  function markAllPresentDraft(sessionId: string) {
+    setDrafts((current) => ({
+      ...current,
+      [sessionId]: Object.fromEntries(
+        rows.map((row) => [row.enrollmentId, "present" as AttendanceStatus]),
+      ),
+    }));
+    setError(null);
+  }
+
+  function resetSessionDraft(sessionId: string) {
+    setDrafts((current) => {
+      const next = { ...current };
+      delete next[sessionId];
+      return next;
+    });
+    setError(null);
+  }
+
+  async function submitSession(sessionId: string) {
+    const draft = getSessionDraft(sessionId);
+    const marks = rows
+      .map((row) => ({
+        enrollmentId: row.enrollmentId,
+        status: draft[row.enrollmentId] ?? null,
+      }))
+      .filter((mark): mark is { enrollmentId: string; status: AttendanceStatus } => mark.status != null);
+
+    if (marks.length !== rows.length) {
+      setError("Onaya göndermeden önce tüm öğrencileri işaretleyin.");
       return;
     }
 
-    setBulkPending(true);
+    setSubmitPending(true);
     setError(null);
 
     try {
-      const targets = rows.filter((row) => row.attendance[sessionId] !== "present");
-      for (const row of targets) {
-        await saveStatus(row.enrollmentId, sessionId, "present");
+      const response = await fetch(`${apiBasePath}/${sheet.eventId}/attendance/submit`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ sessionId, marks }),
+      });
+      const payload = (await response.json()) as { error?: string; submittedAt?: string };
+      if (!response.ok) {
+        throw new Error(payload.error ?? "Yoklama onaylanamadı.");
       }
+
+      const submittedAt = payload.submittedAt ?? new Date().toISOString();
+      setRows((current) => applyDraftToRows(current, sessionId, draft, sheet.requiredLessonCount));
+      setSessions((current) =>
+        current.map((session) =>
+          session.id === sessionId
+            ? {
+                ...session,
+                attendanceLocked: true,
+                attendanceSubmittedAt: submittedAt,
+              }
+            : session,
+        ),
+      );
+      setDrafts((current) => {
+        const next = { ...current };
+        delete next[sessionId];
+        return next;
+      });
+    } catch (submitError) {
+      setError(submitError instanceof Error ? submitError.message : "Onay başarısız.");
     } finally {
-      setBulkPending(false);
+      setSubmitPending(false);
     }
   }
 
@@ -169,12 +260,13 @@ export function EventAttendanceSheetView({ sheet, apiBasePath }: EventAttendance
           <p className="text-sm font-semibold text-slate-900">Ders seçin</p>
           <p className="mt-1 text-xs text-slate-500">
             Kurs {sheet.totalLessonCount} derse bölünür (her ders = 1 saat). Numaraya tıklayıp
-            yoklama alın.
+            yoklama alın; onaya gönderince ders kilitlenir.
           </p>
           <div className="mt-4 grid grid-cols-3 gap-2 sm:grid-cols-4 md:grid-cols-6">
-            {sheet.sessions.map((session) => {
+            {sessions.map((session) => {
               const active = session.id === selectedSessionId;
-              const sessionMarked = rows.filter((row) => row.attendance[session.id] != null).length;
+              const draft = getSessionDraft(session.id);
+              const sessionMarked = Object.values(draft).filter((status) => status != null).length;
               const allMarked = rows.length > 0 && sessionMarked === rows.length;
               const palette = getLessonButtonPalette(session.sessionIndex);
 
@@ -192,7 +284,9 @@ export function EventAttendanceSheetView({ sheet, apiBasePath }: EventAttendance
                   }`}
                 >
                   <span className="text-lg font-black leading-none">{session.sessionIndex}</span>
-                  <span className={`mt-1 text-[10px] font-semibold uppercase tracking-wide ${active ? "text-white/90" : "opacity-70"}`}>
+                  <span
+                    className={`mt-1 text-[10px] font-semibold uppercase tracking-wide ${active ? "text-white/90" : "opacity-70"}`}
+                  >
                     Ders
                   </span>
                   <span
@@ -200,6 +294,15 @@ export function EventAttendanceSheetView({ sheet, apiBasePath }: EventAttendance
                   >
                     {sessionMarked}/{rows.length}
                   </span>
+                  {session.attendanceLocked ? (
+                    <span
+                      className={`absolute right-1.5 top-1.5 rounded-full px-1.5 py-0.5 text-[9px] font-bold ${
+                        active ? "bg-white/20 text-white" : "bg-slate-900/10 text-slate-700"
+                      }`}
+                    >
+                      Kilit
+                    </span>
+                  ) : null}
                 </button>
               );
             })}
@@ -208,25 +311,58 @@ export function EventAttendanceSheetView({ sheet, apiBasePath }: EventAttendance
 
         {selectedSession ? (
           <div className="px-4 py-4 sm:px-5">
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
               <div>
-                <h2 className="text-lg font-bold text-slate-900">{selectedSession.label}</h2>
-                <p className="text-sm text-slate-500">
+                <div className="flex flex-wrap items-center gap-2">
+                  <h2 className="text-lg font-bold text-slate-900">{selectedSession.label}</h2>
+                  {selectedSession.attendanceLocked ? (
+                    <span className="inline-flex items-center gap-1 rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-semibold text-slate-700">
+                      Onaylandı
+                      {selectedSession.attendanceSubmittedAt
+                        ? ` · ${formatDateTime(selectedSession.attendanceSubmittedAt)}`
+                        : ""}
+                    </span>
+                  ) : hasDraftChanges ? (
+                    <span className="inline-flex rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-semibold text-amber-900">
+                      Kaydedilmemiş işaretler
+                    </span>
+                  ) : null}
+                </div>
+                <p className="mt-1 text-sm text-slate-500">
                   {markedInSession}/{rows.length} öğrenci işaretlendi
                 </p>
               </div>
-              {sheet.canEdit ? (
-                <Button
-                  type="button"
-                  variant="outline"
-                  disabled={bulkPending || rows.length === 0}
-                  onClick={() => void markAllPresent(selectedSession.id)}
-                  className="shrink-0"
-                >
-                  {bulkPending ? "Kaydediliyor…" : "Hepsini geldi işaretle"}
-                </Button>
+              {sessionEditable ? (
+                <div className="flex flex-wrap gap-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    disabled={submitPending || rows.length === 0}
+                    onClick={() => markAllPresentDraft(selectedSession.id)}
+                    className="shrink-0"
+                  >
+                    Hepsini geldi işaretle
+                  </Button>
+                  {hasDraftChanges ? (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      disabled={submitPending}
+                      onClick={() => resetSessionDraft(selectedSession.id)}
+                      className="shrink-0"
+                    >
+                      İşaretleri sıfırla
+                    </Button>
+                  ) : null}
+                </div>
               ) : null}
             </div>
+
+            {selectedSession.attendanceLocked && !sheet.canEditLockedSessions ? (
+              <p className="mt-3 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700">
+                Bu ders yoklaması onaylandı ve kilitlendi. Değişiklik için yönetici ile iletişime geçin.
+              </p>
+            ) : null}
 
             {error ? (
               <p className="mt-3 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
@@ -239,8 +375,7 @@ export function EventAttendanceSheetView({ sheet, apiBasePath }: EventAttendance
             ) : (
               <ul className="mt-4 divide-y divide-slate-100 rounded-xl border border-slate-100">
                 {rows.map((row, index) => {
-                  const status = row.attendance[selectedSession.id] ?? null;
-                  const rowPending = pendingKey?.startsWith(`${row.enrollmentId}:`) ?? false;
+                  const status = sessionDraft[row.enrollmentId] ?? null;
 
                   return (
                     <li
@@ -266,13 +401,11 @@ export function EventAttendanceSheetView({ sheet, apiBasePath }: EventAttendance
                         </p>
                       </div>
 
-                      {sheet.canEdit ? (
+                      {sessionEditable ? (
                         <StatusButtonGroup
                           status={status}
-                          disabled={rowPending}
-                          onSelect={(next) =>
-                            void saveStatus(row.enrollmentId, selectedSession.id, next)
-                          }
+                          disabled={submitPending}
+                          onSelect={(next) => setDraftStatus(selectedSession.id, row.enrollmentId, next)}
                         />
                       ) : (
                         <StatusReadonly status={status} />
@@ -282,6 +415,30 @@ export function EventAttendanceSheetView({ sheet, apiBasePath }: EventAttendance
                 })}
               </ul>
             )}
+
+            {sessionEditable && rows.length > 0 ? (
+              <div className="mt-4 flex flex-col gap-2 border-t border-slate-100 pt-4 sm:flex-row sm:items-center sm:justify-between">
+                <p className="text-sm text-slate-600">
+                  {selectedSession.attendanceLocked
+                    ? "Kilitli ders yoklamasında değişiklik yapabilirsiniz."
+                    : allMarkedInSession
+                      ? "Tüm öğrenciler işaretlendi. Onaya gönderince liste kilitlenir."
+                      : "Onaya göndermeden önce tüm öğrencileri işaretleyin."}
+                </p>
+                <Button
+                  type="button"
+                  disabled={submitPending || !allMarkedInSession}
+                  onClick={() => void submitSession(selectedSession.id)}
+                  className="w-full shrink-0 sm:w-auto"
+                >
+                  {submitPending
+                    ? "Gönderiliyor…"
+                    : selectedSession.attendanceLocked
+                      ? "Değişiklikleri kaydet"
+                      : "Onaya gönder ve kilitle"}
+                </Button>
+              </div>
+            ) : null}
           </div>
         ) : null}
       </section>
@@ -310,14 +467,16 @@ export function EventAttendanceSheetView({ sheet, apiBasePath }: EventAttendance
                 <thead className="text-left text-slate-600">
                   <tr>
                     <th className="sticky left-0 z-10 bg-white px-3 py-2 font-semibold">Öğrenci</th>
-                    {sheet.sessions.map((session) => {
+                    {sessions.map((session) => {
                       const palette = getLessonButtonPalette(session.sessionIndex);
                       return (
                         <th
                           key={session.id}
                           className={`min-w-12 px-1 py-2 text-center text-xs font-bold ${palette.soft} border border-white`}
+                          title={session.attendanceLocked ? "Onaylandı" : undefined}
                         >
                           {session.sessionIndex}
+                          {session.attendanceLocked ? "*" : ""}
                         </th>
                       );
                     })}
@@ -330,7 +489,7 @@ export function EventAttendanceSheetView({ sheet, apiBasePath }: EventAttendance
                       <td className="sticky left-0 z-10 max-w-32 truncate bg-white px-3 py-2 font-medium text-slate-900">
                         {row.studentName}
                       </td>
-                      {sheet.sessions.map((session) => {
+                      {sessions.map((session) => {
                         const status = row.attendance[session.id] ?? null;
                         return (
                           <td key={session.id} className="px-1 py-2 text-center">
@@ -423,6 +582,7 @@ function StatusButtonGroup({
             type="button"
             disabled={disabled}
             onClick={() => onSelect(option)}
+            title={selected ? "İşareti kaldırmak için tekrar tıklayın" : undefined}
             className={`rounded-lg border px-3 py-2 text-xs font-semibold transition ${
               selected
                 ? STATUS_STYLES[option]

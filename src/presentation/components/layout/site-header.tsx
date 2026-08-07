@@ -136,96 +136,98 @@ export function SiteHeader() {
   const showLoggedInActions = isAuthResolved && isLoggedIn;
 
   return (
-    <header className={`sticky top-0 z-40 isolate ${BRAND_SURFACE_HEADER}`}>
-      <div className="mx-auto flex max-w-7xl items-center gap-3 px-4 py-4 sm:gap-4 sm:px-6 lg:gap-6 lg:px-8">
-        <div className="flex shrink-0 items-center">
-          <BrandLogo height={48} />
-        </div>
+    <header className="sticky top-0 z-50">
+      <div className={`relative z-50 ${BRAND_SURFACE_HEADER}`}>
+        <div className="mx-auto flex max-w-7xl items-center gap-3 px-4 py-4 sm:gap-4 sm:px-6 lg:gap-6 lg:px-8">
+          <div className="flex shrink-0 items-center">
+            <BrandLogo height={48} />
+          </div>
 
-        <nav
-          className="site-header-nav hidden min-w-0 flex-1 justify-center lg:flex"
-          aria-label="Ana menü"
-        >
-          <ul className="mx-auto flex w-max items-center gap-x-3 xl:gap-x-5 2xl:gap-x-6">
-            {navItems.map((item) => (
-              <li key={item.href} className="shrink-0">
+          <nav
+            className="site-header-nav hidden min-w-0 flex-1 justify-center lg:flex"
+            aria-label="Ana menü"
+          >
+            <ul className="mx-auto flex w-max items-center gap-x-3 xl:gap-x-5 2xl:gap-x-6">
+              {navItems.map((item) => (
+                <li key={item.href} className="shrink-0">
+                  <Link
+                    href={item.href}
+                    className="whitespace-nowrap text-xs font-medium text-slate-800 transition hover:text-primary xl:text-sm"
+                    onClick={(event) => handleSamePageHashNav(event, item.href, pathname)}
+                  >
+                    {item.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </nav>
+
+          <div className="hidden min-h-[40px] shrink-0 items-center gap-2 lg:flex xl:gap-3">
+            {showLoggedInActions ? (
+              <>
+                {userDisplayName ? (
+                  <span className="max-w-[10rem] truncate text-sm font-medium text-slate-700 lg:max-w-[14rem]">
+                    {userDisplayName}
+                  </span>
+                ) : null}
                 <Link
-                  href={item.href}
-                  className="whitespace-nowrap text-xs font-medium text-slate-800 transition hover:text-primary xl:text-sm"
-                  onClick={(event) => handleSamePageHashNav(event, item.href, pathname)}
+                  href={panelHref}
+                  className="rounded-xl bg-secondary px-4 py-2 text-sm font-semibold text-white transition hover:bg-secondary-hover hover:shadow-glow-secondary"
                 >
-                  {item.label}
+                  Panelim
                 </Link>
-              </li>
-            ))}
-          </ul>
-        </nav>
+                <button
+                  type="button"
+                  disabled={isLoggingOut}
+                  onClick={() => void handleLogout()}
+                  className="rounded-xl bg-primary px-4 py-2 text-sm font-semibold text-white transition hover:bg-primary-hover hover:shadow-glow-primary disabled:opacity-60"
+                >
+                  {isLoggingOut ? "Çıkış..." : "Çıkış Yap"}
+                </button>
+              </>
+            ) : null}
+            {showGuestAuthActions ? (
+              <>
+                <AuthPortalLink href="/student-login" kind="student">
+                  Öğrenci Girişi
+                </AuthPortalLink>
+                <AuthPortalLink href="/login" kind="parent">
+                  Veli Girişi
+                </AuthPortalLink>
+                <Link
+                  href="/register"
+                  className="rounded-xl bg-secondary px-4 py-2 text-sm font-semibold text-white transition hover:bg-secondary-hover hover:shadow-glow-secondary"
+                >
+                  Hesap Oluştur
+                </Link>
+              </>
+            ) : null}
+          </div>
 
-        <div className="hidden min-h-[40px] shrink-0 items-center gap-2 xl:gap-3 lg:flex">
-          {showLoggedInActions ? (
-            <>
-              {userDisplayName ? (
-                <span className="max-w-[10rem] truncate text-sm font-medium text-slate-700 lg:max-w-[14rem]">
-                  {userDisplayName}
-                </span>
-              ) : null}
-              <Link
-                href={panelHref}
-                className="rounded-xl bg-secondary px-4 py-2 text-sm font-semibold text-white transition hover:bg-secondary-hover hover:shadow-glow-secondary"
-              >
-                Panelim
-              </Link>
-              <button
-                type="button"
-                disabled={isLoggingOut}
-                onClick={() => void handleLogout()}
-                className="rounded-xl bg-primary px-4 py-2 text-sm font-semibold text-white transition hover:bg-primary-hover hover:shadow-glow-primary disabled:opacity-60"
-              >
-                {isLoggingOut ? "Çıkış..." : "Çıkış Yap"}
-              </button>
-            </>
-          ) : null}
-          {showGuestAuthActions ? (
-            <>
-              <AuthPortalLink href="/student-login" kind="student">
-                Öğrenci Girişi
-              </AuthPortalLink>
-              <AuthPortalLink href="/login" kind="parent">
-                Veli Girişi
-              </AuthPortalLink>
-              <Link
-                href="/register"
-                className="rounded-xl bg-secondary px-4 py-2 text-sm font-semibold text-white transition hover:bg-secondary-hover hover:shadow-glow-secondary"
-              >
-                Hesap Oluştur
-              </Link>
-            </>
-          ) : null}
+          <button
+            type="button"
+            className="relative z-[60] ml-auto inline-flex min-h-11 min-w-11 shrink-0 items-center justify-center rounded-xl border border-sky-200 bg-white/80 p-2.5 text-slate-800 shadow-sm transition hover:border-primary/30 hover:text-primary lg:hidden"
+            aria-label={isMobileMenuOpen ? "Menüyü kapat" : "Menüyü aç"}
+            aria-expanded={isMobileMenuOpen}
+            aria-controls="mobile-main-menu"
+            onClick={() => setIsMobileMenuOpen((open) => !open)}
+          >
+            <MenuIcon open={isMobileMenuOpen} />
+          </button>
         </div>
-
-        <button
-          type="button"
-          className="ml-auto inline-flex min-h-11 min-w-11 shrink-0 items-center justify-center rounded-xl border border-sky-200 bg-white/80 p-2.5 text-slate-800 shadow-sm transition hover:border-primary/30 hover:text-primary lg:hidden"
-          aria-label={isMobileMenuOpen ? "Menüyü kapat" : "Menüyü aç"}
-          aria-expanded={isMobileMenuOpen}
-          aria-controls="mobile-main-menu"
-          onClick={() => setIsMobileMenuOpen((open) => !open)}
-        >
-          <MenuIcon open={isMobileMenuOpen} />
-        </button>
       </div>
 
       {isMobileMenuOpen ? (
         <>
           <button
             type="button"
-            className="fixed inset-0 z-30 bg-sky-900/20 backdrop-blur-[2px] lg:hidden"
+            className="fixed inset-0 z-40 bg-sky-900/20 backdrop-blur-[2px] lg:hidden"
             aria-label="Menüyü kapat"
             onClick={closeMobileMenu}
           />
           <nav
             id="mobile-main-menu"
-            className="fixed inset-x-0 bottom-0 top-20 z-40 overflow-y-auto overscroll-contain border-t border-sky-200/80 bg-gradient-to-b from-sky-50 to-sky-100/95 px-4 py-5 shadow-lg shadow-sky-200/40 lg:hidden sm:px-6"
+            className="fixed inset-x-0 bottom-0 top-20 z-50 overflow-y-auto overscroll-contain border-t border-sky-200/80 bg-gradient-to-b from-sky-50 to-sky-100/95 px-4 py-5 shadow-lg shadow-sky-200/40 lg:hidden sm:px-6"
             aria-label="Mobil menü"
           >
             <ul className="space-y-1">

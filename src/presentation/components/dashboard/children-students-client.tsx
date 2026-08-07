@@ -15,6 +15,11 @@ import {
   eventLocationLabel,
   formatEventDateTimeRange,
 } from "@/shared/utils/event-format";
+import {
+  buildChildProfileForEnrollPath,
+  isChildProfileReadyForEnrollment,
+} from "@/shared/utils/event-enrollment";
+import { PROFILE_INCOMPLETE_SAVE_BLOCKED_MESSAGE } from "@/lib/utils/progress";
 
 export type ChildProgressPreview = {
   enrollments: Array<{
@@ -127,9 +132,11 @@ function emptyPreview(): ChildProgressPreview {
 export function ChildrenStudentsClient({
   initialStudents,
   upcomingEvents,
+  autoEnrollStudentId,
 }: {
   initialStudents: ChildStudent[];
   upcomingEvents: EnrollableEventOption[];
+  autoEnrollStudentId?: string;
 }) {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -140,19 +147,49 @@ export function ChildrenStudentsClient({
   const [enrollTarget, setEnrollTarget] = useState<ChildStudent | null>(null);
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
+  function openEnrollForStudent(student: ChildStudent) {
+    if (!isChildProfileReadyForEnrollment(student.profileProgress)) {
+      router.push(
+        buildChildProfileForEnrollPath(student.id, {
+          eventId: pendingEventId || undefined,
+        }),
+      );
+      return;
+    }
+
+    setEnrollTarget(student);
+  }
+
   useEffect(() => {
     if (searchParams.get("add") === "1") {
       setAddOpen(true);
     }
 
     if (searchParams.get("enroll") === "1") {
-      if (initialStudents.length > 0) {
-        setEnrollTarget(initialStudents[0] ?? null);
-      } else {
+      if (initialStudents.length === 0) {
         setAddOpen(true);
+        return;
+      }
+
+      const target =
+        (autoEnrollStudentId
+          ? initialStudents.find((student) => student.id === autoEnrollStudentId)
+          : null) ??
+        (initialStudents.length === 1 ? initialStudents[0] : null);
+
+      if (target) {
+        if (!isChildProfileReadyForEnrollment(target.profileProgress)) {
+          router.replace(
+            buildChildProfileForEnrollPath(target.id, {
+              eventId: pendingEventId || undefined,
+            }),
+          );
+          return;
+        }
+        setEnrollTarget(target);
       }
     }
-  }, [initialStudents, searchParams]);
+  }, [autoEnrollStudentId, initialStudents, pendingEventId, router, searchParams]);
 
   return (
     <div className="space-y-4">
@@ -261,7 +298,7 @@ export function ChildrenStudentsClient({
                       <Button
                         variant="outline"
                         className={childActionButtonClass}
-                        onClick={() => setEnrollTarget(student)}
+                        onClick={() => openEnrollForStudent(student)}
                       >
                         Etkinliğe kaydet
                       </Button>
@@ -777,12 +814,21 @@ function EnrollStudentDialog({
   onEnrolled: (eventTitle: string, alreadyEnrolled: boolean) => void;
 }) {
   const router = useRouter();
+  const profileProgress = student.profileProgress ?? 0;
+  const profileReady = isChildProfileReadyForEnrollment(profileProgress);
+  const profileHref = buildChildProfileForEnrollPath(student.id, {
+    eventId: initialEventId,
+  });
   const [eventId, setEventId] = useState(initialEventId ?? "");
   const [error, setError] = useState<string | null>(null);
   const [redirecting, setRedirecting] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
+    if (!profileReady) {
+      return;
+    }
+
     if (initialEventId) {
       setEventId(initialEventId);
       return;
@@ -791,7 +837,7 @@ function EnrollStudentDialog({
     if (events.length === 1) {
       setEventId(events[0]?.id ?? "");
     }
-  }, [initialEventId, events]);
+  }, [events, initialEventId, profileReady]);
 
   async function handleSubmit(event: FormEvent) {
     event.preventDefault();
@@ -838,6 +884,23 @@ function EnrollStudentDialog({
     } finally {
       setSubmitting(false);
     }
+  }
+
+  if (!profileReady) {
+    return (
+      <Dialog title={`${student.full_name} — profil gerekli`} onClose={onClose}>
+        <div className="space-y-4">
+          <p className="text-sm leading-6 text-slate-700">{PROFILE_INCOMPLETE_SAVE_BLOCKED_MESSAGE}</p>
+          <p className="text-sm font-semibold text-amber-900">Şu an profil %{profileProgress} dolu.</p>
+          <Button className="w-full" onClick={() => router.push(profileHref)}>
+            Profili tamamla
+          </Button>
+          <Button variant="outline" className="w-full" onClick={onClose}>
+            Vazgeç
+          </Button>
+        </div>
+      </Dialog>
+    );
   }
 
   return (

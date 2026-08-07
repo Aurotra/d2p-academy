@@ -16,8 +16,19 @@ import {
   type EnrollableEventOption,
 } from "@/presentation/components/dashboard/children-students-client";
 import { BRAND_SURFACE_GRADIENT } from "@/shared/constants/brand-surfaces";
+import {
+  buildChildProfileForEnrollPath,
+  isChildProfileReadyForEnrollment,
+} from "@/shared/utils/event-enrollment";
 
-export default async function DashboardChildrenPage() {
+export default async function DashboardChildrenPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ enroll?: string; eventId?: string }>;
+}) {
+  const query = await searchParams;
+  const pendingEventId = query.eventId?.trim() ?? "";
+  const enrollIntent = query.enroll === "1";
   const supabase = await createSupabaseServerClient();
   if (!supabase) {
     redirect("/login");
@@ -149,6 +160,29 @@ export default async function DashboardChildrenPage() {
     }),
   );
 
+  if (enrollIntent && students.length > 0) {
+    const readyStudents = students.filter((student) =>
+      isChildProfileReadyForEnrollment(student.profileProgress),
+    );
+
+    if (readyStudents.length === 0) {
+      redirect(
+        buildChildProfileForEnrollPath(students[0]!.id, {
+          eventId: pendingEventId || undefined,
+        }),
+      );
+    }
+  }
+
+  const autoEnrollStudentId =
+    enrollIntent && students.length > 0
+      ? (students.filter((student) => isChildProfileReadyForEnrollment(student.profileProgress))
+          .length === 1
+          ? students.find((student) => isChildProfileReadyForEnrollment(student.profileProgress))
+              ?.id
+          : undefined)
+      : undefined;
+
   return (
     <section className="bg-slate-50 px-4 py-10 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-5xl">
@@ -196,6 +230,7 @@ export default async function DashboardChildrenPage() {
               <ChildrenStudentsClient
                 initialStudents={students}
                 upcomingEvents={upcomingEvents}
+                autoEnrollStudentId={autoEnrollStudentId}
               />
             </Suspense>
           )}
