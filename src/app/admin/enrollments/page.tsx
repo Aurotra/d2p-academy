@@ -111,12 +111,13 @@ function groupByEvent(rows: EnrollmentListRow[]): EventEnrollmentGroup[] {
 }
 
 interface AdminEnrollmentsPageProps {
-  searchParams: Promise<{ event_id?: string }>;
+  searchParams: Promise<{ event_id?: string; include_cancelled?: string }>;
 }
 
 export default async function AdminEnrollmentsPage({ searchParams }: AdminEnrollmentsPageProps) {
   const params = await searchParams;
   const eventId = params.event_id?.trim() || null;
+  const includeCancelled = params.include_cancelled === "1";
 
   const client = await createSupabaseServerClient();
 
@@ -157,6 +158,10 @@ export default async function AdminEnrollmentsPage({ searchParams }: AdminEnroll
     )
     .order("registered_at", { ascending: false });
 
+  if (!includeCancelled) {
+    query = query.neq("status", "cancelled");
+  }
+
   if (eventId) {
     query = query.eq("event_id", eventId);
   }
@@ -184,7 +189,9 @@ export default async function AdminEnrollmentsPage({ searchParams }: AdminEnroll
         </h1>
         <p className="mt-2 text-sm text-slate-600">
           Eğitim bitince öğrenciyi Tamamlandı olarak onaylayın (tek tek veya toplu); ardından
-          Sertifika Yönetimi’nden sertifika verebilirsiniz.
+          Sertifika Yönetimi’nden sertifika verebilirsiniz. Yanlış kayıt veya katılmayacak öğrenciler
+          için satırdaki <span className="font-semibold">Kurstan çıkar</span> ile etkinlikten
+          çıkarabilirsiniz.
         </p>
         <div className="mt-4 flex flex-wrap gap-3">
           <Link
@@ -211,6 +218,23 @@ export default async function AdminEnrollmentsPage({ searchParams }: AdminEnroll
             <Link href="/admin/enrollments" className="text-sm font-semibold text-slate-600 hover:underline">
               Tüm kayıtları göster
             </Link>
+          ) : null}
+          {eventId ? (
+            includeCancelled ? (
+              <Link
+                href={`/admin/enrollments?event_id=${eventId}`}
+                className="text-sm font-semibold text-slate-600 hover:underline"
+              >
+                Çıkarılanları gizle
+              </Link>
+            ) : (
+              <Link
+                href={`/admin/enrollments?event_id=${eventId}&include_cancelled=1`}
+                className="text-sm font-semibold text-slate-600 hover:underline"
+              >
+                Çıkarılanları göster
+              </Link>
+            )
           ) : null}
         </div>
         {error ? (

@@ -41,6 +41,10 @@ function canMarkCompleted(status: EnrollmentStatus): boolean {
   return status !== "completed" && status !== "cancelled" && status !== "no_show";
 }
 
+function canRemoveFromEvent(status: EnrollmentStatus): boolean {
+  return status !== "cancelled";
+}
+
 export function EventEnrollmentsTable({
   eventTitle,
   enrollments,
@@ -51,8 +55,8 @@ export function EventEnrollmentsTable({
   const [error, setError] = useState<string | null>(null);
   const [pendingSingleId, setPendingSingleId] = useState<string | null>(null);
   const [showBulkConfirm, setShowBulkConfirm] = useState(false);
-  const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
-  const [deleteReason, setDeleteReason] = useState("");
+  const [pendingRemoveId, setPendingRemoveId] = useState<string | null>(null);
+  const [removeReason, setRemoveReason] = useState("");
 
   const eligibleIds = useMemo(
     () => enrollments.filter((row) => canMarkCompleted(row.status)).map((row) => row.id),
@@ -121,36 +125,37 @@ export function EventEnrollmentsTable({
     }
   }
 
-  async function deleteEnrollment(id: string) {
+  async function removeFromEvent(id: string) {
     setIsUpdating(true);
     setError(null);
 
     try {
       const response = await fetch("/api/v1/admin/enrollments", {
-        method: "DELETE",
+        method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           enrollmentId: id,
-          reason: deleteReason.trim() || null,
+          status: "cancelled",
+          reason: removeReason.trim() || null,
         }),
       });
 
       const payload = (await response.json()) as { error?: string };
 
       if (!response.ok) {
-        throw new Error(payload.error ?? "Kayıt silinemedi.");
+        throw new Error(payload.error ?? "Öğrenci kurstan çıkarılamadı.");
       }
 
-      setPendingDeleteId(null);
-      setDeleteReason("");
+      setPendingRemoveId(null);
+      setRemoveReason("");
       setSelectedIds((prev) => {
         const next = new Set(prev);
         next.delete(id);
         return next;
       });
       router.refresh();
-    } catch (deleteError) {
-      setError(deleteError instanceof Error ? deleteError.message : "Silme başarısız.");
+    } catch (removeError) {
+      setError(removeError instanceof Error ? removeError.message : "İşlem başarısız.");
     } finally {
       setIsUpdating(false);
     }
@@ -160,8 +165,8 @@ export function EventEnrollmentsTable({
     ? enrollments.find((row) => row.id === pendingSingleId)
     : null;
 
-  const pendingDeleteStudent = pendingDeleteId
-    ? enrollments.find((row) => row.id === pendingDeleteId)
+  const pendingRemoveStudent = pendingRemoveId
+    ? enrollments.find((row) => row.id === pendingRemoveId)
     : null;
 
   const bulkStudents = enrollments.filter((row) => selectedEligible.includes(row.id));
@@ -256,23 +261,24 @@ export function EventEnrollmentsTable({
         </div>
       ) : null}
 
-      {pendingDeleteStudent ? (
-        <div className="border-b border-red-200 bg-red-50 px-5 py-4 text-sm text-red-950">
+      {pendingRemoveStudent ? (
+        <div className="border-b border-amber-200 bg-amber-50 px-5 py-4 text-sm text-amber-950">
           <p className="font-semibold">
-            {pendingDeleteStudent.studentName} kaydını “{eventTitle}” etkinliğinden silmek
+            {pendingRemoveStudent.studentName} adlı öğrenciyi “{eventTitle}” etkinliğinden çıkarmak
             istediğinize emin misiniz?
           </p>
-          <p className="mt-1 text-xs text-red-900/80">
-            Bu işlem geri alınamaz. Aktif sertifikası varsa önce sertifikayı iptal etmelisiniz.
-            Silme işlemi loglara yazılır.
+          <p className="mt-1 text-xs text-amber-900/80">
+            Öğrenci listeden kaldırılır; yoklama ve form kayıtları saklanır. Gerekirse aynı
+            etkinliğe yeniden kayıt ekleyebilirsiniz. Aktif sertifikası varsa önce sertifikayı iptal
+            etmelisiniz. İşlem loglara yazılır.
           </p>
-          <label className="mt-3 block text-xs font-semibold text-red-900">
-            Silme nedeni (opsiyonel)
+          <label className="mt-3 block text-xs font-semibold text-amber-900">
+            Çıkarma nedeni (opsiyonel)
             <input
-              value={deleteReason}
-              onChange={(e) => setDeleteReason(e.target.value)}
-              className="mt-1 w-full rounded-xl border border-red-200 bg-white px-3 py-2 text-sm text-slate-900"
-              placeholder="Örn. yanlış kayıt / test kaydı"
+              value={removeReason}
+              onChange={(e) => setRemoveReason(e.target.value)}
+              className="mt-1 w-full rounded-xl border border-amber-200 bg-white px-3 py-2 text-sm text-slate-900"
+              placeholder="Örn. yanlış kayıt / katılmayacak"
             />
           </label>
           <div className="mt-3 flex flex-wrap gap-2">
@@ -280,18 +286,18 @@ export function EventEnrollmentsTable({
               type="button"
               variant="secondary"
               disabled={isUpdating}
-              onClick={() => void deleteEnrollment(pendingDeleteStudent.id)}
+              onClick={() => void removeFromEvent(pendingRemoveStudent.id)}
               className="min-h-[40px] px-3 py-2 text-xs"
             >
-              {isUpdating ? "Siliniyor..." : "Evet, sil"}
+              {isUpdating ? "Çıkarılıyor..." : "Evet, kurstan çıkar"}
             </Button>
             <Button
               type="button"
               variant="ghost"
               disabled={isUpdating}
               onClick={() => {
-                setPendingDeleteId(null);
-                setDeleteReason("");
+                setPendingRemoveId(null);
+                setRemoveReason("");
               }}
               className="min-h-[40px] px-3 py-2 text-xs"
             >
@@ -380,7 +386,7 @@ export function EventEnrollmentsTable({
                           disabled={isUpdating}
                           onClick={() => {
                             setShowBulkConfirm(false);
-                            setPendingDeleteId(null);
+                            setPendingRemoveId(null);
                             setPendingSingleId(enrollment.id);
                           }}
                           className="min-h-[40px] px-3 py-2 text-xs"
@@ -388,24 +394,26 @@ export function EventEnrollmentsTable({
                           Tamamlandı
                         </Button>
                       ) : null}
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        disabled={isUpdating || enrollment.hasActiveCertificate}
-                        onClick={() => {
-                          setShowBulkConfirm(false);
-                          setPendingSingleId(null);
-                          setPendingDeleteId(enrollment.id);
-                        }}
-                        className="min-h-[40px] px-3 py-2 text-xs text-red-700 hover:bg-red-50"
-                        title={
-                          enrollment.hasActiveCertificate
-                            ? "Önce sertifikayı iptal edin"
-                            : "Kaydı sil"
-                        }
-                      >
-                        Sil
-                      </Button>
+                      {canRemoveFromEvent(enrollment.status) ? (
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          disabled={isUpdating || enrollment.hasActiveCertificate}
+                          onClick={() => {
+                            setShowBulkConfirm(false);
+                            setPendingSingleId(null);
+                            setPendingRemoveId(enrollment.id);
+                          }}
+                          className="min-h-[40px] px-3 py-2 text-xs text-amber-800 hover:bg-amber-50"
+                          title={
+                            enrollment.hasActiveCertificate
+                              ? "Önce sertifikayı iptal edin"
+                              : "Öğrenciyi etkinlikten çıkar"
+                          }
+                        >
+                          Kurstan çıkar
+                        </Button>
+                      ) : null}
                     </div>
                   </td>
                 </tr>

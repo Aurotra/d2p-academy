@@ -127,6 +127,37 @@ export class SupabaseAdminAuditLogRepository {
     });
   }
 
+  async logEnrollmentRemovedFromEvent(input: {
+    actorId: string;
+    actorEmail: string | null;
+    reason: string | null;
+    enrollmentId: string;
+    eventId: string | null;
+    eventTitle: string | null;
+    studentId: string | null;
+    studentName: string | null;
+    studentEmail: string | null;
+    metadata?: Record<string, unknown>;
+  }): Promise<void> {
+    const { error } = await this.client.from("admin_audit_logs").insert({
+      action: "enrollment_removed_from_event",
+      actor_id: input.actorId,
+      actor_email: input.actorEmail,
+      reason: input.reason,
+      enrollment_id: input.enrollmentId,
+      event_id: input.eventId,
+      event_title: input.eventTitle,
+      student_id: input.studentId,
+      student_name: input.studentName,
+      student_email: input.studentEmail,
+      metadata: input.metadata ?? {},
+    });
+
+    if (error) {
+      throw new Error(`Kurstan çıkarma kaydı yazılamadı: ${error.message}`);
+    }
+  }
+
   async logEnrollmentDeleted(input: {
     actorId: string;
     actorEmail: string | null;

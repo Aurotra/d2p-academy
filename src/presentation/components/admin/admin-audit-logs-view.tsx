@@ -29,7 +29,11 @@ function isInstructorAction(action: AdminAuditAction): boolean {
 }
 
 function isAdminEnrollmentAction(action: AdminAuditAction): boolean {
-  return action === "enrollment_deleted" || action === "certificate_revoked";
+  return (
+    action === "enrollment_deleted" ||
+    action === "enrollment_removed_from_event" ||
+    action === "certificate_revoked"
+  );
 }
 
 function badgeTone(action: AdminAuditAction): "neutral" | "cyan" | "navy" {
@@ -223,6 +227,7 @@ export function AdminAuditLogsView() {
         { id: "attendance_marked" as const, label: "Yoklama" },
         { id: "certificate_revoked" as const, label: "Sertifika iptalleri" },
         { id: "enrollment_deleted" as const, label: "Kayıt silmeleri" },
+        { id: "enrollment_removed_from_event" as const, label: "Kurstan çıkarmalar" },
         { id: "instructor_granted" as const, label: "Eğitmen verildi" },
         { id: "instructor_revoked" as const, label: "Eğitmen yetkisi alındı" },
       ] as const,

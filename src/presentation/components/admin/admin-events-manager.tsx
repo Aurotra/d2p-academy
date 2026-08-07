@@ -309,7 +309,7 @@ function EventActionBar({
             Düzenle
           </Button>
         ) : null}
-        <AdminActionLink href={`/admin/enrollments?event_id=${event.id}`}>Kayıtlar</AdminActionLink>
+        <AdminActionLink href={`/admin/enrollments?event_id=${event.id}`}>Kayıtlar / Çıkar</AdminActionLink>
         <AdminActionLink href={`/admin/events/${event.id}/attendance`}>Yoklama</AdminActionLink>
         {event.instructorIds.length > 0 ? (
           <Button
