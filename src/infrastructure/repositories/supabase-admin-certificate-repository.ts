@@ -16,6 +16,7 @@ import {
 import {
   calculateProgress,
   isProfileComplete,
+  profileProgressOptions,
   PROFILE_REQUIRED_FOR_CERTIFICATE_MESSAGE,
 } from "@/lib/utils/progress";
 import { formatStudentContact } from "@/shared/utils/format-student-contact";
@@ -55,6 +56,8 @@ interface PendingProfileRow {
     beklenti?: number | null;
   } | null;
   profile_avatar_url: string | null;
+  parent_phone: string | null;
+  parent_id: string | null;
 }
 
 interface PendingEnrollmentRow {
@@ -201,7 +204,9 @@ export class SupabaseAdminCertificateRepository implements AdminCertificateRepos
           experience_data,
           interests,
           motivation_data,
-          profile_avatar_url
+          profile_avatar_url,
+          parent_phone,
+          parent_id
         ),
         events ( title, required_lesson_count, total_lesson_count ),
         certificates ( id, status )
@@ -289,8 +294,28 @@ export class SupabaseAdminCertificateRepository implements AdminCertificateRepos
           row.intake_form_completed_at ??
           row.completed_at ??
           new Date().toISOString();
+        const progressOptions = profile ? profileProgressOptions(profile) : undefined;
         const profileProgress = profile
-          ? calculateProgress({
+          ? calculateProgress(
+              {
+                full_name: profile.full_name,
+                gender: profile.gender,
+                grade_level: profile.grade_level,
+                school_name: profile.school_name,
+                city_district: profile.city_district,
+                experience_data: profile.experience_data,
+                interests: profile.interests,
+                motivation_data: profile.motivation_data,
+                profile_avatar_url: profile.profile_avatar_url,
+                parent_phone: profile.parent_phone,
+              },
+              progressOptions,
+            )
+          : 0;
+        const profileIncomplete =
+          !profile ||
+          !isProfileComplete(
+            {
               full_name: profile.full_name,
               gender: profile.gender,
               grade_level: profile.grade_level,
@@ -300,19 +325,10 @@ export class SupabaseAdminCertificateRepository implements AdminCertificateRepos
               interests: profile.interests,
               motivation_data: profile.motivation_data,
               profile_avatar_url: profile.profile_avatar_url,
-            })
-          : 0;
-        const profileIncomplete = !profile || !isProfileComplete({
-          full_name: profile.full_name,
-          gender: profile.gender,
-          grade_level: profile.grade_level,
-          school_name: profile.school_name,
-          city_district: profile.city_district,
-          experience_data: profile.experience_data,
-          interests: profile.interests,
-          motivation_data: profile.motivation_data,
-          profile_avatar_url: profile.profile_avatar_url,
-        });
+              parent_phone: profile.parent_phone,
+            },
+            progressOptions,
+          );
         const presentCount = presentCounts.get(row.id) ?? 0;
         const requiredLessonCount = resolveRequiredLessonCount(event?.required_lesson_count);
         const totalLessonCount = event?.total_lesson_count ?? sessionCounts.get(row.event_id) ?? 0;
@@ -352,7 +368,9 @@ export class SupabaseAdminCertificateRepository implements AdminCertificateRepos
           experience_data,
           interests,
           motivation_data,
-          profile_avatar_url
+          profile_avatar_url,
+          parent_phone,
+          parent_id
         )
       `,
       )
@@ -367,19 +385,25 @@ export class SupabaseAdminCertificateRepository implements AdminCertificateRepos
       ? (enrollment.profiles[0] ?? null)
       : enrollment.profiles;
 
+    const progressOptions = profile ? profileProgressOptions(profile) : undefined;
+
     if (
       !profile ||
-      !isProfileComplete({
-        full_name: profile.full_name,
-        gender: profile.gender,
-        grade_level: profile.grade_level,
-        school_name: profile.school_name,
-        city_district: profile.city_district,
-        experience_data: profile.experience_data,
-        interests: profile.interests,
-        motivation_data: profile.motivation_data,
-        profile_avatar_url: profile.profile_avatar_url,
-      })
+      !isProfileComplete(
+        {
+          full_name: profile.full_name,
+          gender: profile.gender,
+          grade_level: profile.grade_level,
+          school_name: profile.school_name,
+          city_district: profile.city_district,
+          experience_data: profile.experience_data,
+          interests: profile.interests,
+          motivation_data: profile.motivation_data,
+          profile_avatar_url: profile.profile_avatar_url,
+          parent_phone: profile.parent_phone,
+        },
+        progressOptions,
+      )
     ) {
       throw new Error(`Sertifika oluşturulamadı: ${PROFILE_REQUIRED_FOR_CERTIFICATE_MESSAGE}`);
     }

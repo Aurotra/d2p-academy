@@ -8,7 +8,7 @@ import {
   shouldShowParentOnboarding,
 } from "@/infrastructure/repositories/fetch-parent-onboarding-context";
 import { createSupabaseServerClient } from "@/infrastructure/supabase/create-server-client";
-import { calculateProgress } from "@/lib/utils/progress";
+import { calculateProgress, profileProgressOptions } from "@/lib/utils/progress";
 import { ParentOnboardingGuide } from "@/presentation/components/dashboard/parent-onboarding-guide";
 import {
   ChildrenStudentsClient,
@@ -34,7 +34,7 @@ export default async function DashboardChildrenPage() {
   const { data, error } = await supabase
     .from("profiles")
     .select(
-      "id, full_name, username, created_at, gender, grade_level, school_name, city_district, experience_data, interests, motivation_data, profile_avatar_url",
+      "id, full_name, username, created_at, gender, grade_level, school_name, city_district, experience_data, interests, motivation_data, profile_avatar_url, parent_phone, parent_id",
     )
     .eq("role", "student")
     .eq("parent_id", auth.user.id)
@@ -75,22 +75,26 @@ export default async function DashboardChildrenPage() {
   const students: ChildStudent[] = await Promise.all(
     baseStudents.map(async (student) => {
       const progress = await fetchChildProgress(student.id);
-      const profileProgress = calculateProgress({
-        full_name: student.full_name,
-        gender: student.gender,
-        grade_level: student.grade_level,
-        school_name: student.school_name,
-        city_district: student.city_district,
-        experience_data: student.experience_data as {
-          coding_experience?: string;
-        } | null,
-        interests: student.interests,
-        motivation_data: student.motivation_data as {
-          hedef?: string;
-          beklenti?: number;
-        } | null,
-        profile_avatar_url: student.profile_avatar_url,
-      });
+      const profileProgress = calculateProgress(
+        {
+          full_name: student.full_name,
+          gender: student.gender,
+          grade_level: student.grade_level,
+          school_name: student.school_name,
+          city_district: student.city_district,
+          experience_data: student.experience_data as {
+            coding_experience?: string;
+          } | null,
+          interests: student.interests,
+          motivation_data: student.motivation_data as {
+            hedef?: string;
+            beklenti?: number;
+          } | null,
+          profile_avatar_url: student.profile_avatar_url,
+          parent_phone: student.parent_phone,
+        },
+        profileProgressOptions(student),
+      );
 
       return {
         id: student.id,

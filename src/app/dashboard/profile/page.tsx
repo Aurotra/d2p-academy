@@ -35,6 +35,7 @@ const emptyProfile: StudentProfileData = {
   interests: [],
   motivation_data: { hedef: "", beklenti: "" },
   profile_avatar_url: "",
+  parent_phone: "",
   kvkk_accepted: false,
 };
 
@@ -81,6 +82,7 @@ export default function DashboardProfilePage() {
           interests: profile.interests,
           motivation_data: profile.motivation_data,
           profile_avatar_url: profile.profile_avatar_url,
+          parent_phone: profile.parent_phone,
           kvkk_accepted: profile.kvkk_accepted,
         });
       }

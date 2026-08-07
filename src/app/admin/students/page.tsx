@@ -2,7 +2,7 @@ import Link from "next/link";
 
 import { createSupabaseServerClient } from "@/infrastructure/supabase/create-server-client";
 import { SupabaseStudentProfileRepository } from "@/infrastructure/repositories/supabase-student-profile-repository";
-import { calculateProgress } from "@/lib/utils/progress";
+import { calculateProgress, profileProgressOptions } from "@/lib/utils/progress";
 import { GRADE_LEVEL_OPTIONS } from "@/shared/constants/profile-options";
 
 export const dynamic = "force-dynamic";
@@ -55,29 +55,33 @@ export default async function AdminStudentsPage() {
                 </tr>
               ) : (
                 students.map((student) => {
-                  const progress = calculateProgress({
-                    full_name: student.full_name,
-                    gender: student.gender,
-                    grade_level: student.grade_level,
-                    school_name: student.school_name,
-                    city_district: student.city_district,
-                    experience_data: {
-                      coding_experience: student.experience_data.coding_experience,
-                      proje_sayisi:
-                        student.experience_data.proje_sayisi === ""
-                          ? null
-                          : Number(student.experience_data.proje_sayisi),
+                  const progress = calculateProgress(
+                    {
+                      full_name: student.full_name,
+                      gender: student.gender,
+                      grade_level: student.grade_level,
+                      school_name: student.school_name,
+                      city_district: student.city_district,
+                      experience_data: {
+                        coding_experience: student.experience_data.coding_experience,
+                        proje_sayisi:
+                          student.experience_data.proje_sayisi === ""
+                            ? null
+                            : Number(student.experience_data.proje_sayisi),
+                      },
+                      interests: student.interests,
+                      motivation_data: {
+                        hedef: student.motivation_data.hedef,
+                        beklenti:
+                          student.motivation_data.beklenti === ""
+                            ? null
+                            : Number(student.motivation_data.beklenti),
+                      },
+                      profile_avatar_url: student.profile_avatar_url,
+                      parent_phone: student.parent_phone,
                     },
-                    interests: student.interests,
-                    motivation_data: {
-                      hedef: student.motivation_data.hedef,
-                      beklenti:
-                        student.motivation_data.beklenti === ""
-                          ? null
-                          : Number(student.motivation_data.beklenti),
-                    },
-                    profile_avatar_url: student.profile_avatar_url,
-                  });
+                    profileProgressOptions(student),
+                  );
 
                   return (
                     <tr key={student.id} className="border-b border-slate-50 last:border-0">

@@ -10,6 +10,7 @@ import { createSupabaseBrowserClient } from "@/infrastructure/supabase/create-br
 import { ProfileMotivationFields } from "@/presentation/components/profile/profile-motivation-fields";
 import { ValueChipGroup } from "@/presentation/components/forms/value-chip-group";
 import { ProfileProgressBar } from "@/presentation/components/profile/profile-progress-bar";
+import { profileProgressOptions } from "@/lib/utils/progress";
 import { Button } from "@/presentation/components/ui/button";
 import { Input } from "@/presentation/components/ui/input";
 import { Select } from "@/presentation/components/ui/select";
@@ -35,6 +36,7 @@ function toFormData(student: StudentProfileRecord): StudentProfileData {
     interests: student.interests,
     motivation_data: student.motivation_data,
     profile_avatar_url: student.profile_avatar_url,
+    parent_phone: student.parent_phone,
     kvkk_accepted: student.kvkk_accepted,
   };
 }
@@ -47,6 +49,8 @@ export function AdminStudentProfileEditor({ student }: AdminStudentProfileEditor
     null,
   );
 
+  const progressOptions = useMemo(() => profileProgressOptions(student), [student]);
+
   const progressInput = useMemo(
     () => ({
       full_name: form.full_name,
@@ -54,6 +58,7 @@ export function AdminStudentProfileEditor({ student }: AdminStudentProfileEditor
       grade_level: form.grade_level,
       school_name: form.school_name,
       city_district: form.city_district,
+      parent_phone: form.parent_phone,
       experience_data: {
         coding_experience: form.experience_data.coding_experience,
         proje_sayisi:
@@ -105,7 +110,10 @@ export function AdminStudentProfileEditor({ student }: AdminStudentProfileEditor
 
     try {
       const repository = new SupabaseStudentProfileRepository(client);
-      await repository.updateProfile(student.id, form);
+      await repository.updateProfile(student.id, {
+        ...form,
+        parent_id: student.parent_id,
+      });
       setMessage({ type: "success", text: "Öğrenci profili güncellendi." });
       router.refresh();
     } catch (error) {
@@ -120,7 +128,7 @@ export function AdminStudentProfileEditor({ student }: AdminStudentProfileEditor
 
   return (
     <div className="space-y-6">
-      <ProfileProgressBar data={progressInput} />
+      <ProfileProgressBar data={progressInput} options={progressOptions} />
 
       <form onSubmit={(event) => void handleSubmit(event)} className="space-y-6">
         <fieldset className="rounded-[1.75rem] border border-slate-200 bg-white p-6 shadow-sm">
@@ -171,6 +179,16 @@ export function AdminStudentProfileEditor({ student }: AdminStudentProfileEditor
               value={form.city_district}
               onChange={(e) => setForm({ ...form, city_district: e.target.value })}
             />
+            {student.parent_id ? (
+              <Input
+                label="Veli Telefon Numarası"
+                type="tel"
+                autoComplete="tel"
+                placeholder="05XX XXX XX XX veya +90 5XX XXX XX XX"
+                value={form.parent_phone}
+                onChange={(e) => setForm({ ...form, parent_phone: e.target.value })}
+              />
+            ) : null}
             <p className="text-xs text-slate-500">
               E-posta / kullanıcı adı:{" "}
               {student.email ?? (student.username ? `@${student.username}` : "—")}

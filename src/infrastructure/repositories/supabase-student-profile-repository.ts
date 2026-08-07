@@ -1,11 +1,16 @@
 import type { StudentProfileRecord } from "@/core/domain/student-profile";
 import type { SupabaseClient } from "@supabase/supabase-js";
+import {
+  isValidTurkishMobilePhone,
+  normalizeTurkishPhone,
+} from "@/shared/utils/turkish-phone";
 
 interface ProfileRow {
   id: string;
   email: string | null;
   username: string | null;
   role: string;
+  parent_id: string | null;
   full_name: string;
   gender: string | null;
   grade_level: string | null;
@@ -21,6 +26,7 @@ interface ProfileRow {
     beklenti?: number;
   } | null;
   profile_avatar_url: string | null;
+  parent_phone: string | null;
   kvkk_accepted: boolean | null;
 }
 
@@ -30,6 +36,7 @@ function mapProfile(row: ProfileRow): StudentProfileRecord {
     email: row.email,
     username: row.username,
     role: row.role,
+    parent_id: row.parent_id,
     full_name: row.full_name,
     gender: (row.gender ?? "") as StudentProfileRecord["gender"],
     grade_level: row.grade_level ?? "",
@@ -46,12 +53,13 @@ function mapProfile(row: ProfileRow): StudentProfileRecord {
       beklenti: row.motivation_data?.beklenti ?? "",
     },
     profile_avatar_url: row.profile_avatar_url ?? "",
+    parent_phone: row.parent_phone ?? "",
     kvkk_accepted: row.kvkk_accepted ?? false,
   };
 }
 
 const PROFILE_SELECT =
-  "id, email, username, role, full_name, gender, grade_level, school_name, city_district, experience_data, interests, motivation_data, profile_avatar_url, kvkk_accepted";
+  "id, email, username, role, parent_id, full_name, gender, grade_level, school_name, city_district, experience_data, interests, motivation_data, profile_avatar_url, parent_phone, kvkk_accepted";
 
 export class SupabaseStudentProfileRepository {
   constructor(private readonly client: SupabaseClient) {}
@@ -89,32 +97,47 @@ export class SupabaseStudentProfileRepository {
     userId: string,
     payload: Omit<StudentProfileRecord, "id" | "email" | "role">,
   ): Promise<StudentProfileRecord> {
+    const updatePayload: Record<string, unknown> = {
+      full_name: payload.full_name.trim(),
+      gender: payload.gender || null,
+      grade_level: payload.grade_level || null,
+      school_name: payload.school_name || null,
+      city_district: payload.city_district || null,
+      experience_data: {
+        coding_experience: payload.experience_data.coding_experience || null,
+        proje_sayisi:
+          payload.experience_data.proje_sayisi === ""
+            ? null
+            : Number(payload.experience_data.proje_sayisi),
+      },
+      interests: payload.interests,
+      motivation_data: {
+        hedef: payload.motivation_data.hedef.trim() || null,
+        beklenti:
+          payload.motivation_data.beklenti === ""
+            ? null
+            : Number(payload.motivation_data.beklenti),
+      },
+      profile_avatar_url: payload.profile_avatar_url || null,
+      kvkk_accepted: payload.kvkk_accepted,
+    };
+
+    if (payload.parent_id) {
+      const normalizedParentPhone =
+        payload.parent_phone.trim() === ""
+          ? null
+          : normalizeTurkishPhone(payload.parent_phone);
+
+      if (normalizedParentPhone && !isValidTurkishMobilePhone(normalizedParentPhone)) {
+        throw new Error("Geçerli bir veli telefon numarası girin.");
+      }
+
+      updatePayload.parent_phone = normalizedParentPhone;
+    }
+
     const { data, error } = await this.client
       .from("profiles")
-      .update({
-        full_name: payload.full_name.trim(),
-        gender: payload.gender || null,
-        grade_level: payload.grade_level || null,
-        school_name: payload.school_name || null,
-        city_district: payload.city_district || null,
-        experience_data: {
-          coding_experience: payload.experience_data.coding_experience || null,
-          proje_sayisi:
-            payload.experience_data.proje_sayisi === ""
-              ? null
-              : Number(payload.experience_data.proje_sayisi),
-        },
-        interests: payload.interests,
-        motivation_data: {
-          hedef: payload.motivation_data.hedef.trim() || null,
-          beklenti:
-            payload.motivation_data.beklenti === ""
-              ? null
-              : Number(payload.motivation_data.beklenti),
-        },
-        profile_avatar_url: payload.profile_avatar_url || null,
-        kvkk_accepted: payload.kvkk_accepted,
-      })
+      .update(updatePayload)
       .eq("id", userId)
       .select(PROFILE_SELECT)
       .single();

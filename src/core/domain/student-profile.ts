@@ -22,6 +22,7 @@ export interface StudentProfileData {
   interests: string[];
   motivation_data: MotivationData;
   profile_avatar_url: string;
+  parent_phone: string;
   kvkk_accepted: boolean;
 }
 
@@ -30,6 +31,7 @@ export interface StudentProfileRecord extends StudentProfileData {
   email: string | null;
   username?: string | null;
   role: string;
+  parent_id?: string | null;
 }
 
 export type ProfileProgressInput = Partial<{
@@ -48,4 +50,6 @@ export type ProfileProgressInput = Partial<{
     beklenti?: number | null;
   } | null;
   profile_avatar_url: string | null;
+  parent_phone: string | null;
+  parent_id: string | null;
 }>;

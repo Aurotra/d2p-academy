@@ -69,7 +69,7 @@ export default async function ParentChildProfilePage({ params, searchParams }: P
           </p>
           <p className="mt-2 leading-relaxed text-amber-950/90">
             Kurslara kayıt olabilmek ve sertifika alabilmek için aşağıdaki tüm zorunlu alanları
-            doldurun. Tamamlanan proje sayısı isteğe bağlıdır.
+            (veli telefon numarası dahil) doldurun. Tamamlanan proje sayısı isteğe bağlıdır.
           </p>
           <p className="mt-2 font-semibold text-amber-900">
             {child.full_name}

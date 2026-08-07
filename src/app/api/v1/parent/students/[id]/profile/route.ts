@@ -3,10 +3,21 @@ import { NextResponse } from "next/server";
 
 import { logMemberActivity } from "@/infrastructure/audit/log-member-activity";
 import { createSupabaseServerClient } from "@/infrastructure/supabase/create-server-client";
-import { calculateProgress, isProfileComplete, PROFILE_INCOMPLETE_SAVE_BLOCKED_MESSAGE } from "@/lib/utils/progress";
+import {
+  calculateProgress,
+  isProfileComplete,
+  PROFILE_INCOMPLETE_SAVE_BLOCKED_MESSAGE,
+} from "@/lib/utils/progress";
+import {
+  isValidTurkishMobilePhone,
+  normalizeTurkishPhone,
+  TURKISH_MOBILE_PHONE_ERROR,
+} from "@/shared/utils/turkish-phone";
 
 const PROFILE_SELECT =
-  "id, full_name, email, username, gender, grade_level, school_name, city_district, experience_data, interests, motivation_data, profile_avatar_url, kvkk_accepted";
+  "id, full_name, email, username, gender, grade_level, school_name, city_district, experience_data, interests, motivation_data, profile_avatar_url, parent_phone, kvkk_accepted";
+
+const PARENT_PHONE_PROGRESS_OPTIONS = { requireParentPhone: true } as const;
 
 async function requireOwnedChild(studentId: string) {
   const supabase = await createSupabaseServerClient();
@@ -37,14 +48,21 @@ export async function GET(
     return NextResponse.json({ error: "Yetki hatası." }, { status: 500 });
   }
 
-  const { data, error } = await access.supabase
-    .from("profiles")
-    .select(PROFILE_SELECT)
-    .eq("id", studentId)
-    .eq("parent_id", access.parentId)
-    .eq("role", "student")
-    .not("username", "is", null)
-    .maybeSingle();
+  const [{ data, error }, { data: parentProfile }] = await Promise.all([
+    access.supabase
+      .from("profiles")
+      .select(PROFILE_SELECT)
+      .eq("id", studentId)
+      .eq("parent_id", access.parentId)
+      .eq("role", "student")
+      .not("username", "is", null)
+      .maybeSingle(),
+    access.supabase
+      .from("profiles")
+      .select("phone")
+      .eq("id", access.parentId)
+      .maybeSingle(),
+  ]);
 
   if (error) {
     console.error("[parent profile GET]", error.message);
@@ -54,19 +72,34 @@ export async function GET(
     return NextResponse.json({ error: "Öğrenci bulunamadı." }, { status: 404 });
   }
 
-  const progress = calculateProgress({
-    full_name: data.full_name,
-    gender: data.gender,
-    grade_level: data.grade_level,
-    school_name: data.school_name,
-    city_district: data.city_district,
-    experience_data: data.experience_data,
-    interests: data.interests,
-    motivation_data: data.motivation_data,
-    profile_avatar_url: data.profile_avatar_url,
-  });
+  const defaultParentPhone =
+    parentProfile?.phone && isValidTurkishMobilePhone(parentProfile.phone)
+      ? normalizeTurkishPhone(parentProfile.phone)
+      : null;
 
-  return NextResponse.json({ data: { profile: data, progress } });
+  const progress = calculateProgress(
+    {
+      full_name: data.full_name,
+      gender: data.gender,
+      grade_level: data.grade_level,
+      school_name: data.school_name,
+      city_district: data.city_district,
+      experience_data: data.experience_data,
+      interests: data.interests,
+      motivation_data: data.motivation_data,
+      profile_avatar_url: data.profile_avatar_url,
+      parent_phone: data.parent_phone ?? defaultParentPhone,
+    },
+    PARENT_PHONE_PROGRESS_OPTIONS,
+  );
+
+  return NextResponse.json({
+    data: {
+      profile: data,
+      default_parent_phone: defaultParentPhone,
+      progress,
+    },
+  });
 }
 
 export async function PATCH(
@@ -116,6 +149,13 @@ export async function PATCH(
       payload.profile_avatar_url = body.profile_avatar_url || null;
     }
     if (typeof body.kvkk_accepted === "boolean") payload.kvkk_accepted = body.kvkk_accepted;
+    if (typeof body.parent_phone === "string") {
+      const normalizedPhone = normalizeTurkishPhone(body.parent_phone);
+      if (!isValidTurkishMobilePhone(normalizedPhone)) {
+        return NextResponse.json({ error: TURKISH_MOBILE_PHONE_ERROR }, { status: 400 });
+      }
+      payload.parent_phone = normalizedPhone;
+    }
 
     const progressInput = {
       full_name: (payload.full_name as string | undefined) ?? "",
@@ -133,10 +173,11 @@ export async function PATCH(
         beklenti?: number | null;
       } | null,
       profile_avatar_url: (payload.profile_avatar_url as string | null | undefined) ?? null,
+      parent_phone: (payload.parent_phone as string | undefined) ?? "",
     };
 
-    if (!isProfileComplete(progressInput)) {
-      const progress = calculateProgress(progressInput);
+    if (!isProfileComplete(progressInput, PARENT_PHONE_PROGRESS_OPTIONS)) {
+      const progress = calculateProgress(progressInput, PARENT_PHONE_PROGRESS_OPTIONS);
       return NextResponse.json(
         {
           error: `${PROFILE_INCOMPLETE_SAVE_BLOCKED_MESSAGE} (Şu an %${progress})`,
@@ -158,17 +199,21 @@ export async function PATCH(
       return NextResponse.json({ error: error.message }, { status: 400 });
     }
 
-    const progress = calculateProgress({
-      full_name: data.full_name,
-      gender: data.gender,
-      grade_level: data.grade_level,
-      school_name: data.school_name,
-      city_district: data.city_district,
-      experience_data: data.experience_data,
-      interests: data.interests,
-      motivation_data: data.motivation_data,
-      profile_avatar_url: data.profile_avatar_url,
-    });
+    const progress = calculateProgress(
+      {
+        full_name: data.full_name,
+        gender: data.gender,
+        grade_level: data.grade_level,
+        school_name: data.school_name,
+        city_district: data.city_district,
+        experience_data: data.experience_data,
+        interests: data.interests,
+        motivation_data: data.motivation_data,
+        profile_avatar_url: data.profile_avatar_url,
+        parent_phone: data.parent_phone,
+      },
+      PARENT_PHONE_PROGRESS_OPTIONS,
+    );
 
     const { data: parentProfile } = await access.supabase
       .from("profiles")

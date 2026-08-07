@@ -16,8 +16,16 @@ import {
   GRADE_LEVEL_OPTIONS,
   INTEREST_OPTIONS,
 } from "@/shared/constants/profile-options";
-import { calculateProgress, isProfileComplete, PROFILE_INCOMPLETE_SAVE_BLOCKED_MESSAGE } from "@/lib/utils/progress";
+import {
+  calculateProgress,
+  isProfileComplete,
+  PROFILE_INCOMPLETE_SAVE_BLOCKED_MESSAGE,
+} from "@/lib/utils/progress";
 import { ProfileMotivationFields } from "@/presentation/components/profile/profile-motivation-fields";
+import {
+  isValidTurkishMobilePhone,
+  TURKISH_MOBILE_PHONE_ERROR,
+} from "@/shared/utils/turkish-phone";
 
 type ProfileForm = {
   full_name: string;
@@ -25,6 +33,7 @@ type ProfileForm = {
   grade_level: string;
   school_name: string;
   city_district: string;
+  parent_phone: string;
   coding_experience: string;
   proje_sayisi: string;
   interests: string[];
@@ -46,6 +55,7 @@ const emptyForm: ProfileForm = {
   grade_level: "",
   school_name: "",
   city_district: "",
+  parent_phone: "",
   coding_experience: "",
   proje_sayisi: "",
   interests: [],
@@ -55,13 +65,14 @@ const emptyForm: ProfileForm = {
   kvkk_accepted: false,
 };
 
-function formToProgressInput(form: ProfileForm): ProfileProgressInput {
+function formToProgressInput(form: ProfileForm, requireParentPhone: boolean): ProfileProgressInput {
   return {
     full_name: form.full_name,
     gender: form.gender,
     grade_level: form.grade_level,
     school_name: form.school_name,
     city_district: form.city_district,
+    parent_phone: requireParentPhone ? form.parent_phone : null,
     experience_data: {
       coding_experience: form.coding_experience,
       proje_sayisi: form.proje_sayisi === "" ? null : Number(form.proje_sayisi),
@@ -100,9 +111,22 @@ export function UsernameStudentProfileForm({
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
-  const liveProgressInput = useMemo(() => formToProgressInput(form), [form]);
-  const liveProgress = useMemo(() => calculateProgress(liveProgressInput), [liveProgressInput]);
-  const profileComplete = useMemo(() => isProfileComplete(liveProgressInput), [liveProgressInput]);
+  const progressOptions = useMemo(
+    () => (requireCompleteToSave ? { requireParentPhone: true } : undefined),
+    [requireCompleteToSave],
+  );
+  const liveProgressInput = useMemo(
+    () => formToProgressInput(form, Boolean(progressOptions?.requireParentPhone)),
+    [form, progressOptions],
+  );
+  const liveProgress = useMemo(
+    () => calculateProgress(liveProgressInput, progressOptions),
+    [liveProgressInput, progressOptions],
+  );
+  const profileComplete = useMemo(
+    () => isProfileComplete(liveProgressInput, progressOptions),
+    [liveProgressInput, progressOptions],
+  );
 
   useEffect(() => {
     void (async () => {
@@ -110,7 +134,11 @@ export function UsernameStudentProfileForm({
         const response = await fetch(apiPath);
         const payload = (await response.json()) as {
           error?: string;
-          data?: { profile: Record<string, unknown>; progress: number };
+          data?: {
+            profile: Record<string, unknown>;
+            progress: number;
+            default_parent_phone?: string | null;
+          };
         };
         if (!response.ok || !payload.data) {
           throw new Error(payload.error ?? "Profil yüklenemedi.");
@@ -118,12 +146,15 @@ export function UsernameStudentProfileForm({
         const p = payload.data.profile;
         const experience = (p.experience_data ?? {}) as Record<string, unknown>;
         const motivation = (p.motivation_data ?? {}) as Record<string, unknown>;
+        const savedParentPhone = String(p.parent_phone ?? "").trim();
+        const defaultParentPhone = String(payload.data.default_parent_phone ?? "").trim();
         setForm({
           full_name: String(p.full_name ?? ""),
           gender: String(p.gender ?? ""),
           grade_level: String(p.grade_level ?? ""),
           school_name: String(p.school_name ?? ""),
           city_district: String(p.city_district ?? ""),
+          parent_phone: savedParentPhone || defaultParentPhone,
           coding_experience: String(experience.coding_experience ?? ""),
           proje_sayisi:
             experience.proje_sayisi === null || experience.proje_sayisi === undefined
@@ -157,6 +188,11 @@ export function UsernameStudentProfileForm({
       return;
     }
 
+    if (requireCompleteToSave && !isValidTurkishMobilePhone(form.parent_phone)) {
+      setError(TURKISH_MOBILE_PHONE_ERROR);
+      return;
+    }
+
     setSaving(true);
 
     try {
@@ -169,6 +205,7 @@ export function UsernameStudentProfileForm({
           grade_level: form.grade_level,
           school_name: form.school_name,
           city_district: form.city_district,
+          parent_phone: requireCompleteToSave ? form.parent_phone : undefined,
           experience_data: {
             coding_experience: form.coding_experience || null,
             proje_sayisi: form.proje_sayisi === "" ? null : Number(form.proje_sayisi),
@@ -190,7 +227,7 @@ export function UsernameStudentProfileForm({
         throw new Error(payload.error ?? "Kayıt başarısız.");
       }
 
-      const nextProgress = calculateProgress(liveProgressInput);
+      const nextProgress = calculateProgress(liveProgressInput, progressOptions);
       setProgress(nextProgress);
 
       if (profileComplete && redirectOnCompleteHref) {
@@ -231,7 +268,7 @@ export function UsernameStudentProfileForm({
 
       {requireCompleteToSave ? (
         <div className="space-y-3">
-          <ProfileProgressBar data={liveProgressInput} />
+          <ProfileProgressBar data={liveProgressInput} options={progressOptions} />
           {!profileComplete ? (
             <div
               className="rounded-2xl border-2 border-amber-300 bg-amber-50 px-4 py-4 text-sm leading-6 text-amber-950"
@@ -287,6 +324,17 @@ export function UsernameStudentProfileForm({
         value={form.city_district}
         onChange={(e) => setForm((f) => ({ ...f, city_district: e.target.value }))}
       />
+      {requireCompleteToSave ? (
+        <Input
+          label="Veli Telefon Numarası"
+          type="tel"
+          autoComplete="tel"
+          placeholder="05XX XXX XX XX veya +90 5XX XXX XX XX"
+          value={form.parent_phone}
+          onChange={(e) => setForm((f) => ({ ...f, parent_phone: e.target.value }))}
+          required
+        />
+      ) : null}
       <ValueChipGroup
         label="Kodlama deneyimi"
         options={CODING_EXPERIENCE_OPTIONS}

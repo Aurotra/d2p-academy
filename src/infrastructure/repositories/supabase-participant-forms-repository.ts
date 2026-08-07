@@ -18,7 +18,7 @@ import {
   requiresD2pTpsSurveys,
 } from "@/core/domain/participant-forms";
 import { MEDIA_CONSENT_BLOCK_MESSAGE, SURVEY_FORM_VERSIONS } from "@/shared/constants/participant-forms";
-import { calculateProgress, isProfileComplete } from "@/lib/utils/progress";
+import { calculateProgress, isProfileComplete, profileProgressOptions } from "@/lib/utils/progress";
 import { isPostTestUnlocked } from "@/shared/utils/post-test-unlock";
 import {
   isEnrollmentAttendanceComplete,
@@ -186,7 +186,7 @@ export class SupabaseParticipantFormsRepository {
     const { data: profile, error: profileError } = await this.client
       .from("profiles")
       .select(
-        "full_name, gender, grade_level, school_name, city_district, experience_data, interests, motivation_data, profile_avatar_url",
+        "full_name, gender, grade_level, school_name, city_district, experience_data, interests, motivation_data, profile_avatar_url, parent_phone, parent_id",
       )
       .eq("id", userId)
       .single();
@@ -255,8 +255,10 @@ export class SupabaseParticipantFormsRepository {
         beklenti?: number | null;
       } | null,
       profile_avatar_url: profile.profile_avatar_url,
+      parent_phone: profile.parent_phone,
     };
-    const profileProgressPercent = calculateProgress(profileProgressInput);
+    const progressOptions = profileProgressOptions(profile);
+    const profileProgressPercent = calculateProgress(profileProgressInput, progressOptions);
 
     return {
       id: enrollment.id,
@@ -297,7 +299,7 @@ export class SupabaseParticipantFormsRepository {
       hasPostTest: (surveys ?? []).some((row) => row.survey_type === "post_test"),
       hasActiveCertificate: Boolean(certificate?.id),
       profileProgressPercent,
-      profileComplete: isProfileComplete(profileProgressInput),
+      profileComplete: isProfileComplete(profileProgressInput, progressOptions),
       presentCount,
       requiredLessonCount,
       totalLessonCount,

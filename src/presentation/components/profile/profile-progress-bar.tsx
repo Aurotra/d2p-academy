@@ -1,12 +1,20 @@
-import { calculateProgress } from "@/lib/utils/progress";
+import {
+  calculateProgress,
+  countFilledProfileFields,
+  getTotalProfileFields,
+  type ProfileProgressOptions,
+} from "@/lib/utils/progress";
 import type { ProfileProgressInput } from "@/core/domain/student-profile";
 
 interface ProfileProgressBarProps {
   data: ProfileProgressInput;
+  options?: ProfileProgressOptions;
 }
 
-export function ProfileProgressBar({ data }: ProfileProgressBarProps) {
-  const progress = calculateProgress(data);
+export function ProfileProgressBar({ data, options }: ProfileProgressBarProps) {
+  const progress = calculateProgress(data, options);
+  const totalFields = getTotalProfileFields(options);
+  const filledFields = countFilledProfileFields(data, options);
 
   return (
     <div className="rounded-2xl border border-sky-200 bg-white p-5 shadow-sm">
@@ -20,7 +28,9 @@ export function ProfileProgressBar({ data }: ProfileProgressBarProps) {
           style={{ width: `${progress}%` }}
         />
       </div>
-      <p className="mt-2 text-xs text-slate-500">9 ana alandan {Math.round(progress / (100 / 9))} tanesi dolduruldu.</p>
+      <p className="mt-2 text-xs text-slate-500">
+        {totalFields} ana alandan {filledFields} tanesi dolduruldu.
+      </p>
     </div>
   );
 }

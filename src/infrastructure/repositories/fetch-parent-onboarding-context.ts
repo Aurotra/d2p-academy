@@ -2,7 +2,7 @@ import "server-only";
 
 import type { SupabaseClient } from "@supabase/supabase-js";
 
-import { isProfileComplete } from "@/lib/utils/progress";
+import { isProfileComplete, profileProgressOptions } from "@/lib/utils/progress";
 
 export interface ParentOnboardingContext {
   childrenCount: number;
@@ -23,7 +23,7 @@ export async function fetchParentOnboardingContext(
   const { data: children } = await client
     .from("profiles")
     .select(
-      "id, full_name, gender, grade_level, school_name, city_district, experience_data, interests, motivation_data, profile_avatar_url, created_at",
+      "id, full_name, gender, grade_level, school_name, city_district, experience_data, interests, motivation_data, profile_avatar_url, parent_phone, parent_id, created_at",
     )
     .eq("parent_id", parentUserId)
     .eq("role", "student")
@@ -35,22 +35,26 @@ export async function fetchParentOnboardingContext(
   const childrenCount = childIds.length;
   const firstChild = childRows[0] ?? null;
   const firstChildProfileComplete = firstChild
-    ? isProfileComplete({
-        full_name: firstChild.full_name,
-        gender: firstChild.gender,
-        grade_level: firstChild.grade_level,
-        school_name: firstChild.school_name,
-        city_district: firstChild.city_district,
-        experience_data: firstChild.experience_data as {
-          coding_experience?: string;
-        } | null,
-        interests: firstChild.interests,
-        motivation_data: firstChild.motivation_data as {
-          hedef?: string;
-          beklenti?: number;
-        } | null,
-        profile_avatar_url: firstChild.profile_avatar_url,
-      })
+    ? isProfileComplete(
+        {
+          full_name: firstChild.full_name,
+          gender: firstChild.gender,
+          grade_level: firstChild.grade_level,
+          school_name: firstChild.school_name,
+          city_district: firstChild.city_district,
+          experience_data: firstChild.experience_data as {
+            coding_experience?: string;
+          } | null,
+          interests: firstChild.interests,
+          motivation_data: firstChild.motivation_data as {
+            hedef?: string;
+            beklenti?: number;
+          } | null,
+          profile_avatar_url: firstChild.profile_avatar_url,
+          parent_phone: firstChild.parent_phone,
+        },
+        profileProgressOptions(firstChild),
+      )
     : false;
 
   const [{ count: upcomingEventsCount }, enrollmentResult] = await Promise.all([
