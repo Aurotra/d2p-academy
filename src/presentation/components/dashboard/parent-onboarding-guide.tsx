@@ -65,7 +65,7 @@ function resolveSteps(context: ParentOnboardingContext): OnboardingStep[] {
       id: "profile",
       title: "Çocuk profilini doldurun",
       description:
-        "Sınıf, okul ve ilgi alanları gibi bilgiler katılımcı formları ve sertifika süreci için gereklidir. Veli hesabınızı değil, çocuğunuzun profilini tamamlayın.",
+        "Sınıf, okul, veli telefon numarası ve ilgi alanları gibi bilgiler katılımcı formları ve sertifika süreci için gereklidir. Veli hesabınızı değil, çocuğunuzun profilini %100 tamamlayın.",
       status: profileStatus,
       href: profileHref,
       actionLabel: "Profili doldur",
@@ -93,7 +93,7 @@ function resolveSteps(context: ParentOnboardingContext): OnboardingStep[] {
       id: "forms",
       title: "Katılımcı formlarını doldurun",
       description:
-        "Tanışma ve onay formlarını etkinlik öncesi tamamlayın; ön test (F02) kayıt sırasında. Son test (F03) etkinlik/yoklama sonrası açılır.",
+        "Tanışma ve onay formlarını etkinlik öncesi tamamlayın; ön test (F02) tüm sınıf düzeylerinde tanışma adımında. Son test (F03) yalnızca 2–8. sınıflarda, etkinlik/yoklama sonrası açılır.",
       status: formsStatus,
       href: context.pendingFormsEnrollment
         ? `/dashboard/children/${context.pendingFormsEnrollment.childId}/enrollments/${context.pendingFormsEnrollment.enrollmentId}/forms`

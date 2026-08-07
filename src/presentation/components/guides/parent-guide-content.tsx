@@ -9,11 +9,12 @@ const checklist = [
   "E-postanıza gelen onay linkine tıklayın; ardından Veli Girişi yapın.",
   "Panel → Çocuk hesapları → + Çocuk ekle (ad soyad, doğum tarihi, şifre).",
   "Oluşan kullanıcı adını mutlaka not alın.",
+  "Açılan çocuk profili sayfasında bilgileri doldurun (veli telefon numarası dahil, %100 zorunlu).",
   "Yayınlanmış etkinlik varsa: Çocuk hesapları → Etkinliğe kaydet.",
   "Uygun etkinlik yoksa: Panel → Kurs talebi ile program ve tarih tercihi bırakın.",
   "Kayıt oluştuktan hemen sonra Detay → Formları doldur sayfasına geçin.",
-  "Tanışma ve ön test (F01–F02) ile onayları (F05–F07) kayıt öncesi tamamlayın. Son test (F03) etkinlik sonrası açılır.",
-  "Profili düzenle ile bilgileri %100 yapın (sertifika için zorunlu).",
+  "Tanışma (F01) ve ön test (F02) ile onayları (F05–F07) kayıt öncesi tamamlayın. Son test (F03) yalnızca 2–8. sınıflarda, etkinlik sonrası açılır.",
+  "Profili düzenle ile tüm zorunlu alanları %100 yapın (veli telefon numarası dahil; sertifika için zorunlu).",
 ];
 
 const faqItems = [
@@ -75,12 +76,17 @@ const faqItems = [
   {
     question: "Hangi formlar var, sırası ne?",
     answer:
-      "1) Tanışma (F01 + 2–8. sınıflarda ön test F02), 2) Onaylar (F05, F06, F07), 3) Etkinlik sonrası son test (F03 — 2–8. sınıflar), 4) Sertifika onay. Tanışma bitmeden Onaylar açılmaz; son test yoklamada «geldi» işaretlendiğinde veya etkinlik bittiğinde açılır.",
+      "1) Tanışma (F01 + tüm sınıf düzeylerinde ön test F02), 2) Onaylar (F05, F06, F07), 3) Etkinlik sonrası son test (F03 — yalnızca 2–8. sınıflar), 4) Sertifika onay. Tanışma bitmeden Onaylar açılmaz; son test yoklamada «geldi» işaretlendiğinde veya etkinlik bittiğinde açılır.",
   },
   {
     question: "Formları ne zaman doldurmalıyım?",
     answer:
       "Etkinliğe kayıt yaptıktan hemen sonra Tanışma ve Onaylar adımlarını tamamlayın. Son test (F03) etkinlik günü yoklama alındıktan veya etkinlik süresi bittikten sonra açılır.",
+  },
+  {
+    question: "Profilde veli telefon numarası neden isteniyor?",
+    answer:
+      "Etkinlik ve iletişim süreçlerinde size ulaşabilmek için çocuk profilinde veli telefon numarası zorunludur. Veli hesabınızda kayıtlı telefon varsa alan otomatik dolar; dilediğinizde güncelleyebilirsiniz. Bu alan doldurulmadan profil %100 sayılmaz ve kayıt/sertifika adımları tamamlanamaz.",
   },
   {
     question: "Sertifikayı ne zaman alırız?",
@@ -300,7 +306,9 @@ export function ParentGuideContent() {
               <tbody className="divide-y divide-slate-100">
                 <tr>
                   <td className="px-4 py-3 font-medium text-slate-900">1. Tanışma</td>
-                  <td className="px-4 py-3">F01 tanıma formu; 2–8. sınıflarda ön test de bu adımda</td>
+                  <td className="px-4 py-3">
+                    F01 tanıma formu; tüm sınıf düzeylerinde ön test (F02) de bu adımda
+                  </td>
                   <td className="px-4 py-3">Kayıttan sonra ilk yapılacak</td>
                 </tr>
                 <tr>
@@ -310,8 +318,10 @@ export function ParentGuideContent() {
                 </tr>
                 <tr>
                   <td className="px-4 py-3 font-medium text-slate-900">3. Son test</td>
-                  <td className="px-4 py-3">Etkinlik sonrası değerlendirme</td>
-                  <td className="px-4 py-3">Eğitmen ders yoklamasında zorunlu katılım sağlandığında</td>
+                  <td className="px-4 py-3">Etkinlik sonrası değerlendirme (F03)</td>
+                  <td className="px-4 py-3">
+                    Yalnızca 2–8. sınıflar; eğitmen ders yoklamasında zorunlu katılım sağlandığında
+                  </td>
                 </tr>
                 <tr>
                   <td className="px-4 py-3 font-medium text-slate-900">4. Sertifika onay</td>
@@ -331,9 +341,10 @@ export function ParentGuideContent() {
         <section>
           <h2 className="text-xl font-bold text-slate-900">7. Profil ve sertifika</h2>
           <p className="mt-3">
-            <strong>Profili düzenle</strong> ile okul, sınıf ve diğer bilgileri tamamlayın.{" "}
-            <strong>Profil %100 olmadan sertifika verilemez.</strong> Etkinlik tamamlandıktan sonra
-            sertifika oluşturulur ve panelden görüntülenebilir.
+            <strong>Profili düzenle</strong> ile okul, sınıf, veli telefon numarası ve diğer zorunlu
+            bilgileri tamamlayın. Çocuk ekledikten sonra doğrudan profil sayfasına yönlendirilirsiniz.{" "}
+            <strong>Profil %100 olmadan etkinliğe kayıt ve sertifika verilemez.</strong> Etkinlik
+            tamamlandıktan sonra sertifika oluşturulur ve panelden görüntülenebilir.
           </p>
         </section>
 
@@ -362,8 +373,8 @@ export function ParentGuideContent() {
 4) Kullanıcı adını not al (ör. emreyılmaz15)
 5a) Etkinlik varsa → Etkinliğe kaydet
 5b) Etkinlik yoksa → Kurs talebi bırak
-6) Detay → Formları doldur (Tanışma + Onaylar aynı gün)
-7) Profili %100 yap (sertifika için)
+6) Detay → Formları doldur (Tanışma + ön test + Onaylar aynı gün)
+7) Profili %100 yap — veli telefonu dahil (sertifika için)
 Veli = e-posta | Öğrenci = kullanıcı adı ile giriş`}
           </p>
         </section>

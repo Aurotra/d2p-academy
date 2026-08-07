@@ -74,6 +74,13 @@ const categories: AdminCategory[] = [
         badge: "bg-amber-200/70 text-amber-900",
       },
       {
+        href: "/admin/parents",
+        title: "Veli İletişim",
+        description: "Velilerin ad, e-posta ve telefon bilgilerini görüntüleyin.",
+        tone: "border-sky-200 bg-sky-100 text-sky-950 hover:bg-sky-50",
+        badge: "bg-sky-200/70 text-sky-900",
+      },
+      {
         href: "/admin/members",
         title: "Veliler ve Üyeler",
         description: "Siteye kayıt olan veli ve üye hesaplarını listeleyin.",

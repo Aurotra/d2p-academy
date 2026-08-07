@@ -19,6 +19,7 @@ import {
   CODING_EXPERIENCE_OPTIONS,
   GRADE_LEVEL_OPTIONS,
   INTEREST_OPTIONS,
+  PROFILE_GENDER_OPTIONS,
 } from "@/shared/constants/profile-options";
 
 interface AdminStudentProfileEditorProps {
@@ -144,11 +145,7 @@ export function AdminStudentProfileEditor({ student }: AdminStudentProfileEditor
             />
             <ValueChipGroup
               label="Cinsiyet"
-              options={[
-                { value: "male", label: "Erkek" },
-                { value: "female", label: "Kız" },
-                { value: "prefer_not_to_say", label: "Belirtmek istemiyorum" },
-              ]}
+              options={PROFILE_GENDER_OPTIONS}
               value={form.gender}
               onChange={(value) =>
                 setForm({

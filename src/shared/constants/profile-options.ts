@@ -2,6 +2,11 @@ export const D2P_TPS_SURVEY_GRADE_LEVELS = ["2", "3", "4", "5", "6", "7", "8"] a
 
 export const D2P_TPS_SURVEY_GRADE_LABEL = "2–8. sınıflar";
 
+export const PROFILE_GENDER_OPTIONS = [
+  { value: "male", label: "Erkek" },
+  { value: "female", label: "Kız" },
+] as const;
+
 export const GRADE_LEVEL_OPTIONS = [
   { value: "2", label: "2. Sınıf" },
   { value: "3", label: "3. Sınıf" },

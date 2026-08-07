@@ -16,6 +16,7 @@ interface NavItem {
 const navItems: NavItem[] = [
   { href: "/admin", label: "Genel Bakış" },
   { href: "/admin/students", label: "Öğrenciler" },
+  { href: "/admin/parents", label: "Veli İletişim" },
   { href: "/admin/members", label: "Veliler ve Üyeler" },
   { href: "/admin/events", label: "Etkinlikler" },
   { href: "/admin/instructors", label: "Eğitmenler" },

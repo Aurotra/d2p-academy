@@ -18,6 +18,7 @@ import {
   CODING_EXPERIENCE_OPTIONS,
   GRADE_LEVEL_OPTIONS,
   INTEREST_OPTIONS,
+  PROFILE_GENDER_OPTIONS,
 } from "@/shared/constants/profile-options";
 
 type AlertState =
@@ -213,11 +214,7 @@ export default function DashboardProfilePage() {
               <div>
                 <p className="mb-2 text-sm font-medium text-slate-900">Cinsiyet</p>
                 <div className="flex flex-wrap gap-4">
-                  {[
-                    { value: "male", label: "Erkek" },
-                    { value: "female", label: "Kız" },
-                    { value: "prefer_not_to_say", label: "Belirtmek istemiyorum" },
-                  ].map((option) => (
+                  {PROFILE_GENDER_OPTIONS.map((option) => (
                     <label key={option.value} className="inline-flex items-center gap-2 text-sm">
                       <input
                         type="radio"

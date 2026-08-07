@@ -15,6 +15,7 @@ import {
   CODING_EXPERIENCE_OPTIONS,
   GRADE_LEVEL_OPTIONS,
   INTEREST_OPTIONS,
+  PROFILE_GENDER_OPTIONS,
 } from "@/shared/constants/profile-options";
 import {
   calculateProgress,
@@ -43,11 +44,7 @@ type ProfileForm = {
   kvkk_accepted: boolean;
 };
 
-const GENDER_OPTIONS = [
-  { value: "male", label: "Erkek" },
-  { value: "female", label: "Kız" },
-  { value: "prefer_not_to_say", label: "Belirtmek istemiyorum" },
-] as const;
+const GENDER_OPTIONS = PROFILE_GENDER_OPTIONS;
 
 const emptyForm: ProfileForm = {
   full_name: "",
