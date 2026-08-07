@@ -1,9 +1,14 @@
 import { ImageResponse } from "next/og";
 
+import { getFaviconLogoDataUrl } from "@/shared/utils/favicon-logo";
+
+export const runtime = "nodejs";
 export const size = { width: 32, height: 32 };
 export const contentType = "image/png";
 
-export default function Icon() {
+export default async function Icon() {
+  const logoSrc = await getFaviconLogoDataUrl();
+
   return new ImageResponse(
     (
       <div
@@ -13,14 +18,10 @@ export default function Icon() {
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          background: "#E63946",
-          color: "#ffffff",
-          fontSize: 11,
-          fontWeight: 800,
-          letterSpacing: "-0.04em",
+          background: "#ffffff",
         }}
       >
-        D2P
+        <img src={logoSrc} width={30} height={30} style={{ objectFit: "contain" }} alt="" />
       </div>
     ),
     { ...size },

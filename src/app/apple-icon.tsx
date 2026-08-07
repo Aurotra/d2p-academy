@@ -1,9 +1,14 @@
 import { ImageResponse } from "next/og";
 
+import { getFaviconLogoDataUrl } from "@/shared/utils/favicon-logo";
+
+export const runtime = "nodejs";
 export const size = { width: 180, height: 180 };
 export const contentType = "image/png";
 
-export default function AppleIcon() {
+export default async function AppleIcon() {
+  const logoSrc = await getFaviconLogoDataUrl();
+
   return new ImageResponse(
     (
       <div
@@ -13,14 +18,11 @@ export default function AppleIcon() {
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          background: "#E63946",
-          color: "#ffffff",
-          fontSize: 56,
-          fontWeight: 800,
-          letterSpacing: "-0.04em",
+          background: "#ffffff",
+          padding: 20,
         }}
       >
-        D2P
+        <img src={logoSrc} width={140} height={140} style={{ objectFit: "contain" }} alt="" />
       </div>
     ),
     { ...size },
