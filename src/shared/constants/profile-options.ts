@@ -18,6 +18,9 @@ export const GRADE_LEVEL_OPTIONS = [
   { value: "other", label: "Diğer" },
 ] as const;
 
+/** Ön test (F02) — profilde seçilebilen tüm eğitim kademeleri. */
+export const PRE_TEST_GRADE_LEVELS = GRADE_LEVEL_OPTIONS.map((option) => option.value);
+
 export const REGISTRATION_COURSE_OPTIONS = [
   "3D Kalem",
   "3D Modelleme",

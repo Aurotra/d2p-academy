@@ -29,6 +29,7 @@ export type ChildProgressPreview = {
     postTestUnlocked?: boolean;
     postTestDeadlineAt?: string | null;
     requiresSurveys?: boolean;
+    requiresPreTest?: boolean;
     presentCount?: number;
     requiredLessonCount?: number;
     totalLessonCount?: number;
@@ -256,6 +257,7 @@ export function ChildrenStudentsClient({
                                         preTestCompleted={item.preTestCompleted}
                                         postTestCompleted={item.postTestCompleted}
                                         postTestUnlocked={item.postTestUnlocked}
+                                        requiresPreTest={item.requiresPreTest}
                                         requiresSurveys={item.requiresSurveys}
                                       />
                                       <ParentEnrollmentAttendanceProgress

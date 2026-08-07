@@ -9,6 +9,7 @@ interface EnrollmentFormProgressProps {
   preTestCompleted?: boolean;
   postTestCompleted?: boolean;
   postTestUnlocked?: boolean;
+  requiresPreTest?: boolean;
   requiresSurveys?: boolean;
 }
 
@@ -18,6 +19,7 @@ export function EnrollmentFormProgress({
   preTestCompleted,
   postTestCompleted,
   postTestUnlocked,
+  requiresPreTest,
   requiresSurveys,
 }: EnrollmentFormProgressProps) {
   const input = {
@@ -26,6 +28,7 @@ export function EnrollmentFormProgress({
     preTestCompleted,
     postTestCompleted,
     postTestUnlocked,
+    requiresPreTest,
     requiresSurveys,
   };
   const percent = getEnrollmentFormCompletionPercent(input);

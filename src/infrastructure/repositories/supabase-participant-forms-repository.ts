@@ -16,6 +16,7 @@ import {
   isCompleteMediaPermissions,
   isFullMediaConsentGranted,
   requiresD2pTpsSurveys,
+  requiresPreTest,
 } from "@/core/domain/participant-forms";
 import { MEDIA_CONSENT_BLOCK_MESSAGE, SURVEY_FORM_VERSIONS } from "@/shared/constants/participant-forms";
 import { calculateProgress, isProfileComplete, profileProgressOptions } from "@/lib/utils/progress";
@@ -273,6 +274,7 @@ export class SupabaseParticipantFormsRepository {
       preTestCompletedAt: enrollment.pre_test_completed_at,
       postTestCompletedAt: enrollment.post_test_completed_at,
       gradeLevel,
+      requiresPreTest: requiresPreTest(gradeLevel),
       requiresSurveys: requiresD2pTpsSurveys(gradeLevel),
       profilePrefill: {
         fullName: profile.full_name ?? "",
@@ -411,6 +413,7 @@ export class SupabaseParticipantFormsRepository {
       studentEmail: profile?.email ?? "—",
       studentCode: enrollment.student_code,
       gradeLevel,
+      requiresPreTest: requiresPreTest(gradeLevel),
       requiresSurveys: requiresD2pTpsSurveys(gradeLevel),
       intakeFormCompletedAt: enrollment.intake_form_completed_at,
       preTestCompletedAt: enrollment.pre_test_completed_at,
@@ -593,12 +596,12 @@ export class SupabaseParticipantFormsRepository {
       throw new Error("Sınıf bilgisi okunamadı.");
     }
 
-    const requiresSurvey = requiresD2pTpsSurveys(profile.grade_level);
+    const requiresSurvey = requiresPreTest(profile.grade_level);
     const skippedSurvey = !requiresSurvey;
 
     if (requiresSurvey) {
       if (!input) {
-        throw new Error("2–8. sınıflar için ön test zorunludur.");
+        throw new Error("Ön test zorunludur.");
       }
 
       const { error: surveyError } = await this.client.from("survey_responses").upsert(

@@ -1,4 +1,7 @@
-import { D2P_TPS_SURVEY_GRADE_LEVELS } from "@/shared/constants/profile-options";
+import {
+  D2P_TPS_SURVEY_GRADE_LEVELS,
+  PRE_TEST_GRADE_LEVELS,
+} from "@/shared/constants/profile-options";
 
 export type ConsentFormType = "scientific" | "media" | "participation";
 
@@ -79,6 +82,7 @@ export interface EnrollmentFormProgress {
   preTestCompletedAt: string | null;
   postTestCompletedAt: string | null;
   gradeLevel: string;
+  requiresPreTest: boolean;
   requiresSurveys: boolean;
   profilePrefill: {
     fullName: string;
@@ -133,6 +137,7 @@ export interface EnrollmentFormAnswers {
   studentEmail: string;
   studentCode: string | null;
   gradeLevel: string;
+  requiresPreTest: boolean;
   requiresSurveys: boolean;
   intakeFormCompletedAt: string | null;
   preTestCompletedAt: string | null;
@@ -165,6 +170,12 @@ export interface EnrollmentFormAnswers {
   } | null;
 }
 
+export function requiresPreTest(gradeLevel: string | null | undefined): boolean {
+  const value = (gradeLevel ?? "").trim();
+  return (PRE_TEST_GRADE_LEVELS as readonly string[]).includes(value);
+}
+
+/** Son test (F03) — 2–8. sınıflar. */
 export function requiresD2pTpsSurveys(gradeLevel: string | null | undefined): boolean {
   const value = (gradeLevel ?? "").trim();
   return (D2P_TPS_SURVEY_GRADE_LEVELS as readonly string[]).includes(value);

@@ -22,6 +22,7 @@ export interface ParentChildEnrollmentItem {
   postTestCompleted: boolean;
   postTestUnlocked: boolean;
   postTestDeadlineAt: string | null;
+  requiresPreTest: boolean;
   requiresSurveys: boolean;
   presentCount: number;
   requiredLessonCount: number;

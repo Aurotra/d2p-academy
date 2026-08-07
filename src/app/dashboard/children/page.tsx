@@ -116,6 +116,7 @@ export default async function DashboardChildrenPage() {
             postTestCompleted: Boolean(item.postTestCompleted),
             postTestUnlocked: Boolean(item.postTestUnlocked),
             postTestDeadlineAt: item.postTestDeadlineAt ?? null,
+            requiresPreTest: item.requiresPreTest !== false,
             requiresSurveys: item.requiresSurveys !== false,
             presentCount: item.presentCount ?? 0,
             requiredLessonCount: item.requiredLessonCount ?? 8,

@@ -248,7 +248,8 @@ export function CourseApplicationWizard({
       }
 
       const intakeReady =
-        Boolean(next.intakeFormCompletedAt) && Boolean(next.preTestCompletedAt);
+        Boolean(next.intakeFormCompletedAt) &&
+        (!next.requiresPreTest || Boolean(next.preTestCompletedAt));
       const consentsReady = isOnaylarComplete(next);
 
       if (!intakeReady) {
@@ -414,9 +415,9 @@ export function CourseApplicationWizard({
         throw new Error(intakePayload.error ?? "Tanıma formu kaydedilemedi.");
       }
 
-      const requiresSurveys = state?.requiresSurveys ?? false;
+      const requiresPreTest = state?.requiresPreTest ?? false;
 
-      if (requiresSurveys) {
+      if (requiresPreTest) {
         for (const dimension of TPS_SURVEY_DIMENSIONS) {
           if (
             !allLikertAnswered(
@@ -434,7 +435,7 @@ export function CourseApplicationWizard({
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(
-          requiresSurveys
+          requiresPreTest
             ? {
                 survey: {
                   ...collectDimensions(preDimensions),
@@ -455,7 +456,7 @@ export function CourseApplicationWizard({
       }
 
       setSuccess(
-        requiresSurveys
+        requiresPreTest
           ? "Tanıma formu ve ön test kaydedildi. Devam etmek için Onaylar adımına geçin."
           : "Tanıma formu kaydedildi. Devam etmek için Onaylar adımına geçin; D2P kodunuz orada oluşturulur.",
       );
@@ -554,7 +555,9 @@ export function CourseApplicationWizard({
   const onaylarDone = isOnaylarComplete(state);
   const mediaConsentGranted = isFullMediaConsentGranted(getSavedMediaPermissions(state));
   const coreConsentsAccepted = areCoreConsentsAccepted(state);
-  const tanismaDone = Boolean(state.intakeFormCompletedAt) && Boolean(state.preTestCompletedAt);
+  const tanismaDone =
+    Boolean(state.intakeFormCompletedAt) &&
+    (!state.requiresPreTest || Boolean(state.preTestCompletedAt));
   const sonTestDone = Boolean(state.postTestCompletedAt);
   const postTestUnlocked = state.postTestUnlocked;
   const postTestDeadlineLabel = formatPostTestDeadlineLabel(state.postTestDeadlineAt);
@@ -751,7 +754,7 @@ export function CourseApplicationWizard({
         <section className="space-y-4 rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm">
           <h2 className="text-xl font-bold text-navy-950">
             Tanışma (F01)
-            {state.requiresSurveys ? " + Ön Test (F02)" : ""}
+            {state.requiresPreTest ? " + Ön Test (F02)" : ""}
           </h2>
 
           <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700">
@@ -862,7 +865,7 @@ export function CourseApplicationWizard({
             rows={3}
           />
 
-          {state.requiresSurveys ? (
+          {state.requiresPreTest ? (
             <div className="space-y-4 border-t border-slate-100 pt-6">
               <h3 className="text-lg font-bold text-navy-950">Ön Test (F02)</h3>
               {TPS_SURVEY_DIMENSIONS.map((dimension) => (
@@ -888,11 +891,17 @@ export function CourseApplicationWizard({
             </div>
           ) : (
             <p className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
-              Sınıf düzeyiniz {D2P_TPS_SURVEY_GRADE_LABEL} dışında olduğu için ön test / son test atlanır. D2P öğrenci
-              kodunuz Onaylar adımını tamamladıktan sonra oluşturulur.
+              Profilinizde sınıf bilgisi olmadığı için ön test şu an gösterilmiyor. Önce profilinizde
+              sınıf düzeyinizi güncelleyin.
             </p>
           )}
 
+          {!state.requiresSurveys && state.requiresPreTest ? (
+            <p className="rounded-xl border border-sky-200 bg-sky-50 px-4 py-3 text-sm text-sky-900">
+              Son test (F03) yalnızca {D2P_TPS_SURVEY_GRADE_LABEL} için uygulanır. D2P öğrenci kodunuz
+              Onaylar adımını tamamladıktan sonra oluşturulur.
+            </p>
+          ) : null}
           <FormStepAlert error={error} success={success} />
 
           <Button type="button" disabled={isSaving} onClick={() => void submitIntakeAndMaybePreTest()}>

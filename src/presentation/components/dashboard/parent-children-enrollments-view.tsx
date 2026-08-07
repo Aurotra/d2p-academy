@@ -194,6 +194,7 @@ function EnrollmentCard({ item }: { item: ParentChildEnrollmentItem }) {
             preTestCompleted={item.preTestCompleted}
             postTestCompleted={item.postTestCompleted}
             postTestUnlocked={item.postTestUnlocked}
+            requiresPreTest={item.requiresPreTest}
             requiresSurveys={item.requiresSurveys}
           />
           <ParentEnrollmentAttendanceProgress

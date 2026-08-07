@@ -149,6 +149,7 @@ export async function fetchParentChildrenEnrollments(
       postTestCompleted: Boolean(progress?.postTestCompleted),
       postTestUnlocked: Boolean(progress?.postTestUnlocked),
       postTestDeadlineAt: progress?.postTestDeadlineAt ?? null,
+      requiresPreTest: progress?.requiresPreTest !== false,
       requiresSurveys: progress?.requiresSurveys !== false,
       presentCount: progress?.presentCount ?? 0,
       requiredLessonCount: progress?.requiredLessonCount ?? 8,

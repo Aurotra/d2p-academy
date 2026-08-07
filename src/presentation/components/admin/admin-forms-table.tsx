@@ -90,7 +90,7 @@ export function AdminFormsTable({ rows }: { rows: AdminFormRow[] }) {
                   <StatusCell done={row.status.consentsDone} />
                 </td>
                 <td className="px-5 py-4">
-                  <StatusCell done={row.status.preTestDone} notRequired={!row.status.requiresSurveys} />
+                  <StatusCell done={row.status.preTestDone} notRequired={!row.status.requiresPreTest} />
                 </td>
                 <td className="px-5 py-4">
                   <StatusCell done={row.status.postTestDone} notRequired={!row.status.requiresSurveys} />

@@ -458,7 +458,7 @@ export function AdminEnrollmentFormsView({ answers }: AdminEnrollmentFormsViewPr
       }
       printSection
     >
-      {!answers.requiresSurveys ? (
+      {!answers.requiresPreTest ? (
         <EmptyState message="Bu sınıf düzeyinde ön test zorunlu değil." />
       ) : !answers.preTest ? (
         <EmptyState message="Ön test henüz doldurulmamış." />
@@ -558,9 +558,9 @@ export function AdminEnrollmentFormsView({ answers }: AdminEnrollmentFormsViewPr
           />
           <StatusChip
             label={`Ön test · ${
-              answers.preTest ? "Dolduruldu" : answers.requiresSurveys ? "Eksik" : "Gerekmiyor"
+              answers.preTest ? "Dolduruldu" : answers.requiresPreTest ? "Eksik" : "Gerekmiyor"
             }`}
-            state={answers.preTest ? "done" : answers.requiresSurveys ? "missing" : "skip"}
+            state={answers.preTest ? "done" : answers.requiresPreTest ? "missing" : "skip"}
           />
           <StatusChip
             label={`Son test · ${

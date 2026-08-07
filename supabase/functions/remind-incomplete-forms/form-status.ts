@@ -14,6 +14,27 @@ export interface ConsentRecordSnapshot {
   media_permissions: Record<string, boolean> | null;
 }
 
+const PRE_TEST_GRADE_LEVELS = [
+  "2",
+  "3",
+  "4",
+  "5",
+  "6",
+  "7",
+  "8",
+  "9",
+  "10",
+  "11",
+  "12",
+  "university",
+  "other",
+] as const;
+
+export function requiresPreTest(gradeLevel: string | null | undefined): boolean {
+  const value = (gradeLevel ?? "").trim();
+  return (PRE_TEST_GRADE_LEVELS as readonly string[]).includes(value);
+}
+
 export function requiresD2pTpsSurveys(gradeLevel: string | null | undefined): boolean {
   const value = (gradeLevel ?? "").trim();
   return ["2", "3", "4", "5", "6", "7", "8"].includes(value);
@@ -47,16 +68,17 @@ export function getMissingFormLabels(input: {
   postTestCompletedAt: string | null;
   consentRecords: ConsentRecordSnapshot[];
 }): string[] {
+  const requiresPreTestFlag = requiresPreTest(input.gradeLevel);
   const requiresSurveys = requiresD2pTpsSurveys(input.gradeLevel);
   const intakeDone = Boolean(input.intakeFormCompletedAt);
   const consentsDone = isConsentsComplete(input.consentRecords);
-  const preTestDone = !requiresSurveys || Boolean(input.preTestCompletedAt);
+  const preTestDone = !requiresPreTestFlag || Boolean(input.preTestCompletedAt);
   const postTestDone = !requiresSurveys || Boolean(input.postTestCompletedAt);
 
   const missing: string[] = [];
   if (!intakeDone) missing.push("Tanışma");
   if (!consentsDone) missing.push("Onaylar");
-  if (requiresSurveys && !preTestDone) missing.push("Ön test");
+  if (requiresPreTestFlag && !preTestDone) missing.push("Ön test");
   if (requiresSurveys && !postTestDone) missing.push("Son test");
   return missing;
 }

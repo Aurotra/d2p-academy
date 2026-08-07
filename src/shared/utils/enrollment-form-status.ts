@@ -2,6 +2,7 @@ import type { ConsentFormType, MediaPermissions } from "@/core/domain/participan
 import {
   isFullMediaConsentGranted,
   requiresD2pTpsSurveys,
+  requiresPreTest,
 } from "@/core/domain/participant-forms";
 
 export interface ConsentRecordSnapshot {
@@ -15,6 +16,7 @@ export interface EnrollmentFormStatus {
   consentsDone: boolean;
   preTestDone: boolean;
   postTestDone: boolean;
+  requiresPreTest: boolean;
   requiresSurveys: boolean;
   allRequiredDone: boolean;
 }
@@ -44,10 +46,11 @@ export function getEnrollmentFormStatus(input: {
   postTestCompletedAt: string | null;
   consentRecords: ConsentRecordSnapshot[];
 }): EnrollmentFormStatus {
+  const requiresPreTestFlag = requiresPreTest(input.gradeLevel);
   const requiresSurveys = requiresD2pTpsSurveys(input.gradeLevel);
   const intakeDone = Boolean(input.intakeFormCompletedAt);
   const consentsDone = isConsentsComplete(input.consentRecords);
-  const preTestDone = !requiresSurveys || Boolean(input.preTestCompletedAt);
+  const preTestDone = !requiresPreTestFlag || Boolean(input.preTestCompletedAt);
   const postTestDone = !requiresSurveys || Boolean(input.postTestCompletedAt);
   const allRequiredDone = intakeDone && consentsDone && preTestDone && postTestDone;
 
@@ -56,6 +59,7 @@ export function getEnrollmentFormStatus(input: {
     consentsDone,
     preTestDone,
     postTestDone,
+    requiresPreTest: requiresPreTestFlag,
     requiresSurveys,
     allRequiredDone,
   };
@@ -67,19 +71,16 @@ export function buildEnrollmentFormStatusLabel(input: {
   preTestCompleted?: boolean;
   postTestCompleted?: boolean;
   postTestUnlocked?: boolean;
+  requiresPreTest?: boolean;
   requiresSurveys?: boolean;
 }): string {
+  const requiresPreTestFlag = input.requiresPreTest !== false;
   const requiresSurveys = input.requiresSurveys !== false;
-  const steps = getEnrollmentFormSteps(input, requiresSurveys);
+  const steps = getEnrollmentFormSteps(input, requiresPreTestFlag, requiresSurveys);
 
   const missing = steps.filter((step) => !step.done).map((step) => step.label);
   if (missing.length === 0) {
-    const requiresSurveys = input.requiresSurveys !== false;
-    if (
-      requiresSurveys &&
-      !input.postTestCompleted &&
-      !input.postTestUnlocked
-    ) {
+    if (requiresSurveys && !input.postTestCompleted && !input.postTestUnlocked) {
       return "Kayıt tamam — etkinlik sonrası son test";
     }
     return "Formlar tamam";
@@ -98,6 +99,7 @@ function getEnrollmentFormSteps(
     postTestCompleted?: boolean;
     postTestUnlocked?: boolean;
   },
+  requiresPreTestFlag: boolean,
   requiresSurveys: boolean,
 ) {
   const postTestUnlocked = Boolean(input.postTestUnlocked);
@@ -105,7 +107,7 @@ function getEnrollmentFormSteps(
   return [
     { label: "Tanışma", done: Boolean(input.intakeCompleted), required: true },
     { label: "Onaylar", done: Boolean(input.consentsCompleted), required: true },
-    { label: "Ön test", done: Boolean(input.preTestCompleted), required: requiresSurveys },
+    { label: "Ön test", done: Boolean(input.preTestCompleted), required: requiresPreTestFlag },
     {
       label: "Son test",
       done: Boolean(input.postTestCompleted),
@@ -120,10 +122,12 @@ export function getEnrollmentFormCompletionPercent(input: {
   preTestCompleted?: boolean;
   postTestCompleted?: boolean;
   postTestUnlocked?: boolean;
+  requiresPreTest?: boolean;
   requiresSurveys?: boolean;
 }): number {
+  const requiresPreTestFlag = input.requiresPreTest !== false;
   const requiresSurveys = input.requiresSurveys !== false;
-  const steps = getEnrollmentFormSteps(input, requiresSurveys);
+  const steps = getEnrollmentFormSteps(input, requiresPreTestFlag, requiresSurveys);
   if (steps.length === 0) {
     return 100;
   }

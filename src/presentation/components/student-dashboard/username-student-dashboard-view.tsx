@@ -40,11 +40,11 @@ const STATUS_LABELS: Record<string, string> = {
 };
 
 function isRegistrationComplete(item: EnrollmentSummary): boolean {
-  const requiresSurveys = item.requiresSurveys !== false;
+  const requiresPreTest = item.requiresPreTest !== false;
   return (
     Boolean(item.intakeCompleted) &&
     Boolean(item.consentsCompleted) &&
-    (!requiresSurveys || Boolean(item.preTestCompleted))
+    (!requiresPreTest || Boolean(item.preTestCompleted))
   );
 }
 
@@ -131,6 +131,7 @@ function EnrollmentsSection({ enrollments }: { enrollments: EnrollmentSummary[] 
                 preTestCompleted={item.preTestCompleted}
                 postTestCompleted={item.postTestCompleted}
                 postTestUnlocked={item.postTestUnlocked}
+                requiresPreTest={item.requiresPreTest}
                 requiresSurveys={item.requiresSurveys}
               />
               <EnrollmentAttendanceProgress
