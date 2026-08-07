@@ -18,11 +18,14 @@ export function publicPageMetadata(input: {
   description: string;
   path: string;
   keywords?: string[];
+  /** Longer title for Open Graph / Twitter when the document title should stay short. */
+  socialTitle?: string;
   absoluteTitle?: boolean;
 }): Metadata {
   const canonicalPath = input.path.startsWith("/") ? input.path : `/${input.path}`;
   const canonicalUrl = absoluteUrl(canonicalPath);
   const title = input.absoluteTitle ? { absolute: input.title } : input.title;
+  const socialTitle = input.socialTitle ?? input.title;
 
   return {
     title,
@@ -32,7 +35,7 @@ export function publicPageMetadata(input: {
       canonical: canonicalPath,
     },
     openGraph: {
-      title: input.title,
+      title: socialTitle,
       description: input.description,
       url: canonicalUrl,
       type: "website",
@@ -40,7 +43,7 @@ export function publicPageMetadata(input: {
     },
     twitter: {
       card: "summary_large_image",
-      title: input.title,
+      title: socialTitle,
       description: input.description,
     },
   };

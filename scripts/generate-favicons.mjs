@@ -5,57 +5,57 @@ import sharp from "sharp";
 
 const ROOT = process.cwd();
 const LOGO_PATH = path.join(ROOT, "public/d2p-logo.svg");
-/** Full red "D" centered in a square (excludes the yellow "2" / green "P"). */
-const FAVICON_VIEW_BOX = "-34 75 773 773";
+/** Red "D" mark only — trim removes empty margins before squaring. */
+const SOURCE_VIEW_BOX = "-34 75 773 773";
 const CANVAS_SIZE = 512;
-const LOGO_INSET = 0.03;
+const PADDING_RATIO = 0.03;
 
 function buildFaviconSvg(croppedSvg) {
   const innerMatch = croppedSvg.match(/<svg[^>]*>([\s\S]*)<\/svg>/i);
   const inner = innerMatch?.[1]?.trim() ?? "";
-  const [vx, vy, vw, vh] = FAVICON_VIEW_BOX.split(" ").map(Number);
-  const inset = 100 * LOGO_INSET;
-  const logoSize = 100 - inset * 2;
+  const pad = 100 * PADDING_RATIO;
+  const logoSize = 100 - pad * 2;
 
   return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
   <rect width="100" height="100" fill="#ffffff"/>
-  <svg viewBox="${vx} ${vy} ${vw} ${vh}" x="${inset}" y="${inset}" width="${logoSize}" height="${logoSize}">
+  <svg viewBox="${SOURCE_VIEW_BOX}" x="${pad}" y="${pad}" width="${logoSize}" height="${logoSize}" preserveAspectRatio="xMidYMid meet">
 ${inner}
   </svg>
 </svg>`;
 }
 
-async function buildRaster(croppedSvg) {
-  const logoSize = Math.round(CANVAS_SIZE * (1 - LOGO_INSET * 2));
+async function buildMasterPng(raw) {
+  const croppedSvg = raw.replace(/viewBox="[^"]*"/, `viewBox="${SOURCE_VIEW_BOX}"`);
 
-  const logoLayer = await sharp(Buffer.from(croppedSvg), { density: 400 })
-    .resize(logoSize, logoSize, {
-      fit: "contain",
-      background: { r: 255, g: 255, b: 255, alpha: 0 },
+  const trimmed = await sharp(Buffer.from(croppedSvg), { density: 400 })
+    .png()
+    .trim({ threshold: 10 })
+    .toBuffer();
+
+  const meta = await sharp(trimmed).metadata();
+  const maxSide = Math.max(meta.width ?? 0, meta.height ?? 0);
+  const pad = Math.round(maxSide * PADDING_RATIO);
+
+  const squared = await sharp(trimmed)
+    .extend({
+      top: pad + Math.floor((maxSide - (meta.height ?? 0)) / 2),
+      bottom: pad + Math.ceil((maxSide - (meta.height ?? 0)) / 2),
+      left: pad + Math.floor((maxSide - (meta.width ?? 0)) / 2),
+      right: pad + Math.ceil((maxSide - (meta.width ?? 0)) / 2),
+      background: { r: 255, g: 255, b: 255, alpha: 1 },
     })
     .png()
     .toBuffer();
 
-  const baseBuffer = await sharp({
-    create: {
-      width: CANVAS_SIZE,
-      height: CANVAS_SIZE,
-      channels: 4,
-      background: { r: 255, g: 255, b: 255, alpha: 1 },
-    },
-  })
-    .composite([{ input: logoLayer, gravity: "center" }])
-    .png()
-    .toBuffer();
-
-  return sharp(baseBuffer);
+  return sharp(squared).resize(CANVAS_SIZE, CANVAS_SIZE, { fit: "fill" }).png().toBuffer();
 }
 
 async function main() {
   const raw = await readFile(LOGO_PATH, "utf8");
-  const croppedSvg = raw.replace(/viewBox="[^"]*"/, `viewBox="${FAVICON_VIEW_BOX}"`);
+  const croppedSvg = raw.replace(/viewBox="[^"]*"/, `viewBox="${SOURCE_VIEW_BOX}"`);
   const faviconSvg = buildFaviconSvg(croppedSvg);
-  const raster = await buildRaster(croppedSvg);
+  const masterPng = await buildMasterPng(raw);
+  const raster = sharp(masterPng);
 
   await writeFile(path.join(ROOT, "public/d2p-favicon.svg"), faviconSvg, "utf8");
   await mkdir(path.join(ROOT, "src/app"), { recursive: true });

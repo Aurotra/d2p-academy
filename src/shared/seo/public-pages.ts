@@ -11,7 +11,8 @@ const denizliStemKeywords = [
 ] as const;
 
 export const homePageMetadata = publicPageMetadata({
-  title: "Denizli 3D Tasarım ve 3D Baskı Atölye Eğitimleri",
+  title: "D2P Academy",
+  socialTitle: "Denizli 3D Tasarım ve 3D Baskı Atölye Eğitimleri",
   description:
     "D2P Academy, Denizli'de çocuk ve gençlere 3D tasarım, 3D baskı, prototipleme ve maker atölye eğitimleri sunar. Tasarım ve üretim odaklı STEM programları.",
   path: "/",
