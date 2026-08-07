@@ -2,6 +2,7 @@
 
 import type { LikertQuestion } from "@/shared/constants/participant-forms";
 import { PARTICIPANT_LIKERT_OPTIONS } from "@/shared/constants/participant-forms";
+import { getLikertButtonClass } from "@/shared/utils/chip-layout";
 
 interface LikertScaleGroupProps {
   title?: string;
@@ -31,11 +32,7 @@ export function LikertScaleGroup({ title, questions, values, onChange }: LikertS
                     key={option.value}
                     type="button"
                     onClick={() => onChange(question.id, option.value)}
-                    className={`min-h-11 w-full rounded-xl border px-1.5 py-2 text-center text-xs font-semibold transition sm:px-2 ${
-                      selected
-                        ? "border-document-primary bg-document-primary text-white"
-                        : "border-slate-200 bg-white text-slate-700 hover:border-sky-300"
-                    }`}
+                    className={getLikertButtonClass(selected)}
                     aria-pressed={selected}
                   >
                     <span className="block text-sm">{option.value}</span>

@@ -7,6 +7,7 @@ import {
   PROFILE_GOAL_LABEL,
   PROFILE_GOAL_PLACEHOLDER,
 } from "@/shared/constants/profile-options";
+import { getLikertButtonClass } from "@/shared/utils/chip-layout";
 
 interface ProfileMotivationFieldsProps {
   hedef: string;
@@ -50,11 +51,7 @@ export function ProfileMotivationFields({
                 type="button"
                 onClick={() => onBeklentiChange(option.value)}
                 aria-pressed={selected}
-                className={`min-h-11 w-full rounded-xl border px-1.5 py-2 text-center text-xs font-semibold transition sm:px-2 ${
-                  selected
-                    ? "border-document-primary bg-document-primary text-white"
-                    : "border-slate-200 bg-white text-slate-700 hover:border-sky-300"
-                }`}
+                className={getLikertButtonClass(selected)}
               >
                 <span className="block text-sm">{option.value}</span>
                 <span className="mt-0.5 hidden text-[10px] font-normal leading-tight opacity-90 sm:block">
