@@ -5,10 +5,10 @@ import sharp from "sharp";
 
 const ROOT = process.cwd();
 const LOGO_PATH = path.join(ROOT, "public/d2p-logo.svg");
-/** Square crop over the colorful D2P letterforms (no wordmark). */
-const FAVICON_VIEW_BOX = "470 55 840 830";
+/** Full red "D" centered in a square (excludes the yellow "2" / green "P"). */
+const FAVICON_VIEW_BOX = "-34 75 773 773";
 const CANVAS_SIZE = 512;
-const LOGO_INSET = 0.04;
+const LOGO_INSET = 0.03;
 
 function buildFaviconSvg(croppedSvg) {
   const innerMatch = croppedSvg.match(/<svg[^>]*>([\s\S]*)<\/svg>/i);
