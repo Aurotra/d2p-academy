@@ -1,39 +1,36 @@
-import { mkdir, readFile, writeFile, copyFile } from "node:fs/promises";
+import { copyFile, mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 
 import sharp from "sharp";
 
 const ROOT = process.cwd();
 const LOGO_PATH = path.join(ROOT, "public/d2p-logo.svg");
-/** Colorful D2P mark without the wide wordmark — fits a square favicon better. */
-const FAVICON_VIEW_BOX = "55 55 1050 780";
+/** Square crop over the colorful D2P letterforms (no wordmark). */
+const FAVICON_VIEW_BOX = "470 55 840 830";
 const CANVAS_SIZE = 512;
-const LOGO_SCALE = 0.94;
+const LOGO_INSET = 0.04;
 
 function buildFaviconSvg(croppedSvg) {
   const innerMatch = croppedSvg.match(/<svg[^>]*>([\s\S]*)<\/svg>/i);
   const inner = innerMatch?.[1]?.trim() ?? "";
   const [vx, vy, vw, vh] = FAVICON_VIEW_BOX.split(" ").map(Number);
-  const aspect = vw / vh;
-  const logoWidth = 100 * LOGO_SCALE;
-  const logoHeight = logoWidth / aspect;
-  const logoX = (100 - logoWidth) / 2;
-  const logoY = (100 - logoHeight) / 2;
+  const inset = 100 * LOGO_INSET;
+  const logoSize = 100 - inset * 2;
 
   return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
-  <rect width="100" height="100" rx="8" fill="#ffffff"/>
-  <svg viewBox="${vx} ${vy} ${vw} ${vh}" x="${logoX}" y="${logoY}" width="${logoWidth}" height="${logoHeight}">
+  <rect width="100" height="100" fill="#ffffff"/>
+  <svg viewBox="${vx} ${vy} ${vw} ${vh}" x="${inset}" y="${inset}" width="${logoSize}" height="${logoSize}">
 ${inner}
   </svg>
 </svg>`;
 }
 
 async function buildRaster(croppedSvg) {
-  const logoMaxWidth = Math.round(CANVAS_SIZE * LOGO_SCALE);
+  const logoSize = Math.round(CANVAS_SIZE * (1 - LOGO_INSET * 2));
 
   const logoLayer = await sharp(Buffer.from(croppedSvg), { density: 400 })
-    .resize(logoMaxWidth, logoMaxWidth, {
-      fit: "inside",
+    .resize(logoSize, logoSize, {
+      fit: "contain",
       background: { r: 255, g: 255, b: 255, alpha: 0 },
     })
     .png()
