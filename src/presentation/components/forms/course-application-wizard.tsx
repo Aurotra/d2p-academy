@@ -35,7 +35,7 @@ import {
   TPS_SURVEY_DIMENSIONS,
   TRAINING_IMPACT_QUESTIONS,
 } from "@/shared/constants/participant-forms";
-import { GRADE_LEVEL_OPTIONS } from "@/shared/constants/profile-options";
+import { D2P_TPS_SURVEY_GRADE_LABEL, GRADE_LEVEL_OPTIONS } from "@/shared/constants/profile-options";
 
 interface CourseApplicationWizardProps {
   enrollmentId: string;
@@ -888,7 +888,7 @@ export function CourseApplicationWizard({
             </div>
           ) : (
             <p className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
-              Sınıf düzeyiniz 5–8 dışında olduğu için ön test / son test atlanır. D2P öğrenci
+              Sınıf düzeyiniz {D2P_TPS_SURVEY_GRADE_LABEL} dışında olduğu için ön test / son test atlanır. D2P öğrenci
               kodunuz Onaylar adımını tamamladıktan sonra oluşturulur.
             </p>
           )}
@@ -991,7 +991,7 @@ export function CourseApplicationWizard({
           <section className="space-y-3 rounded-[2rem] border border-emerald-200 bg-emerald-50 p-6 shadow-sm">
             <h2 className="text-xl font-bold text-navy-950">Son Test</h2>
             <p className="text-sm text-emerald-900">
-              Sınıf düzeyiniz 5–8 dışında olduğu için son test zorunlu değil; bu adım otomatik
+              Sınıf düzeyiniz {D2P_TPS_SURVEY_GRADE_LABEL} dışında olduğu için son test zorunlu değil; bu adım otomatik
               tamamlandı.
             </p>
           </section>

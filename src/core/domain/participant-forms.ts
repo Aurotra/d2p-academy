@@ -1,3 +1,5 @@
+import { D2P_TPS_SURVEY_GRADE_LEVELS } from "@/shared/constants/profile-options";
+
 export type ConsentFormType = "scientific" | "media" | "participation";
 
 export type SurveyType = "pre_test" | "post_test";
@@ -165,7 +167,7 @@ export interface EnrollmentFormAnswers {
 
 export function requiresD2pTpsSurveys(gradeLevel: string | null | undefined): boolean {
   const value = (gradeLevel ?? "").trim();
-  return value === "5" || value === "6" || value === "7" || value === "8";
+  return (D2P_TPS_SURVEY_GRADE_LEVELS as readonly string[]).includes(value);
 }
 
 export function isCompleteMediaPermissions(

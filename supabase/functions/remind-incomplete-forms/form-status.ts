@@ -16,7 +16,7 @@ export interface ConsentRecordSnapshot {
 
 export function requiresD2pTpsSurveys(gradeLevel: string | null | undefined): boolean {
   const value = (gradeLevel ?? "").trim();
-  return value === "5" || value === "6" || value === "7" || value === "8";
+  return ["2", "3", "4", "5", "6", "7", "8"].includes(value);
 }
 
 function isFullMediaConsentGranted(value: Record<string, boolean> | null | undefined): boolean {

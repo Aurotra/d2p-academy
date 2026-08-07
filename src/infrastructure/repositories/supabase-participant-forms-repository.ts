@@ -596,7 +596,7 @@ export class SupabaseParticipantFormsRepository {
 
     if (requiresSurvey) {
       if (!input) {
-        throw new Error("5–8. sınıflar için ön test zorunludur.");
+        throw new Error("2–8. sınıflar için ön test zorunludur.");
       }
 
       const { error: surveyError } = await this.client.from("survey_responses").upsert(

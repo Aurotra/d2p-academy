@@ -1,4 +1,11 @@
+export const D2P_TPS_SURVEY_GRADE_LEVELS = ["2", "3", "4", "5", "6", "7", "8"] as const;
+
+export const D2P_TPS_SURVEY_GRADE_LABEL = "2–8. sınıflar";
+
 export const GRADE_LEVEL_OPTIONS = [
+  { value: "2", label: "2. Sınıf" },
+  { value: "3", label: "3. Sınıf" },
+  { value: "4", label: "4. Sınıf" },
   { value: "5", label: "5. Sınıf" },
   { value: "6", label: "6. Sınıf" },
   { value: "7", label: "7. Sınıf" },

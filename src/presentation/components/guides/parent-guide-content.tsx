@@ -75,7 +75,7 @@ const faqItems = [
   {
     question: "Hangi formlar var, sırası ne?",
     answer:
-      "1) Tanışma (F01 + 5–8. sınıflarda ön test F02), 2) Onaylar (F05, F06, F07), 3) Etkinlik sonrası son test (F03 — 5–8. sınıflar), 4) Sertifika onay. Tanışma bitmeden Onaylar açılmaz; son test yoklamada «geldi» işaretlendiğinde veya etkinlik bittiğinde açılır.",
+      "1) Tanışma (F01 + 2–8. sınıflarda ön test F02), 2) Onaylar (F05, F06, F07), 3) Etkinlik sonrası son test (F03 — 2–8. sınıflar), 4) Sertifika onay. Tanışma bitmeden Onaylar açılmaz; son test yoklamada «geldi» işaretlendiğinde veya etkinlik bittiğinde açılır.",
   },
   {
     question: "Formları ne zaman doldurmalıyım?",
@@ -300,7 +300,7 @@ export function ParentGuideContent() {
               <tbody className="divide-y divide-slate-100">
                 <tr>
                   <td className="px-4 py-3 font-medium text-slate-900">1. Tanışma</td>
-                  <td className="px-4 py-3">F01 tanıma formu; 5–8. sınıflarda ön test de bu adımda</td>
+                  <td className="px-4 py-3">F01 tanıma formu; 2–8. sınıflarda ön test de bu adımda</td>
                   <td className="px-4 py-3">Kayıttan sonra ilk yapılacak</td>
                 </tr>
                 <tr>
