@@ -41,8 +41,12 @@ function canMarkCompleted(status: EnrollmentStatus): boolean {
   return status !== "completed" && status !== "cancelled" && status !== "no_show";
 }
 
-function canRemoveFromEvent(status: EnrollmentStatus): boolean {
-  return status !== "cancelled";
+function canRemoveFromEvent(row: EventEnrollmentRow): boolean {
+  return row.status !== "cancelled" && !row.hasActiveCertificate;
+}
+
+function canSelectForBulk(row: EventEnrollmentRow): boolean {
+  return canRemoveFromEvent(row);
 }
 
 export function EventEnrollmentsTable({
@@ -55,21 +59,32 @@ export function EventEnrollmentsTable({
   const [error, setError] = useState<string | null>(null);
   const [pendingSingleId, setPendingSingleId] = useState<string | null>(null);
   const [showBulkConfirm, setShowBulkConfirm] = useState(false);
+  const [showBulkRemoveConfirm, setShowBulkRemoveConfirm] = useState(false);
   const [pendingRemoveId, setPendingRemoveId] = useState<string | null>(null);
   const [removeReason, setRemoveReason] = useState("");
 
-  const eligibleIds = useMemo(
+  const selectableIds = useMemo(
+    () => enrollments.filter((row) => canSelectForBulk(row)).map((row) => row.id),
+    [enrollments],
+  );
+
+  const completableIds = useMemo(
     () => enrollments.filter((row) => canMarkCompleted(row.status)).map((row) => row.id),
     [enrollments],
   );
 
-  const selectedEligible = useMemo(
-    () => eligibleIds.filter((id) => selectedIds.has(id)),
-    [eligibleIds, selectedIds],
+  const selectedIdsList = useMemo(
+    () => selectableIds.filter((id) => selectedIds.has(id)),
+    [selectableIds, selectedIds],
   );
 
-  const allEligibleSelected =
-    eligibleIds.length > 0 && selectedEligible.length === eligibleIds.length;
+  const selectedCompletable = useMemo(
+    () => completableIds.filter((id) => selectedIds.has(id)),
+    [completableIds, selectedIds],
+  );
+
+  const allSelectableSelected =
+    selectableIds.length > 0 && selectedIdsList.length === selectableIds.length;
 
   function toggleOne(id: string) {
     setSelectedIds((prev) => {
@@ -85,10 +100,10 @@ export function EventEnrollmentsTable({
 
   function toggleAll() {
     setSelectedIds((prev) => {
-      if (eligibleIds.every((id) => prev.has(id))) {
+      if (selectableIds.every((id) => prev.has(id))) {
         return new Set();
       }
-      return new Set(eligibleIds);
+      return new Set(selectableIds);
     });
   }
 
@@ -125,17 +140,18 @@ export function EventEnrollmentsTable({
     }
   }
 
-  async function removeFromEvent(id: string) {
+  async function removeFromEvent(ids: string[]) {
+    if (ids.length === 0) return;
+
     setIsUpdating(true);
     setError(null);
 
     try {
       const response = await fetch("/api/v1/admin/enrollments", {
-        method: "PATCH",
+        method: "DELETE",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          enrollmentId: id,
-          status: "cancelled",
+          enrollmentIds: ids,
           reason: removeReason.trim() || null,
         }),
       });
@@ -147,10 +163,13 @@ export function EventEnrollmentsTable({
       }
 
       setPendingRemoveId(null);
+      setShowBulkRemoveConfirm(false);
       setRemoveReason("");
       setSelectedIds((prev) => {
         const next = new Set(prev);
-        next.delete(id);
+        for (const id of ids) {
+          next.delete(id);
+        }
         return next;
       });
       router.refresh();
@@ -169,24 +188,41 @@ export function EventEnrollmentsTable({
     ? enrollments.find((row) => row.id === pendingRemoveId)
     : null;
 
-  const bulkStudents = enrollments.filter((row) => selectedEligible.includes(row.id));
+  const bulkCompleteStudents = enrollments.filter((row) => selectedCompletable.includes(row.id));
+  const bulkRemoveStudents = enrollments.filter((row) => selectedIdsList.includes(row.id));
 
   return (
     <div>
-      {eligibleIds.length > 0 ? (
+      {selectableIds.length > 0 ? (
         <div className="flex flex-wrap items-center gap-3 border-b border-slate-100 px-5 py-3">
           <Button
             type="button"
             variant="secondary"
-            disabled={selectedEligible.length === 0 || isUpdating}
-            onClick={() => setShowBulkConfirm(true)}
+            disabled={selectedCompletable.length === 0 || isUpdating}
+            onClick={() => {
+              setShowBulkRemoveConfirm(false);
+              setShowBulkConfirm(true);
+            }}
             className="min-h-[40px] px-3 py-2 text-xs"
           >
             Seçilenleri tamamlandı yap
-            {selectedEligible.length > 0 ? ` (${selectedEligible.length})` : ""}
+            {selectedCompletable.length > 0 ? ` (${selectedCompletable.length})` : ""}
           </Button>
-          {selectedEligible.length > 0 ? (
-            <p className="text-xs text-slate-500">{selectedEligible.length} öğrenci seçildi</p>
+          <Button
+            type="button"
+            variant="ghost"
+            disabled={selectedIdsList.length === 0 || isUpdating}
+            onClick={() => {
+              setShowBulkConfirm(false);
+              setShowBulkRemoveConfirm(true);
+            }}
+            className="min-h-[40px] px-3 py-2 text-xs text-amber-800 hover:bg-amber-50"
+          >
+            Seçilenleri kurstan çıkar
+            {selectedIdsList.length > 0 ? ` (${selectedIdsList.length})` : ""}
+          </Button>
+          {selectedIdsList.length > 0 ? (
+            <p className="text-xs text-slate-500">{selectedIdsList.length} öğrenci seçildi</p>
           ) : (
             <p className="text-xs text-slate-500">Toplu işlem için öğrencileri seçin</p>
           )}
@@ -196,21 +232,23 @@ export function EventEnrollmentsTable({
       {showBulkConfirm ? (
         <div className="border-b border-amber-200 bg-amber-50 px-5 py-4 text-sm text-amber-950">
           <p className="font-semibold">
-            Seçilen {bulkStudents.length} öğrencinin “{eventTitle}” eğitimini tamamladığını
+            Seçilen {bulkCompleteStudents.length} öğrencinin “{eventTitle}” eğitimini tamamladığını
             onaylıyor musunuz?
           </p>
           <ul className="mt-2 list-inside list-disc text-xs text-amber-900/80">
-            {bulkStudents.slice(0, 8).map((student) => (
+            {bulkCompleteStudents.slice(0, 8).map((student) => (
               <li key={student.id}>{student.studentName}</li>
             ))}
-            {bulkStudents.length > 8 ? <li>…ve {bulkStudents.length - 8} kişi daha</li> : null}
+            {bulkCompleteStudents.length > 8 ? (
+              <li>…ve {bulkCompleteStudents.length - 8} kişi daha</li>
+            ) : null}
           </ul>
           <div className="mt-3 flex flex-wrap gap-2">
             <Button
               type="button"
               variant="secondary"
               disabled={isUpdating}
-              onClick={() => void markCompleted(selectedEligible)}
+              onClick={() => void markCompleted(selectedCompletable)}
               className="min-h-[40px] px-3 py-2 text-xs"
             >
               {isUpdating ? "Kaydediliyor..." : "Evet, onaylıyorum"}
@@ -223,6 +261,59 @@ export function EventEnrollmentsTable({
               className="min-h-[40px] px-3 py-2 text-xs"
             >
               İptal
+            </Button>
+          </div>
+        </div>
+      ) : null}
+
+      {showBulkRemoveConfirm ? (
+        <div className="border-b border-amber-200 bg-amber-50 px-5 py-4 text-sm text-amber-950">
+          <p className="font-semibold">
+            Seçilen {bulkRemoveStudents.length} öğrenciyi “{eventTitle}” etkinliğinden çıkarmak
+            istediğinize emin misiniz?
+          </p>
+          <p className="mt-1 text-xs text-amber-900/80">
+            Kayıt, yoklama ve form verileri tamamen silinir; öğrenci hiç kayıt olmamış gibi temiz
+            duruma döner. Aktif sertifikası olanlar seçilemez. İşlem loglara yazılır.
+          </p>
+          <ul className="mt-2 list-inside list-disc text-xs text-amber-900/80">
+            {bulkRemoveStudents.slice(0, 8).map((student) => (
+              <li key={student.id}>{student.studentName}</li>
+            ))}
+            {bulkRemoveStudents.length > 8 ? (
+              <li>…ve {bulkRemoveStudents.length - 8} kişi daha</li>
+            ) : null}
+          </ul>
+          <label className="mt-3 block text-xs font-semibold text-amber-900">
+            Çıkarma nedeni (opsiyonel)
+            <input
+              value={removeReason}
+              onChange={(e) => setRemoveReason(e.target.value)}
+              className="mt-1 w-full rounded-xl border border-amber-200 bg-white px-3 py-2 text-sm text-slate-900"
+              placeholder="Örn. yanlış kayıt / katılmayacak"
+            />
+          </label>
+          <div className="mt-3 flex flex-wrap gap-2">
+            <Button
+              type="button"
+              variant="secondary"
+              disabled={isUpdating}
+              onClick={() => void removeFromEvent(selectedIdsList)}
+              className="min-h-[40px] px-3 py-2 text-xs"
+            >
+              {isUpdating ? "Çıkarılıyor..." : "Evet, kurstan çıkar"}
+            </Button>
+            <Button
+              type="button"
+              variant="ghost"
+              disabled={isUpdating}
+              onClick={() => {
+                setShowBulkRemoveConfirm(false);
+                setRemoveReason("");
+              }}
+              className="min-h-[40px] px-3 py-2 text-xs"
+            >
+              Vazgeç
             </Button>
           </div>
         </div>
@@ -268,9 +359,9 @@ export function EventEnrollmentsTable({
             istediğinize emin misiniz?
           </p>
           <p className="mt-1 text-xs text-amber-900/80">
-            Öğrenci listeden kaldırılır; yoklama ve form kayıtları saklanır. Gerekirse aynı
-            etkinliğe yeniden kayıt ekleyebilirsiniz. Aktif sertifikası varsa önce sertifikayı iptal
-            etmelisiniz. İşlem loglara yazılır.
+            Kayıt, yoklama ve form verileri tamamen silinir; öğrenci hiç kayıt olmamış gibi temiz
+            duruma döner. Aktif sertifikası varsa önce sertifikayı iptal etmelisiniz. İşlem loglara
+            yazılır.
           </p>
           <label className="mt-3 block text-xs font-semibold text-amber-900">
             Çıkarma nedeni (opsiyonel)
@@ -286,7 +377,7 @@ export function EventEnrollmentsTable({
               type="button"
               variant="secondary"
               disabled={isUpdating}
-              onClick={() => void removeFromEvent(pendingRemoveStudent.id)}
+              onClick={() => void removeFromEvent([pendingRemoveStudent.id])}
               className="min-h-[40px] px-3 py-2 text-xs"
             >
               {isUpdating ? "Çıkarılıyor..." : "Evet, kurstan çıkar"}
@@ -316,10 +407,10 @@ export function EventEnrollmentsTable({
           <thead className="border-b border-slate-100 text-xs uppercase tracking-wide text-slate-500">
             <tr>
               <th className="w-10 px-5 py-3">
-                {eligibleIds.length > 0 ? (
+                {selectableIds.length > 0 ? (
                   <input
                     type="checkbox"
-                    checked={allEligibleSelected}
+                    checked={allSelectableSelected}
                     onChange={toggleAll}
                     aria-label="Tümünü seç"
                     className="size-4 rounded border-slate-300 text-document-primary"
@@ -335,11 +426,12 @@ export function EventEnrollmentsTable({
           <tbody>
             {enrollments.map((enrollment) => {
               const eligible = canMarkCompleted(enrollment.status);
+              const selectable = canSelectForBulk(enrollment);
 
               return (
                 <tr key={enrollment.id} className="border-b border-slate-50 last:border-0">
                   <td className="px-5 py-4">
-                    {eligible ? (
+                    {selectable ? (
                       <input
                         type="checkbox"
                         checked={selectedIds.has(enrollment.id)}
@@ -386,6 +478,7 @@ export function EventEnrollmentsTable({
                           disabled={isUpdating}
                           onClick={() => {
                             setShowBulkConfirm(false);
+                            setShowBulkRemoveConfirm(false);
                             setPendingRemoveId(null);
                             setPendingSingleId(enrollment.id);
                           }}
@@ -394,25 +487,24 @@ export function EventEnrollmentsTable({
                           Tamamlandı
                         </Button>
                       ) : null}
-                      {canRemoveFromEvent(enrollment.status) ? (
+                      {canRemoveFromEvent(enrollment) ? (
                         <Button
                           type="button"
                           variant="ghost"
-                          disabled={isUpdating || enrollment.hasActiveCertificate}
+                          disabled={isUpdating}
                           onClick={() => {
                             setShowBulkConfirm(false);
+                            setShowBulkRemoveConfirm(false);
                             setPendingSingleId(null);
                             setPendingRemoveId(enrollment.id);
                           }}
                           className="min-h-[40px] px-3 py-2 text-xs text-amber-800 hover:bg-amber-50"
-                          title={
-                            enrollment.hasActiveCertificate
-                              ? "Önce sertifikayı iptal edin"
-                              : "Öğrenciyi etkinlikten çıkar"
-                          }
+                          title="Öğrenciyi etkinlikten çıkar"
                         >
                           Kurstan çıkar
                         </Button>
+                      ) : enrollment.hasActiveCertificate ? (
+                        <span className="text-xs text-slate-500">Önce sertifikayı iptal edin</span>
                       ) : null}
                     </div>
                   </td>

@@ -4,7 +4,7 @@ import { z } from "zod";
 import type { EnrollmentStatus } from "@/core/domain/student-dashboard";
 import { requireAdminApiAccess } from "@/infrastructure/auth/require-admin-api-access";
 import { getEventCapacityBlockReason } from "@/infrastructure/enrollments/event-capacity";
-import { SupabaseAdminAuditLogRepository } from "@/infrastructure/repositories/supabase-admin-audit-log-repository";
+import { removeEnrollmentsFromEvent } from "@/infrastructure/enrollments/remove-enrollments-from-event";
 import { resolveUsernameForLookup } from "@/shared/utils/student-username";
 
 const ALLOWED_STATUSES: EnrollmentStatus[] = [
@@ -205,97 +205,9 @@ export async function PATCH(request: Request) {
     const body = (await request.json()) as UpdateEnrollmentBody;
     const status = body.status;
     const enrollmentIds = collectIds(body);
-    const reason = body.reason?.trim() || null;
 
     if (enrollmentIds.length === 0 || !status || !ALLOWED_STATUSES.includes(status)) {
       return NextResponse.json({ error: "Geçersiz kayıt veya durum." }, { status: 400 });
-    }
-
-    if (status === "cancelled") {
-      const {
-        data: { user },
-      } = await access.client.auth.getUser();
-
-      if (!user) {
-        return NextResponse.json({ error: "Giriş gerekli." }, { status: 401 });
-      }
-
-      const { data: rows, error: fetchError } = await access.client
-        .from("enrollments")
-        .select(
-          `
-          id,
-          status,
-          user_id,
-          event_id,
-          student_code,
-          profiles ( full_name, email ),
-          events ( title ),
-          certificates ( id, status, certificate_code )
-        `,
-        )
-        .in("id", enrollmentIds);
-
-      if (fetchError) {
-        return NextResponse.json({ error: fetchError.message }, { status: 400 });
-      }
-
-      const blocked = (rows ?? []).filter((row) => {
-        const certificates = Array.isArray(row.certificates)
-          ? row.certificates
-          : row.certificates
-            ? [row.certificates]
-            : [];
-        return certificates.some(
-          (certificate) => (certificate as { status?: string }).status === "active",
-        );
-      });
-
-      if (blocked.length > 0) {
-        return NextResponse.json(
-          {
-            error:
-              "Aktif sertifikası olan kayıt kurstan çıkarılamaz. Önce Sertifikalar sayfasından sertifikayı iptal edin.",
-          },
-          { status: 400 },
-        );
-      }
-
-      const alreadyCancelled = (rows ?? []).filter((row) => row.status === "cancelled");
-      if (alreadyCancelled.length > 0) {
-        return NextResponse.json(
-          { error: "Seçilen kayıtlardan biri zaten kurstan çıkarılmış." },
-          { status: 400 },
-        );
-      }
-
-      const audit = new SupabaseAdminAuditLogRepository(access.client);
-      const { data: actorProfile } = await access.client
-        .from("profiles")
-        .select("email")
-        .eq("id", user.id)
-        .maybeSingle();
-
-      for (const row of rows ?? []) {
-        const profile = Array.isArray(row.profiles) ? row.profiles[0] : row.profiles;
-        const event = Array.isArray(row.events) ? row.events[0] : row.events;
-
-        await audit.logEnrollmentRemovedFromEvent({
-          actorId: user.id,
-          actorEmail: actorProfile?.email ?? user.email ?? null,
-          reason,
-          enrollmentId: row.id as string,
-          eventId: (row.event_id as string) ?? null,
-          eventTitle: (event as { title?: string } | null)?.title ?? null,
-          studentId: (row.user_id as string) ?? null,
-          studentName: (profile as { full_name?: string } | null)?.full_name ?? null,
-          studentEmail: (profile as { email?: string } | null)?.email ?? null,
-          metadata: {
-            previous_status: row.status,
-            student_code: row.student_code,
-          },
-        });
-      }
     }
 
     const payload: {
@@ -332,10 +244,6 @@ export async function DELETE(request: Request) {
     const enrollmentIds = collectIds(body);
     const reason = body.reason?.trim() || null;
 
-    if (enrollmentIds.length === 0) {
-      return NextResponse.json({ error: "Silinecek kayıt seçilmedi." }, { status: 400 });
-    }
-
     const {
       data: { user },
     } = await access.client.auth.getUser();
@@ -344,87 +252,22 @@ export async function DELETE(request: Request) {
       return NextResponse.json({ error: "Giriş gerekli." }, { status: 401 });
     }
 
-    const { data: rows, error: fetchError } = await access.client
-      .from("enrollments")
-      .select(
-        `
-        id,
-        status,
-        user_id,
-        event_id,
-        student_code,
-        profiles ( full_name, email ),
-        events ( title ),
-        certificates ( id, status, certificate_code )
-      `,
-      )
-      .in("id", enrollmentIds);
-
-    if (fetchError) {
-      return NextResponse.json({ error: fetchError.message }, { status: 400 });
-    }
-
-    const blocked = (rows ?? []).filter((row) => {
-      const certificates = Array.isArray(row.certificates)
-        ? row.certificates
-        : row.certificates
-          ? [row.certificates]
-          : [];
-      return certificates.some(
-        (certificate) => (certificate as { status?: string }).status === "active",
-      );
-    });
-
-    if (blocked.length > 0) {
-      return NextResponse.json(
-        {
-          error:
-            "Aktif sertifikası olan kayıt silinemez. Önce Sertifikalar sayfasından sertifikayı iptal edin.",
-        },
-        { status: 400 },
-      );
-    }
-
-    const audit = new SupabaseAdminAuditLogRepository(access.client);
     const { data: actorProfile } = await access.client
       .from("profiles")
       .select("email")
       .eq("id", user.id)
       .maybeSingle();
 
-    for (const row of rows ?? []) {
-      const profile = Array.isArray(row.profiles) ? row.profiles[0] : row.profiles;
-      const event = Array.isArray(row.events) ? row.events[0] : row.events;
+    const result = await removeEnrollmentsFromEvent(access.client, {
+      enrollmentIds,
+      actorId: user.id,
+      actorEmail: actorProfile?.email ?? user.email ?? null,
+      reason,
+    });
 
-      await audit.logEnrollmentDeleted({
-        actorId: user.id,
-        actorEmail: actorProfile?.email ?? user.email ?? null,
-        reason,
-        enrollmentId: row.id as string,
-        eventId: (row.event_id as string) ?? null,
-        eventTitle: (event as { title?: string } | null)?.title ?? null,
-        studentId: (row.user_id as string) ?? null,
-        studentName: (profile as { full_name?: string } | null)?.full_name ?? null,
-        studentEmail: (profile as { email?: string } | null)?.email ?? null,
-        metadata: {
-          previous_status: row.status,
-          student_code: row.student_code,
-        },
-      });
-    }
-
-    const { error: deleteError } = await access.client
-      .from("enrollments")
-      .delete()
-      .in("id", enrollmentIds);
-
-    if (deleteError) {
-      return NextResponse.json({ error: deleteError.message }, { status: 400 });
-    }
-
-    return NextResponse.json({ data: { deleted: enrollmentIds.length } });
+    return NextResponse.json({ data: { removed: result.removed } });
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Kayıt silinemedi.";
-    return NextResponse.json({ error: message }, { status: 500 });
+    const message = error instanceof Error ? error.message : "Kayıt kurstan çıkarılamadı.";
+    return NextResponse.json({ error: message }, { status: 400 });
   }
 }

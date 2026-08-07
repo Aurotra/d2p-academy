@@ -190,8 +190,8 @@ export default async function AdminEnrollmentsPage({ searchParams }: AdminEnroll
         <p className="mt-2 text-sm text-slate-600">
           Eğitim bitince öğrenciyi Tamamlandı olarak onaylayın (tek tek veya toplu); ardından
           Sertifika Yönetimi’nden sertifika verebilirsiniz. Yanlış kayıt veya katılmayacak öğrenciler
-          için satırdaki <span className="font-semibold">Kurstan çıkar</span> ile etkinlikten
-          çıkarabilirsiniz.
+          için satırdaki veya toplu <span className="font-semibold">Kurstan çıkar</span> ile kayıt
+          tamamen silinir (yoklama ve formlar dahil).
         </p>
         <div className="mt-4 flex flex-wrap gap-3">
           <Link
