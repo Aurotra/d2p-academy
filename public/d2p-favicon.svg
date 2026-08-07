@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
-  <rect width="100" height="100" fill="#ffffff"/>
-  <svg viewBox="50 50 1750 820" x="4" y="33" width="92" height="46" preserveAspectRatio="xMidYMid meet">
+  <rect width="100" height="100" rx="8" fill="#ffffff"/>
+  <svg viewBox="55 55 1050 780" x="3" y="15.085714285714289" width="94" height="69.82857142857142">
 <path fill="#E63946" opacity="1.000000" stroke="none" 
 	d="
 M73.035583,585.696289 

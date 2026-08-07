@@ -1,45 +1,76 @@
-import { mkdir, readFile, writeFile } from "node:fs/promises";
+import { mkdir, readFile, writeFile, copyFile } from "node:fs/promises";
 import path from "node:path";
 
 import sharp from "sharp";
 
 const ROOT = process.cwd();
 const LOGO_PATH = path.join(ROOT, "public/d2p-logo.svg");
-const FAVICON_VIEW_BOX = "50 50 1750 820";
+/** Colorful D2P mark without the wide wordmark — fits a square favicon better. */
+const FAVICON_VIEW_BOX = "55 55 1050 780";
 const CANVAS_SIZE = 512;
+const LOGO_SCALE = 0.94;
 
 function buildFaviconSvg(croppedSvg) {
   const innerMatch = croppedSvg.match(/<svg[^>]*>([\s\S]*)<\/svg>/i);
   const inner = innerMatch?.[1]?.trim() ?? "";
+  const [vx, vy, vw, vh] = FAVICON_VIEW_BOX.split(" ").map(Number);
+  const aspect = vw / vh;
+  const logoWidth = 100 * LOGO_SCALE;
+  const logoHeight = logoWidth / aspect;
+  const logoX = (100 - logoWidth) / 2;
+  const logoY = (100 - logoHeight) / 2;
 
   return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
-  <rect width="100" height="100" fill="#ffffff"/>
-  <svg viewBox="${FAVICON_VIEW_BOX}" x="4" y="33" width="92" height="46" preserveAspectRatio="xMidYMid meet">
+  <rect width="100" height="100" rx="8" fill="#ffffff"/>
+  <svg viewBox="${vx} ${vy} ${vw} ${vh}" x="${logoX}" y="${logoY}" width="${logoWidth}" height="${logoHeight}">
 ${inner}
   </svg>
 </svg>`;
+}
+
+async function buildRaster(croppedSvg) {
+  const logoMaxWidth = Math.round(CANVAS_SIZE * LOGO_SCALE);
+
+  const logoLayer = await sharp(Buffer.from(croppedSvg), { density: 400 })
+    .resize(logoMaxWidth, logoMaxWidth, {
+      fit: "inside",
+      background: { r: 255, g: 255, b: 255, alpha: 0 },
+    })
+    .png()
+    .toBuffer();
+
+  const baseBuffer = await sharp({
+    create: {
+      width: CANVAS_SIZE,
+      height: CANVAS_SIZE,
+      channels: 4,
+      background: { r: 255, g: 255, b: 255, alpha: 1 },
+    },
+  })
+    .composite([{ input: logoLayer, gravity: "center" }])
+    .png()
+    .toBuffer();
+
+  return sharp(baseBuffer);
 }
 
 async function main() {
   const raw = await readFile(LOGO_PATH, "utf8");
   const croppedSvg = raw.replace(/viewBox="[^"]*"/, `viewBox="${FAVICON_VIEW_BOX}"`);
   const faviconSvg = buildFaviconSvg(croppedSvg);
+  const raster = await buildRaster(croppedSvg);
 
   await writeFile(path.join(ROOT, "public/d2p-favicon.svg"), faviconSvg, "utf8");
-
-  const raster = sharp(Buffer.from(faviconSvg), { density: 300 }).resize(CANVAS_SIZE, CANVAS_SIZE, {
-    fit: "contain",
-    background: { r: 255, g: 255, b: 255, alpha: 1 },
-  }).png();
-
   await mkdir(path.join(ROOT, "src/app"), { recursive: true });
 
+  const icon32Path = path.join(ROOT, "public/favicon-32x32.png");
   await raster.clone().resize(32, 32).png().toFile(path.join(ROOT, "src/app/icon.png"));
   await raster.clone().resize(180, 180).png().toFile(path.join(ROOT, "src/app/apple-icon.png"));
   await raster.clone().resize(180, 180).png().toFile(path.join(ROOT, "public/apple-icon.png"));
-  await raster.clone().resize(32, 32).png().toFile(path.join(ROOT, "public/favicon-32x32.png"));
+  await raster.clone().resize(32, 32).png().toFile(icon32Path);
   await raster.clone().resize(192, 192).png().toFile(path.join(ROOT, "public/icon-192.png"));
   await raster.clone().resize(512, 512).png().toFile(path.join(ROOT, "public/icon-512.png"));
+  await copyFile(icon32Path, path.join(ROOT, "public/favicon.ico"));
 
   console.log("Favicons generated.");
 }
