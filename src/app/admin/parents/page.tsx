@@ -19,11 +19,12 @@ export default async function AdminParentsPage({ searchParams }: AdminParentsPag
     const dataClient = await getAdminDataClient();
     const repository = new SupabaseAdminParentRepository(dataClient);
     let parents = await repository.listParents({ query: params.q });
+    const withPhone = parents.filter((parent) => Boolean(parent.contactPhone)).length;
     const stats = {
       total: parents.length,
-      withPhone: parents.filter((parent) => Boolean(parent.contactPhone)).length,
+      withPhone,
+      missing: parents.length - withPhone,
     };
-    stats.missing = stats.total - stats.withPhone;
 
     if (params.phone === "with") {
       parents = parents.filter((parent) => Boolean(parent.contactPhone));
