@@ -1,5 +1,7 @@
 "use client";
 
+import { getChipButtonClass, getChipGridClass } from "@/shared/utils/chip-layout";
+
 interface ValueChipOption {
   value: string;
   label: string;
@@ -20,11 +22,13 @@ export function ValueChipGroup({
   onChange,
   helperText,
 }: ValueChipGroupProps) {
+  const centered = options.length <= 2;
+
   return (
-    <fieldset className="space-y-2">
-      <legend className="text-sm font-medium text-navy-900">{label}</legend>
+    <fieldset className="space-y-3 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-4 sm:px-5">
+      <legend className="px-1 text-sm font-semibold leading-6 text-navy-900">{label}</legend>
       {helperText ? <p className="text-xs leading-5 text-slate-500">{helperText}</p> : null}
-      <div className="flex flex-wrap gap-2">
+      <div className={getChipGridClass(options.length)}>
         {options.map((option) => {
           const selected = value === option.value;
 
@@ -34,11 +38,7 @@ export function ValueChipGroup({
               type="button"
               onClick={() => onChange(option.value)}
               aria-pressed={selected}
-              className={`rounded-xl px-3 py-2 text-sm font-semibold transition ${
-                selected
-                  ? "bg-document-primary text-white"
-                  : "border border-slate-200 bg-white text-slate-700 hover:border-sky-300"
-              }`}
+              className={getChipButtonClass(selected, { centered })}
             >
               {option.label}
             </button>

@@ -9,7 +9,7 @@ import { AdminParentsTable } from "@/presentation/components/admin/admin-parents
 export const dynamic = "force-dynamic";
 
 interface AdminParentsPageProps {
-  searchParams: Promise<{ q?: string }>;
+  searchParams: Promise<{ q?: string; phone?: string }>;
 }
 
 export default async function AdminParentsPage({ searchParams }: AdminParentsPageProps) {
@@ -18,7 +18,18 @@ export default async function AdminParentsPage({ searchParams }: AdminParentsPag
   try {
     const dataClient = await getAdminDataClient();
     const repository = new SupabaseAdminParentRepository(dataClient);
-    const parents = await repository.listParents({ query: params.q });
+    let parents = await repository.listParents({ query: params.q });
+    const stats = {
+      total: parents.length,
+      withPhone: parents.filter((parent) => Boolean(parent.contactPhone)).length,
+    };
+    stats.missing = stats.total - stats.withPhone;
+
+    if (params.phone === "with") {
+      parents = parents.filter((parent) => Boolean(parent.contactPhone));
+    } else if (params.phone === "missing") {
+      parents = parents.filter((parent) => !parent.contactPhone);
+    }
 
     return (
       <div className="space-y-6">
@@ -28,8 +39,9 @@ export default async function AdminParentsPage({ searchParams }: AdminParentsPag
           </p>
           <h1 className="mt-2 text-2xl font-bold text-slate-900">Veli Telefon Rehberi</h1>
           <p className="mt-2 text-sm text-slate-600">
-            Kayıtlı velilerin adı, e-postası ve telefon bilgileri. İletişim telefonu önce veli
-            hesabındaki numarayı, yoksa çocuk profilindeki veli telefonunu gösterir.
+            Kayıtlı velilerin iletişim bilgileri. Telefon önce veli hesabından, yoksa çocuk
+            profilindeki veli telefonundan alınır. Üstteki rozetlere tıklayarak telefonu eksik
+            velileri filtreleyebilirsiniz.
           </p>
         </div>
 
@@ -37,7 +49,9 @@ export default async function AdminParentsPage({ searchParams }: AdminParentsPag
           <AdminParentsFilters />
         </Suspense>
 
-        <AdminParentsTable parents={parents} />
+        <Suspense fallback={<p className="text-sm text-slate-600">Veli listesi yükleniyor…</p>}>
+          <AdminParentsTable parents={parents} stats={stats} />
+        </Suspense>
       </div>
     );
   } catch (error) {

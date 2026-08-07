@@ -663,7 +663,7 @@ export function CourseApplicationWizard({
       </div>
 
       {step === 2 ? (
-        <section className="space-y-4 rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm">
+        <section className="space-y-4 rounded-[2rem] border border-slate-200 bg-white p-4 shadow-sm sm:p-6">
           <h2 className="text-xl font-bold text-navy-950">Onaylar</h2>
           <p className="text-sm text-slate-600">
             F05, F06 ve F07 metinlerini okuyun; ardından onay kutularını işaretleyin. Onaylar
@@ -751,7 +751,7 @@ export function CourseApplicationWizard({
       ) : null}
 
       {step === 1 ? (
-        <section className="space-y-4 rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm">
+        <section className="space-y-4 rounded-[2rem] border border-slate-200 bg-white p-4 shadow-sm sm:p-6">
           <h2 className="text-xl font-bold text-navy-950">
             Tanışma (F01)
             {state.requiresPreTest ? " + Ön Test (F02)" : ""}
@@ -913,7 +913,7 @@ export function CourseApplicationWizard({
       {step === 3 ? (
         state.requiresSurveys ? (
           postTestUnlocked ? (
-        <section className="space-y-4 rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm">
+        <section className="space-y-4 rounded-[2rem] border border-slate-200 bg-white p-4 shadow-sm sm:p-6">
           <h2 className="text-xl font-bold text-navy-950">Son Test (F03)</h2>
           <p className="text-sm text-slate-600">
             Eğitim sonrası doldurun. Tamamlanmadan admin sertifika veremez.

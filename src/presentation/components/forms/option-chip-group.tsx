@@ -1,5 +1,7 @@
 "use client";
 
+import { getChipButtonClass, getChipGridClass } from "@/shared/utils/chip-layout";
+
 interface OptionChipGroupProps {
   label: string;
   options: readonly string[];
@@ -44,10 +46,12 @@ export function OptionChipGroup({
     onChange(option);
   }
 
+  const centered = options.length <= 2;
+
   return (
-    <fieldset className="space-y-2 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-4">
-      <legend className="px-1 text-sm font-semibold text-slate-900">{label}</legend>
-      <div className="flex flex-wrap gap-2">
+    <fieldset className="space-y-3 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-4 sm:px-5">
+      <legend className="px-1 text-sm font-semibold leading-6 text-slate-900">{label}</legend>
+      <div className={getChipGridClass(options.length)}>
         {options.map((option) => {
           const isSelected = multiple
             ? Array.isArray(selected) && selected.includes(option)
@@ -58,11 +62,8 @@ export function OptionChipGroup({
               key={option}
               type="button"
               onClick={() => toggle(option)}
-              className={`rounded-full px-3 py-1.5 text-sm font-semibold transition ${
-                isSelected
-                  ? "bg-document-primary text-white"
-                  : "border border-slate-200 bg-white text-slate-700 hover:border-sky-300"
-              }`}
+              aria-pressed={isSelected}
+              className={getChipButtonClass(isSelected, { centered })}
             >
               {option}
             </button>

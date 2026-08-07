@@ -42,7 +42,7 @@ export default async function ParentChildProfilePage({ params, searchParams }: P
 
   const { data: child } = await supabase
     .from("profiles")
-    .select("id, full_name, username")
+    .select("id")
     .eq("id", childId)
     .eq("parent_id", auth.user.id)
     .eq("role", "student")
@@ -62,20 +62,6 @@ export default async function ParentChildProfilePage({ params, searchParams }: P
         >
           ← Çocuk hesaplarına dön
         </Link>
-
-        <div className="rounded-2xl border-2 border-amber-300 bg-amber-50 px-5 py-4 text-sm text-amber-950">
-          <p className="text-base font-bold text-amber-900">
-            Profil %100 tamamlanmadan kayıt yapılamaz
-          </p>
-          <p className="mt-2 leading-relaxed text-amber-950/90">
-            Kurslara kayıt olabilmek ve sertifika alabilmek için aşağıdaki tüm zorunlu alanları
-            (veli telefon numarası dahil) doldurun. Tamamlanan proje sayısı isteğe bağlıdır.
-          </p>
-          <p className="mt-2 font-semibold text-amber-900">
-            {child.full_name}
-            {child.username ? ` (@${child.username})` : ""}
-          </p>
-        </div>
 
         <UsernameStudentProfileForm
           apiPath={`/api/v1/parent/students/${childId}/profile`}

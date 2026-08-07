@@ -23,7 +23,7 @@ export function LikertScaleGroup({ title, questions, values, onChange }: LikertS
             <p className="text-sm font-medium leading-6 text-slate-900">
               {index + 1}. {question.label}
             </p>
-            <div className="grid grid-cols-5 gap-2 sm:flex sm:flex-wrap">
+            <div className="grid grid-cols-5 gap-1.5 sm:gap-2">
               {PARTICIPANT_LIKERT_OPTIONS.map((option) => {
                 const selected = values[question.id] === option.value;
                 return (
@@ -31,7 +31,7 @@ export function LikertScaleGroup({ title, questions, values, onChange }: LikertS
                     key={option.value}
                     type="button"
                     onClick={() => onChange(question.id, option.value)}
-                    className={`min-h-11 rounded-xl border px-2 py-2 text-center text-xs font-semibold transition sm:min-w-[4.5rem] ${
+                    className={`min-h-11 w-full rounded-xl border px-1.5 py-2 text-center text-xs font-semibold transition sm:px-2 ${
                       selected
                         ? "border-document-primary bg-document-primary text-white"
                         : "border-slate-200 bg-white text-slate-700 hover:border-sky-300"

@@ -307,7 +307,7 @@ export default function DashboardProfilePage() {
 
           <fieldset className="rounded-[1.75rem] border border-slate-200 bg-white p-6 shadow-sm">
             <legend className="px-2 text-lg font-bold text-slate-900">Bölüm C — İlgi Alanları</legend>
-            <div className="mt-4 grid gap-3 sm:grid-cols-2">
+            <div className="mt-4 grid grid-cols-1 gap-2 sm:grid-cols-2">
               {INTEREST_OPTIONS.map((interest) => (
                 <label key={interest} className="flex items-center gap-2 rounded-xl border border-slate-100 px-3 py-2 text-sm">
                   <input

@@ -1,3 +1,8 @@
+"use client";
+
+import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
+
 import type { AdminParentRecord } from "@/core/domain/admin-parent";
 import { formatTurkishPhoneDisplay } from "@/shared/utils/turkish-phone";
 
@@ -8,104 +13,207 @@ function formatDate(value: string): string {
   }).format(new Date(value));
 }
 
-function phoneCell(value: string | null) {
-  if (!value?.trim()) {
-    return <span className="text-slate-400">—</span>;
-  }
-
+function phoneLink(value: string) {
   const display = formatTurkishPhoneDisplay(value);
   const tel = value.replace(/\s/g, "");
 
   return (
-    <a href={`tel:${tel}`} className="font-medium text-document-primary hover:underline">
+    <a href={`tel:${tel}`} className="font-semibold text-document-primary hover:underline">
       {display}
     </a>
   );
 }
 
-export function AdminParentsTable({ parents }: { parents: AdminParentRecord[] }) {
-  const withPhoneCount = parents.filter((parent) => Boolean(parent.contactPhone)).length;
+function contactPhoneSource(parent: AdminParentRecord): "account" | "profile" | "none" {
+  if (parent.accountPhone?.trim()) {
+    return "account";
+  }
+  if (parent.profileContactPhone?.trim()) {
+    return "profile";
+  }
+  return "none";
+}
+
+function ContactPhoneCell({ parent }: { parent: AdminParentRecord }) {
+  const source = contactPhoneSource(parent);
+
+  if (!parent.contactPhone) {
+    return (
+      <span className="inline-flex whitespace-nowrap rounded-full bg-amber-100 px-2.5 py-1 text-xs font-semibold text-amber-900">
+        Telefon eksik
+      </span>
+    );
+  }
+
+  return (
+    <div className="min-w-[9.5rem] space-y-1">
+      {phoneLink(parent.contactPhone)}
+      <p className="text-xs text-slate-500">
+        {source === "account" ? "Veli hesabı" : "Çocuk profili"}
+      </p>
+      {parent.accountPhone?.trim() &&
+      parent.profileContactPhone?.trim() &&
+      parent.accountPhone.trim() !== parent.profileContactPhone.trim() ? (
+        <p className="text-xs text-slate-500">
+          Profil: {formatTurkishPhoneDisplay(parent.profileContactPhone)}
+        </p>
+      ) : null}
+    </div>
+  );
+}
+
+function StatPill({
+  label,
+  active,
+  tone,
+  onClick,
+}: {
+  label: string;
+  active: boolean;
+  tone: "slate" | "emerald" | "amber";
+  onClick: () => void;
+}) {
+  const toneClass =
+    tone === "emerald"
+      ? "bg-emerald-100 text-emerald-900"
+      : tone === "amber"
+        ? "bg-amber-100 text-amber-900"
+        : "bg-slate-100 text-slate-700";
+
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={`rounded-full px-3 py-1 text-sm font-semibold transition ${toneClass} ${
+        active ? "ring-2 ring-document-primary/30 ring-offset-1" : "hover:opacity-90"
+      }`}
+    >
+      {label}
+    </button>
+  );
+}
+
+export function AdminParentsTable({
+  parents,
+  stats,
+}: {
+  parents: AdminParentRecord[];
+  stats: { total: number; withPhone: number; missing: number };
+}) {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const phoneFilter = searchParams.get("phone") ?? "all";
+
+  function setPhoneFilter(next: "all" | "with" | "missing") {
+    const params = new URLSearchParams(searchParams.toString());
+    if (next === "all") {
+      params.delete("phone");
+    } else {
+      params.set("phone", next);
+    }
+    const qs = params.toString();
+    router.push(qs ? `/admin/parents?${qs}` : "/admin/parents");
+  }
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-wrap gap-2 text-sm">
-        <span className="rounded-full bg-slate-100 px-3 py-1 font-semibold text-slate-700">
-          Toplam veli: {parents.length}
-        </span>
-        <span className="rounded-full bg-emerald-100 px-3 py-1 font-semibold text-emerald-900">
-          Telefonu olan: {withPhoneCount}
-        </span>
-        <span className="rounded-full bg-amber-100 px-3 py-1 font-semibold text-amber-900">
-          Telefon eksik: {parents.length - withPhoneCount}
-        </span>
+      <div className="flex flex-wrap gap-2">
+        <StatPill
+          label={`Toplam veli: ${stats.total}`}
+          active={phoneFilter === "all"}
+          tone="slate"
+          onClick={() => setPhoneFilter("all")}
+        />
+        <StatPill
+          label={`Telefonu olan: ${stats.withPhone}`}
+          active={phoneFilter === "with"}
+          tone="emerald"
+          onClick={() => setPhoneFilter("with")}
+        />
+        <StatPill
+          label={`Telefon eksik: ${stats.missing}`}
+          active={phoneFilter === "missing"}
+          tone="amber"
+          onClick={() => setPhoneFilter("missing")}
+        />
       </div>
 
       <div className="overflow-hidden rounded-[1.75rem] border border-slate-200 bg-white shadow-sm">
         <div className="overflow-x-auto">
-          <table className="min-w-full text-left text-sm">
+          <table className="min-w-[56rem] w-full text-left text-sm">
             <thead className="border-b border-slate-100 bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
               <tr>
-                <th className="px-5 py-4">Veli adı</th>
-                <th className="px-5 py-4">E-posta</th>
-                <th className="px-5 py-4">İletişim telefonu</th>
-                <th className="px-5 py-4">Hesap telefonu</th>
-                <th className="px-5 py-4">Çocuk profili telefonu</th>
-                <th className="px-5 py-4">Çocuklar</th>
-                <th className="px-5 py-4">Kayıt</th>
-                <th className="px-5 py-4">Durum</th>
+                <th className="sticky left-0 z-10 min-w-[11rem] bg-slate-50 px-4 py-4 sm:px-5">
+                  Veli
+                </th>
+                <th className="min-w-[10rem] px-4 py-4 sm:px-5">Telefon</th>
+                <th className="min-w-[12rem] px-4 py-4 sm:px-5">Çocuklar</th>
+                <th className="whitespace-nowrap px-4 py-4 sm:px-5">Kayıt</th>
+                <th className="whitespace-nowrap px-4 py-4 sm:px-5">Durum</th>
               </tr>
             </thead>
             <tbody>
               {parents.length === 0 ? (
                 <tr>
-                  <td colSpan={8} className="px-5 py-10 text-center text-slate-500">
+                  <td colSpan={5} className="px-5 py-10 text-center text-slate-500">
                     Kayıtlı veli bulunamadı.
                   </td>
                 </tr>
               ) : (
                 parents.map((parent) => (
                   <tr key={parent.id} className="border-b border-slate-50 align-top last:border-0">
-                    <td className="px-5 py-4 font-semibold text-slate-900">{parent.fullName}</td>
-                    <td className="px-5 py-4 text-slate-700">
+                    <td className="sticky left-0 z-10 min-w-[11rem] bg-white px-4 py-4 sm:px-5">
+                      <p className="font-semibold text-slate-900">{parent.fullName}</p>
                       {parent.email ? (
                         <a
                           href={`mailto:${parent.email}`}
-                          className="text-document-primary hover:underline"
+                          className="mt-1 block break-all text-xs text-document-primary hover:underline"
                         >
                           {parent.email}
                         </a>
                       ) : (
-                        "—"
+                        <p className="mt-1 text-xs text-slate-400">E-posta yok</p>
                       )}
                     </td>
-                    <td className="px-5 py-4">{phoneCell(parent.contactPhone)}</td>
-                    <td className="px-5 py-4">{phoneCell(parent.accountPhone)}</td>
-                    <td className="px-5 py-4">{phoneCell(parent.profileContactPhone)}</td>
-                    <td className="px-5 py-4 text-slate-700">
+                    <td className="px-4 py-4 sm:px-5">
+                      <ContactPhoneCell parent={parent} />
+                    </td>
+                    <td className="px-4 py-4 text-slate-700 sm:px-5">
                       {parent.children.length === 0 ? (
-                        "—"
+                        <span className="text-slate-400">—</span>
                       ) : (
-                        <ul className="space-y-1">
+                        <ul className="space-y-2">
                           {parent.children.map((child) => (
-                            <li key={child.id}>
-                              <span className="font-medium text-slate-900">{child.fullName}</span>
+                            <li key={child.id} className="min-w-0">
+                              <Link
+                                href={`/admin/students/${child.id}`}
+                                className="font-medium text-slate-900 hover:text-document-primary hover:underline"
+                              >
+                                {child.fullName}
+                              </Link>
                               {child.username ? (
-                                <span className="text-slate-500"> @{child.username}</span>
+                                <span className="block text-xs text-slate-500">@{child.username}</span>
                               ) : null}
                               {child.parentPhone ? (
-                                <span className="block text-xs text-slate-500">
-                                  {formatTurkishPhoneDisplay(child.parentPhone)}
+                                <span className="mt-0.5 block text-xs text-slate-500">
+                                  Veli tel: {formatTurkishPhoneDisplay(child.parentPhone)}
                                 </span>
-                              ) : null}
+                              ) : (
+                                <span className="mt-0.5 block text-xs text-amber-700">
+                                  Profil telefonu eksik
+                                </span>
+                              )}
                             </li>
                           ))}
                         </ul>
                       )}
                     </td>
-                    <td className="px-5 py-4 text-slate-600">{formatDate(parent.createdAt)}</td>
-                    <td className="px-5 py-4">
+                    <td className="whitespace-nowrap px-4 py-4 text-slate-600 sm:px-5">
+                      {formatDate(parent.createdAt)}
+                    </td>
+                    <td className="whitespace-nowrap px-4 py-4 sm:px-5">
                       <span
-                        className={`inline-flex rounded-full px-3 py-1 text-xs font-bold ${
+                        className={`inline-flex whitespace-nowrap rounded-full px-3 py-1 text-xs font-bold ${
                           parent.isActive
                             ? "bg-emerald-100 text-emerald-900"
                             : "bg-slate-200 text-slate-700"

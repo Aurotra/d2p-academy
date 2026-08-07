@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState, type FormEvent } from "react";
 
 import type { ProfileProgressInput } from "@/core/domain/student-profile";
+import { getChipButtonClass, getChipGridClass } from "@/shared/utils/chip-layout";
 import { Button } from "@/presentation/components/ui/button";
 import { Input } from "@/presentation/components/ui/input";
 import { ValueChipGroup } from "@/presentation/components/forms/value-chip-group";
@@ -343,9 +344,9 @@ export function UsernameStudentProfileForm({
         value={form.proje_sayisi}
         onChange={(e) => setForm((f) => ({ ...f, proje_sayisi: e.target.value }))}
       />
-      <fieldset>
-        <legend className="mb-2 text-sm font-medium text-navy-900">İlgi alanları</legend>
-        <div className="flex flex-wrap gap-2">
+      <fieldset className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-4 sm:px-5">
+        <legend className="px-1 text-sm font-semibold leading-6 text-navy-900">İlgi alanları</legend>
+        <div className={getChipGridClass(INTEREST_OPTIONS.length)}>
           {INTEREST_OPTIONS.map((interest) => {
             const selected = form.interests.includes(interest);
             return (
@@ -360,11 +361,8 @@ export function UsernameStudentProfileForm({
                       : [...f.interests, interest],
                   }))
                 }
-                className={`rounded-xl px-3 py-1.5 text-xs font-semibold ${
-                  selected
-                    ? "bg-document-primary text-white"
-                    : "border border-slate-200 bg-white text-slate-700"
-                }`}
+                aria-pressed={selected}
+                className={getChipButtonClass(selected)}
               >
                 {interest}
               </button>

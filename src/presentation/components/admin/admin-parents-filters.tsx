@@ -13,10 +13,12 @@ export function AdminParentsFilters() {
 
   function handleSubmit(event: FormEvent) {
     event.preventDefault();
-    const params = new URLSearchParams();
+    const params = new URLSearchParams(searchParams.toString());
     const trimmed = query.trim();
     if (trimmed) {
       params.set("q", trimmed);
+    } else {
+      params.delete("q");
     }
     const qs = params.toString();
     router.push(qs ? `/admin/parents?${qs}` : "/admin/parents");
@@ -26,6 +28,8 @@ export function AdminParentsFilters() {
     setQuery("");
     router.push("/admin/parents");
   }
+
+  const phoneFilter = searchParams.get("phone");
 
   return (
     <form
@@ -40,11 +44,16 @@ export function AdminParentsFilters() {
           onChange={(event) => setQuery(event.target.value)}
         />
       </div>
-      <div className="flex gap-2">
+      <div className="flex flex-wrap gap-2">
         <Button type="submit">Filtrele</Button>
         <Button type="button" variant="outline" onClick={handleReset}>
           Temizle
         </Button>
+        {phoneFilter ? (
+          <span className="inline-flex items-center rounded-full bg-sky-100 px-3 py-1.5 text-xs font-semibold text-sky-900">
+            Telefon filtresi: {phoneFilter === "missing" ? "eksik" : "dolu"}
+          </span>
+        ) : null}
       </div>
     </form>
   );

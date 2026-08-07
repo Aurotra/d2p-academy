@@ -40,7 +40,7 @@ export function ProfileMotivationFields({
           {PROFILE_D2P_EXPECTATION_LABEL}
         </legend>
         <p className="text-xs leading-5 text-slate-500">{PROFILE_D2P_EXPECTATION_HELPER}</p>
-        <div className="grid grid-cols-5 gap-2 sm:flex sm:flex-wrap">
+        <div className="grid grid-cols-5 gap-1.5 sm:gap-2">
           {D2P_EXPECTATION_LIKERT_OPTIONS.map((option) => {
             const selected = beklenti === option.value;
 
@@ -50,7 +50,7 @@ export function ProfileMotivationFields({
                 type="button"
                 onClick={() => onBeklentiChange(option.value)}
                 aria-pressed={selected}
-                className={`min-h-11 rounded-xl border px-2 py-2 text-center text-xs font-semibold transition sm:min-w-[4.5rem] ${
+                className={`min-h-11 w-full rounded-xl border px-1.5 py-2 text-center text-xs font-semibold transition sm:px-2 ${
                   selected
                     ? "border-document-primary bg-document-primary text-white"
                     : "border-slate-200 bg-white text-slate-700 hover:border-sky-300"
