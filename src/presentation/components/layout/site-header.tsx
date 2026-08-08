@@ -144,15 +144,15 @@ export function SiteHeader() {
           </div>
 
           <nav
-            className="site-header-nav hidden min-w-0 flex-1 justify-center lg:flex"
+            className="site-header-nav hidden min-w-0 flex-1 justify-center xl:flex"
             aria-label="Ana menü"
           >
-            <ul className="mx-auto flex w-max items-center gap-x-3 xl:gap-x-5 2xl:gap-x-6">
+            <ul className="mx-auto flex w-max flex-nowrap items-center gap-x-2 2xl:gap-x-5">
               {navItems.map((item) => (
                 <li key={item.href} className="shrink-0">
                   <Link
                     href={item.href}
-                    className="whitespace-nowrap text-xs font-medium text-navy-900 transition hover:text-primary xl:text-sm"
+                    className="whitespace-nowrap text-xs font-medium text-navy-900 transition hover:text-primary 2xl:text-sm"
                     onClick={(event) => handleSamePageHashNav(event, item.href, pathname)}
                   >
                     {item.label}
@@ -162,17 +162,17 @@ export function SiteHeader() {
             </ul>
           </nav>
 
-          <div className="hidden min-h-[40px] shrink-0 items-center gap-2 lg:flex xl:gap-3">
+          <div className="hidden min-h-[40px] shrink-0 items-center gap-1.5 xl:flex 2xl:gap-3">
             {showLoggedInActions ? (
               <>
                 {userDisplayName ? (
-                  <span className="max-w-[10rem] truncate text-sm font-medium text-muted lg:max-w-[14rem]">
+                  <span className="max-w-[8rem] truncate text-xs font-medium text-muted 2xl:max-w-[14rem] 2xl:text-sm">
                     {userDisplayName}
                   </span>
                 ) : null}
                 <Link
                   href={panelHref}
-                  className="rounded-xl bg-secondary px-4 py-2 text-sm font-semibold text-white transition hover:bg-secondary-hover hover:shadow-glow-secondary"
+                  className="rounded-xl bg-secondary px-3 py-2 text-xs font-semibold text-white transition hover:bg-secondary-hover hover:shadow-glow-secondary 2xl:px-4 2xl:text-sm"
                 >
                   Panelim
                 </Link>
@@ -180,7 +180,7 @@ export function SiteHeader() {
                   type="button"
                   disabled={isLoggingOut}
                   onClick={() => void handleLogout()}
-                  className="rounded-xl bg-primary px-4 py-2 text-sm font-semibold text-white transition hover:bg-primary-hover hover:shadow-glow-primary disabled:opacity-60"
+                  className="rounded-xl bg-primary px-3 py-2 text-xs font-semibold text-white transition hover:bg-primary-hover hover:shadow-glow-primary disabled:opacity-60 2xl:px-4 2xl:text-sm"
                 >
                   {isLoggingOut ? "Çıkış..." : "Çıkış Yap"}
                 </button>
@@ -188,15 +188,15 @@ export function SiteHeader() {
             ) : null}
             {showGuestAuthActions ? (
               <>
-                <AuthPortalLink href="/student-login" kind="student">
+                <AuthPortalLink href="/student-login" kind="student" className="px-3 py-2 text-xs 2xl:px-4 2xl:text-sm">
                   Öğrenci Girişi
                 </AuthPortalLink>
-                <AuthPortalLink href="/login" kind="parent">
+                <AuthPortalLink href="/login" kind="parent" className="px-3 py-2 text-xs 2xl:px-4 2xl:text-sm">
                   Veli Girişi
                 </AuthPortalLink>
                 <Link
                   href="/register"
-                  className="rounded-xl bg-secondary px-4 py-2 text-sm font-semibold text-white transition hover:bg-secondary-hover hover:shadow-glow-secondary"
+                  className="rounded-xl bg-secondary px-3 py-2 text-xs font-semibold text-white transition hover:bg-secondary-hover hover:shadow-glow-secondary 2xl:px-4 2xl:text-sm"
                 >
                   Hesap Oluştur
                 </Link>
@@ -206,7 +206,7 @@ export function SiteHeader() {
 
           <button
             type="button"
-            className="relative z-[60] ml-auto inline-flex min-h-11 min-w-11 shrink-0 items-center justify-center rounded-xl border border-border-surface bg-white/80 p-2.5 text-navy-900 shadow-sm transition hover:border-primary/30 hover:text-primary lg:hidden"
+            className="relative z-[60] ml-auto inline-flex min-h-11 min-w-11 shrink-0 items-center justify-center rounded-xl border border-border-surface bg-white/80 p-2.5 text-navy-900 shadow-sm transition hover:border-primary/30 hover:text-primary xl:hidden"
             aria-label={isMobileMenuOpen ? "Menüyü kapat" : "Menüyü aç"}
             aria-expanded={isMobileMenuOpen}
             aria-controls="mobile-main-menu"
@@ -221,13 +221,13 @@ export function SiteHeader() {
         <>
           <button
             type="button"
-            className="fixed inset-0 z-40 bg-navy-950/20 backdrop-blur-[2px] lg:hidden"
+            className="fixed inset-0 z-40 bg-navy-950/20 backdrop-blur-[2px] xl:hidden"
             aria-label="Menüyü kapat"
             onClick={closeMobileMenu}
           />
           <nav
             id="mobile-main-menu"
-            className="fixed inset-x-0 bottom-0 top-20 z-50 overflow-y-auto overscroll-contain border-t border-border-surface bg-gradient-to-b from-surface-base to-surface-section px-4 py-5 shadow-lg shadow-secondary/10 lg:hidden sm:px-6"
+            className="fixed inset-x-0 bottom-0 top-20 z-50 overflow-y-auto overscroll-contain border-t border-border-surface bg-gradient-to-b from-surface-base to-surface-section px-4 py-5 shadow-lg shadow-secondary/10 xl:hidden sm:px-6"
             aria-label="Mobil menü"
           >
             <ul className="space-y-1">
