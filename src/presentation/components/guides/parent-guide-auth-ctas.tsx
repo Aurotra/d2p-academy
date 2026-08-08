@@ -23,7 +23,7 @@ export function ParentGuideAuthCtas() {
         </AuthPortalLink>
         <Link
           href="/etkinlikler"
-          className="inline-flex items-center justify-center rounded-xl border border-slate-200 bg-white px-5 py-3 text-sm font-semibold text-slate-800 transition hover:border-slate-300"
+          className="inline-flex items-center justify-center rounded-xl border border-border-surface bg-white px-5 py-3 text-sm font-semibold text-navy-900 transition hover:border-secondary/40"
         >
           Etkinlikler
         </Link>

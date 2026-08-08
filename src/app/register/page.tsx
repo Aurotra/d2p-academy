@@ -12,7 +12,7 @@ export const metadata: Metadata = {
 
 export default function RegisterPage() {
   return (
-    <Suspense fallback={<div className="p-8 text-center text-sm text-slate-600">Yükleniyor...</div>}>
+    <Suspense fallback={<div className="p-8 text-center text-sm text-muted">Yükleniyor...</div>}>
       <RegisterForm />
     </Suspense>
   );

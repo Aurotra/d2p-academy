@@ -4,6 +4,9 @@ interface TextareaProps extends TextareaHTMLAttributes<HTMLTextAreaElement> {
   label?: string;
 }
 
+const fieldClasses =
+  "min-h-28 w-full rounded-xl border border-border-surface bg-white px-4 py-3 text-sm text-navy-950 placeholder:text-subtle focus:border-secondary focus:outline-none focus:ring-2 focus:ring-secondary/20";
+
 export function Textarea({ className = "", label, id, ...props }: TextareaProps) {
   const textareaId = id ?? props.name;
 
@@ -14,11 +17,7 @@ export function Textarea({ className = "", label, id, ...props }: TextareaProps)
           {label}
         </label>
       ) : null}
-      <textarea
-        id={textareaId}
-        className={`min-h-28 w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-navy-950 placeholder:text-slate-400 focus:border-cyan-500 focus:outline-none focus:ring-2 focus:ring-cyan-200 ${className}`}
-        {...props}
-      />
+      <textarea id={textareaId} className={`${fieldClasses} ${className}`} {...props} />
     </div>
   );
 }

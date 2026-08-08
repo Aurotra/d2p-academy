@@ -12,7 +12,7 @@ export const metadata: Metadata = {
 
 export default function StudentLoginPage() {
   return (
-    <Suspense fallback={<div className="py-20 text-center text-slate-600">Yükleniyor...</div>}>
+    <Suspense fallback={<div className="py-20 text-center text-muted">Yükleniyor...</div>}>
       <StudentLoginForm />
     </Suspense>
   );

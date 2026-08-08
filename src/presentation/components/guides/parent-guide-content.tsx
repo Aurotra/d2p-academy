@@ -98,14 +98,14 @@ const faqItems = [
 export function ParentGuideContent() {
   return (
     <article className="mx-auto max-w-3xl px-4 py-12 sm:px-6 lg:px-8">
-      <header className="mb-10 border-b border-slate-200 pb-8">
+      <header className="mb-10 border-b border-border-surface pb-8">
         <p className="text-sm font-semibold uppercase tracking-[0.18em] text-secondary">
           D2P Academy
         </p>
-        <h1 className="mt-3 text-3xl font-black tracking-tight text-slate-900 sm:text-4xl">
+        <h1 className="mt-3 text-3xl font-black tracking-tight text-navy-950 sm:text-4xl">
           Veli Kayıt Rehberi
         </h1>
-        <p className="mt-4 text-base leading-7 text-slate-600">
+        <p className="mt-4 text-base leading-7 text-muted">
           Çocuğunuzun etkinlik kaydı, kurs talebi, formları ve sertifikası web sitemiz üzerinden
           yürütülür. Yayınlanmış bir etkinlik varsa doğrudan kayıt olabilir; uygun tarih yoksa kurs
           talebi bırakabilirsiniz.
@@ -122,9 +122,9 @@ export function ParentGuideContent() {
         </ol>
       </section>
 
-      <div className="mt-10 space-y-10 text-base leading-8 text-slate-700">
+      <div className="mt-10 space-y-10 text-base leading-8 text-[var(--text-on-surface-soft)]">
         <section>
-          <h2 className="text-xl font-bold text-slate-900">1. Veli hesabı açma</h2>
+          <h2 className="text-xl font-bold text-navy-950">1. Veli hesabı açma</h2>
           <p className="mt-3">
             <strong>Hesap Oluştur</strong> sayfasından adınızı, e-postanızı ve şifrenizi (en az 6
             karakter) girin. Kayıttan sonra e-postanıza onay maili gelir; linke tıklamadan giriş
@@ -137,32 +137,32 @@ export function ParentGuideContent() {
         </section>
 
         <section>
-          <h2 className="text-xl font-bold text-slate-900">2. Çocuk hesabı ekleme</h2>
+          <h2 className="text-xl font-bold text-navy-950">2. Çocuk hesabı ekleme</h2>
           <p className="mt-3">
             Giriş yaptıktan sonra <strong>Panel → Çocuk hesapları → + Çocuk ekle</strong> yolunu
             izleyin.
           </p>
-          <div className="mt-4 overflow-x-auto rounded-xl border border-slate-200">
+          <div className="mt-4 overflow-x-auto rounded-xl border border-border-surface">
             <table className="min-w-[32rem] w-full text-left text-sm">
-              <thead className="bg-slate-50 text-slate-600">
+              <thead className="bg-surface-section text-muted">
                 <tr>
                   <th className="px-4 py-3 font-semibold">Bilgi</th>
                   <th className="px-4 py-3 font-semibold">Açıklama</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100">
+              <tbody className="divide-y divide-border-surface">
                 <tr>
-                  <td className="px-4 py-3 font-medium text-slate-900">Ad Soyad</td>
+                  <td className="px-4 py-3 font-medium text-navy-950">Ad Soyad</td>
                   <td className="px-4 py-3">
                     Çocuğun tam adı (en az ad + soyad). Veli e-postası değil.
                   </td>
                 </tr>
                 <tr>
-                  <td className="px-4 py-3 font-medium text-slate-900">Doğum tarihi</td>
+                  <td className="px-4 py-3 font-medium text-navy-950">Doğum tarihi</td>
                   <td className="px-4 py-3">Takvimden seçin</td>
                 </tr>
                 <tr>
-                  <td className="px-4 py-3 font-medium text-slate-900">Şifre</td>
+                  <td className="px-4 py-3 font-medium text-navy-950">Şifre</td>
                   <td className="px-4 py-3">Çocuğun giriş şifresi (en az 6 karakter)</td>
                 </tr>
               </tbody>
@@ -171,9 +171,9 @@ export function ParentGuideContent() {
           <p className="mt-4">
             <strong>Kullanıcı adı otomatik oluşur:</strong> ad + soyad + doğum yılının son 2 hanesi.
             Örnek: Emre Yılmaz, 2015 doğumlu →{" "}
-            <code className="rounded bg-slate-100 px-1.5 py-0.5">emreyılmaz15</code>
+            <code className="rounded bg-surface-section px-1.5 py-0.5">emreyılmaz15</code>
           </p>
-          <p className="mt-3 rounded-xl border border-sky-200 bg-sky-50 px-4 py-3 text-sm text-sky-950">
+          <p className="mt-3 rounded-xl border border-border-surface bg-surface-tint-yellow px-4 py-3 text-sm text-navy-950">
             Kayıt sonrası ekranda görünen kullanıcı adını mutlaka bir yere yazın. Çocuğunuz giriş
             yaparken buna ihtiyaç duyacak. Tarayıcı Ad Soyad alanına veli e-postanızı otomatik
             yazarsa silip çocuğun adını girin.
@@ -181,34 +181,34 @@ export function ParentGuideContent() {
         </section>
 
         <section>
-          <h2 className="text-xl font-bold text-slate-900">3. Veli girişi mi, öğrenci girişi mi?</h2>
-          <div className="mt-4 overflow-x-auto rounded-xl border border-slate-200">
+          <h2 className="text-xl font-bold text-navy-950">3. Veli girişi mi, öğrenci girişi mi?</h2>
+          <div className="mt-4 overflow-x-auto rounded-xl border border-border-surface">
             <table className="min-w-[32rem] w-full text-left text-sm">
-              <thead className="bg-slate-50 text-slate-600">
+              <thead className="bg-surface-section text-muted">
                 <tr>
                   <th className="px-4 py-3 font-semibold" />
                   <th className="px-4 py-3 font-semibold">Veli Girişi</th>
                   <th className="px-4 py-3 font-semibold">Öğrenci Girişi</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100">
+              <tbody className="divide-y divide-border-surface">
                 <tr>
-                  <td className="px-4 py-3 font-medium text-slate-900">Kim kullanır?</td>
+                  <td className="px-4 py-3 font-medium text-navy-950">Kim kullanır?</td>
                   <td className="px-4 py-3">Anne / baba / veli</td>
                   <td className="px-4 py-3">Çocuk (öğrenci)</td>
                 </tr>
                 <tr>
-                  <td className="px-4 py-3 font-medium text-slate-900">Neyle girilir?</td>
+                  <td className="px-4 py-3 font-medium text-navy-950">Neyle girilir?</td>
                   <td className="px-4 py-3">E-posta + şifre</td>
                   <td className="px-4 py-3">Kullanıcı adı + şifre</td>
                 </tr>
                 <tr>
-                  <td className="px-4 py-3 font-medium text-slate-900">Ne yapılır?</td>
+                  <td className="px-4 py-3 font-medium text-navy-950">Ne yapılır?</td>
                   <td className="px-4 py-3">Çocuk ekleme, kayıt, kurs talebi, form, profil</td>
                   <td className="px-4 py-3">Rozet, sertifika, kendi paneli</td>
                 </tr>
                 <tr>
-                  <td className="px-4 py-3 font-medium text-slate-900">Site butonu</td>
+                  <td className="px-4 py-3 font-medium text-navy-950">Site butonu</td>
                   <td className="px-4 py-3 text-primary">Kırmızı — Veli Girişi</td>
                   <td className="px-4 py-3 text-amber-700">Sarı — Öğrenci Girişi</td>
                 </tr>
@@ -218,7 +218,7 @@ export function ParentGuideContent() {
         </section>
 
         <section>
-          <h2 className="text-xl font-bold text-slate-900">4. Etkinliğe kayıt</h2>
+          <h2 className="text-xl font-bold text-navy-950">4. Etkinliğe kayıt</h2>
           <p className="mt-3">
             <Link href="/etkinlikler" className="font-semibold text-document-primary hover:underline">
               Etkinlikler
@@ -236,7 +236,7 @@ export function ParentGuideContent() {
         </section>
 
         <section>
-          <h2 className="text-xl font-bold text-slate-900">
+          <h2 className="text-xl font-bold text-navy-950">
             5. Kurs talebi (uygun etkinlik yoksa)
           </h2>
           <p className="mt-3">
@@ -260,14 +260,14 @@ export function ParentGuideContent() {
               <li>Talep durumunu aynı sayfadan takip edin</li>
             </ol>
           </div>
-          <p className="mt-4 text-sm text-slate-600">
+          <p className="mt-4 text-sm text-muted">
             Sınıf açıldıktan sonra çocuk profili oluşturduğunuzda, aynı isimle bıraktığınız talep
             otomatik olarak kayda dönüşür. Profil zaten varsa kayıt doğrudan oluşturulur.
           </p>
         </section>
 
         <section>
-          <h2 className="text-xl font-bold text-slate-900">
+          <h2 className="text-xl font-bold text-navy-950">
             6. Formları doldurma (kayıttan hemen sonra)
           </h2>
           <p className="mt-3">
@@ -275,7 +275,7 @@ export function ParentGuideContent() {
             e-posta linki aramanıza gerek yoktur.
           </p>
 
-          <div className="mt-4 rounded-xl border border-sky-200 bg-sky-50 px-4 py-4 text-sm text-sky-950">
+          <div className="mt-4 rounded-xl border border-border-surface bg-surface-tint-yellow px-4 py-4 text-sm text-navy-950">
             <p className="font-semibold">Formlara giden yol</p>
             <ol className="mt-2 list-decimal space-y-1 pl-5 leading-7">
               <li>
@@ -294,37 +294,37 @@ export function ParentGuideContent() {
           </div>
 
           <p className="mt-4">Açılan sayfada adım adım şu bölümler gelir:</p>
-          <div className="mt-4 overflow-x-auto rounded-xl border border-slate-200">
+          <div className="mt-4 overflow-x-auto rounded-xl border border-border-surface">
             <table className="min-w-[32rem] w-full text-left text-sm">
-              <thead className="bg-slate-50 text-slate-600">
+              <thead className="bg-surface-section text-muted">
                 <tr>
                   <th className="px-4 py-3 font-semibold">Adım</th>
                   <th className="px-4 py-3 font-semibold">Ne var?</th>
                   <th className="px-4 py-3 font-semibold">Not</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100">
+              <tbody className="divide-y divide-border-surface">
                 <tr>
-                  <td className="px-4 py-3 font-medium text-slate-900">1. Tanışma</td>
+                  <td className="px-4 py-3 font-medium text-navy-950">1. Tanışma</td>
                   <td className="px-4 py-3">
                     F01 tanıma formu; tüm sınıf düzeylerinde ön test (F02) de bu adımda
                   </td>
                   <td className="px-4 py-3">Kayıttan sonra ilk yapılacak</td>
                 </tr>
                 <tr>
-                  <td className="px-4 py-3 font-medium text-slate-900">2. Onaylar</td>
+                  <td className="px-4 py-3 font-medium text-navy-950">2. Onaylar</td>
                   <td className="px-4 py-3">F05, F06 (medya izinleri), F07 onay metinleri</td>
                   <td className="px-4 py-3">F06&apos;da tüm kalemlerde izin gerekir</td>
                 </tr>
                 <tr>
-                  <td className="px-4 py-3 font-medium text-slate-900">3. Son test</td>
+                  <td className="px-4 py-3 font-medium text-navy-950">3. Son test</td>
                   <td className="px-4 py-3">Etkinlik sonrası değerlendirme (F03)</td>
                   <td className="px-4 py-3">
                     Yalnızca 2–8. sınıflar; eğitmen ders yoklamasında zorunlu katılım sağlandığında
                   </td>
                 </tr>
                 <tr>
-                  <td className="px-4 py-3 font-medium text-slate-900">4. Sertifika onay</td>
+                  <td className="px-4 py-3 font-medium text-navy-950">4. Sertifika onay</td>
                   <td className="px-4 py-3">Sertifika süreci</td>
                   <td className="px-4 py-3">Formlar ve profil tamamlandıktan sonra</td>
                 </tr>
@@ -332,14 +332,14 @@ export function ParentGuideContent() {
             </table>
           </div>
 
-          <p className="mt-4 text-sm text-slate-600">
+          <p className="mt-4 text-sm text-muted">
             Üstteki renkli adım butonlarında yeşil = tamamlandı, kırmızı = doldurulmalı. Tanışma
             bitmeden Onaylar açılmaz; sırayı atlamayın.
           </p>
         </section>
 
         <section>
-          <h2 className="text-xl font-bold text-slate-900">7. Profil ve sertifika</h2>
+          <h2 className="text-xl font-bold text-navy-950">7. Profil ve sertifika</h2>
           <p className="mt-3">
             <strong>Profili düzenle</strong> ile okul, sınıf, veli telefon numarası ve diğer zorunlu
             bilgileri tamamlayın. Çocuk ekledikten sonra doğrudan profil sayfasına yönlendirilirsiniz.{" "}
@@ -349,23 +349,23 @@ export function ParentGuideContent() {
         </section>
 
         <section>
-          <h2 className="text-xl font-bold text-slate-900">Sık sorulan sorular</h2>
+          <h2 className="text-xl font-bold text-navy-950">Sık sorulan sorular</h2>
           <dl className="mt-4 space-y-4">
             {faqItems.map((item) => (
               <div
                 key={item.question}
-                className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm"
+                className="rounded-2xl border border-border-surface bg-white p-5 shadow-sm"
               >
-                <dt className="font-semibold text-slate-900">{item.question}</dt>
-                <dd className="mt-2 text-sm leading-7 text-slate-600">{item.answer}</dd>
+                <dt className="font-semibold text-navy-950">{item.question}</dt>
+                <dd className="mt-2 text-sm leading-7 text-muted">{item.answer}</dd>
               </div>
             ))}
           </dl>
         </section>
 
-        <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-          <h2 className="text-lg font-bold text-slate-900">Kısa özet (paylaşmak için)</h2>
-          <p className="mt-3 whitespace-pre-line text-sm leading-7 text-slate-700">
+        <section className="rounded-2xl border border-border-surface bg-white p-6 shadow-sm">
+          <h2 className="text-lg font-bold text-navy-950">Kısa özet (paylaşmak için)</h2>
+          <p className="mt-3 whitespace-pre-line text-sm leading-7 text-[var(--text-on-surface-soft)]">
             {`D2P Academy kayıt:
 1) d2p.com.tr → Hesap Oluştur (veli e-posta + şifre)
 2) E-postayı onayla → Veli Girişi
@@ -380,7 +380,7 @@ Veli = e-posta | Öğrenci = kullanıcı adı ile giriş`}
         </section>
       </div>
 
-      <footer className="mt-12 border-t border-slate-200 pt-6 text-sm text-slate-500">
+      <footer className="mt-12 border-t border-border-surface pt-6 text-sm text-subtle">
         Son güncelleme: {PARENT_GUIDE_UPDATED} · Sorularınız için{" "}
         <Link href="/iletisim" className="font-semibold text-document-primary underline">
           iletişim

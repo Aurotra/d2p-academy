@@ -9,20 +9,20 @@ interface LegalDocumentLayoutProps {
 export function LegalDocumentLayout({ title, lastUpdated, children }: LegalDocumentLayoutProps) {
   return (
     <article className="mx-auto max-w-3xl px-4 py-12 sm:px-6 lg:px-8">
-      <header className="mb-10 border-b border-slate-200 pb-8">
+      <header className="mb-10 border-b border-border-surface pb-8">
         <p className="text-sm font-semibold uppercase tracking-[0.18em] text-document-primary">
           D2P Academy
         </p>
-        <h1 className="mt-3 text-3xl font-black tracking-tight text-slate-900 sm:text-4xl">
+        <h1 className="mt-3 text-3xl font-black tracking-tight text-navy-950 sm:text-4xl">
           {title}
         </h1>
       </header>
 
-      <div className="space-y-8 text-base leading-8 text-slate-700 [&_h2]:text-xl [&_h2]:font-bold [&_h2]:text-slate-900 [&_h2]:not-first:mt-2 [&_p]:text-slate-700">
+      <div className="space-y-8 text-base leading-8 text-[var(--text-on-surface-soft)] [&_h2]:text-xl [&_h2]:font-bold [&_h2]:text-navy-950 [&_h2]:not-first:mt-2 [&_p]:text-[var(--text-on-surface-soft)]">
         {children}
       </div>
 
-      <footer className="mt-12 border-t border-slate-200 pt-6 text-sm text-slate-500">
+      <footer className="mt-12 border-t border-border-surface pt-6 text-sm text-subtle">
         Son güncelleme: {lastUpdated}
       </footer>
     </article>

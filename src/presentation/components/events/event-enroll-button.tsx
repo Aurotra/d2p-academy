@@ -40,7 +40,7 @@ export function EventEnrollButton({ eventId, className = "" }: EventEnrollButton
             Etkinliğe Kaydol
           </Button>
         </Link>
-        <p className="text-center text-xs leading-5 text-slate-500">
+        <p className="text-center text-xs leading-5 text-subtle">
           Üye değilseniz önce{" "}
           <Link href={buildRegisterForEventPath(eventId)} className="font-semibold text-document-primary">
             veli hesabı oluşturun
@@ -64,7 +64,7 @@ export function EventEnrollButton({ eventId, className = "" }: EventEnrollButton
       >
         Etkinliğe Kaydol
       </Button>
-      <p className="text-center text-xs leading-5 text-slate-500">
+      <p className="text-center text-xs leading-5 text-subtle">
         Çocuk hesabı seçerek kayıt tamamlanır; veli hesabınız etkinliğe kaydolmaz.
       </p>
     </div>

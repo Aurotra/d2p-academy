@@ -6,7 +6,7 @@ export const metadata = privacyPageMetadata;
 
 export default function PrivacyPage() {
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen bg-surface-section">
       <LegalDocumentLayout title="Gizlilik Politikası" lastUpdated={KVKK_TEXT_VERSION}>
       <section>
         <h2>1. Giriş</h2>

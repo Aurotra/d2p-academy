@@ -7,7 +7,7 @@ import { GuestOnly } from "@/presentation/components/auth/guest-only";
 export function InstitutionRequestGuestNote() {
   return (
     <GuestOnly>
-      <p className="mt-3 text-sm text-slate-500">
+      <p className="mt-3 text-sm text-subtle">
         Bireysel kayıt için{" "}
         <Link href="/etkinlikler" className="font-semibold text-document-primary hover:underline">
           etkinliklere göz atın

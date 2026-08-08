@@ -5,7 +5,7 @@ export const metadata = parentGuidePageMetadata;
 
 export default function ParentGuidePage() {
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen bg-surface-section">
       <ParentGuideContent />
     </div>
   );

@@ -4,6 +4,9 @@ interface SelectProps extends SelectHTMLAttributes<HTMLSelectElement> {
   label?: string;
 }
 
+const fieldClasses =
+  "w-full rounded-xl border border-border-surface bg-white px-4 py-3 text-sm text-navy-950 focus:border-secondary focus:outline-none focus:ring-2 focus:ring-secondary/20";
+
 export function Select({ className = "", label, id, children, ...props }: SelectProps) {
   const selectId = id ?? props.name;
 
@@ -14,11 +17,7 @@ export function Select({ className = "", label, id, children, ...props }: Select
           {label}
         </label>
       ) : null}
-      <select
-        id={selectId}
-        className={`w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-navy-950 focus:border-cyan-500 focus:outline-none focus:ring-2 focus:ring-cyan-200 ${className}`}
-        {...props}
-      >
+      <select id={selectId} className={`${fieldClasses} ${className}`} {...props}>
         {children}
       </select>
     </div>

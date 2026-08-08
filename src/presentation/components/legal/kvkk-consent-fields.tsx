@@ -42,10 +42,10 @@ export function KvkkConsentFields({
     Boolean(legalAuthorityLabel);
 
   return (
-    <fieldset className="space-y-3 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-4">
-      <legend className="px-1 text-sm font-semibold text-slate-900">Onaylar</legend>
+    <fieldset className="space-y-3 rounded-2xl border border-border-surface bg-surface-section px-4 py-4">
+      <legend className="px-1 text-sm font-semibold text-navy-950">Onaylar</legend>
 
-      <label htmlFor={kvkkId} className="flex items-start gap-3 text-sm leading-6 text-slate-800">
+      <label htmlFor={kvkkId} className="flex items-start gap-3 text-sm leading-6 text-navy-900">
         <input
           id={kvkkId}
           name="kvkk_disclosure"
@@ -53,7 +53,7 @@ export function KvkkConsentFields({
           required
           checked={kvkkDisclosureAccepted}
           onChange={(event) => onKvkkDisclosureChange(event.target.checked)}
-          className="mt-1 size-4 rounded border-slate-300 text-document-primary"
+          className="mt-1 size-4 rounded border-border-surface text-document-primary"
         />
         <span>
           D2P Academy{" "}
@@ -69,7 +69,7 @@ export function KvkkConsentFields({
         </span>
       </label>
 
-      <label htmlFor={dataId} className="flex items-start gap-3 text-sm leading-6 text-slate-800">
+      <label htmlFor={dataId} className="flex items-start gap-3 text-sm leading-6 text-navy-900">
         <input
           id={dataId}
           name="data_processing_consent"
@@ -77,13 +77,13 @@ export function KvkkConsentFields({
           required
           checked={dataProcessingConsent}
           onChange={(event) => onDataProcessingChange(event.target.checked)}
-          className="mt-1 size-4 rounded border-slate-300 text-document-primary"
+          className="mt-1 size-4 rounded border-border-surface text-document-primary"
         />
         <span>{dataProcessingLabel}</span>
       </label>
 
       {showLegalAuthority ? (
-        <label htmlFor={legalId} className="flex items-start gap-3 text-sm leading-6 text-slate-800">
+        <label htmlFor={legalId} className="flex items-start gap-3 text-sm leading-6 text-navy-900">
           <input
             id={legalId}
             name="legal_authority_confirmed"
@@ -91,20 +91,20 @@ export function KvkkConsentFields({
             required
             checked={legalAuthorityConfirmed}
             onChange={(event) => onLegalAuthorityChange(event.target.checked)}
-            className="mt-1 size-4 rounded border-slate-300 text-document-primary"
+            className="mt-1 size-4 rounded border-border-surface text-document-primary"
           />
           <span>{legalAuthorityLabel}</span>
         </label>
       ) : null}
 
-      <label htmlFor={marketingId} className="flex items-start gap-3 text-sm leading-6 text-slate-700">
+      <label htmlFor={marketingId} className="flex items-start gap-3 text-sm leading-6 text-muted">
         <input
           id={marketingId}
           name="marketing_email_consent"
           type="checkbox"
           checked={marketingEmailConsent}
           onChange={(event) => onMarketingEmailChange(event.target.checked)}
-          className="mt-1 size-4 rounded border-slate-300 text-document-primary"
+          className="mt-1 size-4 rounded border-border-surface text-document-primary"
         />
         <span>
           Eğitim, etkinlik ve kampanyalarla ilgili tarafıma e-posta ile bilgilendirme yapılmasına

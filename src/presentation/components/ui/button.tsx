@@ -14,11 +14,14 @@ const variantClasses: Record<ButtonVariant, string> = {
   secondary:
     "bg-secondary text-white hover:bg-secondary-hover focus-visible:ring-secondary/30 shadow-lg shadow-secondary/20 hover:shadow-glow-secondary",
   accent:
-    "bg-accent text-sky-950 hover:bg-accent-dark focus-visible:ring-accent/40 shadow-lg shadow-accent/20 hover:shadow-glow-accent",
+    "bg-accent text-navy-950 hover:bg-accent-dark focus-visible:ring-accent/40 shadow-lg shadow-accent/20 hover:shadow-glow-accent",
   outline:
-    "border-2 border-sky-800 bg-white text-sky-950 shadow-md shadow-sky-200/60 hover:border-sky-900 hover:bg-sky-50 focus-visible:ring-sky-400",
-  ghost: "text-sky-800 hover:bg-sky-100/80 focus-visible:ring-accent/40",
+    "border-2 border-navy-800 bg-white text-navy-950 shadow-md shadow-secondary/10 hover:border-navy-900 hover:bg-surface-section focus-visible:ring-secondary/40",
+  ghost: "text-navy-900 hover:bg-surface-tint-mixed focus-visible:ring-accent/40",
 };
+
+const baseClasses =
+  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-surface-base";
 
 export function Button({
   className = "",
@@ -29,7 +32,7 @@ export function Button({
   return (
     <button
       type={type}
-      className={`${BUTTON_PRESS_CLASSES} inline-flex items-center justify-center rounded-xl px-5 py-3 text-sm font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-sky-100 disabled:cursor-not-allowed disabled:opacity-60 disabled:active:scale-100 disabled:active:brightness-100 ${variantClasses[variant]} ${className}`}
+      className={`${BUTTON_PRESS_CLASSES} ${baseClasses} inline-flex items-center justify-center rounded-xl px-5 py-3 text-sm font-semibold disabled:cursor-not-allowed disabled:opacity-60 disabled:active:scale-100 disabled:active:brightness-100 ${variantClasses[variant]} ${className}`}
       {...props}
     />
   );

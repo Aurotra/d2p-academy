@@ -127,7 +127,7 @@ export function StudentLoginForm() {
         </Button>
       </form>
 
-      <p className="mt-4 text-center text-xs text-slate-500">
+      <p className="mt-4 text-center text-xs text-subtle">
         Kullanıcı adını veya şifreni unuttuysan velinden yardım iste.{" "}
         <Link href={PARENT_GUIDE_PATH} className="font-semibold text-secondary hover:text-secondary-hover">
           Veli rehberi

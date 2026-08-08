@@ -6,7 +6,7 @@ export const metadata = kvkkPageMetadata;
 
 export default function KvkkPage() {
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen bg-surface-section">
       <LegalDocumentLayout
       title="Kişisel Verilerin İşlenmesine İlişkin Aydınlatma Metni"
       lastUpdated={KVKK_TEXT_VERSION}

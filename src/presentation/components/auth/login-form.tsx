@@ -131,7 +131,7 @@ export function LoginForm() {
       </form>
 
       <div className="mt-4 space-y-2 text-center">
-        <p className="text-sm text-slate-600">Öğrenci misiniz?</p>
+        <p className="text-sm text-muted">Öğrenci misiniz?</p>
         <AuthPortalLink href="/student-login" kind="student" block>
           Öğrenci Girişi
         </AuthPortalLink>

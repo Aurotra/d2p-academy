@@ -16,14 +16,14 @@ function InstagramIcon({ className = "h-5 w-5" }: { className?: string }) {
 
 export default function ContactPage() {
   return (
-    <div className="min-h-screen bg-slate-50 px-4 py-12 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-surface-section px-4 py-12 sm:px-6 lg:px-8">
       <div className="mx-auto w-full max-w-6xl">
         <div className="mb-10 max-w-2xl">
           <p className="text-sm font-semibold uppercase tracking-[0.18em] text-document-primary">
             D2P Academy
           </p>
-          <h1 className="mt-2 text-3xl font-bold text-slate-900 sm:text-4xl">İletişim</h1>
-          <p className="mt-4 text-base leading-7 text-slate-600">
+          <h1 className="mt-2 text-3xl font-bold text-navy-950 sm:text-4xl">İletişim</h1>
+          <p className="mt-4 text-base leading-7 text-muted">
             Atölyeler, okul iş birlikleri ve kayıt süreçleri hakkında sorularınız için bize
             ulaşabilirsiniz.
           </p>
@@ -31,8 +31,8 @@ export default function ContactPage() {
 
         <div className="grid gap-6 lg:grid-cols-2 lg:items-start">
           {/* Sol: Harita + adres */}
-          <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
-            <div className="overflow-hidden rounded-2xl border border-slate-200">
+          <div className="rounded-2xl border border-border-surface bg-white p-5 shadow-sm sm:p-6">
+            <div className="overflow-hidden rounded-2xl border border-border-surface">
               <iframe
                 title="Pamukkale Teknokent konum haritası"
                 src={CONTACT.mapsEmbedUrl}
@@ -56,8 +56,8 @@ export default function ContactPage() {
             </a>
 
             <div className="mt-3">
-              <p className="text-base font-semibold text-slate-900">{CONTACT.organization}</p>
-              <address className="mt-2 not-italic text-sm leading-6 text-slate-600">
+              <p className="text-base font-semibold text-navy-950">{CONTACT.organization}</p>
+              <address className="mt-2 not-italic text-sm leading-6 text-muted">
                 {CONTACT.addressLines.map((line) => (
                   <span key={line} className="block">
                     {line}
@@ -69,56 +69,56 @@ export default function ContactPage() {
 
           {/* Sağ: Bilgi + CTA */}
           <div className="flex flex-col gap-6">
-            <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
+            <div className="rounded-2xl border border-border-surface bg-white p-5 shadow-sm sm:p-6">
               <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
+                <p className="text-xs font-semibold uppercase tracking-[0.16em] text-subtle">
                   Telefon
                 </p>
                 <a
                   href={`tel:${CONTACT.phoneTel}`}
-                  className="mt-2 inline-flex min-h-[44px] items-center text-lg font-semibold text-slate-900 transition hover:text-document-primary"
+                  className="mt-2 inline-flex min-h-[44px] items-center text-lg font-semibold text-navy-950 transition hover:text-document-primary"
                 >
                   {CONTACT.phoneDisplay}
                 </a>
               </div>
 
-              <div className="mt-5 border-t border-slate-100 pt-5">
-                <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
+              <div className="mt-5 border-t border-border-surface pt-5">
+                <p className="text-xs font-semibold uppercase tracking-[0.16em] text-subtle">
                   E-posta
                 </p>
                 <a
                   href={`mailto:${CONTACT.email}`}
-                  className="mt-2 inline-flex min-h-[44px] items-center break-all text-lg font-semibold text-slate-900 transition hover:text-document-primary"
+                  className="mt-2 inline-flex min-h-[44px] items-center break-all text-lg font-semibold text-navy-950 transition hover:text-document-primary"
                 >
                   {CONTACT.email}
                 </a>
               </div>
 
-              <div className="mt-5 border-t border-slate-100 pt-5">
-                <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
+              <div className="mt-5 border-t border-border-surface pt-5">
+                <p className="text-xs font-semibold uppercase tracking-[0.16em] text-subtle">
                   Instagram
                 </p>
                 <a
                   href={CONTACT.instagramUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="mt-2 inline-flex min-h-[44px] items-center gap-2 text-lg font-semibold text-slate-900 transition hover:text-document-primary"
+                  className="mt-2 inline-flex min-h-[44px] items-center gap-2 text-lg font-semibold text-navy-950 transition hover:text-document-primary"
                 >
                   <InstagramIcon />
                   @{CONTACT.instagramHandle}
                 </a>
               </div>
 
-              <div className="mt-5 border-t border-slate-100 pt-5">
-                <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
+              <div className="mt-5 border-t border-border-surface pt-5">
+                <p className="text-xs font-semibold uppercase tracking-[0.16em] text-subtle">
                   Çalışma Saatleri
                 </p>
-                <p className="mt-2 text-lg font-semibold text-slate-900">{CONTACT.workingHours}</p>
+                <p className="mt-2 text-lg font-semibold text-navy-950">{CONTACT.workingHours}</p>
               </div>
             </div>
 
-            <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
-              <p className="text-base leading-7 text-slate-700">
+            <div className="rounded-2xl border border-border-surface bg-white p-5 shadow-sm sm:p-6">
+              <p className="text-base leading-7 text-[var(--text-on-surface-soft)]">
                 Etkinlik kaydı için veli hesabı açın veya okul / belediye için kurumsal eğitim talebi
                 oluşturun.
               </p>

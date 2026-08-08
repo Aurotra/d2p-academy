@@ -5,6 +5,9 @@ interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
   error?: string;
 }
 
+const fieldClasses =
+  "w-full rounded-xl border border-border-surface bg-white px-4 py-3 text-sm text-navy-950 placeholder:text-subtle focus:border-secondary focus:outline-none focus:ring-2 focus:ring-secondary/20";
+
 export function Input({ className = "", label, error, id, ...props }: InputProps) {
   const inputId = id ?? props.name;
 
@@ -15,11 +18,7 @@ export function Input({ className = "", label, error, id, ...props }: InputProps
           {label}
         </label>
       ) : null}
-      <input
-        id={inputId}
-        className={`w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-navy-950 placeholder:text-slate-400 focus:border-cyan-500 focus:outline-none focus:ring-2 focus:ring-cyan-200 ${className}`}
-        {...props}
-      />
+      <input id={inputId} className={`${fieldClasses} ${className}`} {...props} />
       {error ? <p className="mt-2 text-sm text-red-600">{error}</p> : null}
     </div>
   );

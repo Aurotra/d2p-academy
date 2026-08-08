@@ -7,7 +7,7 @@ interface BadgeProps extends HTMLAttributes<HTMLSpanElement> {
 const toneClasses = {
   navy: "bg-navy-900 text-white",
   cyan: "bg-accent/15 text-accent-dark ring-1 ring-accent/30",
-  neutral: "bg-slate-100 text-slate-700",
+  neutral: "bg-surface-section text-muted",
 };
 
 export function Badge({ className = "", tone = "neutral", ...props }: BadgeProps) {

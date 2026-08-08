@@ -117,22 +117,22 @@ export function EmailConfirmForm() {
         </p>
       ) : showLoggedInState ? (
         <div className="space-y-4">
-          <p className="rounded-xl border border-sky-200 bg-sky-50 px-4 py-3 text-sm text-sky-900">
+          <p className="rounded-xl border border-border-surface bg-surface-tint-yellow px-4 py-3 text-sm text-navy-900">
             Oturumunuz açık görünüyor. Onayınızı tamamladıysanız doğrudan panele devam edebilirsiniz.
           </p>
           <PanelLink href={panelHref} />
         </div>
       ) : (
         <div className="space-y-4">
-          <p className="text-sm leading-relaxed text-slate-600">
+          <p className="text-sm leading-relaxed text-muted">
             E-posta adresinizi onaylamak için aşağıdaki butona tıklayabilirsiniz.
           </p>
 
           {error ? (
             isEmailConfirmationExpiredNotice(error) ? (
-              <div className="rounded-xl border border-sky-200 bg-sky-50 px-4 py-4 text-sm text-sky-950">
+              <div className="rounded-xl border border-border-surface bg-surface-tint-yellow px-4 py-4 text-sm text-navy-950">
                 <p className="font-semibold text-navy-950">Bu bağlantı artık geçerli değil</p>
-                <p className="mt-2 leading-relaxed text-slate-700">{error}</p>
+                <p className="mt-2 leading-relaxed text-[var(--text-on-surface-soft)]">{error}</p>
                 <div className="mt-4 flex flex-col gap-2 sm:flex-row">
                   <Link
                     href={loginHref}
@@ -142,7 +142,7 @@ export function EmailConfirmForm() {
                   </Link>
                   <Link
                     href="/register"
-                    className="inline-flex flex-1 items-center justify-center rounded-xl border-2 border-sky-300 bg-white px-4 py-2.5 text-sm font-semibold text-sky-900 transition hover:bg-sky-50"
+                    className="inline-flex flex-1 items-center justify-center rounded-xl border-2 border-border-surface bg-white px-4 py-2.5 text-sm font-semibold text-navy-900 transition hover:bg-surface-section"
                   >
                     Yeni onay maili
                   </Link>
@@ -159,8 +159,8 @@ export function EmailConfirmForm() {
             {isLoading ? "Onaylanıyor…" : "E-postamı Onayla"}
           </Button>
 
-          <p className="text-center text-xs text-slate-500">
-            <Link href={PARENT_GUIDE_PATH} className="font-semibold text-sky-700 hover:underline">
+          <p className="text-center text-xs text-subtle">
+            <Link href={PARENT_GUIDE_PATH} className="font-semibold text-secondary hover:underline">
               Veli kayıt rehberi
             </Link>
           </p>

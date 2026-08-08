@@ -147,7 +147,7 @@ export function RegisterForm() {
             </div>
           ) : null}
 
-          <p className="text-xs leading-5 text-slate-500">
+          <p className="text-xs leading-5 text-subtle">
             Onay maili gelmezse formu tekrar tekrar göndermeyin; önce Spam klasörünü kontrol edin
             veya giriş yapmayı deneyin.
           </p>
