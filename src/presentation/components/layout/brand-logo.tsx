@@ -1,6 +1,5 @@
 import Link from "next/link";
 
-import { RemoteImage } from "@/presentation/components/ui/remote-image";
 import { SITE_LOGO_SRC, SITE_NAME } from "@/shared/constants/site";
 
 interface BrandLogoProps {
@@ -13,13 +12,12 @@ interface BrandLogoProps {
 export function BrandLogo({ href = "/", className = "", height = 48 }: BrandLogoProps) {
   const logo = (
     <span className={`inline-flex shrink-0 items-center ${className}`}>
-      <RemoteImage
+      <img
         src={SITE_LOGO_SRC}
         alt={`${SITE_NAME} logosu`}
-        width={Math.round(height * 2.4)}
-        height={height}
         className="block w-auto max-w-none object-contain object-left"
-        priority
+        style={{ height: `${height}px`, maxHeight: `${height}px`, width: "auto" }}
+        decoding="async"
       />
     </span>
   );
