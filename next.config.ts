@@ -1,5 +1,7 @@
 import type { NextConfig } from "next";
 
+import { getSecurityHeaders } from "./src/shared/config/security-headers";
+
 const nextConfig: NextConfig = {
   reactStrictMode: true,
   output: "standalone",
@@ -12,6 +14,14 @@ const nextConfig: NextConfig = {
   },
   typescript: {
     ignoreBuildErrors: false,
+  },
+  async headers() {
+    return [
+      {
+        source: "/:path*",
+        headers: getSecurityHeaders(),
+      },
+    ];
   },
   async redirects() {
     return [

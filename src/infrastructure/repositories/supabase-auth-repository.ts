@@ -70,8 +70,8 @@ export class SupabaseAuthRepository implements AuthRepository {
       options: {
         emailRedirectTo: `${SITE_URL}/auth/callback?next=${encodeURIComponent(nextPath)}`,
         data: {
-          full_name: input.fullName.trim(),
-          role: "student",
+          full_name: input.fullName,
+          role: "parent",
         },
       },
     });
