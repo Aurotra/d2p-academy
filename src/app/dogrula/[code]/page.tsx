@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 
 import { CertificateVerifyByCode } from "@/presentation/components/home/certificate-verify-by-code";
+import { PublicPageShell } from "@/presentation/components/layout/public-page-shell";
 
 type PageProps = {
   params: Promise<{ code: string }>;
@@ -21,5 +22,9 @@ export default async function DogrulaCertificatePage({ params }: PageProps) {
   const { code } = await params;
   const decoded = decodeURIComponent(code).trim();
 
-  return <CertificateVerifyByCode code={decoded} />;
+  return (
+    <PublicPageShell>
+      <CertificateVerifyByCode code={decoded} />
+    </PublicPageShell>
+  );
 }

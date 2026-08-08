@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 import { ParentGuideAuthCtas } from "@/presentation/components/guides/parent-guide-auth-ctas";
+import { BRAND_ACCENT_CARD_STYLES, BRAND_SURFACE_CARD } from "@/shared/constants/brand-surfaces";
 import { PARENT_GUIDE_UPDATED } from "@/shared/constants/parent-guide";
 
 const checklist = [
@@ -98,7 +99,9 @@ const faqItems = [
 export function ParentGuideContent() {
   return (
     <article className="mx-auto max-w-3xl px-4 py-12 sm:px-6 lg:px-8">
-      <header className="mb-10 border-b border-border-surface pb-8">
+      <header
+        className={`mb-10 rounded-[1.75rem] border p-6 sm:p-8 ${BRAND_ACCENT_CARD_STYLES.document}`}
+      >
         <p className="text-sm font-semibold uppercase tracking-[0.18em] text-secondary">
           D2P Academy
         </p>
@@ -113,9 +116,9 @@ export function ParentGuideContent() {
         <ParentGuideAuthCtas />
       </header>
 
-      <section className="rounded-2xl border border-amber-200 bg-amber-50 p-6">
-        <h2 className="text-lg font-bold text-amber-950">Hızlı kontrol listesi</h2>
-        <ol className="mt-4 list-decimal space-y-2 pl-5 text-sm leading-7 text-amber-950">
+      <section className={`rounded-2xl border p-6 ${BRAND_ACCENT_CARD_STYLES.accent}`}>
+        <h2 className="text-lg font-bold text-navy-950">Hızlı kontrol listesi</h2>
+        <ol className="mt-4 list-decimal space-y-2 pl-5 text-sm leading-7 text-[var(--text-on-surface-soft)]">
           {checklist.map((item) => (
             <li key={item}>{item}</li>
           ))}
@@ -354,7 +357,7 @@ export function ParentGuideContent() {
             {faqItems.map((item) => (
               <div
                 key={item.question}
-                className="rounded-2xl border border-border-surface bg-white p-5 shadow-sm"
+                className={`${BRAND_SURFACE_CARD} p-5`}
               >
                 <dt className="font-semibold text-navy-950">{item.question}</dt>
                 <dd className="mt-2 text-sm leading-7 text-muted">{item.answer}</dd>
@@ -363,7 +366,7 @@ export function ParentGuideContent() {
           </dl>
         </section>
 
-        <section className="rounded-2xl border border-border-surface bg-white p-6 shadow-sm">
+        <section className={`${BRAND_SURFACE_CARD} p-6`}>
           <h2 className="text-lg font-bold text-navy-950">Kısa özet (paylaşmak için)</h2>
           <p className="mt-3 whitespace-pre-line text-sm leading-7 text-[var(--text-on-surface-soft)]">
             {`D2P Academy kayıt:

@@ -1,4 +1,5 @@
 import { LegalDocumentLayout } from "@/presentation/components/legal/legal-document-layout";
+import { PublicPageShell } from "@/presentation/components/layout/public-page-shell";
 import { KVKK_TEXT_VERSION } from "@/shared/constants/kvkk";
 import { kvkkPageMetadata } from "@/shared/seo/public-pages";
 
@@ -6,7 +7,7 @@ export const metadata = kvkkPageMetadata;
 
 export default function KvkkPage() {
   return (
-    <div className="min-h-screen bg-surface-section">
+    <PublicPageShell>
       <LegalDocumentLayout
       title="Kişisel Verilerin İşlenmesine İlişkin Aydınlatma Metni"
       lastUpdated={KVKK_TEXT_VERSION}
@@ -106,6 +107,6 @@ export default function KvkkPage() {
         </p>
       </section>
     </LegalDocumentLayout>
-    </div>
+    </PublicPageShell>
   );
 }

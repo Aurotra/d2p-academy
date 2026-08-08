@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 
 import type { CertificateVerificationResult } from "@/core/domain/certificate-verification";
 import { CertificatePreview } from "@/presentation/components/home/certificate-preview";
+import { BRAND_ACCENT_CARD_STYLES } from "@/shared/constants/brand-surfaces";
 
 interface VerifyCertificatePageProps {
   code: string;
@@ -63,7 +64,7 @@ export function CertificateVerifyByCode({ code }: VerifyCertificatePageProps) {
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-12 sm:px-6 lg:px-8">
-      <div className="rounded-[2rem] border border-border-surface bg-surface-card p-6 shadow-xl shadow-secondary/10 sm:p-8">
+      <div className={`rounded-[2rem] border p-6 sm:p-8 ${BRAND_ACCENT_CARD_STYLES.document}`}>
         <p className="text-center text-sm font-semibold uppercase tracking-[0.18em] text-accent-dark">
           Sertifika Doğrulama
         </p>

@@ -7,9 +7,11 @@ import { EVENT_TYPE_LABELS } from "@/core/domain/event";
 import { SupabaseEventRepository } from "@/infrastructure/repositories/supabase-event-repository";
 import { createSupabaseServerClient } from "@/infrastructure/supabase/create-server-client";
 import { EventEnrollButton } from "@/presentation/components/events/event-enroll-button";
+import { PublicPageShell } from "@/presentation/components/layout/public-page-shell";
 import { EventJsonLd } from "@/presentation/components/seo/event-json-ld";
 import { Badge } from "@/presentation/components/ui/badge";
 import { eventsPageMetadata } from "@/shared/seo/public-pages";
+import { BRAND_ACCENT_CARD_STYLES } from "@/shared/constants/brand-surfaces";
 import { publicPageMetadata } from "@/shared/seo/metadata";
 import {
   eventLocationLabel,
@@ -77,7 +79,7 @@ export default async function EventDetailPage({ params }: PageProps) {
     <>
       <EventJsonLd event={event} />
 
-      <div className="min-h-screen bg-gradient-to-b from-surface-base via-white to-surface-section">
+      <PublicPageShell>
         <div className="mx-auto max-w-4xl px-4 py-12 sm:px-6 lg:px-8">
           <p className="text-sm font-semibold text-document-primary">
             <Link href="/etkinlikler" className="hover:underline">
@@ -85,7 +87,7 @@ export default async function EventDetailPage({ params }: PageProps) {
             </Link>
           </p>
 
-          <div className="mt-6 overflow-hidden rounded-[2rem] border border-border-surface bg-white shadow-sm">
+          <div className="mt-6 overflow-hidden rounded-[2rem] border border-secondary/15 bg-white/95 shadow-lg shadow-secondary/10">
             {event.coverImageUrl ? (
               <div className="relative aspect-[21/9] overflow-hidden bg-surface-section">
                 <RemoteImage
@@ -112,7 +114,9 @@ export default async function EventDetailPage({ params }: PageProps) {
 
               <h1 className="mt-4 text-3xl font-bold text-navy-950 sm:text-4xl">{event.title}</h1>
 
-              <dl className="mt-6 grid gap-4 rounded-2xl bg-surface-section p-5 text-sm text-[var(--text-on-surface-soft)] sm:grid-cols-2">
+              <dl
+                className={`mt-6 grid gap-4 rounded-2xl p-5 text-sm text-[var(--text-on-surface-soft)] sm:grid-cols-2 ${BRAND_ACCENT_CARD_STYLES.secondary}`}
+              >
                 <div>
                   <dt className="font-semibold text-navy-950">Tarih ve saat</dt>
                   <dd className="mt-1">{schedule}</dd>
@@ -138,7 +142,7 @@ export default async function EventDetailPage({ params }: PageProps) {
             </div>
           </div>
         </div>
-      </div>
+      </PublicPageShell>
     </>
   );
 }

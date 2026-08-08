@@ -1,3 +1,14 @@
+import type { ReactNode } from "react";
+
+import { PublicPageShell } from "@/presentation/components/layout/public-page-shell";
+import {
+  BRAND_ACCENT_CARD_STYLES,
+  BRAND_ACCENT_ICON_STYLES,
+  BRAND_SURFACE_FEATURE_CARD,
+  brandAccentAt,
+  type BrandAccent,
+} from "@/shared/constants/brand-surfaces";
+
 interface EducatorImageFit {
   objectPosition: string;
   scale?: number;
@@ -115,9 +126,14 @@ const closingParagraph =
   "Öğrenciler yalnızca bir ürün üretmeyi değil, bir problemi analiz etmeyi, çözüm geliştirmeyi, fikirlerini prototipe dönüştürmeyi ve geliştirdikleri çözümü paylaşmayı öğrenirler. Robotik kodlama ve D2P Academy birlikte kullanıldığında öğrenciler, bir ürünün hem nasıl çalıştığını hem de nasıl tasarlanıp üretildiğini öğrenir. Bu bütüncül yaklaşım, mühendislik eğitimini daha güçlü ve anlamlı hâle getirir.";
 
 function EducationAreaCard({ index, title }: { index: number; title: string }) {
+  const accent = brandAccentAt(index);
   return (
-    <article className="rounded-[1.75rem] border border-border-surface bg-white p-6 shadow-sm transition hover:-translate-y-1 hover:border-secondary/40 hover:shadow-lg hover:shadow-secondary/10">
-      <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-surface-tint-green text-sm font-bold text-secondary">
+    <article
+      className={`rounded-[1.75rem] border p-6 transition hover:-translate-y-1 hover:shadow-lg ${BRAND_ACCENT_CARD_STYLES[accent]}`}
+    >
+      <div
+        className={`flex h-12 w-12 items-center justify-center rounded-2xl text-sm font-bold ${BRAND_ACCENT_ICON_STYLES[accent]}`}
+      >
         {String(index).padStart(2, "0")}
       </div>
       <h3 className="mt-5 text-base font-bold leading-snug text-navy-950 sm:text-lg">{title}</h3>
@@ -140,7 +156,7 @@ function EducatorCard({ educator }: { educator: Educator }) {
   const imageScale = Math.max(1, imageFit.scale ?? 1);
 
   return (
-    <article className="flex h-full flex-col overflow-hidden rounded-[1.75rem] border border-border-surface bg-white shadow-sm transition hover:-translate-y-1 hover:border-secondary/40 hover:shadow-lg hover:shadow-secondary/10">
+    <article className={`flex h-full flex-col overflow-hidden ${BRAND_SURFACE_FEATURE_CARD}`}>
       <div className="aspect-[3/4] overflow-hidden bg-gradient-to-br from-surface-tint-yellow via-white to-surface-section">
         {educator.image ? (
           // eslint-disable-next-line @next/next/no-img-element
@@ -210,9 +226,35 @@ function CompassIcon() {
   );
 }
 
+function MissionVisionCard({
+  accent,
+  title,
+  children,
+  icon,
+}: {
+  accent: BrandAccent;
+  title: string;
+  children: ReactNode;
+  icon: React.ReactNode;
+}) {
+  return (
+    <article
+      className={`rounded-[1.75rem] border p-8 transition hover:-translate-y-1 hover:shadow-lg ${BRAND_ACCENT_CARD_STYLES[accent]}`}
+    >
+      <div
+        className={`flex h-12 w-12 items-center justify-center rounded-2xl ${BRAND_ACCENT_ICON_STYLES[accent]}`}
+      >
+        {icon}
+      </div>
+      <h3 className="mt-5 text-xl font-black text-navy-950">{title}</h3>
+      <div className="mt-3 text-base leading-7 text-[var(--text-on-surface-soft)]">{children}</div>
+    </article>
+  );
+}
+
 export function AboutPageContent() {
   return (
-    <div className="min-h-screen bg-gradient-to-b from-surface-base via-white to-surface-section">
+    <PublicPageShell>
       <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6 lg:px-8 lg:py-16">
         <header className="max-w-3xl">
           <p className="text-sm font-semibold uppercase tracking-[0.18em] text-document-primary">
@@ -243,28 +285,16 @@ export function AboutPageContent() {
             Misyon ve vizyonumuz
           </h2>
           <div className="grid gap-6 md:grid-cols-2">
-            <article className="rounded-[1.75rem] border border-border-surface bg-white p-8 shadow-sm transition hover:-translate-y-1 hover:border-secondary/40 hover:shadow-lg hover:shadow-secondary/10">
-              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-surface-tint-green text-secondary">
-                <TargetIcon />
-              </div>
-              <h3 className="mt-5 text-xl font-black text-navy-950">Misyonumuz</h3>
-              <p className="mt-3 text-base leading-7 text-[var(--text-on-surface-soft)]">
-                Çocukların ve gençlerin hayal güçlerini tasarım ve üretim becerileriyle
-                buluşturarak; problem çözen, sorgulayan, iş birliği yapan ve üreten bireyler
-                olarak yetişmelerine katkı sağlamak.
-              </p>
-            </article>
+            <MissionVisionCard accent="document" title="Misyonumuz" icon={<TargetIcon />}>
+              Çocukların ve gençlerin hayal güçlerini tasarım ve üretim becerileriyle
+              buluşturarak; problem çözen, sorgulayan, iş birliği yapan ve üreten bireyler
+              olarak yetişmelerine katkı sağlamak.
+            </MissionVisionCard>
 
-            <article className="rounded-[1.75rem] border border-border-surface bg-white p-8 shadow-sm transition hover:-translate-y-1 hover:border-secondary/40 hover:shadow-lg hover:shadow-secondary/10">
-              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-surface-tint-green text-secondary">
-                <CompassIcon />
-              </div>
-              <h3 className="mt-5 text-xl font-black text-navy-950">Vizyonumuz</h3>
-              <p className="mt-3 text-base leading-7 text-[var(--text-on-surface-soft)]">
-                Türkiye&apos;nin tasarım ve üretim odaklı eğitim ekosistemine yön veren,
-                uygulamalı teknoloji eğitimlerinde öncü ve güvenilir bir eğitim platformu olmak.
-              </p>
-            </article>
+            <MissionVisionCard accent="secondary" title="Vizyonumuz" icon={<CompassIcon />}>
+              Türkiye&apos;nin tasarım ve üretim odaklı eğitim ekosistemine yön veren,
+              uygulamalı teknoloji eğitimlerinde öncü ve güvenilir bir eğitim platformu olmak.
+            </MissionVisionCard>
           </div>
         </section>
 
@@ -308,7 +338,9 @@ export function AboutPageContent() {
         </section>
 
         <section className="mt-16" aria-labelledby="closing-approach">
-          <div className="rounded-[2rem] border border-border-surface bg-surface-card p-8 shadow-sm sm:p-10">
+          <div
+            className={`rounded-[2rem] border p-8 sm:p-10 ${BRAND_ACCENT_CARD_STYLES.accent}`}
+          >
             <h2 id="closing-approach" className="sr-only">
               Bütüncül yaklaşım
             </h2>
@@ -337,6 +369,6 @@ export function AboutPageContent() {
           </ul>
         </section>
       </div>
-    </div>
+    </PublicPageShell>
   );
 }

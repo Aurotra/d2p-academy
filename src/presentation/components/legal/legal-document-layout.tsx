@@ -1,5 +1,7 @@
 import type { ReactNode } from "react";
 
+import { BRAND_ACCENT_CARD_STYLES } from "@/shared/constants/brand-surfaces";
+
 interface LegalDocumentLayoutProps {
   title: string;
   lastUpdated: string;
@@ -9,7 +11,9 @@ interface LegalDocumentLayoutProps {
 export function LegalDocumentLayout({ title, lastUpdated, children }: LegalDocumentLayoutProps) {
   return (
     <article className="mx-auto max-w-3xl px-4 py-12 sm:px-6 lg:px-8">
-      <header className="mb-10 border-b border-border-surface pb-8">
+      <header
+        className={`mb-10 rounded-[1.75rem] border p-6 sm:p-8 ${BRAND_ACCENT_CARD_STYLES.document}`}
+      >
         <p className="text-sm font-semibold uppercase tracking-[0.18em] text-document-primary">
           D2P Academy
         </p>

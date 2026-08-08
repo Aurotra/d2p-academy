@@ -5,8 +5,10 @@ import { notFound } from "next/navigation";
 
 import { createSupabaseServerClient } from "@/infrastructure/supabase/create-server-client";
 import { SupabaseGalleryRepository } from "@/infrastructure/repositories/supabase-gallery-repository";
+import { PublicPageShell } from "@/presentation/components/layout/public-page-shell";
 import { galleryPageMetadata } from "@/shared/seo/public-pages";
 import { publicPageMetadata } from "@/shared/seo/metadata";
+import { BRAND_SURFACE_CARD } from "@/shared/constants/brand-surfaces";
 
 export const dynamic = "force-dynamic";
 
@@ -71,7 +73,7 @@ export default async function GalleryAlbumPage({ params }: PageProps) {
   const meta = [album.locationName, dateLabel].filter(Boolean).join(" · ");
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-surface-base via-white to-surface-section">
+    <PublicPageShell>
       <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6 lg:px-8">
         <Link
           href="/galeri"
@@ -99,7 +101,7 @@ export default async function GalleryAlbumPage({ params }: PageProps) {
           <ul className="mt-10 columns-1 gap-4 sm:columns-2 lg:columns-3">
             {album.photos.map((photo) => (
               <li key={photo.id} className="mb-4 break-inside-avoid">
-                <figure className="overflow-hidden rounded-2xl border border-border-surface bg-white shadow-sm">
+                <figure className={`overflow-hidden ${BRAND_SURFACE_CARD}`}>
                   <div className="relative aspect-[4/3] w-full">
                     <RemoteImage
                       src={photo.imageUrl}
@@ -124,6 +126,6 @@ export default async function GalleryAlbumPage({ params }: PageProps) {
           </ul>
         )}
       </div>
-    </div>
+    </PublicPageShell>
   );
 }

@@ -1,5 +1,7 @@
 import { InstitutionRequestForm } from "@/presentation/components/institution/institution-request-form";
 import { InstitutionRequestGuestNote } from "@/presentation/components/institution/institution-request-guest-note";
+import { PublicPageShell } from "@/presentation/components/layout/public-page-shell";
+import { BRAND_ACCENT_CARD_STYLES, BRAND_SURFACE_CARD } from "@/shared/constants/brand-surfaces";
 import { institutionRequestPageMetadata } from "@/shared/seo/public-pages";
 
 export const metadata = institutionRequestPageMetadata;
@@ -90,7 +92,7 @@ function MonitorIcon({ className }: { className?: string }) {
 
 export default function InstitutionRequestPage() {
   return (
-    <div className="min-h-screen bg-surface-section px-4 py-12 sm:px-6 lg:px-8">
+    <PublicPageShell className="px-4 py-12 sm:px-6 lg:px-8">
       <div className="mx-auto w-full max-w-xl">
         <div className="mb-8 text-center">
           <p className="text-sm font-semibold uppercase tracking-[0.18em] text-document-primary">
@@ -106,7 +108,7 @@ export default function InstitutionRequestPage() {
           <InstitutionRequestGuestNote />
         </div>
 
-        <div className="rounded-[1.75rem] border border-border-surface bg-white p-6 shadow-sm sm:p-8">
+        <div className={`rounded-[1.75rem] ${BRAND_SURFACE_CARD} p-6 sm:p-8`}>
           <InstitutionRequestForm />
         </div>
       </div>
@@ -115,7 +117,7 @@ export default function InstitutionRequestPage() {
       <div className="mx-auto mt-12 w-full max-w-4xl">
         <section aria-labelledby="institution-model-heading">
           {/* A. Üst Vurgu Kartı */}
-          <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-6 sm:p-8">
+          <div className={`rounded-2xl border p-6 sm:p-8 ${BRAND_ACCENT_CARD_STYLES.document}`}>
             <h2 id="institution-model-heading" className="text-xl font-bold text-navy-950 sm:text-2xl">
               Kurumsal İş Birliği Modeli
             </h2>
@@ -134,7 +136,7 @@ export default function InstitutionRequestPage() {
           {/* B. 2 Kolonlu Detay Grid'i */}
           <div className="mt-6 grid grid-cols-1 gap-6 md:grid-cols-2">
             {/* Kolon 1: D2P Academy Tarafından Sağlanan Hizmetler */}
-            <div className="rounded-2xl border border-border-surface bg-white p-6 shadow-sm sm:p-8">
+            <div className={`rounded-2xl border p-6 shadow-sm sm:p-8 ${BRAND_ACCENT_CARD_STYLES.secondary}`}>
               <div className="flex items-center gap-3">
                 <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-document-primary/10 text-document-primary">
                   <BuildingIcon className="h-5 w-5" />
@@ -154,7 +156,7 @@ export default function InstitutionRequestPage() {
             </div>
 
             {/* Kolon 2: Kurumdan Beklentiler */}
-            <div className="rounded-2xl border border-border-surface bg-white p-6 shadow-sm sm:p-8">
+            <div className={`rounded-2xl border p-6 shadow-sm sm:p-8 ${BRAND_ACCENT_CARD_STYLES.secondary}`}>
               <div className="flex items-center gap-3">
                 <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-document-primary/10 text-document-primary">
                   <MonitorIcon className="h-5 w-5" />
@@ -201,7 +203,7 @@ export default function InstitutionRequestPage() {
           </div>
 
           {/* C. Kapanış Notu */}
-          <div className="mt-6 rounded-2xl border border-border-surface bg-white/60 p-6 text-center sm:p-8">
+          <div className={`mt-6 rounded-2xl border p-6 text-center sm:p-8 ${BRAND_ACCENT_CARD_STYLES.accent}`}>
             <p className="text-sm italic leading-7 text-muted sm:text-base">
               &quot;Bu hazırlıkların tamamlanmasının ardından eğitimin uygulanmasına yönelik tüm
               süreç D2P Academy tarafından uçtan uca yürütülmektedir.&quot;
@@ -209,6 +211,6 @@ export default function InstitutionRequestPage() {
           </div>
         </section>
       </div>
-    </div>
+    </PublicPageShell>
   );
 }

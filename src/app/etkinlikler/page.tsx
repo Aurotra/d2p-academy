@@ -3,6 +3,8 @@ import Link from "next/link";
 import { SupabaseEventRepository } from "@/infrastructure/repositories/supabase-event-repository";
 import { createSupabaseServerClient } from "@/infrastructure/supabase/create-server-client";
 import { EventCard } from "@/presentation/components/home/event-card";
+import { PublicPageShell } from "@/presentation/components/layout/public-page-shell";
+import { BRAND_SURFACE_CARD } from "@/shared/constants/brand-surfaces";
 import { eventsPageMetadata } from "@/shared/seo/public-pages";
 
 export const dynamic = "force-dynamic";
@@ -24,7 +26,7 @@ export default async function EventsPage() {
   const events = await repository.listPublishedUpcoming(50);
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-surface-base via-white to-surface-section">
+    <PublicPageShell>
       <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6 lg:px-8">
         <div className="max-w-2xl">
           <p className="text-sm font-semibold uppercase tracking-[0.18em] text-document-primary">
@@ -40,7 +42,7 @@ export default async function EventsPage() {
         </div>
 
         {events.length === 0 ? (
-          <div className="mt-12 rounded-[2rem] border border-dashed border-border-surface bg-white px-6 py-16 text-center text-subtle">
+          <div className={`mt-12 ${BRAND_SURFACE_CARD} px-6 py-16 text-center text-subtle`}>
             Şu an yayınlanmış yaklaşan etkinlik yok. Yeni programlar eklendiğinde burada
             listelenecek.
           </div>
@@ -59,6 +61,6 @@ export default async function EventsPage() {
           </Link>
         </p>
       </div>
-    </div>
+    </PublicPageShell>
   );
 }

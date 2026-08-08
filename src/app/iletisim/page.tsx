@@ -1,6 +1,8 @@
 import Link from "next/link";
 
+import { PublicPageShell } from "@/presentation/components/layout/public-page-shell";
 import { CONTACT } from "@/shared/constants/contact";
+import { BRAND_SURFACE_CARD } from "@/shared/constants/brand-surfaces";
 import { buttonLinkClasses } from "@/presentation/components/ui/button";
 import { contactPageMetadata } from "@/shared/seo/public-pages";
 
@@ -16,7 +18,7 @@ function InstagramIcon({ className = "h-5 w-5" }: { className?: string }) {
 
 export default function ContactPage() {
   return (
-    <div className="min-h-screen bg-surface-section px-4 py-12 sm:px-6 lg:px-8">
+    <PublicPageShell className="px-4 py-12 sm:px-6 lg:px-8">
       <div className="mx-auto w-full max-w-6xl">
         <div className="mb-10 max-w-2xl">
           <p className="text-sm font-semibold uppercase tracking-[0.18em] text-document-primary">
@@ -31,7 +33,7 @@ export default function ContactPage() {
 
         <div className="grid gap-6 lg:grid-cols-2 lg:items-start">
           {/* Sol: Harita + adres */}
-          <div className="rounded-2xl border border-border-surface bg-white p-5 shadow-sm sm:p-6">
+          <div className={`${BRAND_SURFACE_CARD} p-5 sm:p-6`}>
             <div className="overflow-hidden rounded-2xl border border-border-surface">
               <iframe
                 title="Pamukkale Teknokent konum haritası"
@@ -69,7 +71,7 @@ export default function ContactPage() {
 
           {/* Sağ: Bilgi + CTA */}
           <div className="flex flex-col gap-6">
-            <div className="rounded-2xl border border-border-surface bg-white p-5 shadow-sm sm:p-6">
+            <div className={`${BRAND_SURFACE_CARD} p-5 sm:p-6`}>
               <div>
                 <p className="text-xs font-semibold uppercase tracking-[0.16em] text-subtle">
                   Telefon
@@ -117,7 +119,7 @@ export default function ContactPage() {
               </div>
             </div>
 
-            <div className="rounded-2xl border border-border-surface bg-white p-5 shadow-sm sm:p-6">
+            <div className={`${BRAND_SURFACE_CARD} p-5 sm:p-6`}>
               <p className="text-base leading-7 text-[var(--text-on-surface-soft)]">
                 Etkinlik kaydı için veli hesabı açın veya okul / belediye için kurumsal eğitim talebi
                 oluşturun.
@@ -143,6 +145,6 @@ export default function ContactPage() {
           </div>
         </div>
       </div>
-    </div>
+    </PublicPageShell>
   );
 }

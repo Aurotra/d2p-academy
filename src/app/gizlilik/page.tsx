@@ -1,4 +1,5 @@
 import { LegalDocumentLayout } from "@/presentation/components/legal/legal-document-layout";
+import { PublicPageShell } from "@/presentation/components/layout/public-page-shell";
 import { KVKK_TEXT_VERSION } from "@/shared/constants/kvkk";
 import { privacyPageMetadata } from "@/shared/seo/public-pages";
 
@@ -6,7 +7,7 @@ export const metadata = privacyPageMetadata;
 
 export default function PrivacyPage() {
   return (
-    <div className="min-h-screen bg-surface-section">
+    <PublicPageShell>
       <LegalDocumentLayout title="Gizlilik Politikası" lastUpdated={KVKK_TEXT_VERSION}>
       <section>
         <h2>1. Giriş</h2>
@@ -116,6 +117,6 @@ export default function PrivacyPage() {
         </p>
       </section>
     </LegalDocumentLayout>
-    </div>
+    </PublicPageShell>
   );
 }
