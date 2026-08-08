@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { sendInstructorRevokedNotification } from "@/infrastructure/email/send-instructor-notification-email";
 import { requireAdminApiAccess } from "@/infrastructure/auth/require-admin-api-access";
 import { demoteInstructorToMember } from "@/infrastructure/auth/set-user-role";
+import { apiCatchResponse } from "@/shared/utils/api-error";
 
 export async function POST(
   _request: Request,
@@ -43,8 +44,9 @@ export async function POST(
       },
     });
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Eğitmen yetkisi geri alınamadı.";
-    const status = message.includes("SUPABASE_SERVICE_ROLE_KEY") ? 500 : 400;
-    return NextResponse.json({ error: message }, { status });
+    return apiCatchResponse(error, "Eğitmen yetkisi geri alınamadı.", {
+      logLabel: "[admin/instructors demote]",
+      status: 400,
+    });
   }
 }

@@ -4,6 +4,7 @@ import type { ConsentFormType, MediaPermissions } from "@/core/domain/participan
 import { resolveEnrollmentActorForEnrollment } from "@/infrastructure/auth/resolve-enrollment-actor";
 import { SupabaseParticipantFormsRepository } from "@/infrastructure/repositories/supabase-participant-forms-repository";
 import { getClientIp } from "@/lib/utils/request-ip";
+import { apiCatchResponse } from "@/shared/utils/api-error";
 
 interface ConsentsBody {
   consents?: Array<{
@@ -48,7 +49,9 @@ export async function POST(
 
     return NextResponse.json({ data });
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Onaylar kaydedilemedi.";
-    return NextResponse.json({ error: message }, { status: 400 });
+    return apiCatchResponse(error, "Onaylar kaydedilemedi.", {
+      logLabel: "[enrollments/consents]",
+      status: 400,
+    });
   }
 }

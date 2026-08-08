@@ -5,6 +5,7 @@ import { getAdminAccess } from "@/infrastructure/auth/get-admin-access";
 import { requireAdminApiAccess } from "@/infrastructure/auth/require-admin-api-access";
 import { demoteInstructorToMember } from "@/infrastructure/auth/set-user-role";
 import { SupabaseAdminAuditLogRepository } from "@/infrastructure/repositories/supabase-admin-audit-log-repository";
+import { apiCatchResponse } from "@/shared/utils/api-error";
 
 export async function POST(
   _request: Request,
@@ -62,8 +63,9 @@ export async function POST(
       },
     });
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Eğitmen yetkisi geri alınamadı.";
-    const status = message.includes("SUPABASE_SERVICE_ROLE_KEY") ? 500 : 400;
-    return NextResponse.json({ error: message }, { status });
+    return apiCatchResponse(error, "Eğitmen yetkisi geri alınamadı.", {
+      logLabel: "[admin/revoke-instructor]",
+      status: 400,
+    });
   }
 }

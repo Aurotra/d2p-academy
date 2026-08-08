@@ -9,6 +9,7 @@ import {
 import { requireAdminApiAccess } from "@/infrastructure/auth/require-admin-api-access";
 import { issueCertificatePdf } from "@/infrastructure/certificates/issue-certificate-pdf";
 import { SupabaseAdminCertificateRepository } from "@/infrastructure/repositories/supabase-admin-certificate-repository";
+import { apiCatchResponse } from "@/shared/utils/api-error";
 
 export const maxDuration = 60;
 
@@ -25,8 +26,10 @@ export async function GET() {
 
     return NextResponse.json({ data: { certificates, pendingEnrollments } });
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Sertifikalar alınamadı.";
-    return NextResponse.json({ error: message }, { status: 500 });
+    return apiCatchResponse(error, "Sertifikalar alınamadı.", {
+      logLabel: "[admin/certificates GET]",
+      status: 500,
+    });
   }
 }
 
@@ -52,13 +55,11 @@ export async function POST(request: Request) {
         const pdfUrl = await issueCertificatePdf(access.client, certificate.id);
         return NextResponse.json({ data: { ...certificate, pdfUrl } }, { status: 201 });
       } catch (pdfError) {
-        const pdfMessage =
-          pdfError instanceof Error ? pdfError.message : "PDF oluşturulamadı.";
-        console.error("[admin certificates issue pdf]", pdfMessage);
+        console.error("[admin certificates issue pdf]", pdfError);
         return NextResponse.json(
           {
             data: { ...certificate, pdfUrl: null },
-            warning: `Sertifika kaydı oluşturuldu (${certificate.certificateCode}) ancak PDF henüz hazır değil: ${pdfMessage} Listeden «PDF Oluştur» ile tekrar deneyin.`,
+            warning: `Sertifika kaydı oluşturuldu (${certificate.certificateCode}) ancak PDF henüz hazır değil. Listeden «PDF Oluştur» ile tekrar deneyin.`,
           },
           { status: 201 },
         );
@@ -80,7 +81,9 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ error: "Geçersiz istek." }, { status: 400 });
   } catch (error) {
-    const message = error instanceof Error ? error.message : "İşlem başarısız oldu.";
-    return NextResponse.json({ error: message }, { status: 400 });
+    return apiCatchResponse(error, "İşlem başarısız oldu.", {
+      logLabel: "[admin/certificates POST]",
+      status: 400,
+    });
   }
 }

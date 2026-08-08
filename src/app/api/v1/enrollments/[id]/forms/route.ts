@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 
 import { resolveEnrollmentActorForEnrollment } from "@/infrastructure/auth/resolve-enrollment-actor";
 import { SupabaseParticipantFormsRepository } from "@/infrastructure/repositories/supabase-participant-forms-repository";
+import { apiCatchResponse } from "@/shared/utils/api-error";
 
 export async function GET(
   _request: Request,
@@ -19,7 +20,9 @@ export async function GET(
 
     return NextResponse.json({ data });
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Form durumu alınamadı.";
-    return NextResponse.json({ error: message }, { status: 400 });
+    return apiCatchResponse(error, "Form durumu alınamadı.", {
+      logLabel: "[enrollments/forms]",
+      status: 400,
+    });
   }
 }

@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { listEventCategories } from "@/core/use-cases/manage-admin-events";
 import { requireAdminApiAccess } from "@/infrastructure/auth/require-admin-api-access";
 import { SupabaseAdminEventRepository } from "@/infrastructure/repositories/supabase-admin-event-repository";
+import { apiCatchResponse } from "@/shared/utils/api-error";
 
 export async function GET() {
   const access = await requireAdminApiAccess();
@@ -13,7 +14,9 @@ export async function GET() {
     const categories = await listEventCategories(repository);
     return NextResponse.json({ data: categories });
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Kategoriler alınamadı.";
-    return NextResponse.json({ error: message }, { status: 500 });
+    return apiCatchResponse(error, "Kategoriler alınamadı.", {
+      logLabel: "[admin/event-categories GET]",
+      status: 500,
+    });
   }
 }

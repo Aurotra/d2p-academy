@@ -10,6 +10,11 @@ import { getClientIp } from "@/lib/utils/request-ip";
 const PUBLIC_MAX = 20;
 const PUBLIC_WINDOW_MS = 15 * 60 * 1000;
 
+export interface PublicPostRateLimitOptions {
+  maxAttempts?: number;
+  windowMs?: number;
+}
+
 /**
  * Returns a 429 response when rate-limited; null when allowed.
  * If service role is unavailable, allows the request (fail-open).
@@ -17,6 +22,7 @@ const PUBLIC_WINDOW_MS = 15 * 60 * 1000;
 export async function enforcePublicPostRateLimit(
   request: Request,
   bucket: string,
+  options?: PublicPostRateLimitOptions,
 ): Promise<NextResponse | null> {
   const client = tryCreateServiceRoleClient();
   if (!client) {
@@ -26,8 +32,8 @@ export async function enforcePublicPostRateLimit(
   const ip = getClientIp(request) ?? "unknown";
   const rateKey = `public:${bucket}:${ip}`;
   const blocked = await isAuthRateLimited(client, rateKey, {
-    maxAttempts: PUBLIC_MAX,
-    windowMs: PUBLIC_WINDOW_MS,
+    maxAttempts: options?.maxAttempts ?? PUBLIC_MAX,
+    windowMs: options?.windowMs ?? PUBLIC_WINDOW_MS,
   });
 
   if (blocked) {

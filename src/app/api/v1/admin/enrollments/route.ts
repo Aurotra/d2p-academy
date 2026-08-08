@@ -9,6 +9,7 @@ import { getEventCapacityBlockReason } from "@/infrastructure/enrollments/event-
 import { removeEnrollmentsFromEvent } from "@/infrastructure/enrollments/remove-enrollments-from-event";
 import { revalidateEventAttendancePaths } from "@/infrastructure/enrollments/revalidate-event-attendance";
 import { resolveUsernameForLookup } from "@/shared/utils/student-username";
+import { apiCatchResponse, logSupabaseError } from "@/shared/utils/api-error";
 
 const ALLOWED_STATUSES: EnrollmentStatus[] = [
   "registered",
@@ -102,7 +103,8 @@ export async function POST(request: Request) {
         .eq("id", studentId)
         .maybeSingle();
       if (error) {
-        return NextResponse.json({ error: error.message }, { status: 400 });
+        logSupabaseError("[admin/enrollments POST]", error);
+        return NextResponse.json({ error: "Öğrenci bilgisi alınamadı." }, { status: 400 });
       }
       student = data;
     } else if (username || (query && !query.includes("@"))) {
@@ -121,7 +123,8 @@ export async function POST(request: Request) {
         .eq("username", lookup)
         .maybeSingle();
       if (error) {
-        return NextResponse.json({ error: error.message }, { status: 400 });
+        logSupabaseError("[admin/enrollments POST]", error);
+        return NextResponse.json({ error: "Öğrenci bilgisi alınamadı." }, { status: 400 });
       }
       student = data;
     } else {
@@ -134,7 +137,8 @@ export async function POST(request: Request) {
         .eq("email", lookup)
         .maybeSingle();
       if (error) {
-        return NextResponse.json({ error: error.message }, { status: 400 });
+        logSupabaseError("[admin/enrollments POST]", error);
+        return NextResponse.json({ error: "Öğrenci bilgisi alınamadı." }, { status: 400 });
       }
       student = data;
     }
@@ -173,7 +177,8 @@ export async function POST(request: Request) {
         .single();
 
       if (reviveError) {
-        return NextResponse.json({ error: reviveError.message }, { status: 400 });
+        logSupabaseError("[admin/enrollments POST revive]", reviveError);
+        return NextResponse.json({ error: "Kayıt yenilenemedi." }, { status: 400 });
       }
 
       return NextResponse.json({ data: { enrollment: revived, student } }, { status: 200 });
@@ -190,13 +195,16 @@ export async function POST(request: Request) {
       .single();
 
     if (insertError) {
-      return NextResponse.json({ error: insertError.message }, { status: 400 });
+      logSupabaseError("[admin/enrollments POST insert]", insertError);
+      return NextResponse.json({ error: "Kayıt eklenemedi." }, { status: 400 });
     }
 
     return NextResponse.json({ data: { enrollment, student } }, { status: 201 });
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Kayıt eklenemedi.";
-    return NextResponse.json({ error: message }, { status: 500 });
+    return apiCatchResponse(error, "Kayıt eklenemedi.", {
+      logLabel: "[admin/enrollments POST]",
+      status: 500,
+    });
   }
 }
 
@@ -228,7 +236,8 @@ export async function PATCH(request: Request) {
       .select("id, status, completed_at, event_id");
 
     if (error) {
-      return NextResponse.json({ error: error.message }, { status: 400 });
+      logSupabaseError("[admin/enrollments PATCH]", error);
+      return NextResponse.json({ error: "Durum güncellenemedi." }, { status: 400 });
     }
 
     revalidatePath("/admin/enrollments");
@@ -236,8 +245,10 @@ export async function PATCH(request: Request) {
 
     return NextResponse.json({ data });
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Durum güncellenemedi.";
-    return NextResponse.json({ error: message }, { status: 500 });
+    return apiCatchResponse(error, "Durum güncellenemedi.", {
+      logLabel: "[admin/enrollments PATCH]",
+      status: 500,
+    });
   }
 }
 
@@ -263,7 +274,9 @@ export async function DELETE(request: Request) {
 
     return NextResponse.json({ data: { removed: result.removed } });
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Kayıt kurstan çıkarılamadı.";
-    return NextResponse.json({ error: message }, { status: 400 });
+    return apiCatchResponse(error, "Kayıt kurstan çıkarılamadı.", {
+      logLabel: "[admin/enrollments DELETE]",
+      status: 400,
+    });
   }
 }

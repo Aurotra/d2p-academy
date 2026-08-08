@@ -4,7 +4,8 @@ import { enforcePublicPostRateLimit } from "@/infrastructure/auth/public-post-ra
 import { logMemberActivity } from "@/infrastructure/audit/log-member-activity";
 import { buildConsentAudit, mapConsentToColumns } from "@/lib/utils/consent-audit";
 import { getClientIp } from "@/lib/utils/request-ip";
-import { createSupabaseServerClient } from "@/infrastructure/supabase/create-server-client";
+import { createServiceRoleClient } from "@/infrastructure/supabase/create-service-role-client";
+import { apiCatchResponse, logSupabaseError } from "@/shared/utils/api-error";
 
 const PHONE_PATTERN = /^05\d{9}$/;
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -100,10 +101,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Zorunlu onay kutularını işaretleyin." }, { status: 400 });
     }
 
-    const client = await createSupabaseServerClient();
-    if (!client) {
-      return NextResponse.json({ error: "Bağlantı kurulamadı." }, { status: 500 });
-    }
+    const client = createServiceRoleClient();
 
     const ip = getClientIp(request);
     const kvkkAudit = buildConsentAudit(ip);
@@ -135,7 +133,8 @@ export async function POST(request: Request) {
     });
 
     if (error) {
-      return NextResponse.json({ error: error.message }, { status: 400 });
+      logSupabaseError("[institution-requests]", error);
+      return NextResponse.json({ error: "Talep kaydedilemedi." }, { status: 400 });
     }
 
     void logMemberActivity({
@@ -154,7 +153,9 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ success: true }, { status: 201 });
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Talep oluşturulamadı.";
-    return NextResponse.json({ error: message }, { status: 500 });
+    return apiCatchResponse(error, "Talep oluşturulamadı.", {
+      logLabel: "[institution-requests]",
+      status: 500,
+    });
   }
 }

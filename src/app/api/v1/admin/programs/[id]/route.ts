@@ -5,6 +5,7 @@ import { z } from "zod";
 import { requireAdminApiAccess } from "@/infrastructure/auth/require-admin-api-access";
 import { deleteProgram, updateProgram } from "@/infrastructure/programs/program-repository";
 import { tryNormalizeProgramCode } from "@/shared/utils/program-code";
+import { apiCatchResponse } from "@/shared/utils/api-error";
 
 const updateSchema = z.object({
   programCode: z.string().min(2).max(4).optional(),
@@ -48,8 +49,10 @@ export async function PATCH(
 
     return NextResponse.json({ data: { program } });
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Program güncellenemedi.";
-    return NextResponse.json({ error: message }, { status: 500 });
+    return apiCatchResponse(error, "Program güncellenemedi.", {
+      logLabel: "[admin/programs PATCH]",
+      status: 500,
+    });
   }
 }
 
@@ -65,7 +68,9 @@ export async function DELETE(
     await deleteProgram(access.client, id);
     return NextResponse.json({ data: { deleted: true } });
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Program silinemedi.";
-    return NextResponse.json({ error: message }, { status: 500 });
+    return apiCatchResponse(error, "Program silinemedi.", {
+      logLabel: "[admin/programs DELETE]",
+      status: 500,
+    });
   }
 }

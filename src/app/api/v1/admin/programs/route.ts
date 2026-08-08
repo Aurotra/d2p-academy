@@ -4,6 +4,7 @@ import { z } from "zod";
 import { requireAdminApiAccess } from "@/infrastructure/auth/require-admin-api-access";
 import { createProgram, listPrograms } from "@/infrastructure/programs/program-repository";
 import { tryNormalizeProgramCode } from "@/shared/utils/program-code";
+import { apiCatchResponse, isPostgresUniqueViolation } from "@/shared/utils/api-error";
 
 const createSchema = z.object({
   programCode: z.string().min(2).max(4),
@@ -52,8 +53,8 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ data: { program } }, { status: 201 });
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Program oluşturulamadı.";
-    const status = message.toLowerCase().includes("duplicate") ? 409 : 500;
-    return NextResponse.json({ error: message }, { status });
+    const status = isPostgresUniqueViolation(error) ? 409 : 500;
+    const message = status === 409 ? "Bu program kodu zaten kullanılıyor." : "Program oluşturulamadı.";
+    return apiCatchResponse(error, message, { logLabel: "[admin programs POST]", status });
   }
 }

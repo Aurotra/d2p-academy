@@ -8,6 +8,7 @@ import {
 } from "@/infrastructure/email/notify-event-instructors-assigned";
 import { requireAdminApiAccess } from "@/infrastructure/auth/require-admin-api-access";
 import { SupabaseAdminEventRepository } from "@/infrastructure/repositories/supabase-admin-event-repository";
+import { apiCatchResponse } from "@/shared/utils/api-error";
 
 export async function GET() {
   const access = await requireAdminApiAccess();
@@ -18,8 +19,10 @@ export async function GET() {
     const events = await listAdminEvents(repository);
     return NextResponse.json({ data: events });
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Etkinlikler alınamadı.";
-    return NextResponse.json({ error: message }, { status: 500 });
+    return apiCatchResponse(error, "Etkinlikler alınamadı.", {
+      logLabel: "[admin/events GET]",
+      status: 500,
+    });
   }
 }
 
@@ -61,7 +64,9 @@ export async function POST(request: Request) {
       notificationError,
     }, { status: 201 });
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Etkinlik oluşturulamadı.";
-    return NextResponse.json({ error: message }, { status: 400 });
+    return apiCatchResponse(error, "Etkinlik oluşturulamadı.", {
+      logLabel: "[admin/events POST]",
+      status: 400,
+    });
   }
 }

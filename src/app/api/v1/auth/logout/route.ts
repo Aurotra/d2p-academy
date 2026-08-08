@@ -4,6 +4,7 @@ import { signOutUser } from "@/core/use-cases/authenticate-user";
 import { clearStudentSessionCookie } from "@/infrastructure/auth/clear-student-session-cookie";
 import { SupabaseAuthRepository } from "@/infrastructure/repositories/supabase-auth-repository";
 import { createSupabaseServerClient } from "@/infrastructure/supabase/create-server-client";
+import { apiCatchResponse } from "@/shared/utils/api-error";
 
 export async function POST() {
   try {
@@ -23,7 +24,9 @@ export async function POST() {
     clearStudentSessionCookie(response);
     return response;
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Çıkış sırasında hata oluştu.";
-    return NextResponse.json({ error: message }, { status: 500 });
+    return apiCatchResponse(error, "Çıkış sırasında hata oluştu.", {
+      logLabel: "[auth/logout]",
+      status: 500,
+    });
   }
 }

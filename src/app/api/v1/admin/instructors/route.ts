@@ -5,6 +5,7 @@ import { createInstructorAccount } from "@/infrastructure/auth/create-instructor
 import { profileHasInstructorCapability } from "@/infrastructure/auth/instructor-capability";
 import { requireAdminApiAccess } from "@/infrastructure/auth/require-admin-api-access";
 import { createServiceRoleClient } from "@/infrastructure/supabase/create-service-role-client";
+import { apiCatchResponse, logSupabaseError } from "@/shared/utils/api-error";
 
 export async function GET() {
   const access = await requireAdminApiAccess();
@@ -18,7 +19,8 @@ export async function GET() {
     .order("full_name", { ascending: true });
 
   if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    logSupabaseError("[admin/instructors GET]", error);
+    return NextResponse.json({ error: "Eğitmenler alınamadı." }, { status: 500 });
   }
 
   const instructors: InstructorOption[] = (data ?? [])
@@ -67,7 +69,9 @@ export async function POST(request: Request) {
     const instructor = await createInstructorAccount({ fullName, email, password });
     return NextResponse.json({ data: instructor }, { status: 201 });
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Eğitmen oluşturulamadı.";
-    return NextResponse.json({ error: message }, { status: 400 });
+    return apiCatchResponse(error, "Eğitmen oluşturulamadı.", {
+      logLabel: "[admin/instructors POST]",
+      status: 400,
+    });
   }
 }

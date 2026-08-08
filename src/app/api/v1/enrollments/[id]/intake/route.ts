@@ -4,6 +4,7 @@ import type { IntakeFormInput } from "@/core/domain/participant-forms";
 import { logMemberActivity } from "@/infrastructure/audit/log-member-activity";
 import { resolveEnrollmentActorForEnrollment } from "@/infrastructure/auth/resolve-enrollment-actor";
 import { SupabaseParticipantFormsRepository } from "@/infrastructure/repositories/supabase-participant-forms-repository";
+import { apiCatchResponse } from "@/shared/utils/api-error";
 
 export async function POST(
   request: Request,
@@ -58,7 +59,9 @@ export async function POST(
 
     return NextResponse.json({ data: { ok: true } });
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Tanıma formu kaydedilemedi.";
-    return NextResponse.json({ error: message }, { status: 400 });
+    return apiCatchResponse(error, "Tanıma formu kaydedilemedi.", {
+      logLabel: "[enrollments/intake]",
+      status: 400,
+    });
   }
 }

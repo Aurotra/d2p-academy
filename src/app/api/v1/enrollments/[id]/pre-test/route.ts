@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import type { SurveyDimensionsInput } from "@/core/domain/participant-forms";
 import { resolveEnrollmentActorForEnrollment } from "@/infrastructure/auth/resolve-enrollment-actor";
 import { SupabaseParticipantFormsRepository } from "@/infrastructure/repositories/supabase-participant-forms-repository";
+import { apiCatchResponse } from "@/shared/utils/api-error";
 
 export async function POST(
   request: Request,
@@ -29,7 +30,9 @@ export async function POST(
 
     return NextResponse.json({ data });
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Ön test kaydedilemedi.";
-    return NextResponse.json({ error: message }, { status: 400 });
+    return apiCatchResponse(error, "Ön test kaydedilemedi.", {
+      logLabel: "[enrollments/pre-test]",
+      status: 400,
+    });
   }
 }

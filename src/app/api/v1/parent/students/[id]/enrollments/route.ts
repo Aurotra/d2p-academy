@@ -137,9 +137,8 @@ export async function POST(
       return NextResponse.json({ error: capacityBlock }, { status: 409 });
     }
   } catch (capacityError) {
-    const message =
-      capacityError instanceof Error ? capacityError.message : "Kontenjan kontrolü başarısız.";
-    return NextResponse.json({ error: message }, { status: 500 });
+    console.error("[parent enroll capacity]", capacityError);
+    return NextResponse.json({ error: "Kontenjan kontrolü başarısız." }, { status: 500 });
   }
 
   if (existing?.status === "cancelled") {

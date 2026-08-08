@@ -3,9 +3,9 @@ import { NextResponse } from "next/server";
 import { getEventCapacityBlockReason } from "@/infrastructure/enrollments/event-capacity";
 import { logMemberActivity } from "@/infrastructure/audit/log-member-activity";
 import { createSupabaseServerClient } from "@/infrastructure/supabase/create-server-client";
-import { mapAuthErrorToTurkish } from "@/shared/utils/auth-errors";
 import { getEventEnrollmentBlockReason } from "@/shared/utils/event-enrollment-window";
 import { isStudentParticipantProfile } from "@/shared/utils/student-participant-profile";
+import { apiCatchResponse, logSupabaseError } from "@/shared/utils/api-error";
 
 interface EnrollRequestBody {
   eventId?: string;
@@ -115,10 +115,8 @@ export async function POST(request: Request) {
         });
       }
 
-      return NextResponse.json(
-        { error: mapAuthErrorToTurkish(insertError.message) },
-        { status: 400 },
-      );
+      logSupabaseError("[enrollments POST]", insertError);
+      return NextResponse.json({ error: "Kayıt oluşturulamadı." }, { status: 400 });
     }
 
     const { data: profile } = await client
@@ -147,7 +145,9 @@ export async function POST(request: Request) {
       },
     });
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Kayıt sırasında hata oluştu.";
-    return NextResponse.json({ error: message }, { status: 500 });
+    return apiCatchResponse(error, "Kayıt sırasında hata oluştu.", {
+      logLabel: "[enrollments POST]",
+      status: 500,
+    });
   }
 }

@@ -6,6 +6,7 @@ import {
 } from "@/infrastructure/email/notify-event-instructors-assigned";
 import { requireAdminApiAccess } from "@/infrastructure/auth/require-admin-api-access";
 import { SupabaseAdminEventRepository } from "@/infrastructure/repositories/supabase-admin-event-repository";
+import { apiCatchResponse } from "@/shared/utils/api-error";
 
 export async function POST(
   _request: Request,
@@ -59,7 +60,9 @@ export async function POST(
       },
     });
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Bildirim gönderilemedi.";
-    return NextResponse.json({ error: message }, { status: 400 });
+    return apiCatchResponse(error, "Bildirim gönderilemedi.", {
+      logLabel: "[admin/events notify-instructors]",
+      status: 400,
+    });
   }
 }

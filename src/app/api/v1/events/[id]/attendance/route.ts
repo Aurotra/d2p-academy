@@ -5,6 +5,7 @@ import { getEventAttendanceAccess } from "@/infrastructure/auth/get-event-attend
 import { logAttendanceMarked } from "@/infrastructure/audit/log-attendance-marked";
 import { SupabaseEventAttendanceRepository } from "@/infrastructure/repositories/supabase-event-attendance-repository";
 import { createSupabaseServerClient } from "@/infrastructure/supabase/create-server-client";
+import { apiCatchResponse } from "@/shared/utils/api-error";
 
 interface AttendanceRequestBody {
   enrollmentId?: string;
@@ -76,7 +77,9 @@ export async function PATCH(
 
     return NextResponse.json({ ok: true });
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Yoklama kaydedilemedi.";
-    return NextResponse.json({ error: message }, { status: 400 });
+    return apiCatchResponse(error, "Yoklama kaydedilemedi.", {
+      logLabel: "[attendance PATCH]",
+      status: 400,
+    });
   }
 }

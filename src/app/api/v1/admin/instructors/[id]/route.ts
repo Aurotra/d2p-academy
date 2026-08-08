@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 
 import { requireAdminApiAccess } from "@/infrastructure/auth/require-admin-api-access";
 import { SupabaseAdminInstructorRepository } from "@/infrastructure/repositories/supabase-admin-instructor-repository";
+import { apiCatchResponse } from "@/shared/utils/api-error";
 
 export async function PATCH(
   request: Request,
@@ -22,7 +23,9 @@ export async function PATCH(
     await repository.setActive(id, body.isActive);
     return NextResponse.json({ ok: true });
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Durum güncellenemedi.";
-    return NextResponse.json({ error: message }, { status: 400 });
+    return apiCatchResponse(error, "Durum güncellenemedi.", {
+      logLabel: "[admin/instructors PATCH]",
+      status: 400,
+    });
   }
 }

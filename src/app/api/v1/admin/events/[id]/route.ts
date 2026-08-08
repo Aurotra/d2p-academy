@@ -8,6 +8,7 @@ import {
 } from "@/infrastructure/email/notify-event-instructors-assigned";
 import { requireAdminApiAccess } from "@/infrastructure/auth/require-admin-api-access";
 import { SupabaseAdminEventRepository } from "@/infrastructure/repositories/supabase-admin-event-repository";
+import { apiCatchResponse } from "@/shared/utils/api-error";
 
 interface RouteParams {
   params: Promise<{ id: string }>;
@@ -55,8 +56,10 @@ export async function PATCH(request: Request, { params }: RouteParams) {
         : "",
     });
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Etkinlik güncellenemedi.";
-    return NextResponse.json({ error: message }, { status: 400 });
+    return apiCatchResponse(error, "Etkinlik güncellenemedi.", {
+      logLabel: "[admin/events PATCH]",
+      status: 400,
+    });
   }
 }
 
@@ -70,7 +73,9 @@ export async function DELETE(_request: Request, { params }: RouteParams) {
     await deleteAdminEvent(repository, id);
     return NextResponse.json({ success: true });
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Etkinlik silinemedi.";
-    return NextResponse.json({ error: message }, { status: 400 });
+    return apiCatchResponse(error, "Etkinlik silinemedi.", {
+      logLabel: "[admin/events DELETE]",
+      status: 400,
+    });
   }
 }

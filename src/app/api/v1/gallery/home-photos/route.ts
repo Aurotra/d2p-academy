@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 
 import { createSupabaseServerClient } from "@/infrastructure/supabase/create-server-client";
 import { SupabaseGalleryRepository } from "@/infrastructure/repositories/supabase-gallery-repository";
+import { apiCatchResponse } from "@/shared/utils/api-error";
 
 export const dynamic = "force-dynamic";
 
@@ -22,7 +23,9 @@ export async function GET() {
       },
     );
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Galeri yüklenemedi.";
-    return NextResponse.json({ error: message }, { status: 500 });
+    return apiCatchResponse(error, "Galeri yüklenemedi.", {
+      logLabel: "[gallery/home-photos]",
+      status: 500,
+    });
   }
 }

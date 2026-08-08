@@ -6,6 +6,7 @@ import { getAdminAccess } from "@/infrastructure/auth/get-admin-access";
 import { requireAdminApiAccess } from "@/infrastructure/auth/require-admin-api-access";
 import { promoteMemberToInstructor } from "@/infrastructure/auth/set-user-role";
 import { SupabaseAdminAuditLogRepository } from "@/infrastructure/repositories/supabase-admin-audit-log-repository";
+import { apiCatchResponse } from "@/shared/utils/api-error";
 
 export async function POST(
   _request: Request,
@@ -53,7 +54,9 @@ export async function POST(
       },
     });
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Eğitmen yetkisi verilemedi.";
-    return NextResponse.json({ error: message }, { status: 400 });
+    return apiCatchResponse(error, "Eğitmen yetkisi verilemedi.", {
+      logLabel: "[admin/promote-instructor]",
+      status: 400,
+    });
   }
 }

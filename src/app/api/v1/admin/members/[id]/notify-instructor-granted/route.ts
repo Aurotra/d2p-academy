@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { getInstructorNotificationTarget } from "@/infrastructure/auth/get-instructor-notification-target";
 import { requireAdminApiAccess } from "@/infrastructure/auth/require-admin-api-access";
 import { sendInstructorGrantedNotification } from "@/infrastructure/email/send-instructor-notification-email";
+import { apiCatchResponse } from "@/shared/utils/api-error";
 
 export async function POST(
   _request: Request,
@@ -44,7 +45,9 @@ export async function POST(
       },
     });
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Bildirim e-postası gönderilemedi.";
-    return NextResponse.json({ error: message }, { status: 400 });
+    return apiCatchResponse(error, "Bildirim e-postası gönderilemedi.", {
+      logLabel: "[admin/notify-instructor-granted]",
+      status: 400,
+    });
   }
 }

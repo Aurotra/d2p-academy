@@ -4,6 +4,7 @@ import type { AdminAuditAction } from "@/core/domain/admin-audit-log";
 import { ADMIN_AUDIT_ACTION_LABELS } from "@/core/domain/admin-audit-log";
 import { requireAdminApiAccess } from "@/infrastructure/auth/require-admin-api-access";
 import { SupabaseAdminAuditLogRepository } from "@/infrastructure/repositories/supabase-admin-audit-log-repository";
+import { apiCatchResponse } from "@/shared/utils/api-error";
 
 export async function GET(request: Request) {
   const access = await requireAdminApiAccess();
@@ -27,7 +28,9 @@ export async function GET(request: Request) {
       })),
     });
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Loglar alınamadı.";
-    return NextResponse.json({ error: message }, { status: 500 });
+    return apiCatchResponse(error, "Loglar alınamadı.", {
+      logLabel: "[admin/audit-logs]",
+      status: 500,
+    });
   }
 }

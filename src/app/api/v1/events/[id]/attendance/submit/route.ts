@@ -5,6 +5,7 @@ import { getEventAttendanceAccess } from "@/infrastructure/auth/get-event-attend
 import { logAttendanceSubmitted } from "@/infrastructure/audit/log-attendance-submitted";
 import { SupabaseEventAttendanceRepository } from "@/infrastructure/repositories/supabase-event-attendance-repository";
 import { createSupabaseServerClient } from "@/infrastructure/supabase/create-server-client";
+import { apiCatchResponse } from "@/shared/utils/api-error";
 
 interface SubmitAttendanceRequestBody {
   sessionId?: string;
@@ -85,7 +86,9 @@ export async function POST(
 
     return NextResponse.json({ ok: true, submittedAt: new Date().toISOString() });
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Yoklama onaylanamadı.";
-    return NextResponse.json({ error: message }, { status: 400 });
+    return apiCatchResponse(error, "Yoklama onaylanamadı.", {
+      logLabel: "[attendance/submit]",
+      status: 400,
+    });
   }
 }

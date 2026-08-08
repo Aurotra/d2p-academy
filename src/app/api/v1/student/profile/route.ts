@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { getStudentSession } from "@/infrastructure/auth/get-student-session";
 import { createServiceRoleClient } from "@/infrastructure/supabase/create-service-role-client";
 import { calculateProgress } from "@/lib/utils/progress";
+import { logSupabaseError } from "@/shared/utils/api-error";
 
 const PROFILE_SELECT =
   "id, full_name, email, username, gender, grade_level, school_name, city_district, experience_data, interests, motivation_data, profile_avatar_url, kvkk_accepted";
@@ -82,7 +83,8 @@ export async function PATCH(request: Request) {
       .single();
 
     if (error) {
-      return NextResponse.json({ error: error.message }, { status: 400 });
+      logSupabaseError("[student/profile PATCH]", error);
+      return NextResponse.json({ error: "Profil güncellenemedi." }, { status: 400 });
     }
 
     return NextResponse.json({ data: { profile: data } });

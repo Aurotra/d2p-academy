@@ -13,6 +13,7 @@ import {
   normalizeTurkishPhone,
   TURKISH_MOBILE_PHONE_ERROR,
 } from "@/shared/utils/turkish-phone";
+import { logSupabaseError } from "@/shared/utils/api-error";
 
 const PROFILE_SELECT =
   "id, full_name, email, username, gender, grade_level, school_name, city_district, experience_data, interests, motivation_data, profile_avatar_url, parent_phone, kvkk_accepted";
@@ -196,7 +197,8 @@ export async function PATCH(
       .single();
 
     if (error) {
-      return NextResponse.json({ error: error.message }, { status: 400 });
+      logSupabaseError("[parent profile PATCH]", error);
+      return NextResponse.json({ error: "Profil güncellenemedi." }, { status: 400 });
     }
 
     const progress = calculateProgress(

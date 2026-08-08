@@ -62,7 +62,8 @@ export async function POST(request: Request) {
       },
     });
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Kayıt sırasında hata oluştu.";
-    return NextResponse.json({ error: mapAuthErrorToTurkish(message) }, { status: 400 });
+    const rawMessage = error instanceof Error ? error.message : "Kayıt sırasında hata oluştu.";
+    console.error("[auth/register]", rawMessage);
+    return NextResponse.json({ error: mapAuthErrorToTurkish(rawMessage) }, { status: 400 });
   }
 }

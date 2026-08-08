@@ -49,7 +49,7 @@ export function mapAuthErrorToTurkish(rawMessage: string): string {
     return EMAIL_CONFIRMATION_EXPIRED_NOTICE;
   }
 
-  return rawMessage;
+  return "İşlem tamamlanamadı. Lütfen tekrar deneyin.";
 }
 
 export const EMAIL_CONFIRMATION_EXPIRED_NOTICE =
