@@ -6,7 +6,7 @@ import { NO_INDEX_METADATA } from "@/shared/seo/metadata";
 
 export const metadata: Metadata = {
   ...NO_INDEX_METADATA,
-  title: "Giriş Yap",
+  title: "Veli ve Üye Girişi",
   description: "D2P Academy veli ve üye girişi.",
 };
 

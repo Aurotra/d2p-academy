@@ -1,13 +1,23 @@
 import type { NextConfig } from "next";
 
-import { getSecurityHeaders } from "./src/shared/config/security-headers";
+import { getSecurityHeaders, getStaticAssetCorsHeaders } from "./src/shared/config/security-headers";
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
+  poweredByHeader: false,
   output: "standalone",
   serverExternalPackages: ["@sparticuz/chromium-min", "puppeteer-core"],
   outputFileTracingIncludes: {
     "/api/v1/admin/certificates": ["./src/lib/certificates/**/*"],
+  },
+  images: {
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "**.supabase.co",
+        pathname: "/storage/v1/object/public/**",
+      },
+    ],
   },
   eslint: {
     ignoreDuringBuilds: false,
@@ -17,6 +27,10 @@ const nextConfig: NextConfig = {
   },
   async headers() {
     return [
+      {
+        source: "/_next/static/:path*",
+        headers: getStaticAssetCorsHeaders(),
+      },
       {
         source: "/:path*",
         headers: getSecurityHeaders(),

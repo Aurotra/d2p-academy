@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useMemo, useState, type CSSProperties } from "react";
 
@@ -25,10 +26,13 @@ function GalleryPhotoCard({
         className="block overflow-hidden rounded-2xl border border-border-surface bg-surface-section shadow-sm transition hover:border-secondary/40 hover:shadow-md"
         tabIndex={ariaHidden ? -1 : undefined}
       >
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
+        {/* Decorative duplicate slides are hidden from assistive tech. */}
+        <Image
           src={photo.imageUrl}
-          alt={ariaHidden ? "" : photo.altText}
+          alt={ariaHidden ? "" : photo.altText || "D2P Academy atölye fotoğrafı"}
+          width={220}
+          height={160}
+          sizes="220px"
           className="h-[150px] w-full object-cover sm:h-[160px]"
           loading="lazy"
           draggable={false}

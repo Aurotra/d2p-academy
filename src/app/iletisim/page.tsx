@@ -1,7 +1,7 @@
 import Link from "next/link";
 
 import { CONTACT } from "@/shared/constants/contact";
-import { Button } from "@/presentation/components/ui/button";
+import { buttonLinkClasses } from "@/presentation/components/ui/button";
 import { contactPageMetadata } from "@/shared/seo/public-pages";
 
 export const metadata = contactPageMetadata;
@@ -123,15 +123,20 @@ export default function ContactPage() {
                 oluşturun.
               </p>
               <div className="mt-5 flex flex-col gap-3 sm:flex-row">
-                <Link href="/etkinlikler" className="sm:flex-1">
-                  <Button className="min-h-[44px] w-full bg-document-primary hover:bg-document-primary-hover hover:shadow-glow-document">
-                    Etkinlikler
-                  </Button>
+                <Link
+                  href="/etkinlikler"
+                  className={buttonLinkClasses(
+                    "primary",
+                    "min-h-[44px] w-full bg-document-primary hover:bg-document-primary-hover hover:shadow-glow-document sm:flex-1",
+                  )}
+                >
+                  Etkinlikler
                 </Link>
-                <Link href="/kurumsal-talep" className="sm:flex-1">
-                  <Button variant="outline" className="min-h-[44px] w-full">
-                    Kurumsal Talep
-                  </Button>
+                <Link
+                  href="/kurumsal-talep"
+                  className={buttonLinkClasses("outline", "min-h-[44px] w-full sm:flex-1")}
+                >
+                  Kurumsal Talep
                 </Link>
               </div>
             </div>

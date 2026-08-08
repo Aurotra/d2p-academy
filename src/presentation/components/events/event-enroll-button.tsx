@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
-import { Button } from "@/presentation/components/ui/button";
+import { Button, buttonLinkClasses } from "@/presentation/components/ui/button";
 import { useSiteAuth } from "@/presentation/providers/site-auth-provider";
 import {
   buildEventEnrollPath,
@@ -35,10 +35,14 @@ export function EventEnrollButton({ eventId, className = "" }: EventEnrollButton
   if (!isLoggedIn) {
     return (
       <div className={`space-y-2 ${className}`}>
-        <Link href={buildRegisterForEventPath(eventId)} className="block">
-          <Button className="min-h-[44px] w-full bg-document-primary hover:bg-document-primary-hover hover:shadow-glow-document">
-            Etkinliğe Kaydol
-          </Button>
+        <Link
+          href={buildRegisterForEventPath(eventId)}
+          className={buttonLinkClasses(
+            "primary",
+            "min-h-[44px] w-full bg-document-primary hover:bg-document-primary-hover hover:shadow-glow-document",
+          )}
+        >
+          Etkinliğe Kaydol
         </Link>
         <p className="text-center text-xs leading-5 text-subtle">
           Üye değilseniz önce{" "}

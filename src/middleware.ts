@@ -10,8 +10,59 @@ import {
   validateStudentSessionAgainstDb,
 } from "@/infrastructure/auth/validate-student-session-edge";
 import { profileHasInstructorCapability } from "@/infrastructure/auth/instructor-capability";
+import { buildContentSecurityPolicy } from "@/shared/config/security-headers";
+import { createCspNonce, CSP_NONCE_HEADER } from "@/shared/config/csp-nonce";
 
-export async function middleware(request: NextRequest) {
+function finalizeResponse(
+  request: NextRequest,
+  response: NextResponse,
+  nonce: string,
+): NextResponse {
+  const csp = buildContentSecurityPolicy(nonce);
+
+  if (response.status >= 300 && response.status < 400) {
+    response.headers.set("Content-Security-Policy", csp);
+    return response;
+  }
+
+  const requestHeaders = new Headers(request.headers);
+  requestHeaders.set(CSP_NONCE_HEADER, nonce);
+
+  const nextResponse = NextResponse.next({
+    request: { headers: requestHeaders },
+  });
+
+  response.headers.forEach((value, key) => {
+    nextResponse.headers.set(key, value);
+  });
+  response.cookies.getAll().forEach((cookie) => {
+    nextResponse.cookies.set(cookie);
+  });
+
+  nextResponse.headers.set("Content-Security-Policy", csp);
+  return nextResponse;
+}
+
+function redirect(request: NextRequest, url: URL | string, nonce: string): NextResponse {
+  return finalizeResponse(request, NextResponse.redirect(url), nonce);
+}
+
+function isAuthProtectedPath(pathname: string): boolean {
+  return (
+    pathname.startsWith("/dashboard") ||
+    pathname.startsWith("/admin") ||
+    pathname.startsWith("/instructor") ||
+    pathname.startsWith("/student-dashboard") ||
+    pathname === "/login" ||
+    pathname === "/register" ||
+    pathname === "/instructor-login"
+  );
+}
+
+async function handleAuthMiddleware(
+  request: NextRequest,
+  nonce: string,
+): Promise<NextResponse> {
   const pathname = request.nextUrl.pathname;
 
   if (pathname.startsWith("/student-dashboard")) {
@@ -25,20 +76,25 @@ export async function middleware(request: NextRequest) {
       loginUrl.searchParams.set("redirectTo", pathname);
       const response = NextResponse.redirect(loginUrl);
       clearStudentSessionCookie(response);
-      return response;
+      return finalizeResponse(request, response, nonce);
     }
 
-    return NextResponse.next();
+    return finalizeResponse(request, NextResponse.next(), nonce);
   }
 
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
   if (!supabaseUrl || !supabaseAnonKey) {
-    return NextResponse.next({ request });
+    return finalizeResponse(request, NextResponse.next(), nonce);
   }
 
-  let supabaseResponse = NextResponse.next({ request });
+  const requestHeaders = new Headers(request.headers);
+  requestHeaders.set(CSP_NONCE_HEADER, nonce);
+
+  let supabaseResponse = NextResponse.next({
+    request: { headers: requestHeaders },
+  });
 
   const supabase = createServerClient(supabaseUrl, supabaseAnonKey, {
     cookies: {
@@ -48,7 +104,9 @@ export async function middleware(request: NextRequest) {
       setAll(cookiesToSet: Parameters<SetAllCookies>[0]) {
         cookiesToSet.forEach(({ name, value, options }) => {
           request.cookies.set(name, value);
-          supabaseResponse = NextResponse.next({ request });
+          supabaseResponse = NextResponse.next({
+            request: { headers: requestHeaders },
+          });
           supabaseResponse.cookies.set(name, value, options);
         });
       },
@@ -63,14 +121,14 @@ export async function middleware(request: NextRequest) {
     const loginUrl = request.nextUrl.clone();
     loginUrl.pathname = "/login";
     loginUrl.searchParams.set("redirectTo", pathname);
-    return NextResponse.redirect(loginUrl);
+    return redirect(request, loginUrl, nonce);
   }
 
   if (!user && (pathname.startsWith("/dashboard") || pathname.startsWith("/admin"))) {
     const loginUrl = request.nextUrl.clone();
     loginUrl.pathname = "/login";
     loginUrl.searchParams.set("redirectTo", pathname);
-    return NextResponse.redirect(loginUrl);
+    return redirect(request, loginUrl, nonce);
   }
 
   let profileRole: string | null = null;
@@ -90,13 +148,13 @@ export async function middleware(request: NextRequest) {
 
   if (user && pathname.startsWith("/admin")) {
     if (profileRole !== "admin") {
-      return NextResponse.redirect(new URL("/dashboard", request.url));
+      return redirect(request, new URL("/dashboard", request.url), nonce);
     }
   }
 
   if (user && pathname.startsWith("/instructor")) {
     if (!profileIsInstructor) {
-      return NextResponse.redirect(new URL("/dashboard", request.url));
+      return redirect(request, new URL("/dashboard", request.url), nonce);
     }
   }
 
@@ -109,7 +167,7 @@ export async function middleware(request: NextRequest) {
     } else {
       loginUrl.searchParams.set("redirectTo", "/instructor");
     }
-    return NextResponse.redirect(loginUrl);
+    return redirect(request, loginUrl, nonce);
   }
 
   if (user && pathname === "/instructor-login") {
@@ -120,11 +178,11 @@ export async function middleware(request: NextRequest) {
         : profileIsInstructor
           ? "/instructor"
           : "/dashboard";
-    return NextResponse.redirect(new URL(safeRedirect, request.url));
+    return redirect(request, new URL(safeRedirect, request.url), nonce);
   }
 
   if (user && pathname === "/dashboard" && profileRole === "instructor") {
-    return NextResponse.redirect(new URL("/instructor", request.url));
+    return redirect(request, new URL("/instructor", request.url), nonce);
   }
 
   if (user && (pathname === "/login" || pathname === "/register")) {
@@ -141,23 +199,28 @@ export async function middleware(request: NextRequest) {
       redirectTo && redirectTo.startsWith("/") && !redirectTo.startsWith("//")
         ? redirectTo
         : defaultPath;
-    return NextResponse.redirect(new URL(safeRedirect, request.url));
+    return redirect(request, new URL(safeRedirect, request.url), nonce);
   }
 
+  supabaseResponse.headers.set("Content-Security-Policy", buildContentSecurityPolicy(nonce));
   return supabaseResponse;
+}
+
+export async function middleware(request: NextRequest) {
+  const nonce = createCspNonce();
+
+  if (isAuthProtectedPath(request.nextUrl.pathname)) {
+    return handleAuthMiddleware(request, nonce);
+  }
+
+  return finalizeResponse(request, NextResponse.next(), nonce);
 }
 
 export const config = {
   matcher: [
-    "/dashboard/:path*",
-    "/admin",
-    "/admin/:path*",
-    "/instructor",
-    "/instructor/:path*",
-    "/instructor-login",
-    "/login",
-    "/register",
-    "/student-dashboard",
-    "/student-dashboard/:path*",
+    {
+      source:
+        "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)",
+    },
   ],
 };

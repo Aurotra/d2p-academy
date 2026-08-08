@@ -171,7 +171,7 @@ export function InstitutionRequestForm() {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-5" noValidate>
+    <form onSubmit={handleSubmit} method="post" className="space-y-5" noValidate>
       <Input
         label="Kurum Adı"
         name="institution_name"

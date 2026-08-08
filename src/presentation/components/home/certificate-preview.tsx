@@ -1,3 +1,5 @@
+import Image from "next/image";
+
 import type { CertificateVerificationResult } from "@/core/domain/certificate-verification";
 import { SITE_LOGO_SRC, SITE_NAME } from "@/shared/constants/site";
 
@@ -41,11 +43,12 @@ export function CertificatePreview({ result }: { result: CertificateVerification
         />
 
         <div className="relative px-6 py-8 text-center sm:px-10 sm:py-10">
-          <img
+          <Image
             src={SITE_LOGO_SRC}
-            alt={SITE_NAME}
+            alt={`${SITE_NAME} logosu`}
+            width={160}
+            height={56}
             className="mx-auto h-12 w-auto object-contain sm:h-14"
-            decoding="async"
           />
           <p
             className="mt-2 text-xs font-semibold tracking-[0.22em] text-secondary"

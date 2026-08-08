@@ -8,7 +8,7 @@ import { EVENT_TYPE_LABELS } from "@/core/domain/event";
 import { EnrollmentFormProgress } from "@/presentation/components/dashboard/enrollment-form-progress";
 import { ParentEnrollmentAttendanceProgress } from "@/presentation/components/dashboard/parent-enrollment-attendance-progress";
 import { Badge } from "@/presentation/components/ui/badge";
-import { Button } from "@/presentation/components/ui/button";
+import { buttonLinkClasses } from "@/presentation/components/ui/button";
 import {
   eventLocationLabel,
   formatEventDateTimeRange,
@@ -223,10 +223,11 @@ function EnrollmentCard({ item }: { item: ParentChildEnrollmentItem }) {
           >
             Etkinlik detayı
           </Link>
-          <Link href="/dashboard/children">
-            <Button variant="outline" className="w-full">
-              Çocuk hesapları
-            </Button>
+          <Link
+            href="/dashboard/children"
+            className={buttonLinkClasses("outline", "w-full")}
+          >
+            Çocuk hesapları
           </Link>
         </div>
       </div>

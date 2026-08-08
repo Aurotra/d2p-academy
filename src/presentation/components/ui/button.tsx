@@ -2,7 +2,7 @@ import type { ButtonHTMLAttributes } from "react";
 
 import { BUTTON_PRESS_CLASSES } from "@/shared/utils/button-press";
 
-type ButtonVariant = "primary" | "secondary" | "accent" | "outline" | "ghost";
+export type ButtonVariant = "primary" | "secondary" | "accent" | "outline" | "ghost";
 
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: ButtonVariant;
@@ -22,6 +22,11 @@ const variantClasses: Record<ButtonVariant, string> = {
 
 const baseClasses =
   "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-surface-base";
+
+/** Tailwind classes for `<Link>` elements that should look like buttons. */
+export function buttonLinkClasses(variant: ButtonVariant = "primary", className = ""): string {
+  return `${BUTTON_PRESS_CLASSES} ${baseClasses} inline-flex items-center justify-center rounded-xl px-5 py-3 text-sm font-semibold ${variantClasses[variant]} ${className}`;
+}
 
 export function Button({
   className = "",

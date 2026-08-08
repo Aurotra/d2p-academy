@@ -3,7 +3,7 @@
 import Link from "next/link";
 
 import { GuestOnly } from "@/presentation/components/auth/guest-only";
-import { Button } from "@/presentation/components/ui/button";
+import { buttonLinkClasses } from "@/presentation/components/ui/button";
 import { useSiteAuth } from "@/presentation/providers/site-auth-provider";
 
 export function HeroCtaButtons() {
@@ -19,10 +19,11 @@ export function HeroCtaButtons() {
           <p className="mt-2 flex-1 text-sm leading-6 text-[var(--text-on-surface-soft)]">
             Yaklaşan etkinlikleri inceleyin; veli hesabıyla çocuğunuzu doğrudan kaydedin.
           </p>
-          <Link href="/etkinlikler" className="mt-4 inline-flex w-full sm:w-auto">
-            <Button variant="accent" className="min-h-[44px] w-full sm:w-auto">
-              Etkinliklere Göz At
-            </Button>
+          <Link
+            href="/etkinlikler"
+            className={buttonLinkClasses("accent", "mt-4 min-h-[44px] w-full sm:w-auto")}
+          >
+            Etkinliklere Göz At
           </Link>
         </div>
 
@@ -36,17 +37,19 @@ export function HeroCtaButtons() {
               : "Ücretsiz veli hesabı açın; etkinlik kaydı ve çocuk profilleri tek panelde."}
           </p>
           {isAuthResolved && isLoggedIn ? (
-            <Link href={panelHref} className="mt-4 inline-flex w-full sm:w-auto">
-              <Button variant="secondary" className="min-h-[44px] w-full sm:w-auto">
-                Panele Git
-              </Button>
+            <Link
+              href={panelHref}
+              className={buttonLinkClasses("secondary", "mt-4 min-h-[44px] w-full sm:w-auto")}
+            >
+              Panele Git
             </Link>
           ) : null}
           <GuestOnly>
-            <Link href="/register" className="mt-4 inline-flex w-full sm:w-auto">
-              <Button variant="secondary" className="min-h-[44px] w-full sm:w-auto">
-                Veli Hesabı Oluştur
-              </Button>
+            <Link
+              href="/register"
+              className={buttonLinkClasses("secondary", "mt-4 min-h-[44px] w-full sm:w-auto")}
+            >
+              Veli Hesabı Oluştur
             </Link>
           </GuestOnly>
         </div>
@@ -58,18 +61,23 @@ export function HeroCtaButtons() {
           <p className="mt-2 flex-1 text-sm leading-6 text-[var(--text-on-surface-soft)]">
             Okul, belediye ve kurumlar için toplu eğitim paketi / organizasyon talebi.
           </p>
-          <Link href="/kurumsal-talep" className="mt-4 inline-flex w-full sm:w-auto">
-            <Button variant="primary" className="min-h-[44px] w-full sm:w-auto">
-              Kurumsal Eğitim Talebi
-            </Button>
+          <Link
+            href="/kurumsal-talep"
+            className={buttonLinkClasses("primary", "mt-4 min-h-[44px] w-full sm:w-auto")}
+          >
+            Kurumsal Eğitim Talebi
           </Link>
         </div>
       </div>
 
-      <Link href="/etkinlikler" className="inline-flex">
-        <Button variant="ghost" className="min-h-[44px] px-0 text-navy-900 underline-offset-4 hover:underline">
-          Tüm etkinlikleri gör →
-        </Button>
+      <Link
+        href="/etkinlikler"
+        className={buttonLinkClasses(
+          "ghost",
+          "min-h-[44px] px-0 text-navy-900 underline-offset-4 hover:underline",
+        )}
+      >
+        Tüm etkinlikleri gör →
       </Link>
     </div>
   );

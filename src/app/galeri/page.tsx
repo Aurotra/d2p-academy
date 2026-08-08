@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 
 import type { GalleryAlbum } from "@/core/domain/gallery";
@@ -48,13 +49,14 @@ function AlbumCard({ album }: { album: GalleryAlbum }) {
       href={`/galeri/${album.slug}`}
       className="group block overflow-hidden rounded-[1.75rem] border border-border-surface bg-white shadow-sm transition hover:border-secondary/40 hover:shadow-md"
     >
-      <div className="aspect-[4/3] overflow-hidden bg-surface-section">
+      <div className="relative aspect-[4/3] overflow-hidden bg-surface-section">
         {album.coverImageUrl ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
+          <Image
             src={album.coverImageUrl}
-            alt={album.title}
-            className="h-full w-full object-cover transition duration-300 group-hover:scale-[1.03]"
+            alt={`${album.title} albüm kapak görseli`}
+            fill
+            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+            className="object-cover transition duration-300 group-hover:scale-[1.03]"
           />
         ) : (
           <div className="flex h-full items-center justify-center text-sm text-subtle">

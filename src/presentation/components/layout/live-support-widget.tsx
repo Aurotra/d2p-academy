@@ -35,6 +35,10 @@ export function LiveSupportWidget() {
     script.src = embedSrc;
     script.charset = "UTF-8";
     script.crossOrigin = "anonymous";
+    const nonce = document.documentElement.dataset.cspNonce;
+    if (nonce) {
+      script.nonce = nonce;
+    }
     script.addEventListener("load", () => {
       if (!window.Tawk_API?.maximize) {
         setIsReady(true);

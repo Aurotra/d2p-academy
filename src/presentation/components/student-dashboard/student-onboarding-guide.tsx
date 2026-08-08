@@ -1,6 +1,6 @@
 import Link from "next/link";
 
-import { Button } from "@/presentation/components/ui/button";
+import { buttonLinkClasses } from "@/presentation/components/ui/button";
 
 export function StudentOnboardingGuide() {
   return (
@@ -31,10 +31,11 @@ export function StudentOnboardingGuide() {
       </ol>
 
       <div className="mt-6 flex flex-wrap gap-3">
-        <Link href="/etkinlikler">
-          <Button type="button" variant="outline">
-            Etkinlik takvimine bak
-          </Button>
+        <Link
+          href="/etkinlikler"
+          className={buttonLinkClasses("outline")}
+        >
+          Etkinlik takvimine bak
         </Link>
         <Link href="/veli-rehberi" className="inline-flex items-center text-sm font-semibold text-document-primary hover:underline">
           Veli rehberini oku →

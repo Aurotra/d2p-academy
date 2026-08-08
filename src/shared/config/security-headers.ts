@@ -1,5 +1,7 @@
 type Header = { key: string; value: string };
 
+const ALLOWED_CORS_ORIGINS = ["https://www.d2p.com.tr", "https://d2p.com.tr"] as const;
+
 function getSupabaseCspOrigins(): { https: string; wss: string } {
   const raw = process.env.NEXT_PUBLIC_SUPABASE_URL?.trim();
   if (!raw) {
@@ -14,21 +16,34 @@ function getSupabaseCspOrigins(): { https: string; wss: string } {
   }
 }
 
-function buildContentSecurityPolicy(): string {
+function shouldSendHsts(): boolean {
+  if (process.env.VERCEL_ENV) {
+    return process.env.VERCEL_ENV === "production";
+  }
+
+  return process.env.NODE_ENV === "production";
+}
+
+/** CSP with per-request nonce — set from middleware, not next.config. */
+export function buildContentSecurityPolicy(nonce: string): string {
   const supabase = getSupabaseCspOrigins();
   const isProd = process.env.NODE_ENV === "production";
 
   const scriptSrc = [
     "'self'",
-    "'unsafe-inline'",
+    `'nonce-${nonce}'`,
+    "'strict-dynamic'",
     ...(isProd ? [] : ["'unsafe-eval'"]),
     "https://embed.tawk.to",
+    "https://*.tawk.to",
   ];
 
   const directives = [
     "default-src 'self'",
     `script-src ${scriptSrc.join(" ")}`,
-    "style-src 'self' 'unsafe-inline'",
+    "style-src 'self'",
+    "style-src-elem 'self' 'unsafe-inline'",
+    "style-src-attr 'unsafe-inline'",
     `img-src 'self' data: blob: ${supabase.https}`,
     "font-src 'self' data:",
     `connect-src 'self' ${supabase.https} ${supabase.wss} https://embed.tawk.to https://*.tawk.to wss://*.tawk.to`,
@@ -46,15 +61,7 @@ function buildContentSecurityPolicy(): string {
   return directives.join("; ");
 }
 
-function shouldSendHsts(): boolean {
-  if (process.env.VERCEL_ENV) {
-    return process.env.VERCEL_ENV === "production";
-  }
-
-  return process.env.NODE_ENV === "production";
-}
-
-/** HTTP security headers for all HTML/API responses served by Next.js. */
+/** Static security headers (CSP is injected per request in middleware). */
 export function getSecurityHeaders(): Header[] {
   const headers: Header[] = [
     { key: "X-DNS-Prefetch-Control", value: "on" },
@@ -65,7 +72,6 @@ export function getSecurityHeaders(): Header[] {
       key: "Permissions-Policy",
       value: "camera=(), microphone=(), geolocation=(), interest-cohort=()",
     },
-    { key: "Content-Security-Policy", value: buildContentSecurityPolicy() },
   ];
 
   if (shouldSendHsts()) {
@@ -76,4 +82,16 @@ export function getSecurityHeaders(): Header[] {
   }
 
   return headers;
+}
+
+/** Restrict cross-origin access to Next static assets. */
+export function getStaticAssetCorsHeaders(): Header[] {
+  return [
+    { key: "Access-Control-Allow-Origin", value: ALLOWED_CORS_ORIGINS[0] },
+    { key: "Vary", value: "Origin" },
+  ];
+}
+
+export function applyContentSecurityPolicy(response: Response, nonce: string): void {
+  response.headers.set("Content-Security-Policy", buildContentSecurityPolicy(nonce));
 }

@@ -1,7 +1,7 @@
 import Link from "next/link";
 
 import type { ParentOnboardingContext } from "@/infrastructure/repositories/fetch-parent-onboarding-context";
-import { Button } from "@/presentation/components/ui/button";
+import { buttonLinkClasses } from "@/presentation/components/ui/button";
 
 interface ParentOnboardingGuideProps {
   context: ParentOnboardingContext;
@@ -158,10 +158,11 @@ export function ParentOnboardingGuide({ context }: ParentOnboardingGuideProps) {
         </div>
 
         {currentStep.href && currentStep.actionLabel ? (
-          <Link href={currentStep.href} className="shrink-0">
-            <Button type="button" className="w-full sm:w-auto">
-              {currentStep.actionLabel}
-            </Button>
+          <Link
+            href={currentStep.href}
+            className={buttonLinkClasses("primary", "w-full shrink-0 sm:w-auto")}
+          >
+            {currentStep.actionLabel}
           </Link>
         ) : null}
       </div>

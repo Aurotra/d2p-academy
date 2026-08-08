@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
@@ -99,13 +100,19 @@ export default async function GalleryAlbumPage({ params }: PageProps) {
             {album.photos.map((photo) => (
               <li key={photo.id} className="mb-4 break-inside-avoid">
                 <figure className="overflow-hidden rounded-2xl border border-border-surface bg-white shadow-sm">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={photo.imageUrl}
-                    alt={photo.altText || photo.caption || album.title}
-                    className="w-full object-cover"
-                    loading="lazy"
-                  />
+                  <div className="relative aspect-[4/3] w-full">
+                    <Image
+                      src={photo.imageUrl}
+                      alt={
+                        photo.altText ||
+                        photo.caption ||
+                        `${album.title} atölye fotoğrafı`
+                      }
+                      fill
+                      sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                      className="object-cover"
+                    />
+                  </div>
                   {photo.caption ? (
                     <figcaption className="px-3 py-2 text-sm text-muted">
                       {photo.caption}

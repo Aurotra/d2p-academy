@@ -11,17 +11,16 @@ const denizliStemKeywords = [
 ] as const;
 
 export const homePageMetadata = publicPageMetadata({
-  title: "D2P Academy",
+  title: "Denizli 3D Tasarım ve Atölye Eğitimleri",
   socialTitle: "Denizli 3D Tasarım ve 3D Baskı Atölye Eğitimleri",
   description:
     "D2P Academy, Denizli'de çocuk ve gençlere 3D tasarım, 3D baskı, prototipleme ve maker atölye eğitimleri sunar. Tasarım ve üretim odaklı STEM programları.",
   path: "/",
   keywords: [...denizliStemKeywords],
-  absoluteTitle: true,
 });
 
 export const eventsPageMetadata = publicPageMetadata({
-  title: "Denizli Çocuk Atölye Etkinlikleri ve Kayıt",
+  title: "Teknoloji ve Robotik Etkinlikleri",
   description:
     "Yaklaşan 3D tasarım, 3D baskı ve maker atölye etkinlikleri. Denizli'de çocuklar için D2P Academy program takvimi, tarihler ve online kayıt.",
   path: "/etkinlikler",
@@ -36,7 +35,7 @@ export const eventsPageMetadata = publicPageMetadata({
 });
 
 export const parentGuidePageMetadata = publicPageMetadata({
-  title: "Veli Kayıt Rehberi — Hesap, Çocuk Profili ve Etkinlik Kaydı",
+  title: "Veli Rehberi ve Sıkça Sorulan Sorular",
   description:
     "D2P Academy veli hesabı oluşturma, e-posta onayı, çocuk profili ekleme ve etkinlik kaydı adımları. Veliler için adım adım kayıt rehberi ve sık sorulan sorular.",
   path: "/veli-rehberi",
@@ -50,7 +49,7 @@ export const parentGuidePageMetadata = publicPageMetadata({
 });
 
 export const galleryPageMetadata = publicPageMetadata({
-  title: "Atölye Galerisi — 3D Tasarım ve Üretim Fotoğrafları",
+  title: "Atölye Çalışmalarımızdan Kareler",
   description:
     "D2P Academy atölyelerinden fotoğraflar: 3D yazıcı, dijital tasarım ve maker etkinliklerinden Denizli eğitim galerisi ve albümler.",
   path: "/galeri",

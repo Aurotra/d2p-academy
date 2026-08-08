@@ -1,10 +1,12 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
+import { headers } from "next/headers";
 import { Geist, Geist_Mono, Plus_Jakarta_Sans } from "next/font/google";
 
 import "./globals.css";
 import { OrganizationJsonLd } from "@/presentation/components/seo/organization-json-ld";
 import { SITE_DESCRIPTION, SITE_NAME, SITE_URL } from "@/shared/constants/site";
+import { CSP_NONCE_HEADER } from "@/shared/config/csp-nonce";
 import { SiteChrome } from "@/presentation/components/layout/site-chrome";
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -43,13 +45,15 @@ export const metadata: Metadata = {
     description: SITE_DESCRIPTION,
   },
 };
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: ReactNode;
 }>) {
+  const nonce = (await headers()).get(CSP_NONCE_HEADER) ?? undefined;
+
   return (
-    <html lang="tr">
+    <html lang="tr" data-csp-nonce={nonce}>
       <body
         className={`${geistSans.variable} ${geistMono.variable} ${plusJakartaSans.variable} font-sans antialiased`}
       >

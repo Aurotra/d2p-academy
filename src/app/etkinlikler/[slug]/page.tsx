@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
@@ -86,12 +87,14 @@ export default async function EventDetailPage({ params }: PageProps) {
 
           <div className="mt-6 overflow-hidden rounded-[2rem] border border-border-surface bg-white shadow-sm">
             {event.coverImageUrl ? (
-              <div className="aspect-[21/9] overflow-hidden bg-surface-section">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
+              <div className="relative aspect-[21/9] overflow-hidden bg-surface-section">
+                <Image
                   src={event.coverImageUrl}
-                  alt={event.title}
-                  className="h-full w-full object-cover"
+                  alt={`${event.title} etkinlik kapak görseli`}
+                  fill
+                  priority
+                  sizes="(max-width: 896px) 100vw, 896px"
+                  className="object-cover"
                 />
               </div>
             ) : null}
