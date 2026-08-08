@@ -34,8 +34,6 @@ export function buildContentSecurityPolicy(nonce: string): string {
     `'nonce-${nonce}'`,
     "'strict-dynamic'",
     ...(isProd ? [] : ["'unsafe-eval'"]),
-    "https://embed.tawk.to",
-    "https://*.tawk.to",
   ];
 
   const directives = [
@@ -46,8 +44,8 @@ export function buildContentSecurityPolicy(nonce: string): string {
     "style-src-attr 'unsafe-inline'",
     `img-src 'self' data: blob: ${supabase.https}`,
     "font-src 'self' data:",
-    `connect-src 'self' ${supabase.https} ${supabase.wss} https://embed.tawk.to https://*.tawk.to wss://*.tawk.to`,
-    "frame-src 'self' https://www.google.com https://maps.google.com https://www.google.com.tr https://embed.tawk.to",
+    `connect-src 'self' ${supabase.https} ${supabase.wss}`,
+    "frame-src 'self' https://www.google.com https://maps.google.com https://www.google.com.tr",
     "object-src 'none'",
     "base-uri 'self'",
     "form-action 'self'",

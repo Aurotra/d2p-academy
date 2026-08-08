@@ -5,7 +5,6 @@ import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
 
 import { AuthHashHandler } from "@/presentation/components/auth/auth-hash-handler";
-import { LiveSupportWidget } from "@/presentation/components/layout/live-support-widget";
 import { WhatsAppSupportWidget } from "@/presentation/components/layout/whatsapp-support-widget";
 import { SiteFooter } from "@/presentation/components/layout/site-footer";
 import { SiteHeader } from "@/presentation/components/layout/site-header";
@@ -53,7 +52,6 @@ export function SiteChrome({ children }: SiteChromeProps) {
             <main className="pb-24 sm:pb-0">{children}</main>
             <SiteFooter />
             <WhatsAppSupportWidget />
-            <LiveSupportWidget />
           </>
         )}
       </SiteAuthProvider>
