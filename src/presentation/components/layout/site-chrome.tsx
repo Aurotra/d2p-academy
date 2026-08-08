@@ -44,11 +44,11 @@ export function SiteChrome({ children }: SiteChromeProps) {
     <>
       <AuthHashHandler />
       <SiteAuthProvider>
+        <SiteHeader />
         {isStandalonePanelRoute ? (
           children
         ) : (
           <>
-            <SiteHeader />
             <main className="pb-24 sm:pb-0">{children}</main>
             <SiteFooter />
             <WhatsAppSupportWidget />
