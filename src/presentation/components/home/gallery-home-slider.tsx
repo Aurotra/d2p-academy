@@ -22,7 +22,7 @@ function GalleryPhotoCard({
     <li className="w-[200px] shrink-0 sm:w-[220px]" aria-hidden={ariaHidden || undefined}>
       <Link
         href={photo.albumSlug ? `/galeri/${photo.albumSlug}` : "/galeri"}
-        className="block overflow-hidden rounded-2xl border border-slate-200 bg-slate-50 shadow-sm transition hover:border-sky-300 hover:shadow-md"
+        className="block overflow-hidden rounded-2xl border border-border-surface bg-surface-section shadow-sm transition hover:border-secondary/40 hover:shadow-md"
         tabIndex={ariaHidden ? -1 : undefined}
       >
         {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -88,11 +88,11 @@ export function GalleryHomeSlider({ photos: initialPhotos }: GalleryHomeSliderPr
   }
 
   return (
-    <section id="gallery-preview" className="border-t border-slate-200 bg-slate-50 px-4 py-14 sm:px-6 lg:px-8">
+    <section id="gallery-preview" className="border-t border-border-surface bg-surface-section px-4 py-14 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-7xl">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div className="max-w-xl">
-            <p className="text-sm font-semibold uppercase tracking-[0.18em] text-cyan-600">
+            <p className="text-sm font-semibold uppercase tracking-[0.18em] text-secondary">
               Galeri
             </p>
             <h2 className="mt-2 text-2xl font-black text-navy-950 sm:text-3xl">
@@ -101,7 +101,7 @@ export function GalleryHomeSlider({ photos: initialPhotos }: GalleryHomeSliderPr
           </div>
           <Link
             href="/galeri"
-            className="inline-flex w-fit items-center rounded-full border border-sky-200 bg-sky-50 px-4 py-2 text-sm font-semibold text-sky-800 transition hover:border-sky-300 hover:bg-sky-100"
+            className="inline-flex w-fit items-center rounded-full border border-border-surface bg-surface-tint-yellow px-4 py-2 text-sm font-semibold text-navy-900 transition hover:border-secondary/30 hover:bg-surface-tint-green"
           >
             Tüm galeri →
           </Link>

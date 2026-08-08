@@ -18,18 +18,18 @@ export function CertificateVerificationBar() {
 
   return (
     <section id="certificate" className="relative z-10 mt-14 px-4 pb-16 sm:mt-16 sm:px-6 sm:pb-20 lg:px-8">
-      <div className="mx-auto max-w-5xl rounded-[2rem] border border-sky-200/90 bg-gradient-to-br from-sky-100 via-sky-50 to-accent/25 p-8 shadow-xl shadow-sky-200/40 sm:p-10 lg:p-12">
+      <div className="mx-auto max-w-5xl rounded-[2rem] border border-border-surface bg-surface-card p-8 shadow-xl shadow-secondary/10 sm:p-10 lg:p-12">
         <div className="text-center">
           <p className="text-sm font-semibold uppercase tracking-[0.18em] text-accent-dark">
             Sertifika Doğrulama
           </p>
-          <h2 className="mt-3 text-2xl font-bold text-slate-900 sm:text-3xl">
+          <h2 className="mt-3 text-2xl font-bold text-navy-950 sm:text-3xl">
             Mezuniyet sertifikanızı anında doğrulayın
           </h2>
         </div>
 
         <div className="mt-10">
-          <p className="mx-auto max-w-3xl text-center text-base font-normal leading-7 text-slate-800 sm:text-lg sm:leading-8">
+          <p className="mx-auto max-w-3xl text-center text-base font-normal leading-7 text-[var(--text-on-surface-soft)] sm:text-lg sm:leading-8">
             Sertifikalarımız, dijital dünyada benzersiz ve doğrulanabilir bir mühendislik
             yetkinliğinin anahtarıdır. Sertifika kodunuzu girerek eğitimin geçerliliğini ve başarı
             detaylarını saniyeler içinde görüntüleyebilirsiniz.
@@ -50,7 +50,7 @@ export function CertificateVerificationBar() {
           <Button
             type="submit"
             disabled={isLoading}
-            className="w-full bg-accent text-slate-900 hover:bg-accent-dark hover:shadow-glow-accent sm:w-auto sm:min-w-40"
+            className="w-full bg-accent text-navy-950 hover:bg-accent-dark hover:shadow-glow-accent sm:w-auto sm:min-w-40"
           >
             {isLoading ? "Doğrulanıyor..." : "Doğrula"}
           </Button>

@@ -14,7 +14,7 @@ const accentStyles: Record<
   { card: string; glow: string; icon: string }
 > = {
   document: {
-    card: "border-document-primary/25 bg-gradient-to-br from-white via-sky-50/80 to-document-primary/10 shadow-lg shadow-document-primary/15 hover:border-document-primary/40 hover:shadow-glow-document",
+    card: "border-document-primary/25 bg-gradient-to-br from-white via-surface-tint-mixed to-document-primary/10 shadow-lg shadow-document-primary/15 hover:border-document-primary/40 hover:shadow-glow-document",
     glow: "bg-document-primary/30",
     icon: "bg-document-primary/15 text-document-primary",
   },
@@ -54,7 +54,7 @@ function LearningValueCard({ icon, title, description, accent }: LearningValueCa
         {icon}
       </div>
       <h3 className="relative mt-5 text-lg font-bold text-navy-950">{title}</h3>
-      <p className="relative mt-3 text-sm leading-6 text-slate-600">{description}</p>
+      <p className="relative mt-3 text-sm leading-6 text-muted">{description}</p>
     </article>
   );
 }
@@ -134,10 +134,10 @@ const learningValues = [
 
 export function LearningValuesSection() {
   return (
-    <section id="learning" className="bg-slate-50 px-4 pb-12 pt-20 sm:px-6 lg:px-8">
+    <section id="learning" className="bg-surface-section px-4 pb-12 pt-20 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-7xl">
         <div className="max-w-3xl">
-          <p className="text-sm font-semibold uppercase tracking-[0.18em] text-cyan-600">
+          <p className="text-sm font-semibold uppercase tracking-[0.18em] text-secondary">
             Eğitim Değerlerimiz
           </p>
           <h2 className="mt-2 text-3xl font-black text-navy-950 sm:text-4xl">

@@ -17,9 +17,9 @@ interface EventCardProps {
 
 function EventDateBadge({ day, month }: { day: string; month: string }) {
   return (
-    <div className="flex min-w-16 shrink-0 flex-col items-center rounded-2xl bg-sky-500 px-3 py-3 text-center text-white">
+    <div className="flex min-w-16 shrink-0 flex-col items-center rounded-2xl bg-secondary px-3 py-3 text-center text-white">
       <span className="text-2xl font-black leading-none">{day}</span>
-      <span className="mt-1 text-xs uppercase tracking-wide text-sky-100">{month}</span>
+      <span className="mt-1 text-xs uppercase tracking-wide text-white/80">{month}</span>
     </div>
   );
 }
@@ -40,7 +40,7 @@ function EventMetaBadges({ event }: { event: AcademyEvent }) {
 
 function EventTitle({ event, linkToDetail }: { event: AcademyEvent; linkToDetail?: boolean }) {
   const title = (
-    <h3 className="mt-2 text-lg font-bold text-navy-950 group-hover:text-sky-800 md:mt-3">
+    <h3 className="mt-2 text-lg font-bold text-navy-950 group-hover:text-secondary md:mt-3">
       {event.title}
     </h3>
   );
@@ -63,17 +63,17 @@ export function EventCard({ event, compact = false, linkToDetail = false }: Even
 
   if (compact) {
     return (
-      <article className="group overflow-hidden rounded-2xl border border-sky-200/80 bg-gradient-to-br from-white to-sky-50/40 shadow-sm transition hover:border-cyan-300 hover:shadow-md">
+      <article className="group overflow-hidden rounded-2xl border border-border-surface bg-surface-card shadow-sm transition hover:border-secondary/40 hover:shadow-md">
         <div className="flex flex-col gap-4 p-5 sm:flex-row sm:items-center sm:gap-5 sm:p-6">
           <EventDateBadge day={start.day} month={start.month} />
 
           <div className="min-w-0 flex-1">
             <EventMetaBadges event={event} />
             <EventTitle event={event} linkToDetail={linkToDetail} />
-            <p className="mt-1 line-clamp-2 text-sm leading-6 text-slate-600">{event.description}</p>
-            <p className="mt-2 text-sm text-slate-500">
+            <p className="mt-1 line-clamp-2 text-sm leading-6 text-muted">{event.description}</p>
+            <p className="mt-2 text-sm text-subtle">
               {timeRange}
-              <span className="mx-2 text-slate-300" aria-hidden>
+              <span className="mx-2 text-border-surface" aria-hidden>
                 ·
               </span>
               {locationLabel}
@@ -97,7 +97,7 @@ export function EventCard({ event, compact = false, linkToDetail = false }: Even
   }
 
   return (
-    <article className="group flex h-full flex-col overflow-hidden rounded-[1.75rem] border border-slate-200 bg-white shadow-sm transition hover:-translate-y-1 hover:border-cyan-300 hover:shadow-xl hover:shadow-cyan-500/10">
+    <article className="group flex h-full flex-col overflow-hidden rounded-[1.75rem] border border-border-surface bg-white shadow-sm transition hover:-translate-y-1 hover:border-secondary/40 hover:shadow-xl hover:shadow-secondary/10">
       <div className="flex flex-1 flex-col p-5 sm:p-6">
         <div className="flex items-start gap-4">
           <EventDateBadge day={start.day} month={start.month} />
@@ -105,13 +105,13 @@ export function EventCard({ event, compact = false, linkToDetail = false }: Even
           <div className="min-w-0 flex-1">
             <EventMetaBadges event={event} />
             <EventTitle event={event} linkToDetail={linkToDetail} />
-            <p className="mt-2 line-clamp-2 text-sm leading-6 text-slate-600">
+            <p className="mt-2 line-clamp-2 text-sm leading-6 text-muted">
               {event.description}
             </p>
           </div>
         </div>
 
-        <div className="mt-5 flex items-center justify-between border-t border-slate-100 pt-4 text-sm text-slate-500">
+        <div className="mt-5 flex items-center justify-between border-t border-border-surface pt-4 text-sm text-subtle">
           <span>{timeRange}</span>
           <span>{locationLabel}</span>
         </div>

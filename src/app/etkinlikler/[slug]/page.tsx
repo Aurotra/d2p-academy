@@ -76,7 +76,7 @@ export default async function EventDetailPage({ params }: PageProps) {
     <>
       <EventJsonLd event={event} />
 
-      <div className="min-h-screen bg-gradient-to-b from-sky-50 via-white to-slate-50">
+      <div className="min-h-screen bg-gradient-to-b from-surface-base via-white to-surface-section">
         <div className="mx-auto max-w-4xl px-4 py-12 sm:px-6 lg:px-8">
           <p className="text-sm font-semibold text-document-primary">
             <Link href="/etkinlikler" className="hover:underline">
@@ -84,9 +84,9 @@ export default async function EventDetailPage({ params }: PageProps) {
             </Link>
           </p>
 
-          <div className="mt-6 overflow-hidden rounded-[2rem] border border-slate-200 bg-white shadow-sm">
+          <div className="mt-6 overflow-hidden rounded-[2rem] border border-border-surface bg-white shadow-sm">
             {event.coverImageUrl ? (
-              <div className="aspect-[21/9] overflow-hidden bg-slate-100">
+              <div className="aspect-[21/9] overflow-hidden bg-surface-section">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={event.coverImageUrl}
@@ -107,23 +107,23 @@ export default async function EventDetailPage({ params }: PageProps) {
                 {event.isOnline ? <Badge tone="neutral">Online</Badge> : null}
               </div>
 
-              <h1 className="mt-4 text-3xl font-bold text-slate-900 sm:text-4xl">{event.title}</h1>
+              <h1 className="mt-4 text-3xl font-bold text-navy-950 sm:text-4xl">{event.title}</h1>
 
-              <dl className="mt-6 grid gap-4 rounded-2xl bg-slate-50 p-5 text-sm text-slate-700 sm:grid-cols-2">
+              <dl className="mt-6 grid gap-4 rounded-2xl bg-surface-section p-5 text-sm text-[var(--text-on-surface-soft)] sm:grid-cols-2">
                 <div>
-                  <dt className="font-semibold text-slate-900">Tarih ve saat</dt>
+                  <dt className="font-semibold text-navy-950">Tarih ve saat</dt>
                   <dd className="mt-1">{schedule}</dd>
                 </div>
                 <div>
-                  <dt className="font-semibold text-slate-900">Konum</dt>
+                  <dt className="font-semibold text-navy-950">Konum</dt>
                   <dd className="mt-1">{location}</dd>
                 </div>
               </dl>
 
               {event.description ? (
                 <div className="prose prose-slate mt-8 max-w-none">
-                  <h2 className="text-lg font-bold text-slate-900">Program hakkında</h2>
-                  <p className="mt-3 whitespace-pre-wrap text-base leading-7 text-slate-600">
+                  <h2 className="text-lg font-bold text-navy-950">Program hakkında</h2>
+                  <p className="mt-3 whitespace-pre-wrap text-base leading-7 text-muted">
                     {event.description}
                   </p>
                 </div>

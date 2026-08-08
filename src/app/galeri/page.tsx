@@ -46,9 +46,9 @@ function AlbumCard({ album }: { album: GalleryAlbum }) {
   return (
     <Link
       href={`/galeri/${album.slug}`}
-      className="group block overflow-hidden rounded-[1.75rem] border border-slate-200 bg-white shadow-sm transition hover:border-sky-300 hover:shadow-md"
+      className="group block overflow-hidden rounded-[1.75rem] border border-border-surface bg-white shadow-sm transition hover:border-secondary/40 hover:shadow-md"
     >
-      <div className="aspect-[4/3] overflow-hidden bg-slate-100">
+      <div className="aspect-[4/3] overflow-hidden bg-surface-section">
         {album.coverImageUrl ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
@@ -57,18 +57,18 @@ function AlbumCard({ album }: { album: GalleryAlbum }) {
             className="h-full w-full object-cover transition duration-300 group-hover:scale-[1.03]"
           />
         ) : (
-          <div className="flex h-full items-center justify-center text-sm text-slate-400">
+          <div className="flex h-full items-center justify-center text-sm text-subtle">
             Kapak yok
           </div>
         )}
       </div>
       <div className="p-5">
-        <h3 className="text-lg font-bold text-slate-900 group-hover:text-sky-800">{album.title}</h3>
-        <p className="mt-2 text-sm text-slate-600">
+        <h3 className="text-lg font-bold text-navy-950 group-hover:text-secondary">{album.title}</h3>
+        <p className="mt-2 text-sm text-muted">
           {[album.locationName, dateLabel].filter(Boolean).join(" · ") ||
             `${album.photoCount} fotoğraf`}
         </p>
-        <p className="mt-1 text-xs font-semibold text-sky-700">{album.photoCount} fotoğraf →</p>
+        <p className="mt-1 text-xs font-semibold text-secondary">{album.photoCount} fotoğraf →</p>
       </div>
     </Link>
   );
@@ -79,7 +79,7 @@ export default async function GalleryPage() {
 
   if (!client) {
     return (
-      <div className="mx-auto max-w-6xl px-4 py-16 text-center text-slate-600">
+      <div className="mx-auto max-w-6xl px-4 py-16 text-center text-muted">
         Galeri şu an yüklenemiyor.
       </div>
     );
@@ -90,39 +90,39 @@ export default async function GalleryPage() {
   const yearGroups = groupAlbumsByYear(albums);
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-sky-50 via-white to-slate-50">
+    <div className="min-h-screen bg-gradient-to-b from-surface-base via-white to-surface-section">
       <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6 lg:px-8">
         <div className="max-w-2xl">
           <p className="text-sm font-semibold uppercase tracking-[0.18em] text-document-primary">
             Galeri
           </p>
-          <h1 className="mt-2 text-3xl font-bold text-slate-900 sm:text-4xl">
+          <h1 className="mt-2 text-3xl font-bold text-navy-950 sm:text-4xl">
             Eğitimlerimizden kareler
           </h1>
-          <p className="mt-4 text-base leading-7 text-slate-600">
+          <p className="mt-4 text-base leading-7 text-muted">
             Atölyelerimizden seçilmiş kareler. Her eğitim kendi albümünde; yıllar geçtikçe arşiv
             burada büyür.
           </p>
         </div>
 
         {albums.length === 0 ? (
-          <div className="mt-12 rounded-[2rem] border border-dashed border-slate-200 bg-white px-6 py-16 text-center text-slate-500">
+          <div className="mt-12 rounded-[2rem] border border-dashed border-border-surface bg-white px-6 py-16 text-center text-subtle">
             Henüz yayınlanmış albüm yok. Çok yakında eğitim fotoğrafları burada olacak.
           </div>
         ) : (
           <div className="mt-12 space-y-14">
             {yearGroups.map(({ year, albums: yearAlbums }) => (
               <section key={year} aria-labelledby={`year-${year}`}>
-                <div className="mb-6 flex flex-wrap items-end justify-between gap-3 border-b border-sky-100 pb-4">
+                <div className="mb-6 flex flex-wrap items-end justify-between gap-3 border-b border-border-surface pb-4">
                   <div>
-                    <p className="text-xs font-semibold uppercase tracking-[0.18em] text-sky-700">
+                    <p className="text-xs font-semibold uppercase tracking-[0.18em] text-secondary">
                       Yıl
                     </p>
-                    <h2 id={`year-${year}`} className="mt-1 text-2xl font-bold text-slate-900">
+                    <h2 id={`year-${year}`} className="mt-1 text-2xl font-bold text-navy-950">
                       {year} Eğitimlerimiz
                     </h2>
                   </div>
-                  <p className="text-sm font-medium text-slate-500">
+                  <p className="text-sm font-medium text-subtle">
                     {yearAlbums.length} albüm ·{" "}
                     {yearAlbums.reduce((sum, album) => sum + album.photoCount, 0)} fotoğraf
                   </p>

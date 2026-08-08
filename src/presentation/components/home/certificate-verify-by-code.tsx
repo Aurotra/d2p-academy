@@ -63,17 +63,17 @@ export function CertificateVerifyByCode({ code }: VerifyCertificatePageProps) {
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-12 sm:px-6 lg:px-8">
-      <div className="rounded-[2rem] border border-sky-200/90 bg-gradient-to-br from-sky-100 via-sky-50 to-accent/25 p-6 shadow-xl shadow-sky-200/40 sm:p-8">
+      <div className="rounded-[2rem] border border-border-surface bg-surface-card p-6 shadow-xl shadow-secondary/10 sm:p-8">
         <p className="text-center text-sm font-semibold uppercase tracking-[0.18em] text-accent-dark">
           Sertifika Doğrulama
         </p>
-        <h1 className="mt-2 text-center text-2xl font-bold text-slate-900 sm:text-3xl">
+        <h1 className="mt-2 text-center text-2xl font-bold text-navy-950 sm:text-3xl">
           Sertifika sorgusu
         </h1>
-        <p className="mt-3 text-center font-mono text-sm font-semibold text-slate-700">{code}</p>
+        <p className="mt-3 text-center font-mono text-sm font-semibold text-navy-900">{code}</p>
 
         {isLoading ? (
-          <p className="mt-6 text-center text-sm text-slate-600">Doğrulanıyor...</p>
+          <p className="mt-6 text-center text-sm text-muted">Doğrulanıyor...</p>
         ) : null}
 
         {error ? (

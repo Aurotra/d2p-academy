@@ -116,8 +116,8 @@ const closingParagraph =
 
 function EducationAreaCard({ index, title }: { index: number; title: string }) {
   return (
-    <article className="rounded-[1.75rem] border border-slate-200 bg-white p-6 shadow-sm transition hover:-translate-y-1 hover:border-sky-300 hover:shadow-lg hover:shadow-sky-200/40">
-      <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-sky-100 text-sm font-bold text-sky-700">
+    <article className="rounded-[1.75rem] border border-border-surface bg-white p-6 shadow-sm transition hover:-translate-y-1 hover:border-secondary/40 hover:shadow-lg hover:shadow-secondary/10">
+      <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-surface-tint-green text-sm font-bold text-secondary">
         {String(index).padStart(2, "0")}
       </div>
       <h3 className="mt-5 text-base font-bold leading-snug text-navy-950 sm:text-lg">{title}</h3>
@@ -140,8 +140,8 @@ function EducatorCard({ educator }: { educator: Educator }) {
   const imageScale = Math.max(1, imageFit.scale ?? 1);
 
   return (
-    <article className="flex h-full flex-col overflow-hidden rounded-[1.75rem] border border-slate-200 bg-white shadow-sm transition hover:-translate-y-1 hover:border-sky-300 hover:shadow-lg hover:shadow-sky-200/40">
-      <div className="aspect-[3/4] overflow-hidden bg-gradient-to-br from-sky-100 via-white to-slate-100">
+    <article className="flex h-full flex-col overflow-hidden rounded-[1.75rem] border border-border-surface bg-white shadow-sm transition hover:-translate-y-1 hover:border-secondary/40 hover:shadow-lg hover:shadow-secondary/10">
+      <div className="aspect-[3/4] overflow-hidden bg-gradient-to-br from-surface-tint-yellow via-white to-surface-section">
         {educator.image ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
@@ -155,10 +155,10 @@ function EducatorCard({ educator }: { educator: Educator }) {
             }}
           />
         ) : (
-          <div className="flex h-full w-full items-center justify-center bg-gradient-to-b from-sky-50 to-slate-100">
+          <div className="flex h-full w-full items-center justify-center bg-gradient-to-b from-surface-base to-surface-section">
             <span
               aria-hidden
-              className="flex h-24 w-24 items-center justify-center rounded-full bg-white text-3xl font-bold text-sky-700 shadow-md ring-4 ring-sky-200/80"
+              className="flex h-24 w-24 items-center justify-center rounded-full bg-white text-3xl font-bold text-secondary shadow-md ring-4 ring-border-surface"
             >
               {initials}
             </span>
@@ -167,10 +167,10 @@ function EducatorCard({ educator }: { educator: Educator }) {
       </div>
       <div className="flex flex-1 flex-col p-6">
         <h3 className="text-lg font-bold text-navy-950">{educator.name}</h3>
-        <p className="mt-1 text-sm font-semibold leading-snug text-sky-700">{educator.title}</p>
+        <p className="mt-1 text-sm font-semibold leading-snug text-secondary">{educator.title}</p>
         <ul className="mt-4 space-y-2.5">
           {educator.highlights.map((highlight) => (
-            <li key={highlight} className="flex gap-2.5 text-sm leading-6 text-slate-600">
+            <li key={highlight} className="flex gap-2.5 text-sm leading-6 text-muted">
               <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-secondary" aria-hidden />
               <span>{highlight}</span>
             </li>
@@ -212,14 +212,14 @@ function CompassIcon() {
 
 export function AboutPageContent() {
   return (
-    <div className="min-h-screen bg-gradient-to-b from-sky-50 via-white to-slate-50">
+    <div className="min-h-screen bg-gradient-to-b from-surface-base via-white to-surface-section">
       <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6 lg:px-8 lg:py-16">
         <header className="max-w-3xl">
           <p className="text-sm font-semibold uppercase tracking-[0.18em] text-document-primary">
             Hakkımızda
           </p>
           <h1 className="mt-2 text-3xl font-black text-navy-950 sm:text-4xl">D2P Academy</h1>
-          <p className="mt-4 text-base leading-7 text-slate-600 sm:text-lg sm:leading-8">
+          <p className="mt-4 text-base leading-7 text-muted sm:text-lg sm:leading-8">
             Robotik kodlamanın &quot;Nasıl çalışır?&quot; sorusuna, &quot;Nasıl tasarlanır ve
             üretilir?&quot; cevabıyla güç katan tasarım ve üretim odaklı akademi.
           </p>
@@ -231,7 +231,7 @@ export function AboutPageContent() {
             Kurumsal kimliğimiz
           </h2>
           {corporateParagraphs.map((paragraph, index) => (
-            <p key={index} className="text-base leading-7 text-slate-700 sm:text-[1.05rem] sm:leading-8">
+            <p key={index} className="text-base leading-7 text-[var(--text-on-surface-soft)] sm:text-[1.05rem] sm:leading-8">
               {paragraph}
             </p>
           ))}
@@ -243,24 +243,24 @@ export function AboutPageContent() {
             Misyon ve vizyonumuz
           </h2>
           <div className="grid gap-6 md:grid-cols-2">
-            <article className="rounded-[1.75rem] border border-sky-200 bg-white p-8 shadow-sm transition hover:-translate-y-1 hover:border-sky-300 hover:shadow-lg hover:shadow-sky-200/40">
-              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-sky-100 text-sky-700">
+            <article className="rounded-[1.75rem] border border-border-surface bg-white p-8 shadow-sm transition hover:-translate-y-1 hover:border-secondary/40 hover:shadow-lg hover:shadow-secondary/10">
+              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-surface-tint-green text-secondary">
                 <TargetIcon />
               </div>
               <h3 className="mt-5 text-xl font-black text-navy-950">Misyonumuz</h3>
-              <p className="mt-3 text-base leading-7 text-slate-700">
+              <p className="mt-3 text-base leading-7 text-[var(--text-on-surface-soft)]">
                 Çocukların ve gençlerin hayal güçlerini tasarım ve üretim becerileriyle
                 buluşturarak; problem çözen, sorgulayan, iş birliği yapan ve üreten bireyler
                 olarak yetişmelerine katkı sağlamak.
               </p>
             </article>
 
-            <article className="rounded-[1.75rem] border border-sky-200 bg-white p-8 shadow-sm transition hover:-translate-y-1 hover:border-sky-300 hover:shadow-lg hover:shadow-sky-200/40">
-              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-sky-100 text-sky-700">
+            <article className="rounded-[1.75rem] border border-border-surface bg-white p-8 shadow-sm transition hover:-translate-y-1 hover:border-secondary/40 hover:shadow-lg hover:shadow-secondary/10">
+              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-surface-tint-green text-secondary">
                 <CompassIcon />
               </div>
               <h3 className="mt-5 text-xl font-black text-navy-950">Vizyonumuz</h3>
-              <p className="mt-3 text-base leading-7 text-slate-700">
+              <p className="mt-3 text-base leading-7 text-[var(--text-on-surface-soft)]">
                 Türkiye&apos;nin tasarım ve üretim odaklı eğitim ekosistemine yön veren,
                 uygulamalı teknoloji eğitimlerinde öncü ve güvenilir bir eğitim platformu olmak.
               </p>
@@ -271,7 +271,7 @@ export function AboutPageContent() {
         {/* Eğitim Yaklaşımımız (Robotik Kodlamadan Farkı) */}
         <section className="mt-16 max-w-3xl space-y-6" aria-labelledby="about-approach">
           <div>
-            <p className="text-sm font-semibold uppercase tracking-[0.18em] text-cyan-600">
+            <p className="text-sm font-semibold uppercase tracking-[0.18em] text-secondary">
               Eğitim Yaklaşımımız
             </p>
             <h2 id="about-approach" className="mt-2 text-2xl font-black text-navy-950 sm:text-3xl">
@@ -279,7 +279,7 @@ export function AboutPageContent() {
             </h2>
           </div>
           {mainParagraphs.map((paragraph) => (
-            <p key={paragraph} className="text-base leading-7 text-slate-700 sm:text-[1.05rem] sm:leading-8">
+            <p key={paragraph} className="text-base leading-7 text-[var(--text-on-surface-soft)] sm:text-[1.05rem] sm:leading-8">
               {paragraph}
             </p>
           ))}
@@ -287,7 +287,7 @@ export function AboutPageContent() {
 
         <section className="mt-16" aria-labelledby="education-areas-heading">
           <div className="max-w-3xl">
-            <p className="text-sm font-semibold uppercase tracking-[0.18em] text-cyan-600">
+            <p className="text-sm font-semibold uppercase tracking-[0.18em] text-secondary">
               Eğitim Alanları
             </p>
             <h2
@@ -308,11 +308,11 @@ export function AboutPageContent() {
         </section>
 
         <section className="mt-16" aria-labelledby="closing-approach">
-          <div className="rounded-[2rem] border border-sky-200 bg-gradient-to-br from-sky-50 to-white p-8 shadow-sm sm:p-10">
+          <div className="rounded-[2rem] border border-border-surface bg-surface-card p-8 shadow-sm sm:p-10">
             <h2 id="closing-approach" className="sr-only">
               Bütüncül yaklaşım
             </h2>
-            <p className="text-base leading-7 text-slate-800 sm:text-[1.05rem] sm:leading-8">
+            <p className="text-base leading-7 text-[var(--text-on-surface-soft)] sm:text-[1.05rem] sm:leading-8">
               {closingParagraph}
             </p>
           </div>
@@ -320,7 +320,7 @@ export function AboutPageContent() {
 
         <section className="mt-20" aria-labelledby="educators-heading">
           <div className="max-w-3xl">
-            <p className="text-sm font-semibold uppercase tracking-[0.18em] text-cyan-600">
+            <p className="text-sm font-semibold uppercase tracking-[0.18em] text-secondary">
               Kadromuz
             </p>
             <h2 id="educators-heading" className="mt-2 text-2xl font-black text-navy-950 sm:text-3xl">

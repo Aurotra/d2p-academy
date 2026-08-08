@@ -9,9 +9,9 @@ import { ParentGuidePromo } from "@/presentation/components/home/parent-guide-pr
 
 function EmptyEventsState() {
   return (
-    <div className="rounded-2xl border border-dashed border-sky-200 bg-sky-50/60 px-5 py-8 text-center">
+    <div className="rounded-2xl border border-dashed border-border-surface bg-surface-tint-green/40 px-5 py-8 text-center">
       <p className="text-sm font-semibold text-navy-950">Yaklaşan etkinlik bulunamadı</p>
-      <p className="mt-1 text-sm text-slate-600">
+      <p className="mt-1 text-sm text-muted">
         Yayınlanmış etkinlik eklendiğinde burada listelenecek.
       </p>
     </div>
@@ -41,14 +41,14 @@ export async function EventCalendarPreview() {
   const singleEvent = events.length === 1;
 
   return (
-    <section id="events" className="bg-slate-50 px-4 py-14 sm:px-6 lg:px-8">
+    <section id="events" className="bg-surface-section px-4 py-14 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-6xl">
-        <div className="overflow-hidden rounded-3xl border border-sky-200/90 bg-white shadow-lg shadow-sky-100/50">
-          <div className="border-b border-sky-100 px-5 py-6 sm:px-7">
+        <div className="overflow-hidden rounded-3xl border border-border-surface bg-white shadow-lg shadow-secondary/10">
+          <div className="border-b border-border-surface px-5 py-6 sm:px-7">
             <h2 className="text-xl font-black text-navy-950 sm:text-2xl">
               Etkinlik seçin, kaydı 3 adımda tamamlayın
             </h2>
-            <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600">
+            <p className="mt-2 max-w-2xl text-sm leading-6 text-muted">
               Soldan etkinliği seçin; sağdaki adımlarla veli hesabı açıp çocuğunuzu kaydedin.{" "}
               <Link href="/etkinlikler" className="font-semibold text-document-primary hover:underline">
                 Tüm etkinlikler →
@@ -71,7 +71,7 @@ export async function EventCalendarPreview() {
               )}
             </div>
 
-            <div className="border-t border-sky-100 bg-sky-50/50 p-5 sm:p-7 lg:border-l lg:border-t-0">
+            <div className="border-t border-border-surface bg-surface-tint-yellow/30 p-5 sm:p-7 lg:border-l lg:border-t-0">
               <ParentGuidePromo />
             </div>
           </div>

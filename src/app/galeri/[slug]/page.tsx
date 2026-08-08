@@ -70,7 +70,7 @@ export default async function GalleryAlbumPage({ params }: PageProps) {
   const meta = [album.locationName, dateLabel].filter(Boolean).join(" · ");
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-sky-50 via-white to-slate-50">
+    <div className="min-h-screen bg-gradient-to-b from-surface-base via-white to-surface-section">
       <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6 lg:px-8">
         <Link
           href="/galeri"
@@ -83,22 +83,22 @@ export default async function GalleryAlbumPage({ params }: PageProps) {
           <p className="text-sm font-semibold uppercase tracking-[0.18em] text-document-primary">
             Galeri
           </p>
-          <h1 className="mt-2 text-3xl font-bold text-slate-900 sm:text-4xl">{album.title}</h1>
-          {meta ? <p className="mt-3 text-base text-slate-600">{meta}</p> : null}
+          <h1 className="mt-2 text-3xl font-bold text-navy-950 sm:text-4xl">{album.title}</h1>
+          {meta ? <p className="mt-3 text-base text-muted">{meta}</p> : null}
           {album.description ? (
-            <p className="mt-4 text-base leading-7 text-slate-600">{album.description}</p>
+            <p className="mt-4 text-base leading-7 text-muted">{album.description}</p>
           ) : null}
         </div>
 
         {album.photos.length === 0 ? (
-          <div className="mt-12 rounded-[2rem] border border-dashed border-slate-200 bg-white px-6 py-16 text-center text-slate-500">
+          <div className="mt-12 rounded-[2rem] border border-dashed border-border-surface bg-white px-6 py-16 text-center text-subtle">
             Bu albümde henüz fotoğraf yok.
           </div>
         ) : (
           <ul className="mt-10 columns-1 gap-4 sm:columns-2 lg:columns-3">
             {album.photos.map((photo) => (
               <li key={photo.id} className="mb-4 break-inside-avoid">
-                <figure className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+                <figure className="overflow-hidden rounded-2xl border border-border-surface bg-white shadow-sm">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src={photo.imageUrl}
@@ -107,7 +107,7 @@ export default async function GalleryAlbumPage({ params }: PageProps) {
                     loading="lazy"
                   />
                   {photo.caption ? (
-                    <figcaption className="px-3 py-2 text-sm text-slate-600">
+                    <figcaption className="px-3 py-2 text-sm text-muted">
                       {photo.caption}
                     </figcaption>
                   ) : null}

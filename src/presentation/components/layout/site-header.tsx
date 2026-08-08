@@ -152,7 +152,7 @@ export function SiteHeader() {
                 <li key={item.href} className="shrink-0">
                   <Link
                     href={item.href}
-                    className="whitespace-nowrap text-xs font-medium text-slate-800 transition hover:text-primary xl:text-sm"
+                    className="whitespace-nowrap text-xs font-medium text-navy-900 transition hover:text-primary xl:text-sm"
                     onClick={(event) => handleSamePageHashNav(event, item.href, pathname)}
                   >
                     {item.label}
@@ -166,7 +166,7 @@ export function SiteHeader() {
             {showLoggedInActions ? (
               <>
                 {userDisplayName ? (
-                  <span className="max-w-[10rem] truncate text-sm font-medium text-slate-700 lg:max-w-[14rem]">
+                  <span className="max-w-[10rem] truncate text-sm font-medium text-muted lg:max-w-[14rem]">
                     {userDisplayName}
                   </span>
                 ) : null}
@@ -206,7 +206,7 @@ export function SiteHeader() {
 
           <button
             type="button"
-            className="relative z-[60] ml-auto inline-flex min-h-11 min-w-11 shrink-0 items-center justify-center rounded-xl border border-sky-200 bg-white/80 p-2.5 text-slate-800 shadow-sm transition hover:border-primary/30 hover:text-primary lg:hidden"
+            className="relative z-[60] ml-auto inline-flex min-h-11 min-w-11 shrink-0 items-center justify-center rounded-xl border border-border-surface bg-white/80 p-2.5 text-navy-900 shadow-sm transition hover:border-primary/30 hover:text-primary lg:hidden"
             aria-label={isMobileMenuOpen ? "Menüyü kapat" : "Menüyü aç"}
             aria-expanded={isMobileMenuOpen}
             aria-controls="mobile-main-menu"
@@ -221,13 +221,13 @@ export function SiteHeader() {
         <>
           <button
             type="button"
-            className="fixed inset-0 z-40 bg-sky-900/20 backdrop-blur-[2px] lg:hidden"
+            className="fixed inset-0 z-40 bg-navy-950/20 backdrop-blur-[2px] lg:hidden"
             aria-label="Menüyü kapat"
             onClick={closeMobileMenu}
           />
           <nav
             id="mobile-main-menu"
-            className="fixed inset-x-0 bottom-0 top-20 z-50 overflow-y-auto overscroll-contain border-t border-sky-200/80 bg-gradient-to-b from-sky-50 to-sky-100/95 px-4 py-5 shadow-lg shadow-sky-200/40 lg:hidden sm:px-6"
+            className="fixed inset-x-0 bottom-0 top-20 z-50 overflow-y-auto overscroll-contain border-t border-border-surface bg-gradient-to-b from-surface-base to-surface-section px-4 py-5 shadow-lg shadow-secondary/10 lg:hidden sm:px-6"
             aria-label="Mobil menü"
           >
             <ul className="space-y-1">
@@ -235,7 +235,7 @@ export function SiteHeader() {
                 <li key={item.href}>
                   <Link
                     href={item.href}
-                    className="flex items-center rounded-xl px-4 py-3 text-base font-semibold text-slate-800 transition hover:bg-white/70 hover:text-primary"
+                    className="flex items-center rounded-xl px-4 py-3 text-base font-semibold text-navy-900 transition hover:bg-white/70 hover:text-primary"
                     onClick={(event) => {
                       handleSamePageHashNav(event, item.href, pathname);
                       closeMobileMenu();
@@ -248,11 +248,11 @@ export function SiteHeader() {
               ))}
             </ul>
 
-            <div className="mt-5 flex min-h-[52px] flex-col gap-3 border-t border-sky-200/80 pt-5">
+            <div className="mt-5 flex min-h-[52px] flex-col gap-3 border-t border-border-surface pt-5">
               {showLoggedInActions ? (
                 <>
                   {userDisplayName ? (
-                    <p className="px-1 text-center text-sm font-medium text-slate-700">
+                    <p className="px-1 text-center text-sm font-medium text-muted">
                       {userDisplayName}
                     </p>
                   ) : null}

@@ -15,11 +15,11 @@ function InstagramIcon({ className = "h-4 w-4" }: { className?: string }) {
 
 export function SiteFooter() {
   return (
-    <footer className={`${BRAND_SURFACE_FOOTER} text-sky-900`}>
+    <footer className={`${BRAND_SURFACE_FOOTER} text-navy-900`}>
       <div className="mx-auto flex max-w-7xl flex-col gap-6 px-4 py-10 sm:px-6 lg:flex-row lg:items-center lg:justify-between lg:px-8">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
           <BrandLogo href="/" height={36} />
-          <p className="max-w-xl text-sm text-sky-800">
+          <p className="max-w-xl text-sm text-muted">
             Okullara ve öğrencilere yönelik modern, ölçeklenebilir eğitim platformu.
           </p>
         </div>
@@ -27,43 +27,43 @@ export function SiteFooter() {
           <div className="flex flex-wrap gap-x-4 gap-y-2">
             <Link
               href="/etkinlikler"
-              className="inline-flex min-h-11 items-center font-semibold text-sky-900 transition hover:text-document-primary"
+              className="inline-flex min-h-11 items-center font-semibold text-navy-900 transition hover:text-document-primary"
             >
               Etkinlikler
             </Link>
             <Link
               href="/hakkimizda"
-              className="inline-flex min-h-11 items-center font-semibold text-sky-900 transition hover:text-document-primary"
+              className="inline-flex min-h-11 items-center font-semibold text-navy-900 transition hover:text-document-primary"
             >
               Hakkımızda
             </Link>
             <Link
               href="/galeri"
-              className="inline-flex min-h-11 items-center font-semibold text-sky-900 transition hover:text-document-primary"
+              className="inline-flex min-h-11 items-center font-semibold text-navy-900 transition hover:text-document-primary"
             >
               Galeri
             </Link>
             <Link
               href="/iletisim"
-              className="inline-flex min-h-11 items-center font-semibold text-sky-900 transition hover:text-document-primary"
+              className="inline-flex min-h-11 items-center font-semibold text-navy-900 transition hover:text-document-primary"
             >
               İletişim
             </Link>
             <Link
               href={PARENT_GUIDE_PATH}
-              className="inline-flex min-h-11 items-center font-semibold text-sky-900 transition hover:text-document-primary"
+              className="inline-flex min-h-11 items-center font-semibold text-navy-900 transition hover:text-document-primary"
             >
               Veli Rehberi
             </Link>
             <Link
               href="/kvkk"
-              className="inline-flex min-h-11 items-center font-semibold text-sky-900 transition hover:text-document-primary"
+              className="inline-flex min-h-11 items-center font-semibold text-navy-900 transition hover:text-document-primary"
             >
               KVKK
             </Link>
             <Link
               href="/gizlilik"
-              className="inline-flex min-h-11 items-center font-semibold text-sky-900 transition hover:text-document-primary"
+              className="inline-flex min-h-11 items-center font-semibold text-navy-900 transition hover:text-document-primary"
             >
               Gizlilik
             </Link>
@@ -72,12 +72,12 @@ export function SiteFooter() {
             href={CONTACT.instagramUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex min-h-11 items-center gap-2 font-semibold text-sky-900 transition hover:text-document-primary"
+            className="inline-flex min-h-11 items-center gap-2 font-semibold text-navy-900 transition hover:text-document-primary"
           >
             <InstagramIcon />
             Instagram · @{CONTACT.instagramHandle}
           </a>
-          <p className="text-sky-700">
+          <p className="text-subtle">
             © {new Date().getFullYear()} D2P Academy. Tüm hakları saklıdır.
           </p>
         </div>

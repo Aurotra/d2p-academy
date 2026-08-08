@@ -90,23 +90,23 @@ function MonitorIcon({ className }: { className?: string }) {
 
 export default function InstitutionRequestPage() {
   return (
-    <div className="min-h-screen bg-slate-50 px-4 py-12 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-surface-section px-4 py-12 sm:px-6 lg:px-8">
       <div className="mx-auto w-full max-w-xl">
         <div className="mb-8 text-center">
           <p className="text-sm font-semibold uppercase tracking-[0.18em] text-document-primary">
             D2P Academy
           </p>
-          <h1 className="mt-2 text-3xl font-bold text-slate-900 sm:text-4xl">
+          <h1 className="mt-2 text-3xl font-bold text-navy-950 sm:text-4xl">
             Kurumsal Eğitim Talebi
           </h1>
-          <p className="mt-4 text-base leading-7 text-slate-600">
+          <p className="mt-4 text-base leading-7 text-muted">
             Özel okul, devlet okulu, belediye ve diğer kurumlar için toplu atölye / eğitim paketi
             taleplerinizi buradan iletebilirsiniz. Ekibimiz size özel teklif için dönüş yapar.
           </p>
           <InstitutionRequestGuestNote />
         </div>
 
-        <div className="rounded-[1.75rem] border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
+        <div className="rounded-[1.75rem] border border-border-surface bg-white p-6 shadow-sm sm:p-8">
           <InstitutionRequestForm />
         </div>
       </div>
@@ -116,10 +116,10 @@ export default function InstitutionRequestPage() {
         <section aria-labelledby="institution-model-heading">
           {/* A. Üst Vurgu Kartı */}
           <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-6 sm:p-8">
-            <h2 id="institution-model-heading" className="text-xl font-bold text-slate-900 sm:text-2xl">
+            <h2 id="institution-model-heading" className="text-xl font-bold text-navy-950 sm:text-2xl">
               Kurumsal İş Birliği Modeli
             </h2>
-            <p className="mt-3 text-base leading-7 text-slate-700">
+            <p className="mt-3 text-base leading-7 text-[var(--text-on-surface-soft)]">
               Kurumsal eğitimlerde <span className="font-semibold text-document-primary">D2P Academy</span>,
               eğitimin uygulanabilmesi için gerekli tüm teknik ekipman, eğitim materyalleri ve
               uygulama malzemelerini sağlayarak eğitimi <span className="font-semibold">anahtar teslim</span> şekilde
@@ -134,18 +134,18 @@ export default function InstitutionRequestPage() {
           {/* B. 2 Kolonlu Detay Grid'i */}
           <div className="mt-6 grid grid-cols-1 gap-6 md:grid-cols-2">
             {/* Kolon 1: D2P Academy Tarafından Sağlanan Hizmetler */}
-            <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
+            <div className="rounded-2xl border border-border-surface bg-white p-6 shadow-sm sm:p-8">
               <div className="flex items-center gap-3">
                 <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-document-primary/10 text-document-primary">
                   <BuildingIcon className="h-5 w-5" />
                 </span>
-                <h3 className="text-lg font-bold text-slate-900">
+                <h3 className="text-lg font-bold text-navy-950">
                   D2P Academy Tarafından Sağlanan Hizmetler
                 </h3>
               </div>
               <ul className="mt-5 space-y-3">
                 {providedServices.map((service) => (
-                  <li key={service} className="flex items-start gap-2.5 text-sm leading-6 text-slate-700">
+                  <li key={service} className="flex items-start gap-2.5 text-sm leading-6 text-[var(--text-on-surface-soft)]">
                     <CheckCircleIcon className="mt-0.5 h-5 w-5 shrink-0 text-emerald-600" />
                     <span>{service}</span>
                   </li>
@@ -154,44 +154,44 @@ export default function InstitutionRequestPage() {
             </div>
 
             {/* Kolon 2: Kurumdan Beklentiler */}
-            <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
+            <div className="rounded-2xl border border-border-surface bg-white p-6 shadow-sm sm:p-8">
               <div className="flex items-center gap-3">
                 <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-document-primary/10 text-document-primary">
                   <MonitorIcon className="h-5 w-5" />
                 </span>
-                <h3 className="text-lg font-bold text-slate-900">
+                <h3 className="text-lg font-bold text-navy-950">
                   Kurumdan Beklentiler (Sınıf &amp; Altyapı)
                 </h3>
               </div>
 
               <div className="mt-5">
                 <div className="flex items-center gap-2">
-                  <MonitorIcon className="h-4 w-4 text-slate-500" />
-                  <p className="text-sm font-semibold uppercase tracking-wide text-slate-500">
+                  <MonitorIcon className="h-4 w-4 text-subtle" />
+                  <p className="text-sm font-semibold uppercase tracking-wide text-subtle">
                     Eğitim Ortamı
                   </p>
                 </div>
                 <ul className="mt-3 space-y-2.5">
                   {classroomRequirements.map((item) => (
-                    <li key={item} className="flex items-start gap-2.5 text-sm leading-6 text-slate-700">
-                      <CheckCircleIcon className="mt-0.5 h-5 w-5 shrink-0 text-slate-400" />
+                    <li key={item} className="flex items-start gap-2.5 text-sm leading-6 text-[var(--text-on-surface-soft)]">
+                      <CheckCircleIcon className="mt-0.5 h-5 w-5 shrink-0 text-subtle" />
                       <span>{item}</span>
                     </li>
                   ))}
                 </ul>
               </div>
 
-              <div className="mt-6 border-t border-slate-100 pt-5">
+              <div className="mt-6 border-t border-border-surface pt-5">
                 <div className="flex items-center gap-2">
-                  <ZapIcon className="h-4 w-4 text-slate-500" />
-                  <p className="text-sm font-semibold uppercase tracking-wide text-slate-500">
+                  <ZapIcon className="h-4 w-4 text-subtle" />
+                  <p className="text-sm font-semibold uppercase tracking-wide text-subtle">
                     Elektrik Altyapısı
                   </p>
                 </div>
                 <ul className="mt-3 space-y-2.5">
                   {electricalRequirements.map((item) => (
-                    <li key={item} className="flex items-start gap-2.5 text-sm leading-6 text-slate-700">
-                      <CheckCircleIcon className="mt-0.5 h-5 w-5 shrink-0 text-slate-400" />
+                    <li key={item} className="flex items-start gap-2.5 text-sm leading-6 text-[var(--text-on-surface-soft)]">
+                      <CheckCircleIcon className="mt-0.5 h-5 w-5 shrink-0 text-subtle" />
                       <span>{item}</span>
                     </li>
                   ))}
@@ -201,8 +201,8 @@ export default function InstitutionRequestPage() {
           </div>
 
           {/* C. Kapanış Notu */}
-          <div className="mt-6 rounded-2xl border border-slate-200 bg-white/60 p-6 text-center sm:p-8">
-            <p className="text-sm italic leading-7 text-slate-600 sm:text-base">
+          <div className="mt-6 rounded-2xl border border-border-surface bg-white/60 p-6 text-center sm:p-8">
+            <p className="text-sm italic leading-7 text-muted sm:text-base">
               &quot;Bu hazırlıkların tamamlanmasının ardından eğitimin uygulanmasına yönelik tüm
               süreç D2P Academy tarafından uçtan uca yürütülmektedir.&quot;
             </p>

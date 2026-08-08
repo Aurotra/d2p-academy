@@ -32,7 +32,7 @@ export function ParentGuidePromo() {
             <span className="relative z-10 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-secondary text-[11px] font-bold text-white">
               {index + 1}
             </span>
-            <span className="pt-0.5 text-sm leading-5 text-slate-700">{step}</span>
+            <span className="pt-0.5 text-sm leading-5 text-muted">{step}</span>
           </li>
         ))}
       </ol>
@@ -51,7 +51,7 @@ export function ParentGuidePromo() {
         </Link>
         <Link
           href={PARENT_GUIDE_PATH}
-          className="block text-center text-xs font-medium text-slate-500 hover:text-secondary"
+          className="block text-center text-xs font-medium text-subtle hover:text-secondary"
         >
           SSS ve detaylı anlatım
         </Link>

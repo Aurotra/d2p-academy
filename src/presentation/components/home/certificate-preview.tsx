@@ -28,11 +28,11 @@ export function CertificatePreview({ result }: { result: CertificateVerification
       </p>
 
       <article
-        className="relative overflow-hidden rounded-2xl border-2 border-sky-300 bg-gradient-to-b from-white via-sky-50/80 to-accent/15 shadow-lg shadow-sky-200/40"
+        className="relative overflow-hidden rounded-2xl border-2 border-border-surface bg-surface-card shadow-lg shadow-secondary/10"
         aria-label="D2P Academy sertifika görseli"
       >
         <div
-          className="pointer-events-none absolute inset-3 rounded-xl border border-sky-200/80"
+          className="pointer-events-none absolute inset-3 rounded-xl border border-border-surface"
           aria-hidden
         />
         <div
@@ -48,48 +48,48 @@ export function CertificatePreview({ result }: { result: CertificateVerification
             decoding="async"
           />
           <p
-            className="mt-2 text-xs font-semibold tracking-[0.22em] text-sky-700"
+            className="mt-2 text-xs font-semibold tracking-[0.22em] text-secondary"
             lang="en"
           >
             DESIGN TO PRINT
           </p>
 
-          <p className="mt-6 text-sm font-medium uppercase tracking-[0.18em] text-slate-500">
+          <p className="mt-6 text-sm font-medium uppercase tracking-[0.18em] text-subtle">
             Katılım Sertifikası
           </p>
 
-          <p className="mt-5 text-sm text-slate-600">Bu belgenin sahibi</p>
-          <h3 className="mt-2 text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">
+          <p className="mt-5 text-sm text-muted">Bu belgenin sahibi</p>
+          <h3 className="mt-2 text-2xl font-bold tracking-tight text-navy-950 sm:text-3xl">
             {result.holderName ?? "Öğrenci"}
           </h3>
 
-          <p className="mx-auto mt-4 max-w-md text-sm leading-relaxed text-slate-600">
+          <p className="mx-auto mt-4 max-w-md text-sm leading-relaxed text-muted">
             aşağıdaki eğitimi başarıyla tamamlamıştır:
           </p>
-          <p className="mt-2 text-lg font-semibold text-sky-800 sm:text-xl">
+          <p className="mt-2 text-lg font-semibold text-secondary sm:text-xl">
             {result.eventTitle ?? "Eğitim"}
           </p>
 
-          <div className="mx-auto mt-8 grid max-w-lg gap-4 border-t border-sky-200/80 pt-6 sm:grid-cols-2">
+          <div className="mx-auto mt-8 grid max-w-lg gap-4 border-t border-border-surface pt-6 sm:grid-cols-2">
             <div>
-              <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-500">
+              <p className="text-[11px] font-semibold uppercase tracking-wider text-subtle">
                 Veriliş Tarihi
               </p>
-              <p className="mt-1 text-sm font-semibold text-slate-800">
+              <p className="mt-1 text-sm font-semibold text-navy-900">
                 {formatIssuedAt(result.issuedAt)}
               </p>
             </div>
             <div>
-              <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-500">
+              <p className="text-[11px] font-semibold uppercase tracking-wider text-subtle">
                 Sertifika Kodu
               </p>
-              <p className="mt-1 font-mono text-sm font-semibold tracking-wide text-slate-800">
+              <p className="mt-1 font-mono text-sm font-semibold tracking-wide text-navy-900">
                 {result.certificateCode}
               </p>
             </div>
           </div>
 
-          <p className="mt-8 text-xs text-slate-500">{SITE_NAME} · www.d2p.com.tr</p>
+          <p className="mt-8 text-xs text-subtle">{SITE_NAME} · www.d2p.com.tr</p>
         </div>
       </article>
     </div>

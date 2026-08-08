@@ -8,7 +8,10 @@ import type { Config } from "tailwindcss";
 const config = {
   content: ["./src/**/*.{js,ts,jsx,tsx,mdx}"],
   theme: {
-    extend: {
+      extend: {
+      fontFamily: {
+        heading: ["var(--font-plus-jakarta)", "var(--font-geist-sans)", "system-ui", "sans-serif"],
+      },
       colors: {
         primary: {
           DEFAULT: "#E63946",
