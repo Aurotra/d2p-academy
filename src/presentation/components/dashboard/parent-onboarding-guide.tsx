@@ -123,7 +123,7 @@ function StepIndicator({ status, index }: { status: StepStatus; index: number })
   }
 
   return (
-    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border-2 border-slate-200 bg-white text-sm font-bold text-slate-400">
+    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border-2 border-border-surface bg-white text-sm font-bold text-subtle">
       {index + 1}
     </span>
   );
@@ -135,7 +135,7 @@ export function ParentOnboardingGuide({ context }: ParentOnboardingGuideProps) {
   const completedCount = steps.filter((step) => step.status === "done").length;
 
   return (
-    <div className="rounded-[2rem] border border-amber-200 bg-gradient-to-br from-amber-50 via-white to-sky-50 p-6 shadow-sm sm:p-8">
+    <div className="rounded-[2rem] border border-amber-200 bg-gradient-to-br from-amber-50 via-white to-surface-section p-6 shadow-sm sm:p-8">
       <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
         <div className="max-w-2xl">
           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-amber-800">
@@ -148,11 +148,11 @@ export function ParentOnboardingGuide({ context }: ParentOnboardingGuideProps) {
                 ? "Çocuğunuzu etkinliğe kaydetmeye hazırlanalım"
                 : "Kayıt tamam — formları bitirmeniz gerekiyor"}
           </h2>
-          <p className="mt-2 text-sm leading-6 text-slate-600">
+          <p className="mt-2 text-sm leading-6 text-muted">
             Veli hesabı yalnızca panel erişimi içindir. Etkinlik kaydı ve formlar çocuğunuzun
             hesabı üzerinden ilerler; aşağıdaki sırayı takip edin.
           </p>
-          <p className="mt-3 text-xs font-medium text-slate-500">
+          <p className="mt-3 text-xs font-medium text-subtle">
             {completedCount}/{steps.length} adım tamamlandı
           </p>
         </div>
@@ -175,7 +175,7 @@ export function ParentOnboardingGuide({ context }: ParentOnboardingGuideProps) {
                 ? "border-document-primary/30 bg-white shadow-sm ring-1 ring-document-primary/10"
                 : step.status === "done"
                   ? "border-emerald-100 bg-emerald-50/40"
-                  : "border-slate-100 bg-white/70"
+                  : "border-border-surface bg-white/70"
             }`}
           >
             <div className="flex gap-4">
@@ -184,7 +184,7 @@ export function ParentOnboardingGuide({ context }: ParentOnboardingGuideProps) {
                 <div className="flex flex-wrap items-center gap-2">
                   <h3
                     className={`font-semibold ${
-                      step.status === "upcoming" ? "text-slate-500" : "text-navy-950"
+                      step.status === "upcoming" ? "text-subtle" : "text-navy-950"
                     }`}
                   >
                     {step.title}
@@ -197,7 +197,7 @@ export function ParentOnboardingGuide({ context }: ParentOnboardingGuideProps) {
                 </div>
                 <p
                   className={`mt-1 text-sm leading-6 ${
-                    step.status === "upcoming" ? "text-slate-400" : "text-slate-600"
+                    step.status === "upcoming" ? "text-subtle" : "text-muted"
                   }`}
                 >
                   {step.description}
@@ -216,7 +216,7 @@ export function ParentOnboardingGuide({ context }: ParentOnboardingGuideProps) {
         ))}
       </ol>
 
-      <p className="mt-6 text-xs text-slate-500">
+      <p className="mt-6 text-xs text-subtle">
         Detaylı anlatım için{" "}
         <Link href="/veli-rehberi" className="font-semibold text-document-primary hover:underline">
           veli rehberine

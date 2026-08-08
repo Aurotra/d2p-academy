@@ -28,7 +28,7 @@ function formatDate(value: string | null): string {
 function StatusCell({ done, notRequired = false }: { done: boolean; notRequired?: boolean }) {
   if (notRequired) {
     return (
-      <span className="inline-flex rounded-full bg-slate-100 px-2.5 py-1 text-xs font-bold text-slate-600">
+      <span className="inline-flex rounded-full bg-surface-section px-2.5 py-1 text-xs font-bold text-muted">
         Gerekmez
       </span>
     );
@@ -48,17 +48,17 @@ function StatusCell({ done, notRequired = false }: { done: boolean; notRequired?
 export function AdminFormsTable({ rows }: { rows: AdminFormRow[] }) {
   if (rows.length === 0) {
     return (
-      <div className="rounded-[1.75rem] border border-dashed border-slate-200 bg-white px-6 py-12 text-center text-sm text-slate-500">
+      <div className="rounded-[1.75rem] border border-dashed border-border-surface bg-white px-6 py-12 text-center text-sm text-subtle">
         Bu filtreyle eşleşen form kaydı bulunamadı.
       </div>
     );
   }
 
   return (
-    <div className="overflow-hidden rounded-[1.75rem] border border-slate-200 bg-white shadow-sm">
+    <div className="overflow-hidden rounded-[1.75rem] border border-border-surface bg-white shadow-sm">
       <div className="overflow-x-auto">
         <table className="min-w-full text-left text-sm">
-          <thead className="border-b border-slate-100 bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
+          <thead className="border-b border-border-surface bg-surface-section text-xs uppercase tracking-wide text-subtle">
             <tr>
               <th className="px-5 py-3">Öğrenci</th>
               <th className="px-5 py-3">Etkinlik</th>
@@ -72,15 +72,15 @@ export function AdminFormsTable({ rows }: { rows: AdminFormRow[] }) {
           </thead>
           <tbody>
             {rows.map((row) => (
-              <tr key={row.enrollmentId} className="border-b border-slate-50 last:border-0">
+              <tr key={row.enrollmentId} className="border-b border-border-surface last:border-0">
                 <td className="px-5 py-4">
-                  <p className="font-semibold text-slate-900">{row.studentName}</p>
-                  <p className="text-xs text-slate-500">{row.studentContact}</p>
+                  <p className="font-semibold text-navy-950">{row.studentName}</p>
+                  <p className="text-xs text-subtle">{row.studentContact}</p>
                 </td>
                 <td className="px-5 py-4">
-                  <p className="font-medium text-slate-900">{row.eventTitle}</p>
+                  <p className="font-medium text-navy-950">{row.eventTitle}</p>
                   {row.eventStartAt ? (
-                    <p className="text-xs text-slate-500">{formatDate(row.eventStartAt)}</p>
+                    <p className="text-xs text-subtle">{formatDate(row.eventStartAt)}</p>
                   ) : null}
                 </td>
                 <td className="px-5 py-4">
@@ -95,7 +95,7 @@ export function AdminFormsTable({ rows }: { rows: AdminFormRow[] }) {
                 <td className="px-5 py-4">
                   <StatusCell done={row.status.postTestDone} notRequired={!row.status.requiresSurveys} />
                 </td>
-                <td className="px-5 py-4 text-slate-600">{formatDate(row.registeredAt)}</td>
+                <td className="px-5 py-4 text-muted">{formatDate(row.registeredAt)}</td>
                 <td className="px-5 py-4">
                   <Link
                     href={`/admin/enrollments/${row.enrollmentId}/forms`}

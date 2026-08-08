@@ -17,13 +17,13 @@ function formatDate(date: Date): string {
 
 function DocumentCard({ document }: { document: DocumentRecord }) {
   return (
-    <article className="group flex flex-col justify-between rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition hover:border-document-primary/40 hover:shadow-md">
+    <article className="group flex flex-col justify-between rounded-2xl border border-border-surface bg-white p-5 shadow-sm transition hover:border-document-primary/40 hover:shadow-md">
       <div>
         <div className="mb-4 inline-flex rounded-xl bg-document-primary/10 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-document-primary">
           Doküman
         </div>
-        <h2 className="text-lg font-bold text-slate-900">{document.title}</h2>
-        <p className="mt-2 text-sm text-slate-500">{formatDate(document.createdAt)}</p>
+        <h2 className="text-lg font-bold text-navy-950">{document.title}</h2>
+        <p className="mt-2 text-sm text-subtle">{formatDate(document.createdAt)}</p>
       </div>
       <a
         href={document.fileUrl}
@@ -58,15 +58,15 @@ export default async function StudentDashboardDocumentsPage() {
   ]);
 
   return (
-    <section className="bg-slate-50 px-4 py-10 sm:px-6 lg:px-8">
+    <section className="bg-surface-section px-4 py-10 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-7xl">
         <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div>
             <p className="text-sm font-semibold uppercase tracking-[0.18em] text-document-primary">
               Öğrenci Paneli
             </p>
-            <h1 className="mt-2 text-3xl font-black text-slate-900">Dökümanlar ve Ödevler</h1>
-            <p className="mt-2 max-w-2xl text-sm text-slate-600">
+            <h1 className="mt-2 text-3xl font-black text-navy-950">Dökümanlar ve Ödevler</h1>
+            <p className="mt-2 max-w-2xl text-sm text-muted">
               Eğitmenlerin paylaştığı materyallere buradan ulaşabilirsiniz.
             </p>
           </div>
@@ -89,9 +89,9 @@ export default async function StudentDashboardDocumentsPage() {
         </div>
 
         {documents.length === 0 ? (
-          <div className="rounded-[1.75rem] border border-dashed border-slate-300 bg-white px-6 py-16 text-center">
-            <p className="text-lg font-semibold text-slate-800">Henüz doküman yüklenmedi.</p>
-            <p className="mt-2 text-sm text-slate-500">
+          <div className="rounded-[1.75rem] border border-dashed border-border-surface bg-white px-6 py-16 text-center">
+            <p className="text-lg font-semibold text-navy-900">Henüz doküman yüklenmedi.</p>
+            <p className="mt-2 text-sm text-subtle">
               Yeni materyaller eklendiğinde bu sayfada listelenecektir.
             </p>
           </div>

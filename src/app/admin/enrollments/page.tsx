@@ -198,14 +198,14 @@ export default async function AdminEnrollmentsPage({ searchParams }: AdminEnroll
 
   return (
     <div className="space-y-6">
-      <div className="rounded-[1.75rem] border border-slate-200 bg-white p-8 shadow-sm">
+      <div className="rounded-[1.75rem] border border-border-surface bg-white p-8 shadow-sm">
         <p className="text-sm font-semibold uppercase tracking-[0.18em] text-document-primary">
           Etkinlik Kayıtları
         </p>
-        <h1 className="mt-2 text-2xl font-bold text-slate-900">
+        <h1 className="mt-2 text-2xl font-bold text-navy-950">
           {filteredEventTitle ? filteredEventTitle : "Tüm Etkinlik Kayıtları"}
         </h1>
-        <p className="mt-2 text-sm text-slate-600">
+        <p className="mt-2 text-sm text-muted">
           Eğitim bitince öğrenciyi Tamamlandı olarak onaylayın (tek tek veya toplu); ardından
           Sertifika Yönetimi’nden sertifika verebilirsiniz. Yanlış kayıt veya katılmayacak öğrenciler
           için satırdaki veya toplu <span className="font-semibold">Kurstan çıkar</span> ile kayıt
@@ -233,7 +233,7 @@ export default async function AdminEnrollmentsPage({ searchParams }: AdminEnroll
             </Link>
           ) : null}
           {eventId ? (
-            <Link href="/admin/enrollments" className="text-sm font-semibold text-slate-600 hover:underline">
+            <Link href="/admin/enrollments" className="text-sm font-semibold text-muted hover:underline">
               Tüm kayıtları göster
             </Link>
           ) : null}
@@ -241,14 +241,14 @@ export default async function AdminEnrollmentsPage({ searchParams }: AdminEnroll
             includeCancelled ? (
               <Link
                 href={`/admin/enrollments?event_id=${eventId}`}
-                className="text-sm font-semibold text-slate-600 hover:underline"
+                className="text-sm font-semibold text-muted hover:underline"
               >
                 Çıkarılanları gizle
               </Link>
             ) : (
               <Link
                 href={`/admin/enrollments?event_id=${eventId}&include_cancelled=1`}
-                className="text-sm font-semibold text-slate-600 hover:underline"
+                className="text-sm font-semibold text-muted hover:underline"
               >
                 Çıkarılanları göster
               </Link>
@@ -273,7 +273,7 @@ export default async function AdminEnrollmentsPage({ searchParams }: AdminEnroll
       ) : null}
 
       {groups.length === 0 ? (
-        <div className="rounded-[1.75rem] border border-dashed border-slate-200 bg-white px-6 py-12 text-center text-sm text-slate-500">
+        <div className="rounded-[1.75rem] border border-dashed border-border-surface bg-white px-6 py-12 text-center text-sm text-subtle">
           {eventId
             ? "Bu etkinlikte henüz kayıt yok. Yukarıdan öğrenci ekleyebilirsiniz."
             : "Henüz etkinlik kaydı yok"}
@@ -283,13 +283,13 @@ export default async function AdminEnrollmentsPage({ searchParams }: AdminEnroll
           {groups.map((group) => (
             <section
               key={group.eventId}
-              className="overflow-hidden rounded-[1.75rem] border border-slate-200 bg-white shadow-sm"
+              className="overflow-hidden rounded-[1.75rem] border border-border-surface bg-white shadow-sm"
             >
-              <div className="flex flex-col gap-2 border-b border-slate-100 bg-slate-50 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex flex-col gap-2 border-b border-border-surface bg-surface-section px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
                 <div>
-                  <h2 className="text-lg font-bold text-slate-900">{group.eventTitle}</h2>
+                  <h2 className="text-lg font-bold text-navy-950">{group.eventTitle}</h2>
                   {group.eventStartAt ? (
-                    <p className="mt-1 text-sm text-slate-500">
+                    <p className="mt-1 text-sm text-subtle">
                       Etkinlik tarihi: {formatDate(group.eventStartAt)}
                     </p>
                   ) : null}

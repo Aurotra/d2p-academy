@@ -224,8 +224,8 @@ export function AdminCourseDemandManager() {
     <div className="space-y-6">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">Kurs Talepleri</h1>
-          <p className="mt-1 text-sm text-slate-600">
+          <h1 className="text-2xl font-bold text-navy-950">Kurs Talepleri</h1>
+          <p className="mt-1 text-sm text-muted">
             Velilerin bıraktığı program ve tarih tercihlerini gruplayıp yeni sınıf oluşturun.
           </p>
         </div>
@@ -234,7 +234,7 @@ export function AdminCourseDemandManager() {
         </Button>
       </div>
 
-      <div className="grid gap-4 rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm md:grid-cols-4">
+      <div className="grid gap-4 rounded-[2rem] border border-border-surface bg-white p-6 shadow-sm md:grid-cols-4">
         <Select
           label="Program filtresi"
           value={programFilter}
@@ -291,27 +291,27 @@ export function AdminCourseDemandManager() {
       ) : null}
 
       {isLoading ? (
-        <p className="text-sm text-slate-600">Yükleniyor...</p>
+        <p className="text-sm text-muted">Yükleniyor...</p>
       ) : grouped.length === 0 ? (
-        <p className="text-sm text-slate-600">Filtreye uyan kurs talebi yok.</p>
+        <p className="text-sm text-muted">Filtreye uyan kurs talebi yok.</p>
       ) : (
         grouped.map((group) => (
           <div
             key={group.programCode}
-            className="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm"
+            className="rounded-[2rem] border border-border-surface bg-white p-6 shadow-sm"
           >
             <h2 className="text-lg font-bold text-navy-950">
               {group.label}{" "}
               {group.durationLabel ? (
-                <span className="text-sm font-normal text-slate-500">({group.durationLabel})</span>
+                <span className="text-sm font-normal text-subtle">({group.durationLabel})</span>
               ) : null}{" "}
-              <span className="text-sm font-normal text-slate-500">({group.entries.length})</span>
+              <span className="text-sm font-normal text-subtle">({group.entries.length})</span>
             </h2>
 
             <div className="mt-4 overflow-x-auto">
               <table className="min-w-full text-left text-sm">
                 <thead>
-                  <tr className="border-b border-slate-200 text-slate-500">
+                  <tr className="border-b border-border-surface text-subtle">
                     <th className="px-3 py-2" />
                     <th className="px-3 py-2">Öğrenci</th>
                     <th className="px-3 py-2">Veli</th>
@@ -326,7 +326,7 @@ export function AdminCourseDemandManager() {
                     return (
                       <tr
                         key={entry.id}
-                        className={`border-b border-slate-100 ${
+                        className={`border-b border-border-surface ${
                           near ? "bg-amber-50/70" : ""
                         } ${entry.needsStudentProfile ? "border-l-4 border-l-amber-400" : ""}`}
                       >
@@ -340,7 +340,7 @@ export function AdminCourseDemandManager() {
                             />
                           ) : null}
                         </td>
-                        <td className="px-3 py-3 font-medium text-slate-900">
+                        <td className="px-3 py-3 font-medium text-navy-950">
                           {entry.studentName ?? "—"}
                           {entry.needsStudentProfile ? (
                             <span className="mt-1 block text-xs font-semibold text-amber-800">
@@ -348,22 +348,22 @@ export function AdminCourseDemandManager() {
                             </span>
                           ) : null}
                         </td>
-                        <td className="px-3 py-3 text-slate-600">
+                        <td className="px-3 py-3 text-muted">
                           {entry.parentName ?? "—"}
                           {entry.parentEmail ? (
-                            <span className="block text-xs text-slate-400">{entry.parentEmail}</span>
+                            <span className="block text-xs text-subtle">{entry.parentEmail}</span>
                           ) : null}
                           {entry.parentPhone ? (
-                            <span className="block text-xs text-slate-400">{entry.parentPhone}</span>
+                            <span className="block text-xs text-subtle">{entry.parentPhone}</span>
                           ) : null}
                         </td>
-                        <td className="px-3 py-3 text-slate-600">
+                        <td className="px-3 py-3 text-muted">
                           {formatDate(entry.preferredStartDate)}
                           {entry.preferredEndDate && entry.preferredEndDate !== entry.preferredStartDate
                             ? ` – ${formatDate(entry.preferredEndDate)}`
                             : ""}
                         </td>
-                        <td className="px-3 py-3 text-slate-500">
+                        <td className="px-3 py-3 text-subtle">
                           {entry.programDurationLabel ?? "—"}
                         </td>
                         <td className="px-3 py-3">
@@ -382,10 +382,10 @@ export function AdminCourseDemandManager() {
       )}
 
       {showModal ? (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 p-4">
-          <div className="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-[2rem] border border-slate-200 bg-white p-6 shadow-xl">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-navy-950/50 p-4">
+          <div className="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-[2rem] border border-border-surface bg-white p-6 shadow-xl">
             <h2 className="text-xl font-bold text-navy-950">Sınıf Oluştur / Sınıfa Ekle</h2>
-            <p className="mt-2 text-sm text-slate-600">
+            <p className="mt-2 text-sm text-muted">
               {selectedIds.size} talep seçildi
               {selectedWithProfile.length > 0
                 ? ` · ${selectedWithProfile.length} kayıt oluşturulacak`

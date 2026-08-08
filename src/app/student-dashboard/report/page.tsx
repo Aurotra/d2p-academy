@@ -31,15 +31,15 @@ export default async function StudentDashboardReportPage() {
   const grades = await gradeRepository.listGradesByStudent(session.sub);
 
   return (
-    <section className="bg-slate-50 px-4 py-10 sm:px-6 lg:px-8">
+    <section className="bg-surface-section px-4 py-10 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-5xl">
         <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div>
             <p className="text-sm font-semibold uppercase tracking-[0.18em] text-document-primary">
               Öğrenci / Veli Raporu
             </p>
-            <h1 className="mt-2 text-3xl font-black text-slate-900">Not Raporum</h1>
-            <p className="mt-2 max-w-2xl text-sm text-slate-600">
+            <h1 className="mt-2 text-3xl font-black text-navy-950">Not Raporum</h1>
+            <p className="mt-2 max-w-2xl text-sm text-muted">
               Ödev değerlendirmeleri, puanlar ve gelişim yorumları.
             </p>
           </div>
@@ -60,17 +60,17 @@ export default async function StudentDashboardReportPage() {
         </div>
 
         {grades.length === 0 ? (
-          <div className="rounded-[1.75rem] border border-dashed border-slate-300 bg-white px-6 py-16 text-center">
-            <p className="text-lg font-semibold text-slate-800">Henüz not girişiniz yok.</p>
-            <p className="mt-2 text-sm text-slate-500">
+          <div className="rounded-[1.75rem] border border-dashed border-border-surface bg-white px-6 py-16 text-center">
+            <p className="text-lg font-semibold text-navy-900">Henüz not girişiniz yok.</p>
+            <p className="mt-2 text-sm text-subtle">
               Eğitmen notlarınızı girdiğinde bu sayfada görünecektir.
             </p>
           </div>
         ) : (
-          <div className="overflow-hidden rounded-[1.75rem] border border-slate-200 bg-white shadow-sm">
+          <div className="overflow-hidden rounded-[1.75rem] border border-border-surface bg-white shadow-sm">
             <div className="overflow-x-auto">
               <table className="min-w-full text-left text-sm">
-                <thead className="border-b border-slate-100 bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
+                <thead className="border-b border-border-surface bg-surface-section text-xs uppercase tracking-wide text-subtle">
                   <tr>
                     <th className="px-5 py-4">Döküman</th>
                     <th className="px-5 py-4">Tarih</th>
@@ -82,14 +82,14 @@ export default async function StudentDashboardReportPage() {
                 </thead>
                 <tbody>
                   {grades.map((grade) => (
-                    <tr key={grade.id} className="border-b border-slate-50 align-top last:border-0">
-                      <td className="px-5 py-4 font-semibold text-slate-900">{grade.documentTitle}</td>
-                      <td className="px-5 py-4 text-slate-600">{formatDate(grade.createdAt)}</td>
-                      <td className="px-5 py-4 font-bold text-slate-900">{grade.score}</td>
+                    <tr key={grade.id} className="border-b border-border-surface align-top last:border-0">
+                      <td className="px-5 py-4 font-semibold text-navy-950">{grade.documentTitle}</td>
+                      <td className="px-5 py-4 text-muted">{formatDate(grade.createdAt)}</td>
+                      <td className="px-5 py-4 font-bold text-navy-950">{grade.score}</td>
                       <td className="px-5 py-4">
                         <ScoreBadge score={grade.score} />
                       </td>
-                      <td className="max-w-sm px-5 py-4 text-slate-700">
+                      <td className="max-w-sm px-5 py-4 text-[var(--text-on-surface-soft)]">
                         {grade.feedback || "—"}
                       </td>
                       <td className="px-5 py-4">

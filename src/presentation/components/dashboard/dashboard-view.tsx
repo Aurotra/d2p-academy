@@ -29,11 +29,11 @@ const dashboardActionClasses: Record<DashboardActionVariant, string> = {
   secondary:
     "border border-secondary/20 bg-secondary text-white shadow-md shadow-secondary/20 hover:bg-secondary-hover hover:shadow-glow-secondary",
   accent:
-    "border border-accent-dark/20 bg-accent text-sky-950 shadow-md shadow-accent/20 hover:bg-accent-dark hover:shadow-glow-accent",
+    "border border-accent-dark/20 bg-accent text-navy-950 shadow-md shadow-accent/20 hover:bg-accent-dark hover:shadow-glow-accent",
   document:
     "border border-document-primary/20 bg-document-primary text-white shadow-md shadow-document-primary/20 hover:bg-document-primary-hover hover:shadow-glow-document",
   outline:
-    "border-2 border-sky-300/80 bg-white/90 text-sky-950 shadow-sm hover:border-sky-400 hover:bg-white",
+    "border-2 border-secondary/40 bg-white/90 text-navy-950 shadow-sm hover:border-secondary hover:bg-white",
 };
 
 function DashboardActionLink({
@@ -48,7 +48,7 @@ function DashboardActionLink({
   return (
     <Link
       href={href}
-      className={`inline-flex min-h-[44px] items-center justify-center rounded-xl px-4 py-2.5 text-center text-sm font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-400 focus-visible:ring-offset-2 ${dashboardActionClasses[variant]}`}
+      className={`inline-flex min-h-[44px] items-center justify-center rounded-xl px-4 py-2.5 text-center text-sm font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-secondary/40 focus-visible:ring-offset-2 ${dashboardActionClasses[variant]}`}
     >
       {label}
     </Link>
@@ -80,19 +80,19 @@ export function DashboardView({
   showOnboarding,
 }: DashboardViewProps) {
   return (
-    <section className="bg-slate-50 px-4 py-10 sm:px-6 lg:px-8">
+    <section className="bg-surface-section px-4 py-10 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-7xl">
         <Suspense fallback={null}>
           <DashboardEnrollHandler />
         </Suspense>
 
         <div
-          className={`rounded-[2rem] border border-sky-200 ${BRAND_SURFACE_GRADIENT} p-6 text-sky-950 shadow-xl sm:p-8`}
+          className={`rounded-[2rem] border border-border-surface ${BRAND_SURFACE_GRADIENT} p-6 text-navy-950 shadow-xl sm:p-8`}
         >
           <div className="flex flex-col gap-8 lg:flex-row lg:items-start lg:justify-between">
             <div className="min-w-0 flex-1">
               <div className="flex flex-wrap items-start gap-3">
-                <p className="pt-2 text-sm font-semibold uppercase tracking-[0.18em] text-sky-700">
+                <p className="pt-2 text-sm font-semibold uppercase tracking-[0.18em] text-secondary">
                   Veli Paneli
                 </p>
                 {isAdmin || isInstructor ? (
@@ -119,7 +119,7 @@ export function DashboardView({
               <h1 className="mt-3 text-3xl font-black sm:text-4xl">
                 Hoş geldin, {data.profile.fullName?.trim().split(/\s+/)[0] || "veli"}!
               </h1>
-              <p className="mt-2 max-w-xl text-sm leading-6 text-sky-900/80 sm:text-base">
+              <p className="mt-2 max-w-xl text-sm leading-6 text-[var(--text-on-surface-soft)] sm:text-base">
                 {showOnboarding
                   ? "Çocuk hesaplarını yönetin; etkinlik kaydı ve formlar çocuğunuzun profili üzerinden ilerler."
                   : "Çocuklarınızın etkinlik kayıtlarını ve sertifikalarını buradan takip edebilirsiniz."}
@@ -127,7 +127,7 @@ export function DashboardView({
             </div>
 
             <div className="w-full shrink-0 lg:max-w-md">
-              <p className="mb-3 text-xs font-semibold uppercase tracking-[0.16em] text-sky-800/70">
+              <p className="mb-3 text-xs font-semibold uppercase tracking-[0.16em] text-navy-900/70">
                 Hızlı erişim
               </p>
               <div className="grid grid-cols-2 gap-2 sm:gap-3">
@@ -173,18 +173,18 @@ export function DashboardView({
         ) : null}
 
         <div className="mt-8 grid gap-8 lg:grid-cols-2">
-          <div className="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm">
+          <div className="rounded-[2rem] border border-border-surface bg-white p-6 shadow-sm">
             <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
               <h2 className="text-xl font-bold text-navy-950">Etkinlik Kayıtlarım</h2>
               <Badge tone="cyan">{data.upcomingEnrollments.length} kayıt</Badge>
             </div>
-            <p className="mb-4 text-xs text-slate-500">
+            <p className="mb-4 text-xs text-subtle">
               Veli hesabınıza doğrudan bağlı kayıtlar. Çocuk kayıtları için yanındaki panele
               bakın.
             </p>
 
             {data.upcomingEnrollments.length === 0 ? (
-              <div className="rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-4 py-8 text-center text-sm text-slate-600">
+              <div className="rounded-2xl border border-dashed border-border-surface bg-surface-section px-4 py-8 text-center text-sm text-muted">
                 <p>Veli hesabınıza bağlı aktif etkinlik kaydı yok.</p>
               </div>
             ) : (
@@ -192,7 +192,7 @@ export function DashboardView({
                 {data.upcomingEnrollments.map((enrollment) => (
                   <li
                     key={enrollment.id}
-                    className="rounded-2xl border border-slate-100 p-4 transition hover:border-cyan-200 hover:bg-cyan-50/40"
+                    className="rounded-2xl border border-border-surface p-4 transition hover:border-cyan-200 hover:bg-cyan-50/40"
                   >
                     <div className="flex flex-wrap gap-2">
                       <Badge tone="cyan">{EVENT_TYPE_LABELS[enrollment.event.eventType]}</Badge>
@@ -201,10 +201,10 @@ export function DashboardView({
                       </Badge>
                     </div>
                     <h3 className="mt-3 font-semibold text-navy-950">{enrollment.event.title}</h3>
-                    <p className="mt-2 text-sm text-slate-600">
+                    <p className="mt-2 text-sm text-muted">
                       {formatDate(enrollment.event.startAt)}
                     </p>
-                    <p className="mt-1 text-sm text-slate-500">
+                    <p className="mt-1 text-sm text-subtle">
                       {enrollment.event.isOnline
                         ? "Online etkinlik"
                         : (enrollment.event.locationName ?? "Konum belirtilecek")}
@@ -221,14 +221,14 @@ export function DashboardView({
             )}
           </div>
 
-          <div className="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm">
+          <div className="rounded-[2rem] border border-border-surface bg-white p-6 shadow-sm">
             <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
               <h2 className="text-xl font-bold text-navy-950">Çocuklarımın Etkinlikleri</h2>
               <Badge tone="navy">{childrenEnrollments.length} kayıt</Badge>
             </div>
 
             {childrenEnrollments.length === 0 ? (
-              <div className="rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-4 py-8 text-center text-sm text-slate-600">
+              <div className="rounded-2xl border border-dashed border-border-surface bg-surface-section px-4 py-8 text-center text-sm text-muted">
                 <p>Henüz çocuk etkinlik kaydı yok.</p>
                 <Link
                   href="/dashboard/children"
@@ -243,7 +243,7 @@ export function DashboardView({
                   {childrenEnrollments.slice(0, 4).map((enrollment) => (
                     <li
                       key={enrollment.enrollmentId}
-                      className="rounded-2xl border border-slate-100 p-4 transition hover:border-cyan-200 hover:bg-cyan-50/40"
+                      className="rounded-2xl border border-border-surface p-4 transition hover:border-cyan-200 hover:bg-cyan-50/40"
                     >
                       <div className="flex flex-wrap gap-2">
                         <Badge tone="cyan">{EVENT_TYPE_LABELS[enrollment.eventType]}</Badge>
@@ -253,11 +253,11 @@ export function DashboardView({
                         </Badge>
                       </div>
                       <h3 className="mt-3 font-semibold text-navy-950">{enrollment.eventTitle}</h3>
-                      <p className="mt-1 text-sm text-slate-600">
+                      <p className="mt-1 text-sm text-muted">
                         {enrollment.childName}{" "}
-                        <span className="text-slate-400">@{enrollment.childUsername}</span>
+                        <span className="text-subtle">@{enrollment.childUsername}</span>
                       </p>
-                      <p className="mt-2 text-sm text-slate-500">
+                      <p className="mt-2 text-sm text-subtle">
                         Katılım {enrollment.presentCount}/{enrollment.totalLessonCount}
                       </p>
                       <Link
@@ -270,7 +270,7 @@ export function DashboardView({
                   ))}
                 </ul>
                 {childrenEnrollments.length > 4 ? (
-                  <p className="mt-4 text-xs text-slate-500">
+                  <p className="mt-4 text-xs text-subtle">
                     +{childrenEnrollments.length - 4} kayıt daha
                   </p>
                 ) : null}
@@ -285,14 +285,14 @@ export function DashboardView({
             </Link>
           </div>
 
-          <div className="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm lg:col-span-2">
+          <div className="rounded-[2rem] border border-border-surface bg-white p-6 shadow-sm lg:col-span-2">
             <div className="mb-6 flex items-center justify-between">
               <h2 className="text-xl font-bold text-navy-950">Sertifikalarım</h2>
               <Badge tone="navy">{data.certificates.length} sertifika</Badge>
             </div>
 
             {data.certificates.length === 0 ? (
-              <div className="rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-4 py-8 text-center text-sm text-slate-600">
+              <div className="rounded-2xl border border-dashed border-border-surface bg-surface-section px-4 py-8 text-center text-sm text-muted">
                 Henüz sertifikan bulunmuyor. Eğitimlerini tamamladığında sertifikaların burada
                 listelenecek.
               </div>
@@ -301,7 +301,7 @@ export function DashboardView({
                 {data.certificates.map((certificate) => (
                   <li
                     key={certificate.id}
-                    className="rounded-2xl border border-slate-100 p-4 transition hover:border-cyan-200 hover:bg-cyan-50/40"
+                    className="rounded-2xl border border-border-surface p-4 transition hover:border-cyan-200 hover:bg-cyan-50/40"
                   >
                     <div className="flex flex-wrap items-center justify-between gap-2">
                       <p className="font-mono text-sm font-bold text-navy-950">
@@ -312,7 +312,7 @@ export function DashboardView({
                       </Badge>
                     </div>
                     <h3 className="mt-3 font-semibold text-navy-950">{certificate.eventTitle}</h3>
-                    <p className="mt-2 text-sm text-slate-600">
+                    <p className="mt-2 text-sm text-muted">
                       Veriliş: {formatDate(certificate.issuedAt)}
                     </p>
                     {certificate.status === "active" && certificate.pdfUrl ? (
@@ -325,7 +325,7 @@ export function DashboardView({
                         PDF İndir
                       </a>
                     ) : certificate.status === "active" ? (
-                      <p className="mt-3 text-xs text-slate-500">
+                      <p className="mt-3 text-xs text-subtle">
                         PDF henüz hazır değil. Kısa süre sonra tekrar kontrol edin.
                       </p>
                     ) : null}

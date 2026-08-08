@@ -22,35 +22,35 @@ export default async function ParentChildrenEnrollmentsPage() {
   const data = await fetchParentChildrenEnrollments(auth.user.id);
 
   return (
-    <section className="bg-slate-50 px-4 py-10 sm:px-6 lg:px-8">
+    <section className="bg-surface-section px-4 py-10 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-4xl">
         <div
-          className={`rounded-[2rem] border border-sky-200 ${BRAND_SURFACE_GRADIENT} p-8 text-sky-950 shadow-xl`}
+          className={`rounded-[2rem] border border-border-surface ${BRAND_SURFACE_GRADIENT} p-8 text-navy-950 shadow-xl`}
         >
           <Link
             href="/dashboard"
-            className="text-sm font-semibold text-sky-800 transition hover:text-sky-950"
+            className="text-sm font-semibold text-navy-900 transition hover:text-navy-950"
           >
             ← Panele dön
           </Link>
           <h1 className="mt-3 text-3xl font-black">Çocuklarımın Etkinlikleri</h1>
-          <p className="mt-2 text-sm text-sky-900/80">
+          <p className="mt-2 text-sm text-[var(--text-on-surface-soft)]">
             Tüm çocuk hesaplarınızın etkinlik kayıtlarını, form ilerlemesini ve yoklama
             durumunu tek yerden takip edin.
           </p>
         </div>
 
-        <div className="mt-8 rounded-[1.5rem] border border-slate-200 bg-white p-6 shadow-sm">
+        <div className="mt-8 rounded-[1.5rem] border border-border-surface bg-white p-6 shadow-sm">
           <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
             <div>
               <h2 className="text-lg font-bold text-navy-950">Etkinlik kayıtları</h2>
-              <p className="mt-1 text-sm text-slate-500">
+              <p className="mt-1 text-sm text-subtle">
                 {data.childrenCount} çocuk · {data.enrollments.length} kayıt
               </p>
             </div>
             <Link
               href="/dashboard/children"
-              className="inline-flex rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-navy-950 transition hover:bg-slate-50"
+              className="inline-flex rounded-xl border border-border-surface bg-white px-4 py-2.5 text-sm font-semibold text-navy-950 transition hover:bg-surface-section"
             >
               Çocuk hesapları
             </Link>

@@ -9,7 +9,7 @@ const variantClasses: Record<PanelShortcutVariant, string> = {
   instructor:
     "border border-violet-700/25 bg-violet-600 text-white shadow-md shadow-violet-600/15 hover:bg-violet-700",
   parent:
-    "border-2 border-sky-300/80 bg-white/95 text-sky-950 shadow-sm hover:border-sky-400 hover:bg-white",
+    "border-2 border-border-surface bg-white/95 text-navy-950 shadow-sm hover:border-secondary/40 hover:bg-surface-section",
 };
 
 interface PanelShortcutLinkProps {
@@ -30,8 +30,8 @@ export function PanelShortcutLink({
   return (
     <Link
       href={href}
-      className={`inline-flex min-h-[52px] min-w-[8.5rem] flex-col items-center justify-center rounded-xl px-4 py-2.5 text-center transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-400 focus-visible:ring-offset-2 ${variantClasses[variant]} ${
-        isActive ? "ring-2 ring-sky-400 ring-offset-2" : ""
+      className={`inline-flex min-h-[52px] min-w-[8.5rem] flex-col items-center justify-center rounded-xl px-4 py-2.5 text-center transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-secondary/40 focus-visible:ring-offset-2 focus-visible:ring-offset-surface-base ${variantClasses[variant]} ${
+        isActive ? "ring-2 ring-secondary/40 ring-offset-2 ring-offset-surface-base" : ""
       }`}
     >
       <span className="text-sm font-bold leading-tight">{title}</span>

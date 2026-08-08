@@ -104,7 +104,7 @@ function EnrollmentAction({ item }: { item: EnrollmentSummary }) {
 function EnrollmentsSection({ enrollments }: { enrollments: EnrollmentSummary[] }) {
   if (enrollments.length === 0) {
     return (
-      <div className="rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-4 py-8 text-center text-sm text-slate-600">
+      <div className="rounded-2xl border border-dashed border-border-surface bg-surface-section px-4 py-8 text-center text-sm text-muted">
         Henüz etkinlik kaydın yok. Velin, öğretmenin veya admin seni bir etkinliğe kaydedebilir.
       </div>
     );
@@ -115,14 +115,14 @@ function EnrollmentsSection({ enrollments }: { enrollments: EnrollmentSummary[] 
       {enrollments.map((item) => (
         <li
           key={item.enrollmentId}
-          className="rounded-2xl border border-slate-100 p-4 transition hover:border-cyan-200 hover:bg-cyan-50/40"
+          className="rounded-2xl border border-border-surface p-4 transition hover:border-cyan-200 hover:bg-cyan-50/40"
         >
           <div className="flex flex-wrap gap-2">
             <Badge tone="neutral">{STATUS_LABELS[item.status] ?? item.status}</Badge>
             {item.certificateCode ? <Badge tone="cyan">{item.certificateCode}</Badge> : null}
           </div>
           <h3 className="mt-2 font-semibold text-navy-950">{item.eventTitle}</h3>
-          <p className="mt-1 text-sm text-slate-600">{formatDate(item.eventDate)}</p>
+          <p className="mt-1 text-sm text-muted">{formatDate(item.eventDate)}</p>
           {item.status !== "cancelled" ? (
             <>
               <EnrollmentFormProgress
@@ -152,7 +152,7 @@ function EnrollmentsSection({ enrollments }: { enrollments: EnrollmentSummary[] 
 function CertificatesSection({ certificates }: { certificates: CertificateSummary[] }) {
   if (certificates.length === 0) {
     return (
-      <div className="rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-4 py-8 text-center text-sm text-slate-600">
+      <div className="rounded-2xl border border-dashed border-border-surface bg-surface-section px-4 py-8 text-center text-sm text-muted">
         Henüz sertifikan yok. Etkinliklerini tamamladıkça burada görünecek.
       </div>
     );
@@ -163,11 +163,11 @@ function CertificatesSection({ certificates }: { certificates: CertificateSummar
       {certificates.map((cert) => (
         <li
           key={cert.certificateCode}
-          className="flex flex-col gap-2 rounded-2xl border border-slate-100 p-4 sm:flex-row sm:items-center sm:justify-between"
+          className="flex flex-col gap-2 rounded-2xl border border-border-surface p-4 sm:flex-row sm:items-center sm:justify-between"
         >
           <div>
             <p className="font-semibold text-navy-950">{cert.certificateCode}</p>
-            <p className="text-sm text-slate-600">{formatDate(cert.issuedAt)}</p>
+            <p className="text-sm text-muted">{formatDate(cert.issuedAt)}</p>
           </div>
           <div className="flex flex-wrap gap-2">
             <Link
@@ -196,7 +196,7 @@ function CertificatesSection({ certificates }: { certificates: CertificateSummar
 function BadgesSection({ badges }: { badges: BadgeSummary[] }) {
   if (badges.length === 0) {
     return (
-      <div className="rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-4 py-8 text-center text-sm text-slate-600">
+      <div className="rounded-2xl border border-dashed border-border-surface bg-surface-section px-4 py-8 text-center text-sm text-muted">
         Rozetler yakında burada. Şimdilik etkinlik ve sertifikalarını takip edebilirsin.
       </div>
     );
@@ -207,13 +207,13 @@ function BadgesSection({ badges }: { badges: BadgeSummary[] }) {
       {badges.map((badge) => (
         <li
           key={`${badge.code ?? badge.name}-${badge.awardedAt}`}
-          className="rounded-2xl border border-slate-100 p-4"
+          className="rounded-2xl border border-border-surface p-4"
         >
           <p className="font-semibold text-navy-950">{badge.name}</p>
           {badge.description ? (
-            <p className="mt-1 text-sm text-slate-600">{badge.description}</p>
+            <p className="mt-1 text-sm text-muted">{badge.description}</p>
           ) : null}
-          <p className="mt-2 text-xs text-slate-500">{formatDate(badge.awardedAt)}</p>
+          <p className="mt-2 text-xs text-subtle">{formatDate(badge.awardedAt)}</p>
         </li>
       ))}
     </ul>
@@ -229,20 +229,20 @@ export function UsernameStudentDashboardView({
   const greeting = fullName?.trim().split(/\s+/)[0] || username;
 
   return (
-    <section className="bg-slate-50 px-4 py-10 sm:px-6 lg:px-8">
+    <section className="bg-surface-section px-4 py-10 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-4xl">
         <div
-          className={`flex flex-col gap-4 rounded-[2rem] border border-sky-200 ${BRAND_SURFACE_GRADIENT} p-8 text-sky-950 shadow-xl sm:flex-row sm:items-center sm:justify-between`}
+          className={`flex flex-col gap-4 rounded-[2rem] border border-border-surface ${BRAND_SURFACE_GRADIENT} p-8 text-navy-950 shadow-xl sm:flex-row sm:items-center sm:justify-between`}
         >
           <div>
-            <p className="text-sm font-semibold uppercase tracking-[0.18em] text-sky-700">
+            <p className="text-sm font-semibold uppercase tracking-[0.18em] text-secondary">
               Öğrenci Paneli
             </p>
             <h1 className="mt-2 text-3xl font-black">Merhaba, {greeting}!</h1>
-            <p className="mt-2 text-sm text-sky-900/80">
+            <p className="mt-2 text-sm text-[var(--text-on-surface-soft)]">
               Etkinliklerini, sertifikalarını ve rozetlerini buradan takip edebilirsin.
             </p>
-            <p className="mt-1 text-xs text-sky-800/70">@{username}</p>
+            <p className="mt-1 text-xs text-navy-900/70">@{username}</p>
           </div>
           <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:justify-end">
             <Link
@@ -283,17 +283,17 @@ export function UsernameStudentDashboardView({
         ) : null}
 
         <div className="mt-8 space-y-8">
-          <div className="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm">
+          <div className="rounded-[2rem] border border-border-surface bg-white p-6 shadow-sm">
             <h2 className="mb-4 text-xl font-bold text-navy-950">Etkinliklerim</h2>
             <EnrollmentsSection enrollments={progress.enrollments} />
           </div>
 
-          <div className="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm">
+          <div className="rounded-[2rem] border border-border-surface bg-white p-6 shadow-sm">
             <h2 className="mb-4 text-xl font-bold text-navy-950">Sertifikalarım</h2>
             <CertificatesSection certificates={progress.certificates} />
           </div>
 
-          <div className="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm">
+          <div className="rounded-[2rem] border border-border-surface bg-white p-6 shadow-sm">
             <h2 className="mb-4 text-xl font-bold text-navy-950">Rozetlerim</h2>
             <BadgesSection badges={progress.badges} />
           </div>

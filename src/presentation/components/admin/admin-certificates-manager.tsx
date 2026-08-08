@@ -176,14 +176,14 @@ export function AdminCertificatesManager() {
 
   return (
     <div className="space-y-6">
-      <div className="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm">
+      <div className="rounded-[2rem] border border-border-surface bg-white p-6 shadow-sm">
         <h2 className="text-xl font-bold text-navy-950">Sertifika Oluştur</h2>
-        <p className="mt-2 text-sm text-slate-600">
+        <p className="mt-2 text-sm text-muted">
           Sadece <strong>zorunlu formları tamamlanmış</strong>, <strong>profili %100</strong>,{" "}
           <strong>yoklama eşiğini karşılamış</strong> ve henüz sertifikası olmayan kayıtlar
           burada görünür. Sertifika verirken kayıt otomatik Tamamlandı olur.
         </p>
-        <p className="mt-2 text-sm text-slate-600">
+        <p className="mt-2 text-sm text-muted">
           İptal edilen sertifikaların nedenlerini{" "}
           <a href="/admin/logs?action=certificate_revoked" className="font-semibold underline">
             İşlem Logları
@@ -239,7 +239,7 @@ export function AdminCertificatesManager() {
         </form>
       </div>
 
-      <div className="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm">
+      <div className="rounded-[2rem] border border-border-surface bg-white p-6 shadow-sm">
         <h2 className="text-xl font-bold text-navy-950">Sertifika İptal Et</h2>
         <form onSubmit={handleRevoke} className="mt-4 grid gap-4 md:grid-cols-2">
           <Select
@@ -286,18 +286,18 @@ export function AdminCertificatesManager() {
         </p>
       ) : null}
 
-      <div className="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm">
+      <div className="rounded-[2rem] border border-border-surface bg-white p-6 shadow-sm">
         <h2 className="text-xl font-bold text-navy-950">Tüm Sertifikalar</h2>
         {isLoading ? (
-          <p className="mt-4 text-sm text-slate-600">Yükleniyor...</p>
+          <p className="mt-4 text-sm text-muted">Yükleniyor...</p>
         ) : certificates.length === 0 ? (
-          <p className="mt-4 text-sm text-slate-600">Henüz sertifika yok.</p>
+          <p className="mt-4 text-sm text-muted">Henüz sertifika yok.</p>
         ) : (
           <div className="mt-4 space-y-4">
             {certificates.map((certificate) => (
               <div
                 key={certificate.id}
-                className="rounded-2xl border border-slate-100 p-4 hover:border-cyan-200"
+                className="rounded-2xl border border-border-surface p-4 hover:border-cyan-200"
               >
                 <div className="flex flex-wrap items-center justify-between gap-3">
                   <div>
@@ -305,7 +305,7 @@ export function AdminCertificatesManager() {
                       {certificate.certificateCode}
                     </p>
                     <p className="mt-1 font-semibold text-navy-950">{certificate.holderName}</p>
-                    <p className="text-sm text-slate-600">
+                    <p className="text-sm text-muted">
                       {certificate.eventTitle} · {formatDate(certificate.issuedAt)}
                     </p>
                   </div>

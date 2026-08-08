@@ -56,12 +56,12 @@ export default async function AdminInstitutionRequestsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="rounded-[1.75rem] border border-slate-200 bg-white p-8 shadow-sm">
+      <div className="rounded-[1.75rem] border border-border-surface bg-white p-8 shadow-sm">
         <p className="text-sm font-semibold uppercase tracking-[0.18em] text-document-primary">
           Kurumsal Talepler
         </p>
-        <h1 className="mt-2 text-2xl font-bold text-slate-900">Kurumsal Eğitim Talepleri</h1>
-        <p className="mt-2 text-sm text-slate-600">
+        <h1 className="mt-2 text-2xl font-bold text-navy-950">Kurumsal Eğitim Talepleri</h1>
+        <p className="mt-2 text-sm text-muted">
           Okul, belediye ve diğer kurumlardan gelen toplu eğitim / organizasyon taleplerini
           yönetin.
         </p>
@@ -72,10 +72,10 @@ export default async function AdminInstitutionRequestsPage() {
         ) : null}
       </div>
 
-      <div className="overflow-hidden rounded-[1.75rem] border border-slate-200 bg-white shadow-sm">
+      <div className="overflow-hidden rounded-[1.75rem] border border-border-surface bg-white shadow-sm">
         <div className="overflow-x-auto">
           <table className="min-w-full text-left text-sm">
-            <thead className="border-b border-slate-100 bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
+            <thead className="border-b border-border-surface bg-surface-section text-xs uppercase tracking-wide text-subtle">
               <tr>
                 <th className="px-5 py-4">Kurum</th>
                 <th className="px-5 py-4">Yetkili</th>
@@ -87,28 +87,28 @@ export default async function AdminInstitutionRequestsPage() {
             <tbody>
               {requests.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="px-5 py-10 text-center text-slate-500">
+                  <td colSpan={5} className="px-5 py-10 text-center text-subtle">
                     Henüz kurumsal talep yok
                   </td>
                 </tr>
               ) : (
                 requests.map((request) => (
-                  <tr key={request.id} className="border-b border-slate-50 last:border-0 align-top">
+                  <tr key={request.id} className="border-b border-border-surface last:border-0 align-top">
                     <td className="px-5 py-4">
-                      <p className="font-semibold text-slate-900">{request.institution_name}</p>
-                      <p className="text-xs text-slate-500">{request.institution_type}</p>
-                      <p className="text-xs text-slate-500">{request.city}</p>
+                      <p className="font-semibold text-navy-950">{request.institution_name}</p>
+                      <p className="text-xs text-subtle">{request.institution_type}</p>
+                      <p className="text-xs text-subtle">{request.city}</p>
                     </td>
                     <td className="px-5 py-4">
-                      <p className="font-medium text-slate-800">{request.contact_name}</p>
-                      <p className="text-xs text-slate-500">{request.phone}</p>
-                      <p className="text-xs text-slate-500">{request.email}</p>
+                      <p className="font-medium text-navy-900">{request.contact_name}</p>
+                      <p className="text-xs text-subtle">{request.phone}</p>
+                      <p className="text-xs text-subtle">{request.email}</p>
                     </td>
                     <td className="px-5 py-4">
-                      <p className="text-slate-800">{request.package_interest}</p>
-                      <p className="mt-1 text-xs text-slate-500">{request.student_count} kişi</p>
+                      <p className="text-navy-900">{request.package_interest}</p>
+                      <p className="mt-1 text-xs text-subtle">{request.student_count} kişi</p>
                       {request.message ? (
-                        <p className="mt-2 max-w-xs text-xs leading-5 text-slate-500">
+                        <p className="mt-2 max-w-xs text-xs leading-5 text-subtle">
                           {request.message}
                         </p>
                       ) : null}
@@ -119,7 +119,7 @@ export default async function AdminInstitutionRequestsPage() {
                         initialStatus={request.status}
                       />
                     </td>
-                    <td className="px-5 py-4 text-slate-600">{formatDate(request.created_at)}</td>
+                    <td className="px-5 py-4 text-muted">{formatDate(request.created_at)}</td>
                   </tr>
                 ))
               )}

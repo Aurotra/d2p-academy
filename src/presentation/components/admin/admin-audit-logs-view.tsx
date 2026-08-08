@@ -236,9 +236,9 @@ export function AdminAuditLogsView() {
 
   return (
     <div className="space-y-6">
-      <div className="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm">
+      <div className="rounded-[2rem] border border-border-surface bg-white p-6 shadow-sm">
         <h1 className="text-2xl font-bold text-navy-950">İşlem Logları</h1>
-        <p className="mt-2 text-sm text-slate-600">
+        <p className="mt-2 text-sm text-muted">
           Üye hareketleri (kayıt, profil, form, etkinlik), yoklama işaretlemeleri ve admin işlemleri
           (sertifika, kayıt silme, eğitmen yetkisi) burada listelenir.
         </p>
@@ -252,7 +252,7 @@ export function AdminAuditLogsView() {
               className={`rounded-full px-4 py-2 text-sm font-semibold ${
                 filter === item.id
                   ? "bg-document-primary text-white"
-                  : "border border-slate-200 bg-slate-50 text-slate-700"
+                  : "border border-border-surface bg-surface-section text-[var(--text-on-surface-soft)]"
               }`}
             >
               {item.label}
@@ -275,11 +275,11 @@ export function AdminAuditLogsView() {
         </p>
       ) : null}
 
-      <div className="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm">
+      <div className="rounded-[2rem] border border-border-surface bg-white p-6 shadow-sm">
         {isLoading ? (
-          <p className="text-sm text-slate-600">Yükleniyor...</p>
+          <p className="text-sm text-muted">Yükleniyor...</p>
         ) : logs.length === 0 ? (
-          <p className="text-sm text-slate-600">Henüz kayıt yok.</p>
+          <p className="text-sm text-muted">Henüz kayıt yok.</p>
         ) : (
           <ul className="space-y-3">
             {logs.map((log) => {
@@ -289,31 +289,31 @@ export function AdminAuditLogsView() {
               return (
                 <li
                   key={log.id}
-                  className="rounded-2xl border border-slate-100 px-4 py-4 hover:border-sky-200"
+                  className="rounded-2xl border border-border-surface px-4 py-4 hover:border-border-surface"
                 >
                   <div className="flex flex-wrap items-center gap-2">
                     <Badge tone={badgeTone(log.action)}>
                       {ADMIN_AUDIT_ACTION_LABELS[log.action]}
                     </Badge>
-                    <span className="text-xs text-slate-500">{formatDate(log.createdAt)}</span>
+                    <span className="text-xs text-subtle">{formatDate(log.createdAt)}</span>
                   </div>
                   <p className="mt-2 font-semibold text-navy-950">
                     {formatActorName(log)}
                     {email ? ` · ${email}` : ""}
                   </p>
-                  <p className="mt-1 text-sm text-slate-600">{formatLogSummary(log)}</p>
-                  {secondary ? <p className="mt-1 text-sm text-slate-500">{secondary}</p> : null}
+                  <p className="mt-1 text-sm text-muted">{formatLogSummary(log)}</p>
+                  {secondary ? <p className="mt-1 text-sm text-subtle">{secondary}</p> : null}
                   {log.reason ? (
-                    <p className="mt-2 rounded-xl bg-slate-50 px-3 py-2 text-sm text-slate-800">
+                    <p className="mt-2 rounded-xl bg-surface-section px-3 py-2 text-sm text-navy-900">
                       <span className="font-semibold">Neden: </span>
                       {log.reason}
                     </p>
                   ) : null}
                   {log.actorEmail && (isAdminEnrollmentAction(log.action) || isAttendanceAction(log.action)) ? (
-                    <p className="mt-2 text-xs text-slate-500">İşlemi yapan: {log.actorEmail}</p>
+                    <p className="mt-2 text-xs text-subtle">İşlemi yapan: {log.actorEmail}</p>
                   ) : null}
                   {log.actorEmail && isInstructorAction(log.action) ? (
-                    <p className="mt-2 text-xs text-slate-500">İşlemi yapan: {log.actorEmail}</p>
+                    <p className="mt-2 text-xs text-subtle">İşlemi yapan: {log.actorEmail}</p>
                   ) : null}
                 </li>
               );

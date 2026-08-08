@@ -213,7 +213,7 @@ export function EventEnrollmentsTable({
   return (
     <div>
       {selectableIds.length > 0 ? (
-        <div className="flex flex-wrap items-center gap-3 border-b border-slate-100 px-5 py-3">
+        <div className="flex flex-wrap items-center gap-3 border-b border-border-surface px-5 py-3">
           <Button
             type="button"
             variant="secondary"
@@ -241,9 +241,9 @@ export function EventEnrollmentsTable({
             {selectedIdsList.length > 0 ? ` (${selectedIdsList.length})` : ""}
           </Button>
           {selectedIdsList.length > 0 ? (
-            <p className="text-xs text-slate-500">{selectedIdsList.length} öğrenci seçildi</p>
+            <p className="text-xs text-subtle">{selectedIdsList.length} öğrenci seçildi</p>
           ) : (
-            <p className="text-xs text-slate-500">Toplu işlem için öğrencileri seçin</p>
+            <p className="text-xs text-subtle">Toplu işlem için öğrencileri seçin</p>
           )}
         </div>
       ) : null}
@@ -308,7 +308,7 @@ export function EventEnrollmentsTable({
             <input
               value={removeReason}
               onChange={(e) => setRemoveReason(e.target.value)}
-              className="mt-1 w-full rounded-xl border border-amber-200 bg-white px-3 py-2 text-sm text-slate-900"
+              className="mt-1 w-full rounded-xl border border-amber-200 bg-white px-3 py-2 text-sm text-navy-950"
               placeholder="Örn. yanlış kayıt / katılmayacak"
             />
           </label>
@@ -387,7 +387,7 @@ export function EventEnrollmentsTable({
             <input
               value={removeReason}
               onChange={(e) => setRemoveReason(e.target.value)}
-              className="mt-1 w-full rounded-xl border border-amber-200 bg-white px-3 py-2 text-sm text-slate-900"
+              className="mt-1 w-full rounded-xl border border-amber-200 bg-white px-3 py-2 text-sm text-navy-950"
               placeholder="Örn. yanlış kayıt / katılmayacak"
             />
           </label>
@@ -423,7 +423,7 @@ export function EventEnrollmentsTable({
 
       <div className="overflow-x-auto">
         <table className="min-w-full text-left text-sm">
-          <thead className="border-b border-slate-100 text-xs uppercase tracking-wide text-slate-500">
+          <thead className="border-b border-border-surface text-xs uppercase tracking-wide text-subtle">
             <tr>
               <th className="w-10 px-5 py-3">
                 {selectableIds.length > 0 ? (
@@ -432,7 +432,7 @@ export function EventEnrollmentsTable({
                     checked={allSelectableSelected}
                     onChange={toggleAll}
                     aria-label="Tümünü seç"
-                    className="size-4 rounded border-slate-300 text-document-primary"
+                    className="size-4 rounded border-border-surface text-document-primary"
                   />
                 ) : null}
               </th>
@@ -448,7 +448,7 @@ export function EventEnrollmentsTable({
               const selectable = canSelectForBulk(enrollment);
 
               return (
-                <tr key={enrollment.id} className="border-b border-slate-50 last:border-0">
+                <tr key={enrollment.id} className="border-b border-border-surface last:border-0">
                   <td className="px-5 py-4">
                     {selectable ? (
                       <input
@@ -456,20 +456,20 @@ export function EventEnrollmentsTable({
                         checked={selectedIds.has(enrollment.id)}
                         onChange={() => toggleOne(enrollment.id)}
                         aria-label={`${enrollment.studentName} seç`}
-                        className="size-4 rounded border-slate-300 text-document-primary"
+                        className="size-4 rounded border-border-surface text-document-primary"
                       />
                     ) : null}
                   </td>
                   <td className="px-5 py-4">
-                    <p className="font-semibold text-slate-900">{enrollment.studentName}</p>
-                    <p className="text-xs text-slate-500">{enrollment.studentEmail}</p>
+                    <p className="font-semibold text-navy-950">{enrollment.studentName}</p>
+                    <p className="text-xs text-subtle">{enrollment.studentEmail}</p>
                   </td>
                   <td className="px-5 py-4">
                     <span className="inline-flex rounded-full bg-document-primary/10 px-3 py-1 text-xs font-bold text-document-primary">
                       {STATUS_LABELS[enrollment.status] ?? enrollment.status}
                     </span>
                   </td>
-                  <td className="px-5 py-4 text-slate-600">
+                  <td className="px-5 py-4 text-muted">
                     {formatDate(enrollment.registeredAt)}
                   </td>
                   <td className="px-5 py-4">
@@ -482,7 +482,7 @@ export function EventEnrollmentsTable({
                       </Link>
                       {enrollment.status === "completed" ? (
                         enrollment.hasActiveCertificate ? (
-                          <span className="text-xs font-semibold text-sky-700">
+                          <span className="text-xs font-semibold text-secondary">
                             Sertifika verildi
                           </span>
                         ) : (
@@ -523,7 +523,7 @@ export function EventEnrollmentsTable({
                           Kurstan çıkar
                         </Button>
                       ) : enrollment.hasActiveCertificate ? (
-                        <span className="text-xs text-slate-500">Önce sertifikayı iptal edin</span>
+                        <span className="text-xs text-subtle">Önce sertifikayı iptal edin</span>
                       ) : null}
                     </div>
                   </td>

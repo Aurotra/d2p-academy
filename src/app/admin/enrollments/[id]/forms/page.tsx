@@ -61,14 +61,14 @@ export default async function AdminEnrollmentFormsPage({
 
   return (
     <div className="forms-print-document enrollment-forms-print-root space-y-6">
-      <div className="no-print rounded-2xl border border-slate-300 bg-gradient-to-br from-slate-50 via-white to-sky-50 p-6 shadow-sm sm:p-8">
+      <div className="no-print rounded-2xl border border-border-surface bg-gradient-to-br from-surface-section via-white to-surface-tint-mixed p-6 shadow-sm sm:p-8">
         <Link
           href={`/admin/forms?event_id=${answers.eventId}`}
           className="text-sm font-bold text-document-primary hover:underline"
         >
           ← Tüm formlara dön
         </Link>
-        <span className="mx-2 text-slate-300" aria-hidden>
+        <span className="mx-2 text-border-surface" aria-hidden>
           ·
         </span>
         <Link
@@ -83,8 +83,8 @@ export default async function AdminEnrollmentFormsPage({
         <h1 className="mt-2 text-3xl font-black tracking-tight text-navy-950">
           {answers.studentName}
         </h1>
-        <p className="mt-2 text-base font-semibold text-slate-800">{answers.studentEmail}</p>
-        <p className="mt-1 text-sm font-medium text-slate-600">
+        <p className="mt-2 text-base font-semibold text-navy-900">{answers.studentEmail}</p>
+        <p className="mt-1 text-sm font-medium text-muted">
           {answers.eventTitle}
           {answers.eventProgramCode ? ` · ${answers.eventProgramCode}` : ""}
         </p>

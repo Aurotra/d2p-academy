@@ -462,12 +462,12 @@ export function AdminGalleryManager() {
 
   return (
     <div className="space-y-6">
-      <div className="rounded-[1.75rem] border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
+      <div className="rounded-[1.75rem] border border-border-surface bg-white p-6 shadow-sm sm:p-8">
         <p className="text-sm font-semibold uppercase tracking-[0.18em] text-document-primary">
           Galeri
         </p>
-        <h1 className="mt-2 text-2xl font-bold text-slate-900">Eğitim Fotoğrafları</h1>
-        <p className="mt-2 text-sm text-slate-600">
+        <h1 className="mt-2 text-2xl font-bold text-navy-950">Eğitim Fotoğrafları</h1>
+        <p className="mt-2 text-sm text-muted">
           Yüklenen görseller otomatik WebP’ye küçültülür (max 1920px + 400px thumbnail). Albüm /
           fotoğraf sırası sürükle-bırak ile değişir. Silinenler 30 gün geri alınabilir. Site:{" "}
           <Link href="/galeri" className="font-semibold text-document-primary underline">
@@ -487,8 +487,8 @@ export function AdminGalleryManager() {
         </p>
       ) : null}
 
-      <div className="rounded-[1.75rem] border border-slate-200 bg-white p-6 shadow-sm">
-        <h2 className="text-lg font-bold text-slate-900">Yeni albüm</h2>
+      <div className="rounded-[1.75rem] border border-border-surface bg-white p-6 shadow-sm">
+        <h2 className="text-lg font-bold text-navy-950">Yeni albüm</h2>
         <form onSubmit={handleCreateAlbum} className="mt-4 grid gap-4 md:grid-cols-2">
           <Input
             label="Başlık"
@@ -523,13 +523,13 @@ export function AdminGalleryManager() {
         </form>
       </div>
 
-      <div className="rounded-[1.75rem] border border-slate-200 bg-white p-6 shadow-sm">
-        <h2 className="text-lg font-bold text-slate-900">Albüm sırası</h2>
-        <p className="mt-1 text-sm text-slate-500">Sürükleyerek sıralayın (üsttekiler sitede önce).</p>
+      <div className="rounded-[1.75rem] border border-border-surface bg-white p-6 shadow-sm">
+        <h2 className="text-lg font-bold text-navy-950">Albüm sırası</h2>
+        <p className="mt-1 text-sm text-subtle">Sürükleyerek sıralayın (üsttekiler sitede önce).</p>
         {isLoading ? (
-          <p className="mt-4 text-sm text-slate-600">Yükleniyor...</p>
+          <p className="mt-4 text-sm text-muted">Yükleniyor...</p>
         ) : albums.length === 0 ? (
-          <p className="mt-4 text-sm text-slate-600">Henüz albüm yok.</p>
+          <p className="mt-4 text-sm text-muted">Henüz albüm yok.</p>
         ) : (
           <ul className="mt-4 space-y-2">
             {albums.map((album) => (
@@ -541,8 +541,8 @@ export function AdminGalleryManager() {
                 onDrop={() => void handleAlbumDrop(album.id)}
                 className={`flex cursor-grab items-center justify-between rounded-xl border px-4 py-3 ${
                   selectedAlbumId === album.id
-                    ? "border-sky-300 bg-sky-50"
-                    : "border-slate-100 bg-slate-50"
+                    ? "border-secondary/40 bg-surface-section"
+                    : "border-border-surface bg-surface-section"
                 }`}
               >
                 <button
@@ -550,8 +550,8 @@ export function AdminGalleryManager() {
                   className="text-left"
                   onClick={() => setSelectedAlbumId(album.id)}
                 >
-                  <p className="font-semibold text-slate-900">{album.title}</p>
-                  <p className="text-xs text-slate-500">
+                  <p className="font-semibold text-navy-950">{album.title}</p>
+                  <p className="text-xs text-subtle">
                     {[album.locationName, formatDate(album.eventDate)].filter(Boolean).join(" · ")} ·{" "}
                     {album.photoCount} fotoğraf
                     {album.isPublished ? "" : " · gizli"}
@@ -583,13 +583,13 @@ export function AdminGalleryManager() {
         )}
       </div>
 
-      <div className="rounded-[1.75rem] border border-slate-200 bg-white p-6 shadow-sm">
-        <h2 className="text-lg font-bold text-slate-900">Fotoğraf yükle</h2>
+      <div className="rounded-[1.75rem] border border-border-surface bg-white p-6 shadow-sm">
+        <h2 className="text-lg font-bold text-navy-950">Fotoğraf yükle</h2>
         {!selectedAlbum ? (
-          <p className="mt-4 text-sm text-slate-600">Önce bir albüm seçin.</p>
+          <p className="mt-4 text-sm text-muted">Önce bir albüm seçin.</p>
         ) : (
           <div className="mt-4 space-y-4">
-            <p className="text-sm text-slate-600">
+            <p className="text-sm text-muted">
               Seçili albüm: <strong>{selectedAlbum.title}</strong>
             </p>
             <div
@@ -607,14 +607,14 @@ export function AdminGalleryManager() {
               }}
               className={`rounded-2xl border-2 border-dashed px-6 py-10 text-center transition ${
                 isDraggingFiles
-                  ? "border-sky-400 bg-sky-50"
-                  : "border-slate-200 bg-slate-50"
+                  ? "border-secondary bg-surface-section"
+                  : "border-border-surface bg-surface-section"
               }`}
             >
-              <p className="text-sm font-medium text-slate-700">
+              <p className="text-sm font-medium text-[var(--text-on-surface-soft)]">
                 Fotoğrafları buraya sürükleyin veya seçin
               </p>
-              <p className="mt-1 text-xs text-slate-500">
+              <p className="mt-1 text-xs text-subtle">
                 JPG/PNG/WebP · otomatik 1920px WebP + 400px thumbnail
               </p>
               <input
@@ -633,10 +633,10 @@ export function AdminGalleryManager() {
             {uploads.length > 0 ? (
               <ul className="space-y-2">
                 {uploads.map((item) => (
-                  <li key={item.id} className="rounded-xl border border-slate-100 px-3 py-2">
+                  <li key={item.id} className="rounded-xl border border-border-surface px-3 py-2">
                     <div className="flex items-center justify-between gap-2 text-xs">
-                      <span className="truncate font-medium text-slate-700">{item.name}</span>
-                      <span className="text-slate-500">
+                      <span className="truncate font-medium text-[var(--text-on-surface-soft)]">{item.name}</span>
+                      <span className="text-subtle">
                         {item.status === "optimizing"
                           ? "Optimize…"
                           : item.status === "uploading"
@@ -648,10 +648,10 @@ export function AdminGalleryManager() {
                                 : "Sırada"}
                       </span>
                     </div>
-                    <div className="mt-2 h-2 overflow-hidden rounded-full bg-slate-100">
+                    <div className="mt-2 h-2 overflow-hidden rounded-full bg-surface-section">
                       <div
                         className={`h-full transition-all ${
-                          item.status === "error" ? "bg-red-400" : "bg-sky-500"
+                          item.status === "error" ? "bg-red-400" : "bg-surface-section0"
                         }`}
                         style={{ width: `${item.progress}%` }}
                       />
@@ -666,11 +666,11 @@ export function AdminGalleryManager() {
       </div>
 
       {selectedAlbum ? (
-        <div className="rounded-[1.75rem] border border-slate-200 bg-white p-6 shadow-sm">
+        <div className="rounded-[1.75rem] border border-border-surface bg-white p-6 shadow-sm">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
-              <h2 className="text-lg font-bold text-slate-900">{selectedAlbum.title}</h2>
-              <p className="text-sm text-slate-600">
+              <h2 className="text-lg font-bold text-navy-950">{selectedAlbum.title}</h2>
+              <p className="text-sm text-muted">
                 Sürükleyerek sıralayın · Kapak seçin · Alt text ekleyin
               </p>
             </div>
@@ -683,7 +683,7 @@ export function AdminGalleryManager() {
           </div>
 
           {photos.length === 0 ? (
-            <p className="mt-6 text-sm text-slate-500">Bu albümde fotoğraf yok.</p>
+            <p className="mt-6 text-sm text-subtle">Bu albümde fotoğraf yok.</p>
           ) : (
             <ul className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {photos.map((photo) => (
@@ -693,7 +693,7 @@ export function AdminGalleryManager() {
                   onDragStart={() => setDragPhotoId(photo.id)}
                   onDragOver={(event) => event.preventDefault()}
                   onDrop={() => void handlePhotoDrop(photo.id)}
-                  className="cursor-grab overflow-hidden rounded-2xl border border-slate-100"
+                  className="cursor-grab overflow-hidden rounded-2xl border border-border-surface"
                 >
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
@@ -703,7 +703,7 @@ export function AdminGalleryManager() {
                   />
                   <div className="space-y-2 p-3">
                     {selectedAlbum.coverPhotoId === photo.id ? (
-                      <p className="text-xs font-bold text-sky-700">Kapak fotoğrafı</p>
+                      <p className="text-xs font-bold text-secondary">Kapak fotoğrafı</p>
                     ) : (
                       <Button
                         type="button"
@@ -715,11 +715,11 @@ export function AdminGalleryManager() {
                         Kapak Yap
                       </Button>
                     )}
-                    <label className="block text-xs font-semibold text-slate-600">
+                    <label className="block text-xs font-semibold text-muted">
                       Alt text
                       <input
                         defaultValue={photo.altText}
-                        className="mt-1 w-full rounded-lg border border-slate-200 px-2 py-1.5 text-xs"
+                        className="mt-1 w-full rounded-lg border border-border-surface px-2 py-1.5 text-xs"
                         onBlur={(event) => {
                           const value = event.target.value.trim();
                           if (value !== photo.altText) {
@@ -744,15 +744,15 @@ export function AdminGalleryManager() {
           )}
 
           {deletedPhotos.length > 0 ? (
-            <div className="mt-8 border-t border-slate-100 pt-6">
-              <h3 className="text-sm font-bold text-slate-800">Çöp kutusu (fotoğraflar)</h3>
+            <div className="mt-8 border-t border-border-surface pt-6">
+              <h3 className="text-sm font-bold text-navy-900">Çöp kutusu (fotoğraflar)</h3>
               <ul className="mt-3 space-y-2">
                 {deletedPhotos.map((photo) => (
                   <li
                     key={photo.id}
-                    className="flex items-center justify-between rounded-xl bg-slate-50 px-3 py-2 text-sm"
+                    className="flex items-center justify-between rounded-xl bg-surface-section px-3 py-2 text-sm"
                   >
-                    <span className="truncate text-slate-600">{photo.altText || photo.id}</span>
+                    <span className="truncate text-muted">{photo.altText || photo.id}</span>
                     <Button
                       type="button"
                       variant="secondary"
@@ -771,17 +771,17 @@ export function AdminGalleryManager() {
       ) : null}
 
       {deletedAlbums.length > 0 ? (
-        <div className="rounded-[1.75rem] border border-slate-200 bg-white p-6 shadow-sm">
-          <h2 className="text-lg font-bold text-slate-900">Çöp kutusu (albümler)</h2>
+        <div className="rounded-[1.75rem] border border-border-surface bg-white p-6 shadow-sm">
+          <h2 className="text-lg font-bold text-navy-950">Çöp kutusu (albümler)</h2>
           <ul className="mt-4 space-y-2">
             {deletedAlbums.map((album) => (
               <li
                 key={album.id}
-                className="flex items-center justify-between rounded-xl bg-slate-50 px-4 py-3"
+                className="flex items-center justify-between rounded-xl bg-surface-section px-4 py-3"
               >
                 <div>
-                  <p className="font-semibold text-slate-800">{album.title}</p>
-                  <p className="text-xs text-slate-500">30 gün içinde kalıcı silinebilir</p>
+                  <p className="font-semibold text-navy-900">{album.title}</p>
+                  <p className="text-xs text-subtle">30 gün içinde kalıcı silinebilir</p>
                 </div>
                 <Button
                   type="button"

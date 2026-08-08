@@ -225,8 +225,8 @@ export function AdminProgramsManager() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-slate-900">Program Tanımları</h1>
-        <p className="mt-1 text-sm text-slate-600">
+        <h1 className="text-2xl font-bold text-navy-950">Program Tanımları</h1>
+        <p className="mt-1 text-sm text-muted">
           Kurs talep formunda gösterilecek program sürelerini buradan yönetin.
         </p>
       </div>
@@ -246,7 +246,7 @@ export function AdminProgramsManager() {
         </div>
       ) : null}
 
-      <div className="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm">
+      <div className="rounded-[2rem] border border-border-surface bg-white p-6 shadow-sm">
         <h2 className="text-xl font-bold text-navy-950">Yeni program</h2>
         <form onSubmit={(event) => void handleCreate(event)} className="mt-6 space-y-4">
           {renderFormFields(createForm, setCreateForm, "create")}
@@ -256,19 +256,19 @@ export function AdminProgramsManager() {
         </form>
       </div>
 
-      <div className="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm">
+      <div className="rounded-[2rem] border border-border-surface bg-white p-6 shadow-sm">
         <h2 className="text-xl font-bold text-navy-950">Program listesi</h2>
         {isLoading ? (
-          <p className="mt-4 text-sm text-slate-600">Yükleniyor...</p>
+          <p className="mt-4 text-sm text-muted">Yükleniyor...</p>
         ) : programs.length === 0 ? (
-          <p className="mt-4 text-sm text-slate-600">Henüz program tanımı yok.</p>
+          <p className="mt-4 text-sm text-muted">Henüz program tanımı yok.</p>
         ) : (
           <div className="mt-4 space-y-4">
             {programs.map((program) => {
               const isEditing = editingId === program.id && editForm;
 
               return (
-                <div key={program.id} className="rounded-2xl border border-slate-100 p-4">
+                <div key={program.id} className="rounded-2xl border border-border-surface p-4">
                   {isEditing ? (
                     <form onSubmit={(event) => void handleUpdate(event)} className="space-y-4">
                       {renderFormFields(editForm, (next) => setEditForm(next), `edit-${program.id}`, true)}
@@ -298,7 +298,7 @@ export function AdminProgramsManager() {
                           </Badge>
                         </div>
                         <h3 className="mt-2 font-semibold text-navy-950">{program.name}</h3>
-                        <p className="mt-1 text-sm text-slate-600">
+                        <p className="mt-1 text-sm text-muted">
                           Süre: {formatProgramDuration(program) ?? "Henüz girilmedi"}
                         </p>
                       </div>

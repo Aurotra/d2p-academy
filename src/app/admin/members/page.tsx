@@ -38,22 +38,22 @@ export default async function AdminMembersPage({ searchParams }: AdminMembersPag
 
     return (
     <div className="space-y-6">
-      <div className="rounded-[1.75rem] border border-slate-200 bg-white p-8 shadow-sm">
+      <div className="rounded-[1.75rem] border border-border-surface bg-white p-8 shadow-sm">
         <p className="text-sm font-semibold uppercase tracking-[0.18em] text-document-primary">
           Üyelik
         </p>
-        <h1 className="mt-2 text-2xl font-bold text-slate-900">Veliler ve Üyeler</h1>
-        <p className="mt-2 text-sm text-slate-600">
+        <h1 className="mt-2 text-2xl font-bold text-navy-950">Veliler ve Üyeler</h1>
+        <p className="mt-2 text-sm text-muted">
           Siteye kayıt olan veli, üye ve admin hesapları. Çocuk (kullanıcı adlı) hesaplar bu listede
           yer almaz. <strong>Eğitmen yap</strong> ile aynı hesaba eğitmen yetkisi verilir; admin
           hesapları da etkinlik atama listesinde görünür. İşlemleri <strong>Eğitmen yetkisi</strong>{" "}
           sütunundan yönetin.
         </p>
         <div className="mt-4 flex flex-wrap gap-2 text-sm">
-          <span className="rounded-full bg-slate-100 px-3 py-1 font-semibold text-slate-700">
+          <span className="rounded-full bg-surface-section px-3 py-1 font-semibold text-[var(--text-on-surface-soft)]">
             Toplam: {members.length}
           </span>
-          <span className="rounded-full bg-sky-100 px-3 py-1 font-semibold text-sky-900">
+          <span className="rounded-full bg-surface-tint-mixed px-3 py-1 font-semibold text-navy-900">
             Veli: {parentCount}
           </span>
           <span className="rounded-full bg-amber-100 px-3 py-1 font-semibold text-amber-900">

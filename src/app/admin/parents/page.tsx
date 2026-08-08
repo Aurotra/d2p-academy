@@ -34,12 +34,12 @@ export default async function AdminParentsPage({ searchParams }: AdminParentsPag
 
     return (
       <div className="space-y-6">
-        <div className="rounded-[1.75rem] border border-slate-200 bg-white p-8 shadow-sm">
+        <div className="rounded-[1.75rem] border border-border-surface bg-white p-8 shadow-sm">
           <p className="text-sm font-semibold uppercase tracking-[0.18em] text-document-primary">
             Veli İletişim
           </p>
-          <h1 className="mt-2 text-2xl font-bold text-slate-900">Veli Telefon Rehberi</h1>
-          <p className="mt-2 text-sm text-slate-600">
+          <h1 className="mt-2 text-2xl font-bold text-navy-950">Veli Telefon Rehberi</h1>
+          <p className="mt-2 text-sm text-muted">
             Kayıtlı velilerin iletişim bilgileri. Telefon önce veli hesabından, yoksa çocuk
             profilindeki veli telefonundan alınır. Üstteki rozetlere tıklayarak telefonu eksik
             velileri filtreleyebilirsiniz.
@@ -50,7 +50,7 @@ export default async function AdminParentsPage({ searchParams }: AdminParentsPag
           <AdminParentsFilters />
         </Suspense>
 
-        <Suspense fallback={<p className="text-sm text-slate-600">Veli listesi yükleniyor…</p>}>
+        <Suspense fallback={<p className="text-sm text-muted">Veli listesi yükleniyor…</p>}>
           <AdminParentsTable parents={parents} stats={stats} />
         </Suspense>
       </div>

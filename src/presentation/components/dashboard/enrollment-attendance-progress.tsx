@@ -30,13 +30,13 @@ export function EnrollmentAttendanceProgress({
   return (
     <div className="mt-3">
       <div className="flex items-center justify-between gap-3 text-xs">
-        <span className="font-semibold text-slate-600">Yoklama</span>
+        <span className="font-semibold text-muted">Yoklama</span>
         <span className="font-bold text-navy-950">
           {presentCount}/{required}
         </span>
       </div>
       <div
-        className="mt-1.5 h-2 overflow-hidden rounded-full bg-slate-100"
+        className="mt-1.5 h-2 overflow-hidden rounded-full bg-surface-section"
         role="progressbar"
         aria-valuenow={percent}
         aria-valuemin={0}
@@ -50,7 +50,7 @@ export function EnrollmentAttendanceProgress({
           style={{ width: `${percent}%` }}
         />
       </div>
-      <p className="mt-1 text-xs text-slate-500">{statusLabel}</p>
+      <p className="mt-1 text-xs text-subtle">{statusLabel}</p>
     </div>
   );
 }

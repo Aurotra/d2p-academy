@@ -55,12 +55,12 @@ export default async function InstructorHomePage() {
 
   return (
     <div className="space-y-6">
-      <div className="rounded-[1.75rem] border border-slate-200 bg-white p-8 shadow-sm">
+      <div className="rounded-[1.75rem] border border-border-surface bg-white p-8 shadow-sm">
         <p className="text-sm font-semibold uppercase tracking-[0.18em] text-document-primary">
           Eğitmen Paneli
         </p>
-        <h1 className="mt-2 text-2xl font-bold text-slate-900">Etkinliklerim</h1>
-        <p className="mt-2 text-sm text-slate-600">
+        <h1 className="mt-2 text-2xl font-bold text-navy-950">Etkinliklerim</h1>
+        <p className="mt-2 text-sm text-muted">
           Size atanmış etkinliklerde kayıtlı öğrencileri görebilir ve ders saati bazlı yoklama
           alabilirsiniz. İşaretlemeler işlem loglarına kaydedilir.
         </p>
@@ -73,7 +73,7 @@ export default async function InstructorHomePage() {
       ) : null}
 
       {!events || events.length === 0 ? (
-        <div className="rounded-[1.75rem] border border-dashed border-slate-200 bg-white px-6 py-12 text-center text-sm text-slate-500">
+        <div className="rounded-[1.75rem] border border-dashed border-border-surface bg-white px-6 py-12 text-center text-sm text-subtle">
           Size atanmış etkinlik yok. Admin etkinlik oluştururken sizi eğitmen olarak atamalıdır.
         </div>
       ) : (
@@ -81,15 +81,15 @@ export default async function InstructorHomePage() {
           {events.map((event) => (
               <article
                 key={event.id}
-                className="rounded-[1.5rem] border border-slate-200 bg-white p-6 shadow-sm"
+                className="rounded-[1.5rem] border border-border-surface bg-white p-6 shadow-sm"
               >
                 <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                   <div>
-                    <h2 className="text-xl font-bold text-slate-900">{event.title}</h2>
-                    <p className="mt-2 text-sm text-slate-600">
+                    <h2 className="text-xl font-bold text-navy-950">{event.title}</h2>
+                    <p className="mt-2 text-sm text-muted">
                       {formatDateTime(event.start_at)} – {formatDateTime(event.end_at)}
                     </p>
-                    <p className="mt-1 text-sm text-slate-500">
+                    <p className="mt-1 text-sm text-subtle">
                       {event.location_name ? `${event.location_name}` : "Konum belirtilmemiş"}
                     </p>
                   </div>

@@ -173,8 +173,8 @@ export default function DashboardProfilePage() {
 
   if (isLoading) {
     return (
-      <section className="bg-slate-50 px-4 py-10">
-        <div className="mx-auto max-w-3xl rounded-2xl border border-slate-200 bg-white p-8 text-center text-sm text-slate-600">
+      <section className="bg-surface-section px-4 py-10">
+        <div className="mx-auto max-w-3xl rounded-2xl border border-border-surface bg-white p-8 text-center text-sm text-muted">
           Profil yükleniyor...
         </div>
       </section>
@@ -182,14 +182,14 @@ export default function DashboardProfilePage() {
   }
 
   return (
-    <section className="bg-slate-50 px-4 py-10 sm:px-6 lg:px-8">
+    <section className="bg-surface-section px-4 py-10 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-3xl space-y-6">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
           <div>
             <p className="text-sm font-semibold uppercase tracking-[0.18em] text-document-primary">
               Profil Sihirbazı
             </p>
-            <h1 className="mt-2 text-3xl font-black text-slate-900">Öğrenci Profilim</h1>
+            <h1 className="mt-2 text-3xl font-black text-navy-950">Öğrenci Profilim</h1>
           </div>
           <Link
             href="/dashboard"
@@ -202,8 +202,8 @@ export default function DashboardProfilePage() {
         <ProfileProgressBar data={progressInput} />
 
         <form onSubmit={handleSubmit} className="space-y-6">
-          <fieldset className="rounded-[1.75rem] border border-slate-200 bg-white p-6 shadow-sm">
-            <legend className="px-2 text-lg font-bold text-slate-900">Bölüm A — Kişisel Bilgiler</legend>
+          <fieldset className="rounded-[1.75rem] border border-border-surface bg-white p-6 shadow-sm">
+            <legend className="px-2 text-lg font-bold text-navy-950">Bölüm A — Kişisel Bilgiler</legend>
             <div className="mt-4 space-y-4">
               <Input
                 label="Ad Soyad"
@@ -212,7 +212,7 @@ export default function DashboardProfilePage() {
                 required
               />
               <div>
-                <p className="mb-2 text-sm font-medium text-slate-900">Cinsiyet</p>
+                <p className="mb-2 text-sm font-medium text-navy-950">Cinsiyet</p>
                 <div className="flex flex-wrap gap-4">
                   {PROFILE_GENDER_OPTIONS.map((option) => (
                     <label key={option.value} className="inline-flex items-center gap-2 text-sm">
@@ -256,11 +256,11 @@ export default function DashboardProfilePage() {
             </div>
           </fieldset>
 
-          <fieldset className="rounded-[1.75rem] border border-slate-200 bg-white p-6 shadow-sm">
-            <legend className="px-2 text-lg font-bold text-slate-900">Bölüm B — Deneyim</legend>
+          <fieldset className="rounded-[1.75rem] border border-border-surface bg-white p-6 shadow-sm">
+            <legend className="px-2 text-lg font-bold text-navy-950">Bölüm B — Deneyim</legend>
             <div className="mt-4 space-y-4">
               <div>
-                <p className="mb-2 text-sm font-medium text-slate-900">Kodlama Deneyimi</p>
+                <p className="mb-2 text-sm font-medium text-navy-950">Kodlama Deneyimi</p>
                 <div className="flex flex-wrap gap-4">
                   {CODING_EXPERIENCE_OPTIONS.map((option) => (
                     <label key={option.value} className="inline-flex items-center gap-2 text-sm">
@@ -299,17 +299,17 @@ export default function DashboardProfilePage() {
                   })
                 }
               />
-              <p className="text-xs text-slate-500">
+              <p className="text-xs text-subtle">
                 Bu alan isteğe bağlıdır; profil tamamlanma yüzdesini etkilemez.
               </p>
             </div>
           </fieldset>
 
-          <fieldset className="rounded-[1.75rem] border border-slate-200 bg-white p-6 shadow-sm">
-            <legend className="px-2 text-lg font-bold text-slate-900">Bölüm C — İlgi Alanları</legend>
+          <fieldset className="rounded-[1.75rem] border border-border-surface bg-white p-6 shadow-sm">
+            <legend className="px-2 text-lg font-bold text-navy-950">Bölüm C — İlgi Alanları</legend>
             <div className="mt-4 grid grid-cols-1 gap-2 sm:grid-cols-2">
               {INTEREST_OPTIONS.map((interest) => (
-                <label key={interest} className="flex items-center gap-2 rounded-xl border border-slate-100 px-3 py-2 text-sm">
+                <label key={interest} className="flex items-center gap-2 rounded-xl border border-border-surface px-3 py-2 text-sm">
                   <input
                     type="checkbox"
                     checked={form.interests.includes(interest)}
@@ -321,8 +321,8 @@ export default function DashboardProfilePage() {
             </div>
           </fieldset>
 
-          <fieldset className="rounded-[1.75rem] border border-slate-200 bg-white p-6 shadow-sm">
-            <legend className="px-2 text-lg font-bold text-slate-900">Bölüm D — Motivasyon</legend>
+          <fieldset className="rounded-[1.75rem] border border-border-surface bg-white p-6 shadow-sm">
+            <legend className="px-2 text-lg font-bold text-navy-950">Bölüm D — Motivasyon</legend>
             <div className="mt-4">
               <ProfileMotivationFields
                 hedef={form.motivation_data.hedef}
@@ -343,10 +343,10 @@ export default function DashboardProfilePage() {
             </div>
           </fieldset>
 
-          <fieldset className="rounded-[1.75rem] border border-slate-200 bg-white p-6 shadow-sm">
-            <legend className="px-2 text-lg font-bold text-slate-900">Bölüm E — Avatar</legend>
+          <fieldset className="rounded-[1.75rem] border border-border-surface bg-white p-6 shadow-sm">
+            <legend className="px-2 text-lg font-bold text-navy-950">Bölüm E — Avatar</legend>
             <div className="mt-4 space-y-4">
-              <p className="text-sm font-medium text-slate-900">Avatar Seçimi</p>
+              <p className="text-sm font-medium text-navy-950">Avatar Seçimi</p>
               <div className="grid grid-cols-4 gap-3 sm:gap-4">
                 {AVATAR_OPTIONS.map((avatar) => {
                   const selected = form.profile_avatar_url === avatar.src;
@@ -360,7 +360,7 @@ export default function DashboardProfilePage() {
                       className={`relative aspect-square overflow-hidden rounded-2xl border-2 transition ${
                         selected
                           ? "border-document-primary ring-2 ring-document-primary/30"
-                          : "border-slate-200 hover:border-sky-300"
+                          : "border-border-surface hover:border-secondary/40"
                       }`}
                     >
                       <Image
@@ -377,10 +377,10 @@ export default function DashboardProfilePage() {
             </div>
           </fieldset>
 
-          <fieldset className="rounded-[1.75rem] border border-slate-200 bg-white p-6 shadow-sm">
-            <legend className="px-2 text-lg font-bold text-slate-900">Bölüm F — KVKK</legend>
+          <fieldset className="rounded-[1.75rem] border border-border-surface bg-white p-6 shadow-sm">
+            <legend className="px-2 text-lg font-bold text-navy-950">Bölüm F — KVKK</legend>
             <div className="mt-4">
-              <label className="flex items-start gap-3 rounded-xl border border-slate-100 bg-slate-50 px-4 py-3 text-sm">
+              <label className="flex items-start gap-3 rounded-xl border border-border-surface bg-surface-section px-4 py-3 text-sm">
                 <input
                   type="checkbox"
                   checked={form.kvkk_accepted}

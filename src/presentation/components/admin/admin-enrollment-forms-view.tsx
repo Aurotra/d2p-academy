@@ -88,8 +88,8 @@ function StatusChip({
   const styles = {
     done: "border-emerald-300 bg-emerald-50 text-emerald-900",
     missing: "border-rose-300 bg-rose-50 text-rose-900",
-    skip: "border-slate-300 bg-slate-100 text-slate-700",
-    info: "border-sky-300 bg-sky-50 text-sky-950",
+    skip: "border-border-surface bg-surface-section text-[var(--text-on-surface-soft)]",
+    info: "border-secondary/40 bg-surface-section text-navy-950",
   } as const;
 
   return (
@@ -119,17 +119,17 @@ function FormSection({
   return (
     <section
       id={id}
-      className={`scroll-mt-24 overflow-hidden rounded-2xl border border-slate-300 bg-white shadow-sm ${
+      className={`scroll-mt-24 overflow-hidden rounded-2xl border border-border-surface bg-white shadow-sm ${
         printSection ? "forms-print-section" : ""
       }`}
     >
-      <header className="forms-print-section-header border-b border-slate-300 bg-navy-950 px-5 py-4 text-white sm:px-6">
+      <header className="forms-print-section-header border-b border-border-surface bg-navy-950 px-5 py-4 text-white sm:px-6">
         <div className="flex flex-wrap items-end justify-between gap-3">
           <div>
-            <p className="text-xs font-bold uppercase tracking-[0.2em] text-sky-300">{code}</p>
+            <p className="text-xs font-bold uppercase tracking-[0.2em] text-accent">{code}</p>
             <h2 className="mt-1 text-xl font-black tracking-tight sm:text-2xl">{title}</h2>
           </div>
-          {meta ? <p className="text-sm font-medium text-sky-100">{meta}</p> : null}
+          {meta ? <p className="text-sm font-medium text-white/80">{meta}</p> : null}
         </div>
       </header>
       <div className="forms-print-section-body space-y-6 p-5 sm:p-6">{children}</div>
@@ -184,7 +184,7 @@ function ChoiceOptions({
         <OptionChip key={`extra-${option}`} label={option} selected />
       ))}
       {selectedSet.size === 0 ? (
-        <span className="text-sm font-semibold text-slate-500">Cevap seçilmemiş</span>
+        <span className="text-sm font-semibold text-subtle">Cevap seçilmemiş</span>
       ) : null}
     </div>
   );
@@ -203,7 +203,7 @@ function LikertOptions({ value }: { value: number | undefined }) {
         />
       ))}
       {selected == null ? (
-        <span className="text-sm font-semibold text-slate-500">Cevap seçilmemiş</span>
+        <span className="text-sm font-semibold text-subtle">Cevap seçilmemiş</span>
       ) : null}
     </div>
   );
@@ -217,7 +217,7 @@ function QuestionBlock({
   children: ReactNode;
 }) {
   return (
-    <div className="forms-print-question rounded-xl border border-slate-200 bg-slate-50/80 px-4 py-3">
+    <div className="forms-print-question rounded-xl border border-border-surface bg-surface-section/80 px-4 py-3">
       <p className="text-sm font-semibold leading-snug text-navy-950">{question}</p>
       <div className="mt-3">{children}</div>
     </div>
@@ -227,7 +227,7 @@ function QuestionBlock({
 function TextAnswer({ value }: { value: string }) {
   const text = value.trim();
   if (!text) {
-    return <p className="text-sm font-semibold text-slate-500">Cevap yok</p>;
+    return <p className="text-sm font-semibold text-subtle">Cevap yok</p>;
   }
   return (
     <p className="rounded-lg border border-emerald-300 bg-emerald-50 px-3 py-2 text-sm font-bold whitespace-pre-wrap text-emerald-950">
@@ -241,7 +241,7 @@ function TextAnswer({ value }: { value: string }) {
 
 function EmptyState({ message }: { message: string }) {
   return (
-    <p className="forms-print-empty rounded-xl border border-dashed border-slate-300 bg-slate-50 px-4 py-6 text-center text-sm font-semibold text-slate-600">
+    <p className="forms-print-empty rounded-xl border border-dashed border-border-surface bg-surface-section px-4 py-6 text-center text-sm font-semibold text-muted">
       {message}
     </p>
   );
@@ -407,7 +407,7 @@ export function AdminEnrollmentFormsView({ answers }: AdminEnrollmentFormsViewPr
                     selected={consent.accepted ? "Kabul edildi" : "Kabul edilmedi"}
                   />
                   {consent.accepted ? (
-                    <p className="mt-2 text-sm font-semibold text-slate-600">
+                    <p className="mt-2 text-sm font-semibold text-muted">
                       Tarih: {formatDate(consent.acceptedAt)}
                     </p>
                   ) : null}
@@ -416,7 +416,7 @@ export function AdminEnrollmentFormsView({ answers }: AdminEnrollmentFormsViewPr
                   <TextAnswer value={consent.parentSignature?.trim() || ""} />
                 </QuestionBlock>
                 {consent.formType === "media" && consent.mediaPermissions ? (
-                  <div className="space-y-3 rounded-xl border border-slate-200 bg-white p-3">
+                  <div className="space-y-3 rounded-xl border border-border-surface bg-white p-3">
                     <p className="text-sm font-black text-navy-950">Medya izin matrisi</p>
                     {MEDIA_PERMISSION_KEYS.map((key) => (
                       <QuestionBlock key={key} question={MEDIA_PERMISSION_LABELS[key]}>
@@ -527,15 +527,15 @@ export function AdminEnrollmentFormsView({ answers }: AdminEnrollmentFormsViewPr
   return (
     <div className="forms-print-document enrollment-forms-print-root space-y-6">
       <div className="forms-print-cover hidden">
-        <p className="text-xs font-bold uppercase tracking-[0.2em] text-slate-600">D2P Academy</p>
+        <p className="text-xs font-bold uppercase tracking-[0.2em] text-muted">D2P Academy</p>
         <h1 className="mt-2 text-2xl font-black text-navy-950">Katılımcı Form Sonuçları</h1>
-        <p className="mt-2 text-sm font-semibold text-slate-800">{answers.studentName}</p>
-        <p className="text-sm text-slate-600">{answers.studentEmail}</p>
-        <p className="text-sm text-slate-600">{answers.eventTitle}</p>
+        <p className="mt-2 text-sm font-semibold text-navy-900">{answers.studentName}</p>
+        <p className="text-sm text-muted">{answers.studentEmail}</p>
+        <p className="text-sm text-muted">{answers.eventTitle}</p>
         {answers.eventProgramCode ? (
-          <p className="text-sm font-semibold text-slate-700">Program kodu: {answers.eventProgramCode}</p>
+          <p className="text-sm font-semibold text-[var(--text-on-surface-soft)]">Program kodu: {answers.eventProgramCode}</p>
         ) : null}
-        <p className="mt-2 text-xs text-slate-500">
+        <p className="mt-2 text-xs text-subtle">
           Sınıf: {formatGradeLevel(answers.gradeLevel)}
           {answers.studentCode ? ` · Öğrenci kodu: ${answers.studentCode}` : ""} · Çıktı: {printedAt}
         </p>
@@ -543,7 +543,7 @@ export function AdminEnrollmentFormsView({ answers }: AdminEnrollmentFormsViewPr
 
       <EnrollmentFormsPrintToolbar pdfTitle={pdfTitle} />
 
-      <div className="no-print rounded-2xl border border-slate-300 bg-white p-5 shadow-sm sm:p-6">
+      <div className="no-print rounded-2xl border border-border-surface bg-white p-5 shadow-sm sm:p-6">
         <p className="text-xs font-bold uppercase tracking-[0.18em] text-document-primary">
           Form durumu
         </p>
@@ -575,7 +575,7 @@ export function AdminEnrollmentFormsView({ answers }: AdminEnrollmentFormsViewPr
         </div>
 
         <nav
-          className="mt-5 flex flex-wrap gap-2 border-t border-slate-200 pt-4"
+          className="mt-5 flex flex-wrap gap-2 border-t border-border-surface pt-4"
           aria-label="Form bölümleri"
         >
           {navItems.map((item) => (

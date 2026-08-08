@@ -246,11 +246,11 @@ export function UsernameStudentProfileForm({
   }
 
   if (loading) {
-    return <p className="text-sm text-slate-600">Profil yükleniyor...</p>;
+    return <p className="text-sm text-muted">Profil yükleniyor...</p>;
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4 rounded-[1.5rem] border border-slate-200 bg-white p-6 shadow-sm">
+    <form onSubmit={handleSubmit} className="space-y-4 rounded-[1.5rem] border border-border-surface bg-white p-6 shadow-sm">
       <div className="flex items-center justify-between gap-3">
         <h2 className="text-lg font-bold text-navy-950">{title}</h2>
         <span
@@ -286,7 +286,7 @@ export function UsernameStudentProfileForm({
           )}
         </div>
       ) : (
-        <p className="text-sm text-slate-600">
+        <p className="text-sm text-muted">
           Sertifika için profilin %100 dolu olmalı.{" "}
           <Link href={backHref} className="font-semibold text-document-primary underline">
             {backLabel}
@@ -344,7 +344,7 @@ export function UsernameStudentProfileForm({
         value={form.proje_sayisi}
         onChange={(e) => setForm((f) => ({ ...f, proje_sayisi: e.target.value }))}
       />
-      <fieldset className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-4 sm:px-5">
+      <fieldset className="rounded-2xl border border-border-surface bg-surface-section px-4 py-4 sm:px-5">
         <legend className="px-1 text-sm font-semibold leading-6 text-navy-900">İlgi alanları</legend>
         <div className={getChipGridClass(INTEREST_OPTIONS.length)}>
           {INTEREST_OPTIONS.map((interest) => {
@@ -395,7 +395,7 @@ export function UsernameStudentProfileForm({
                 className={`relative aspect-square overflow-hidden rounded-2xl border-2 transition ${
                   selected
                     ? "border-document-primary ring-2 ring-document-primary/30"
-                    : "border-slate-200 hover:border-sky-300"
+                    : "border-border-surface hover:border-secondary/40"
                 }`}
               >
                 <Image
@@ -411,7 +411,7 @@ export function UsernameStudentProfileForm({
         </div>
       </fieldset>
 
-      <label className="flex items-start gap-2 text-sm text-slate-700">
+      <label className="flex items-start gap-2 text-sm text-[var(--text-on-surface-soft)]">
         <input
           type="checkbox"
           checked={form.kvkk_accepted}

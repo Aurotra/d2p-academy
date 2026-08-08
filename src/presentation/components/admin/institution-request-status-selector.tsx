@@ -70,7 +70,7 @@ export function InstitutionRequestStatusSelector({
         value={status}
         disabled={isUpdating}
         onChange={(event) => handleChange(event.target.value as InstitutionRequestStatus)}
-        className="min-h-[44px] w-full min-w-[160px] rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 focus:border-document-primary focus:outline-none focus:ring-2 focus:ring-blue-200 disabled:cursor-not-allowed disabled:opacity-60"
+        className="min-h-[44px] w-full min-w-[160px] rounded-xl border border-border-surface bg-white px-3 py-2 text-sm text-navy-950 focus:border-document-primary focus:outline-none focus:ring-2 focus:ring-blue-200 disabled:cursor-not-allowed disabled:opacity-60"
         aria-label="Talep durumu"
       >
         {INSTITUTION_REQUEST_STATUS_OPTIONS.map((option) => (

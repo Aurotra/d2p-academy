@@ -149,7 +149,7 @@ export default function AdminEvaluateDocumentPage() {
 
   if (isAuthorizing || isLoading) {
     return (
-      <div className="rounded-[1.75rem] border border-slate-200 bg-white p-8 text-center text-sm text-slate-600">
+      <div className="rounded-[1.75rem] border border-border-surface bg-white p-8 text-center text-sm text-muted">
         {isAuthorizing ? "Yetki kontrol ediliyor..." : "Veriler yükleniyor..."}
       </div>
     );
@@ -157,7 +157,7 @@ export default function AdminEvaluateDocumentPage() {
 
   return (
     <div className="space-y-6">
-      <div className="rounded-[1.75rem] border border-slate-200 bg-white p-8 shadow-sm">
+      <div className="rounded-[1.75rem] border border-border-surface bg-white p-8 shadow-sm">
         <Link
           href="/admin/documents"
           className="text-sm font-semibold text-document-primary transition hover:text-document-primary-hover"
@@ -167,8 +167,8 @@ export default function AdminEvaluateDocumentPage() {
         <p className="mt-4 text-sm font-semibold uppercase tracking-[0.18em] text-document-primary">
           Ödev Değerlendirme
         </p>
-        <h1 className="mt-2 text-2xl font-bold text-slate-900">{documentTitle}</h1>
-        <p className="mt-2 text-sm text-slate-600">
+        <h1 className="mt-2 text-2xl font-bold text-navy-950">{documentTitle}</h1>
+        <p className="mt-2 text-sm text-muted">
           Öğrenci seçin, puan ve gelişim yorumunu kaydedin.
         </p>
       </div>
@@ -186,9 +186,9 @@ export default function AdminEvaluateDocumentPage() {
         </div>
       ) : null}
 
-      <div className="rounded-[1.75rem] border border-slate-200 bg-white p-8 shadow-sm">
+      <div className="rounded-[1.75rem] border border-border-surface bg-white p-8 shadow-sm">
         {students.length === 0 ? (
-          <p className="text-center text-slate-500">Kayıtlı öğrenci bulunamadı.</p>
+          <p className="text-center text-subtle">Kayıtlı öğrenci bulunamadı.</p>
         ) : (
           <div className="space-y-5">
             <Select
@@ -207,7 +207,7 @@ export default function AdminEvaluateDocumentPage() {
 
             <div className="grid gap-4 md:grid-cols-[140px_1fr]">
               <div>
-                <label htmlFor="score" className="mb-2 block text-sm font-medium text-slate-900">
+                <label htmlFor="score" className="mb-2 block text-sm font-medium text-navy-950">
                   Puan (0-100)
                 </label>
                 <input
@@ -218,7 +218,7 @@ export default function AdminEvaluateDocumentPage() {
                   value={score}
                   disabled={isSaving || !selectedStudentId}
                   onChange={(event) => setScore(event.target.value)}
-                  className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 focus:border-document-primary focus:outline-none focus:ring-2 focus:ring-blue-200"
+                  className="w-full rounded-xl border border-border-surface bg-surface-section px-4 py-3 text-sm text-navy-950 focus:border-document-primary focus:outline-none focus:ring-2 focus:ring-blue-200"
                 />
               </div>
 

@@ -229,10 +229,10 @@ function FormSection({
   children: ReactNode;
 }) {
   return (
-    <section className="rounded-2xl border border-slate-200 bg-slate-50/50 p-4 sm:p-5">
+    <section className="rounded-2xl border border-border-surface bg-surface-section/50 p-4 sm:p-5">
       <div className="mb-4">
-        <h3 className="text-sm font-bold uppercase tracking-wide text-slate-700">{title}</h3>
-        {description ? <p className="mt-1 text-xs text-slate-500">{description}</p> : null}
+        <h3 className="text-sm font-bold uppercase tracking-wide text-[var(--text-on-surface-soft)]">{title}</h3>
+        {description ? <p className="mt-1 text-xs text-subtle">{description}</p> : null}
       </div>
       <div className="grid gap-4 md:grid-cols-2">{children}</div>
     </section>
@@ -249,7 +249,7 @@ function AdminActionLink({
   return (
     <Link
       href={href}
-      className="inline-flex min-h-[40px] items-center justify-center rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-navy-950 transition hover:border-sky-300 hover:bg-sky-50"
+      className="inline-flex min-h-[40px] items-center justify-center rounded-xl border border-border-surface bg-white px-4 py-2 text-sm font-semibold text-navy-950 transition hover:border-secondary/40 hover:bg-surface-section"
     >
       {children}
     </Link>
@@ -281,7 +281,7 @@ function EventActionBar({
   const isSaving = savingEventId === event.id;
 
   return (
-    <div className="flex flex-col gap-3 border-t border-slate-100 bg-slate-50/60 px-4 py-3 sm:px-5">
+    <div className="flex flex-col gap-3 border-t border-border-surface bg-surface-section/60 px-4 py-3 sm:px-5">
       <div className="flex flex-wrap items-center gap-2">
         {showSave ? (
           <>
@@ -361,8 +361,8 @@ function EventActionBar({
 function EventMetaItem({ label, value }: { label: string; value: ReactNode }) {
   return (
     <div className="min-w-0">
-      <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-400">{label}</p>
-      <p className="mt-1 text-sm text-slate-700">{value}</p>
+      <p className="text-[11px] font-semibold uppercase tracking-wide text-subtle">{label}</p>
+      <p className="mt-1 text-sm text-[var(--text-on-surface-soft)]">{value}</p>
     </div>
   );
 }
@@ -406,10 +406,10 @@ function EventListCard({
       className={`overflow-hidden rounded-2xl border bg-white shadow-sm transition ${
         isEditing
           ? "border-document-primary ring-2 ring-document-primary/15"
-          : "border-slate-200 hover:border-sky-200"
+          : "border-border-surface hover:border-border-surface"
       }`}
     >
-      <div className={`px-4 py-4 sm:px-5 ${isEditing ? "bg-sky-50/50" : "bg-white"}`}>
+      <div className={`px-4 py-4 sm:px-5 ${isEditing ? "bg-surface-section/50" : "bg-white"}`}>
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div className="min-w-0 flex-1">
             <div className="flex flex-wrap gap-2">
@@ -437,7 +437,7 @@ function EventListCard({
               value={
                 <>
                   {formatDateTime(event.startAt)}
-                  <span className="block text-slate-500">→ {formatDateTime(event.endAt)}</span>
+                  <span className="block text-subtle">→ {formatDateTime(event.endAt)}</span>
                 </>
               }
             />
@@ -459,7 +459,7 @@ function EventListCard({
       </div>
 
       {isEditing && editForm ? (
-        <form onSubmit={onUpdate} className="border-t border-slate-100">
+        <form onSubmit={onUpdate} className="border-t border-border-surface">
           <div className="space-y-4 px-4 py-5 sm:px-5">
             <h4 className="text-base font-semibold text-navy-950">Etkinliği düzenle</h4>
             <EventFormFields
@@ -585,7 +585,7 @@ function EventFormFields({
             placeholder="ör. KYK"
             maxLength={4}
           />
-          <p className="mt-1 text-xs text-slate-500" id={`${idPrefix}-program-code-hint`}>
+          <p className="mt-1 text-xs text-subtle" id={`${idPrefix}-program-code-hint`}>
             Öğrenci ve sertifika kodu için zorunlu (2–4 harf).
           </p>
         </div>
@@ -651,7 +651,7 @@ function EventFormFields({
             onChange={(e) => setForm({ ...form, totalLessonCount: e.target.value })}
             placeholder="Örn. 12"
           />
-          <p className="mt-1 text-xs text-slate-500">
+          <p className="mt-1 text-xs text-subtle">
             Kurstaki toplam yoklama dersi (ör. 12 saat = 12 ders). Etkinlik bitiş tarihiyle
             çarpılmaz. Boş bırakılırsa varsayılan 12 kullanılır
             {lessonsPerDay > 0 ? ` · Günde en fazla ${lessonsPerDay} slot` : ""}.
@@ -668,7 +668,7 @@ function EventFormFields({
             onChange={(e) => setForm({ ...form, requiredLessonCount: e.target.value })}
             placeholder="Örn. 8"
           />
-          <p className="mt-1 text-xs text-slate-500">
+          <p className="mt-1 text-xs text-subtle">
             Öğrencinin en az bu kadar derste «geldi» işaretlenince son test açılır ve sertifika
             onay listesine düşebilir (ör. 12 dersten 8).
           </p>
@@ -709,7 +709,7 @@ function EventFormFields({
       <FormSection title="Eğitmenler" description="Bir veya birden fazla eğitmen seçin">
         <div className="md:col-span-2">
           {instructors.length === 0 ? (
-            <p className="text-sm text-slate-500">Henüz eğitmen tanımlı değil.</p>
+            <p className="text-sm text-subtle">Henüz eğitmen tanımlı değil.</p>
           ) : (
             <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
               {instructors.map((instructor) => {
@@ -722,8 +722,8 @@ function EventFormFields({
                     htmlFor={inputId}
                     className={`flex cursor-pointer items-start gap-2 rounded-xl border px-3 py-2.5 text-sm transition ${
                       isChecked
-                        ? "border-document-primary/40 bg-sky-50 text-navy-950"
-                        : "border-slate-200 bg-white text-navy-900 hover:border-slate-300"
+                        ? "border-document-primary/40 bg-surface-section text-navy-950"
+                        : "border-border-surface bg-white text-navy-900 hover:border-secondary/40"
                     }`}
                   >
                     <input
@@ -735,7 +735,7 @@ function EventFormFields({
                     />
                     <span>
                       <span className="font-medium">{instructor.fullName}</span>
-                      <span className="block text-xs text-slate-500">{instructor.email}</span>
+                      <span className="block text-xs text-subtle">{instructor.email}</span>
                     </span>
                   </label>
                 );
@@ -1080,7 +1080,7 @@ export function AdminEventsManager() {
         onDismiss={clearFeedback}
       />
 
-      <div className="rounded-[2rem] border border-slate-200 bg-white shadow-sm">
+      <div className="rounded-[2rem] border border-border-surface bg-white shadow-sm">
         <button
           type="button"
           onClick={() => {
@@ -1091,7 +1091,7 @@ export function AdminEventsManager() {
         >
           <div>
             <h2 className="text-xl font-bold text-navy-950">Yeni Etkinlik Oluştur</h2>
-            <p className="mt-1 text-sm text-slate-500">
+            <p className="mt-1 text-sm text-subtle">
               Formu bölümlere ayırdık: temel bilgiler, program, tarih ve eğitmenler.
             </p>
           </div>
@@ -1101,7 +1101,7 @@ export function AdminEventsManager() {
         </button>
 
         {createFormOpen ? (
-          <form onSubmit={handleCreate} className="space-y-4 border-t border-slate-100 px-6 pb-6 pt-5">
+          <form onSubmit={handleCreate} className="space-y-4 border-t border-border-surface px-6 pb-6 pt-5">
             <EventFormFields
               form={createForm}
               setForm={setCreateForm}
@@ -1109,7 +1109,7 @@ export function AdminEventsManager() {
               instructors={instructors}
               idPrefix="create"
             />
-            <div className="flex justify-end border-t border-slate-100 pt-4">
+            <div className="flex justify-end border-t border-border-surface pt-4">
               <Button type="submit" disabled={isSaving}>
                 {isSaving ? "Kaydediliyor..." : "Etkinlik Oluştur"}
               </Button>
@@ -1118,11 +1118,11 @@ export function AdminEventsManager() {
         ) : null}
       </div>
 
-      <div className="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm">
+      <div className="rounded-[2rem] border border-border-surface bg-white p-6 shadow-sm">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
           <div>
             <h2 className="text-xl font-bold text-navy-950">Etkinlik Listesi</h2>
-            <p className="mt-1 text-sm text-slate-500">
+            <p className="mt-1 text-sm text-subtle">
               Tüm etkinlikler kart görünümünde; işlemler her kartın altında gruplandı.
             </p>
           </div>
@@ -1136,9 +1136,9 @@ export function AdminEventsManager() {
         </div>
 
         {isLoading ? (
-          <p className="mt-6 text-sm text-slate-600">Yükleniyor...</p>
+          <p className="mt-6 text-sm text-muted">Yükleniyor...</p>
         ) : events.length === 0 ? (
-          <p className="mt-6 rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-4 py-8 text-center text-sm text-slate-600">
+          <p className="mt-6 rounded-2xl border border-dashed border-border-surface bg-surface-section px-4 py-8 text-center text-sm text-muted">
             Henüz etkinlik yok. Yukarıdaki formdan ilk etkinliği oluşturabilirsiniz.
           </p>
         ) : (

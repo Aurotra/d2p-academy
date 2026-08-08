@@ -161,12 +161,12 @@ export default async function AdminFormsPage({ searchParams }: AdminFormsPagePro
 
   return (
     <div className="space-y-6">
-      <div className="rounded-[1.75rem] border border-slate-200 bg-white p-8 shadow-sm">
+      <div className="rounded-[1.75rem] border border-border-surface bg-white p-8 shadow-sm">
         <p className="text-sm font-semibold uppercase tracking-[0.18em] text-document-primary">
           Formlar
         </p>
-        <h1 className="mt-2 text-2xl font-bold text-slate-900">Doldurulan Katılımcı Formları</h1>
-        <p className="mt-2 text-sm text-slate-600">
+        <h1 className="mt-2 text-2xl font-bold text-navy-950">Doldurulan Katılımcı Formları</h1>
+        <p className="mt-2 text-sm text-muted">
           Tanışma, Onaylar, Ön test ve Son test sonuçlarına buradan ulaşın. Her satırdan form
           detayını açıp PDF çıktısı alabilirsiniz.
         </p>
@@ -191,7 +191,7 @@ export default async function AdminFormsPage({ searchParams }: AdminFormsPagePro
         ) : null}
       </div>
 
-      <Suspense fallback={<div className="text-sm text-slate-500">Filtreler yükleniyor...</div>}>
+      <Suspense fallback={<div className="text-sm text-subtle">Filtreler yükleniyor...</div>}>
         <AdminFormsFilters
           events={(eventsData ?? []).map((event) => ({ id: event.id, title: event.title }))}
           currentEventId={eventId}

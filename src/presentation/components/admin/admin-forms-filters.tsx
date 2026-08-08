@@ -32,15 +32,15 @@ export function AdminFormsFilters({ events, currentEventId, missingOnly }: Admin
   }
 
   return (
-    <div className="flex flex-col gap-4 rounded-[1.75rem] border border-slate-200 bg-white p-5 shadow-sm sm:flex-row sm:items-end sm:justify-between">
+    <div className="flex flex-col gap-4 rounded-[1.75rem] border border-border-surface bg-white p-5 shadow-sm sm:flex-row sm:items-end sm:justify-between">
       <label className="block text-sm">
-        <span className="font-semibold text-slate-900">Etkinlik filtresi</span>
+        <span className="font-semibold text-navy-950">Etkinlik filtresi</span>
         <select
           value={currentEventId ?? ""}
           onChange={(event) =>
             updateFilters({ eventId: event.target.value || null, missing: missingOnly })
           }
-          className="mt-2 block w-full min-w-[240px] rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900"
+          className="mt-2 block w-full min-w-[240px] rounded-xl border border-border-surface bg-white px-3 py-2.5 text-sm text-navy-950"
         >
           <option value="">Tüm etkinlikler</option>
           {events.map((event) => (
@@ -58,7 +58,7 @@ export function AdminFormsFilters({ events, currentEventId, missingOnly }: Admin
           className={`rounded-xl px-4 py-2.5 text-sm font-semibold transition ${
             !missingOnly
               ? "bg-navy-950 text-white"
-              : "border border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
+              : "border border-border-surface bg-white text-[var(--text-on-surface-soft)] hover:bg-surface-section"
           }`}
         >
           Tümü
@@ -69,7 +69,7 @@ export function AdminFormsFilters({ events, currentEventId, missingOnly }: Admin
           className={`rounded-xl px-4 py-2.5 text-sm font-semibold transition ${
             missingOnly
               ? "bg-rose-600 text-white"
-              : "border border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
+              : "border border-border-surface bg-white text-[var(--text-on-surface-soft)] hover:bg-surface-section"
           }`}
         >
           Eksik formlar

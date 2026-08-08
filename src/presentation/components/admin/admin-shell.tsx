@@ -25,16 +25,16 @@ export function AdminShell({
   children,
 }: AdminShellProps) {
   return (
-    <div className="admin-shell-root min-h-screen bg-slate-50">
+    <div className="admin-shell-root min-h-screen bg-surface-section">
       <div className={`${BRAND_SURFACE_HEADER} no-print border-b`}>
         <div className="mx-auto flex max-w-7xl flex-col gap-4 px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-6 lg:px-8">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
             <BrandLogo href="/" height={36} />
             <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-sky-700">
+              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-secondary">
                 Admin Paneli
               </p>
-              <p className="text-sm text-sky-800">
+              <p className="text-sm text-navy-900">
                 {profile.fullName} · {profile.email}
               </p>
             </div>

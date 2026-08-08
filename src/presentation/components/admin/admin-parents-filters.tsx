@@ -34,7 +34,7 @@ export function AdminParentsFilters() {
   return (
     <form
       onSubmit={handleSubmit}
-      className="flex flex-col gap-3 rounded-2xl border border-slate-200 bg-slate-50 p-4 sm:flex-row sm:items-end"
+      className="flex flex-col gap-3 rounded-2xl border border-border-surface bg-surface-section p-4 sm:flex-row sm:items-end"
     >
       <div className="flex-1">
         <Input
@@ -50,7 +50,7 @@ export function AdminParentsFilters() {
           Temizle
         </Button>
         {phoneFilter ? (
-          <span className="inline-flex items-center rounded-full bg-sky-100 px-3 py-1.5 text-xs font-semibold text-sky-900">
+          <span className="inline-flex items-center rounded-full bg-surface-tint-mixed px-3 py-1.5 text-xs font-semibold text-navy-900">
             Telefon filtresi: {phoneFilter === "missing" ? "eksik" : "dolu"}
           </span>
         ) : null}

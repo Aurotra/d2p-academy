@@ -58,9 +58,9 @@ export function ParentChildrenEnrollmentsView({
 
   if (childrenCount === 0) {
     return (
-      <div className="rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-6 py-10 text-center">
+      <div className="rounded-2xl border border-dashed border-border-surface bg-surface-section px-6 py-10 text-center">
         <p className="text-sm font-semibold text-navy-950">Henüz çocuk hesabı yok</p>
-        <p className="mt-2 text-sm text-slate-600">
+        <p className="mt-2 text-sm text-muted">
           Etkinlik kayıtlarını görmek için önce çocuğunuzun öğrenci hesabını oluşturun.
         </p>
         <Link
@@ -75,9 +75,9 @@ export function ParentChildrenEnrollmentsView({
 
   if (enrollments.length === 0) {
     return (
-      <div className="rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-6 py-10 text-center">
+      <div className="rounded-2xl border border-dashed border-border-surface bg-surface-section px-6 py-10 text-center">
         <p className="text-sm font-semibold text-navy-950">Henüz etkinlik kaydı yok</p>
-        <p className="mt-2 text-sm text-slate-600">
+        <p className="mt-2 text-sm text-muted">
           Çocuklarınızı yayında olan bir etkinliğe kaydedin; kayıtlar burada listelenir.
         </p>
         <div className="mt-4 flex flex-wrap justify-center gap-2">
@@ -89,7 +89,7 @@ export function ParentChildrenEnrollmentsView({
           </Link>
           <Link
             href="/etkinlikler"
-            className="inline-flex rounded-xl border border-slate-200 bg-white px-5 py-3 text-sm font-semibold text-navy-950 transition hover:bg-slate-50"
+            className="inline-flex rounded-xl border border-border-surface bg-white px-5 py-3 text-sm font-semibold text-navy-950 transition hover:bg-surface-section"
           >
             Etkinlikleri gör
           </Link>
@@ -143,7 +143,7 @@ function FilterChip({
       className={`rounded-full px-4 py-2 text-sm font-semibold transition ${
         active
           ? "bg-document-primary text-white shadow-sm"
-          : "border border-slate-200 bg-white text-slate-700 hover:border-sky-300 hover:bg-sky-50"
+          : "border border-border-surface bg-white text-[var(--text-on-surface-soft)] hover:border-secondary/40 hover:bg-surface-section"
       }`}
     >
       {label}
@@ -161,7 +161,7 @@ function EnrollmentCard({ item }: { item: ParentChildEnrollmentItem }) {
   const formsHref = `/dashboard/children/${item.childId}/enrollments/${item.enrollmentId}/forms`;
 
   return (
-    <li className="rounded-[1.5rem] border border-slate-200 bg-white p-5 shadow-sm transition hover:border-cyan-200">
+    <li className="rounded-[1.5rem] border border-border-surface bg-white p-5 shadow-sm transition hover:border-cyan-200">
       <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap gap-2">
@@ -178,13 +178,13 @@ function EnrollmentCard({ item }: { item: ParentChildEnrollmentItem }) {
           </div>
 
           <h2 className="mt-3 text-lg font-bold text-navy-950">{item.eventTitle}</h2>
-          <p className="mt-1 text-sm font-medium text-slate-700">
+          <p className="mt-1 text-sm font-medium text-[var(--text-on-surface-soft)]">
             {item.childName}{" "}
-            <span className="text-slate-500">@{item.childUsername}</span>
+            <span className="text-subtle">@{item.childUsername}</span>
           </p>
-          <p className="mt-2 text-sm text-slate-600">{scheduleLabel}</p>
-          <p className="mt-1 text-sm text-slate-500">{locationLabel}</p>
-          <p className="mt-1 text-xs text-slate-400">
+          <p className="mt-2 text-sm text-muted">{scheduleLabel}</p>
+          <p className="mt-1 text-sm text-subtle">{locationLabel}</p>
+          <p className="mt-1 text-xs text-subtle">
             Kayıt: {formatRegisteredAt(item.registeredAt)}
           </p>
 
@@ -219,7 +219,7 @@ function EnrollmentCard({ item }: { item: ParentChildEnrollmentItem }) {
           </Link>
           <Link
             href={`/etkinlikler/${item.eventSlug}`}
-            className="inline-flex min-h-11 items-center justify-center rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-navy-950 transition hover:bg-slate-50"
+            className="inline-flex min-h-11 items-center justify-center rounded-xl border border-border-surface bg-white px-4 py-2.5 text-sm font-semibold text-navy-950 transition hover:bg-surface-section"
           >
             Etkinlik detayı
           </Link>

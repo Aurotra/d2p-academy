@@ -146,7 +146,7 @@ export function AdminShellBody({ pendingCounts, children }: AdminShellBodyProps)
         <button
           type="button"
           onClick={() => setMobileNavOpen(true)}
-          className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-sky-200 bg-white px-4 py-2.5 text-sm font-semibold text-navy-900 shadow-sm transition hover:border-sky-300 hover:bg-sky-50"
+          className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-border-surface bg-white px-4 py-2.5 text-sm font-semibold text-navy-900 shadow-sm transition hover:border-secondary/40 hover:bg-surface-section"
           aria-expanded={mobileNavOpen}
           aria-controls="admin-mobile-nav"
         >
@@ -159,21 +159,21 @@ export function AdminShellBody({ pendingCounts, children }: AdminShellBodyProps)
         <>
           <button
             type="button"
-            className="fixed inset-0 z-40 bg-slate-900/40 lg:hidden"
+            className="fixed inset-0 z-40 bg-navy-950/40 lg:hidden"
             aria-label="Menüyü kapat"
             onClick={() => setMobileNavOpen(false)}
           />
           <aside
             id="admin-mobile-nav"
-            className="fixed inset-y-0 left-0 z-50 flex w-[min(100vw-2.5rem,18rem)] flex-col border-r border-sky-200 bg-sky-50/95 shadow-2xl backdrop-blur-sm lg:hidden"
+            className="fixed inset-y-0 left-0 z-50 flex w-[min(100vw-2.5rem,18rem)] flex-col border-r border-border-surface bg-surface-section/95 shadow-2xl backdrop-blur-sm lg:hidden"
           >
-            <div className="flex items-center justify-between border-b border-sky-200/80 px-4 py-4">
+            <div className="flex items-center justify-between border-b border-border-surface px-4 py-4">
               <p className="text-sm font-bold text-navy-950">Admin menüsü</p>
               <button
                 type="button"
                 onClick={() => setMobileNavOpen(false)}
                 aria-label="Menüyü kapat"
-                className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-xl text-slate-600 transition hover:bg-white"
+                className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-xl text-muted transition hover:bg-white"
               >
                 <MenuIcon open />
               </button>
@@ -189,7 +189,7 @@ export function AdminShellBody({ pendingCounts, children }: AdminShellBodyProps)
       ) : null}
 
       <div className="mx-auto grid max-w-7xl gap-6 px-4 py-6 lg:grid-cols-[220px_1fr] lg:px-8 lg:py-8">
-        <aside className="no-print hidden h-fit rounded-2xl border border-sky-200 bg-sky-50/80 p-4 shadow-sm lg:block">
+        <aside className="no-print hidden h-fit rounded-2xl border border-border-surface bg-surface-section/80 p-4 shadow-sm lg:block">
           <NavLinks pendingCounts={pendingCounts} />
         </aside>
         <div className="admin-shell-main min-w-0">

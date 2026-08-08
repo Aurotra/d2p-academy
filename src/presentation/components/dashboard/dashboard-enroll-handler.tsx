@@ -26,7 +26,7 @@ export function DashboardEnrollHandler() {
   }
 
   return (
-    <div className="mb-6 rounded-2xl border border-sky-200 bg-sky-50 px-5 py-4 text-sm text-sky-900">
+    <div className="mb-6 rounded-2xl border border-border-surface bg-surface-section px-5 py-4 text-sm text-navy-900">
       Etkinlik kaydı için çocuk hesapları sayfasına yönlendiriliyorsunuz…
     </div>
   );

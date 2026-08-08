@@ -53,10 +53,10 @@ export function AdminAddEnrollmentForm({ eventId, eventTitle }: AdminAddEnrollme
   return (
     <form
       onSubmit={handleSubmit}
-      className="rounded-[1.25rem] border border-sky-200 bg-sky-50/60 p-4 sm:p-5"
+      className="rounded-[1.25rem] border border-border-surface bg-surface-section/60 p-4 sm:p-5"
     >
       <p className="text-sm font-semibold text-navy-950">Öğrenci ekle — {eventTitle}</p>
-      <p className="mt-1 text-xs text-slate-600">
+      <p className="mt-1 text-xs text-muted">
         Kullanıcı adı (e-postasız çocuk) veya e-posta adresi ile ekleyin.
       </p>
       <div className="mt-3 flex flex-col gap-3 sm:flex-row sm:items-end">

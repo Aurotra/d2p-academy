@@ -48,13 +48,13 @@ function ContactPhoneCell({ parent }: { parent: AdminParentRecord }) {
   return (
     <div className="min-w-[9.5rem] space-y-1">
       {phoneLink(parent.contactPhone)}
-      <p className="text-xs text-slate-500">
+      <p className="text-xs text-subtle">
         {source === "account" ? "Veli hesabı" : "Çocuk profili"}
       </p>
       {parent.accountPhone?.trim() &&
       parent.profileContactPhone?.trim() &&
       parent.accountPhone.trim() !== parent.profileContactPhone.trim() ? (
-        <p className="text-xs text-slate-500">
+        <p className="text-xs text-subtle">
           Profil: {formatTurkishPhoneDisplay(parent.profileContactPhone)}
         </p>
       ) : null}
@@ -78,7 +78,7 @@ function StatPill({
       ? "bg-emerald-100 text-emerald-900"
       : tone === "amber"
         ? "bg-amber-100 text-amber-900"
-        : "bg-slate-100 text-slate-700";
+        : "bg-surface-section text-[var(--text-on-surface-soft)]";
 
   return (
     <button
@@ -138,12 +138,12 @@ export function AdminParentsTable({
         />
       </div>
 
-      <div className="overflow-hidden rounded-[1.75rem] border border-slate-200 bg-white shadow-sm">
+      <div className="overflow-hidden rounded-[1.75rem] border border-border-surface bg-white shadow-sm">
         <div className="overflow-x-auto">
           <table className="min-w-[56rem] w-full text-left text-sm">
-            <thead className="border-b border-slate-100 bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
+            <thead className="border-b border-border-surface bg-surface-section text-xs uppercase tracking-wide text-subtle">
               <tr>
-                <th className="sticky left-0 z-10 min-w-[11rem] bg-slate-50 px-4 py-4 sm:px-5">
+                <th className="sticky left-0 z-10 min-w-[11rem] bg-surface-section px-4 py-4 sm:px-5">
                   Veli
                 </th>
                 <th className="min-w-[10rem] px-4 py-4 sm:px-5">Telefon</th>
@@ -155,15 +155,15 @@ export function AdminParentsTable({
             <tbody>
               {parents.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="px-5 py-10 text-center text-slate-500">
+                  <td colSpan={5} className="px-5 py-10 text-center text-subtle">
                     Kayıtlı veli bulunamadı.
                   </td>
                 </tr>
               ) : (
                 parents.map((parent) => (
-                  <tr key={parent.id} className="border-b border-slate-50 align-top last:border-0">
+                  <tr key={parent.id} className="border-b border-border-surface align-top last:border-0">
                     <td className="sticky left-0 z-10 min-w-[11rem] bg-white px-4 py-4 sm:px-5">
-                      <p className="font-semibold text-slate-900">{parent.fullName}</p>
+                      <p className="font-semibold text-navy-950">{parent.fullName}</p>
                       {parent.email ? (
                         <a
                           href={`mailto:${parent.email}`}
@@ -172,30 +172,30 @@ export function AdminParentsTable({
                           {parent.email}
                         </a>
                       ) : (
-                        <p className="mt-1 text-xs text-slate-400">E-posta yok</p>
+                        <p className="mt-1 text-xs text-subtle">E-posta yok</p>
                       )}
                     </td>
                     <td className="px-4 py-4 sm:px-5">
                       <ContactPhoneCell parent={parent} />
                     </td>
-                    <td className="px-4 py-4 text-slate-700 sm:px-5">
+                    <td className="px-4 py-4 text-[var(--text-on-surface-soft)] sm:px-5">
                       {parent.children.length === 0 ? (
-                        <span className="text-slate-400">—</span>
+                        <span className="text-subtle">—</span>
                       ) : (
                         <ul className="space-y-2">
                           {parent.children.map((child) => (
                             <li key={child.id} className="min-w-0">
                               <Link
                                 href={`/admin/students/${child.id}`}
-                                className="font-medium text-slate-900 hover:text-document-primary hover:underline"
+                                className="font-medium text-navy-950 hover:text-document-primary hover:underline"
                               >
                                 {child.fullName}
                               </Link>
                               {child.username ? (
-                                <span className="block text-xs text-slate-500">@{child.username}</span>
+                                <span className="block text-xs text-subtle">@{child.username}</span>
                               ) : null}
                               {child.parentPhone ? (
-                                <span className="mt-0.5 block text-xs text-slate-500">
+                                <span className="mt-0.5 block text-xs text-subtle">
                                   Veli tel: {formatTurkishPhoneDisplay(child.parentPhone)}
                                 </span>
                               ) : (
@@ -208,7 +208,7 @@ export function AdminParentsTable({
                         </ul>
                       )}
                     </td>
-                    <td className="whitespace-nowrap px-4 py-4 text-slate-600 sm:px-5">
+                    <td className="whitespace-nowrap px-4 py-4 text-muted sm:px-5">
                       {formatDate(parent.createdAt)}
                     </td>
                     <td className="whitespace-nowrap px-4 py-4 sm:px-5">
@@ -216,7 +216,7 @@ export function AdminParentsTable({
                         className={`inline-flex whitespace-nowrap rounded-full px-3 py-1 text-xs font-bold ${
                           parent.isActive
                             ? "bg-emerald-100 text-emerald-900"
-                            : "bg-slate-200 text-slate-700"
+                            : "bg-surface-section text-[var(--text-on-surface-soft)]"
                         }`}
                       >
                         {parent.isActive ? "Aktif" : "Pasif"}

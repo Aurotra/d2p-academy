@@ -29,8 +29,8 @@ const categories: AdminCategory[] = [
         href: "/admin/events",
         title: "Etkinlik Yönetimi",
         description: "Yeni eğitim/atölye ekleyin, yayınlayın veya silin.",
-        tone: "border-sky-200 bg-sky-100 text-sky-950 hover:bg-sky-50",
-        badge: "bg-sky-200/70 text-sky-800",
+        tone: "border-border-surface bg-surface-tint-mixed text-navy-950 hover:bg-surface-section",
+        badge: "bg-surface-tint-yellow text-navy-900",
       },
       {
         href: "/admin/enrollments",
@@ -57,8 +57,8 @@ const categories: AdminCategory[] = [
         href: "/admin/logs",
         title: "İşlem Logları",
         description: "Sertifika iptal nedenleri ve silinen kayıtları görüntüleyin.",
-        tone: "border-slate-300 bg-slate-100 text-slate-950 hover:bg-slate-50",
-        badge: "bg-slate-200/80 text-slate-800",
+        tone: "border-border-surface bg-surface-section text-navy-950 hover:bg-surface-section",
+        badge: "bg-surface-section/80 text-navy-900",
       },
     ],
   },
@@ -77,8 +77,8 @@ const categories: AdminCategory[] = [
         href: "/admin/parents",
         title: "Veli İletişim",
         description: "Velilerin ad, e-posta ve telefon bilgilerini görüntüleyin.",
-        tone: "border-sky-200 bg-sky-100 text-sky-950 hover:bg-sky-50",
-        badge: "bg-sky-200/70 text-sky-900",
+        tone: "border-border-surface bg-surface-tint-mixed text-navy-950 hover:bg-surface-section",
+        badge: "bg-surface-tint-yellow text-navy-900",
       },
       {
         href: "/admin/members",
@@ -147,13 +147,13 @@ export default async function AdminOverviewPage() {
   return (
     <div className="space-y-8">
       <div
-        className={`rounded-[2rem] border border-sky-200 ${BRAND_SURFACE_GRADIENT} p-8 text-sky-950`}
+        className={`rounded-[2rem] border border-border-surface ${BRAND_SURFACE_GRADIENT} p-8 text-navy-950`}
       >
-        <p className="text-sm font-semibold uppercase tracking-[0.18em] text-sky-700">
+        <p className="text-sm font-semibold uppercase tracking-[0.18em] text-secondary">
           Yönetim Merkezi
         </p>
         <h2 className="mt-2 text-3xl font-black">D2P Academy Admin Paneli</h2>
-        <p className="mt-3 max-w-2xl text-sm text-sky-900/80">
+        <p className="mt-3 max-w-2xl text-sm text-[var(--text-on-surface-soft)]">
           Etkinlikleri, başvuruları ve öğrenci içeriklerini buradan yönetin.
         </p>
       </div>
@@ -176,7 +176,7 @@ export default async function AdminOverviewPage() {
         <section key={category.title} className="space-y-4">
           <div>
             <h3 className="text-lg font-bold text-navy-950">{category.title}</h3>
-            <p className="mt-1 text-sm text-slate-600">{category.description}</p>
+            <p className="mt-1 text-sm text-muted">{category.description}</p>
           </div>
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             {category.cards.map((card) => {
@@ -186,7 +186,7 @@ export default async function AdminOverviewPage() {
                 <Link
                   key={card.href}
                   href={card.href}
-                  className={`group rounded-[1.75rem] border p-6 transition hover:border-slate-300 ${card.tone}`}
+                  className={`group rounded-[1.75rem] border p-6 transition hover:border-secondary/40 ${card.tone}`}
                 >
                   <div className="flex flex-wrap items-center gap-2">
                     <span

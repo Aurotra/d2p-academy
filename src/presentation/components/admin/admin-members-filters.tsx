@@ -36,7 +36,7 @@ export function AdminMembersFilters() {
   return (
     <form
       onSubmit={handleSubmit}
-      className="flex flex-col gap-3 rounded-2xl border border-slate-200 bg-slate-50 p-4 sm:flex-row sm:items-end"
+      className="flex flex-col gap-3 rounded-2xl border border-border-surface bg-surface-section p-4 sm:flex-row sm:items-end"
     >
       <div className="flex-1">
         <Input

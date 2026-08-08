@@ -132,8 +132,8 @@ export function AdminStudentProfileEditor({ student }: AdminStudentProfileEditor
       <ProfileProgressBar data={progressInput} options={progressOptions} />
 
       <form onSubmit={(event) => void handleSubmit(event)} className="space-y-6">
-        <fieldset className="rounded-[1.75rem] border border-slate-200 bg-white p-6 shadow-sm">
-          <legend className="px-2 text-lg font-bold text-slate-900">
+        <fieldset className="rounded-[1.75rem] border border-border-surface bg-white p-6 shadow-sm">
+          <legend className="px-2 text-lg font-bold text-navy-950">
             Bölüm A — Kişisel Bilgiler
           </legend>
           <div className="mt-4 space-y-4">
@@ -186,15 +186,15 @@ export function AdminStudentProfileEditor({ student }: AdminStudentProfileEditor
                 onChange={(e) => setForm({ ...form, parent_phone: e.target.value })}
               />
             ) : null}
-            <p className="text-xs text-slate-500">
+            <p className="text-xs text-subtle">
               E-posta / kullanıcı adı:{" "}
               {student.email ?? (student.username ? `@${student.username}` : "—")}
             </p>
           </div>
         </fieldset>
 
-        <fieldset className="rounded-[1.75rem] border border-slate-200 bg-white p-6 shadow-sm">
-          <legend className="px-2 text-lg font-bold text-slate-900">Bölüm B — Deneyim</legend>
+        <fieldset className="rounded-[1.75rem] border border-border-surface bg-white p-6 shadow-sm">
+          <legend className="px-2 text-lg font-bold text-navy-950">Bölüm B — Deneyim</legend>
           <div className="mt-4 space-y-4">
             <ValueChipGroup
               label="Kodlama Deneyimi"
@@ -225,19 +225,19 @@ export function AdminStudentProfileEditor({ student }: AdminStudentProfileEditor
                 })
               }
             />
-            <p className="text-xs text-slate-500">
+            <p className="text-xs text-subtle">
               Bu alan isteğe bağlıdır; profil tamamlanma yüzdesini etkilemez.
             </p>
           </div>
         </fieldset>
 
-        <fieldset className="rounded-[1.75rem] border border-slate-200 bg-white p-6 shadow-sm">
-          <legend className="px-2 text-lg font-bold text-slate-900">Bölüm C — İlgi Alanları</legend>
+        <fieldset className="rounded-[1.75rem] border border-border-surface bg-white p-6 shadow-sm">
+          <legend className="px-2 text-lg font-bold text-navy-950">Bölüm C — İlgi Alanları</legend>
           <div className="mt-4 grid gap-3 sm:grid-cols-2">
             {INTEREST_OPTIONS.map((interest) => (
               <label
                 key={interest}
-                className="flex items-center gap-2 rounded-xl border border-slate-100 px-3 py-2 text-sm"
+                className="flex items-center gap-2 rounded-xl border border-border-surface px-3 py-2 text-sm"
               >
                 <input
                   type="checkbox"
@@ -250,8 +250,8 @@ export function AdminStudentProfileEditor({ student }: AdminStudentProfileEditor
           </div>
         </fieldset>
 
-        <fieldset className="rounded-[1.75rem] border border-slate-200 bg-white p-6 shadow-sm">
-          <legend className="px-2 text-lg font-bold text-slate-900">Bölüm D — Motivasyon</legend>
+        <fieldset className="rounded-[1.75rem] border border-border-surface bg-white p-6 shadow-sm">
+          <legend className="px-2 text-lg font-bold text-navy-950">Bölüm D — Motivasyon</legend>
           <div className="mt-4">
             <ProfileMotivationFields
               hedef={form.motivation_data.hedef}
@@ -272,10 +272,10 @@ export function AdminStudentProfileEditor({ student }: AdminStudentProfileEditor
           </div>
         </fieldset>
 
-        <fieldset className="rounded-[1.75rem] border border-slate-200 bg-white p-6 shadow-sm">
-          <legend className="px-2 text-lg font-bold text-slate-900">Bölüm E — Avatar</legend>
+        <fieldset className="rounded-[1.75rem] border border-border-surface bg-white p-6 shadow-sm">
+          <legend className="px-2 text-lg font-bold text-navy-950">Bölüm E — Avatar</legend>
           <div className="mt-4 space-y-4">
-            <p className="text-sm font-medium text-slate-900">Avatar</p>
+            <p className="text-sm font-medium text-navy-950">Avatar</p>
             <div className="grid grid-cols-4 gap-3 sm:gap-4">
               {AVATAR_OPTIONS.map((avatar) => {
                 const selected = form.profile_avatar_url === avatar.src;
@@ -289,7 +289,7 @@ export function AdminStudentProfileEditor({ student }: AdminStudentProfileEditor
                     className={`relative aspect-square overflow-hidden rounded-2xl border-2 transition ${
                       selected
                         ? "border-document-primary ring-2 ring-document-primary/30"
-                        : "border-slate-200 hover:border-sky-300"
+                        : "border-border-surface hover:border-secondary/40"
                     }`}
                   >
                     <Image
@@ -306,10 +306,10 @@ export function AdminStudentProfileEditor({ student }: AdminStudentProfileEditor
           </div>
         </fieldset>
 
-        <fieldset className="rounded-[1.75rem] border border-slate-200 bg-white p-6 shadow-sm">
-          <legend className="px-2 text-lg font-bold text-slate-900">Bölüm F — KVKK</legend>
+        <fieldset className="rounded-[1.75rem] border border-border-surface bg-white p-6 shadow-sm">
+          <legend className="px-2 text-lg font-bold text-navy-950">Bölüm F — KVKK</legend>
           <div className="mt-4">
-            <label className="flex items-start gap-3 rounded-xl border border-slate-100 bg-slate-50 px-4 py-3 text-sm">
+            <label className="flex items-start gap-3 rounded-xl border border-border-surface bg-surface-section px-4 py-3 text-sm">
               <input
                 type="checkbox"
                 checked={form.kvkk_accepted}

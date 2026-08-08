@@ -56,7 +56,7 @@ export function EventCategoryPicker({
       <div className="mb-2 flex flex-wrap items-end justify-between gap-2">
         <div>
           <p className="text-sm font-medium text-navy-900">Etkinlik Kategorisi</p>
-          <p className="mt-0.5 text-xs text-slate-500">
+          <p className="mt-0.5 text-xs text-subtle">
             Programın içerik alanını seçin. Bu bilgi etkinlik kartlarında ve filtrelerde görünür.
           </p>
         </div>
@@ -64,20 +64,20 @@ export function EventCategoryPicker({
           <button
             type="button"
             onClick={() => onChange("")}
-            className="text-xs font-semibold text-slate-500 underline-offset-2 hover:text-slate-700 hover:underline"
+            className="text-xs font-semibold text-subtle underline-offset-2 hover:text-[var(--text-on-surface-soft)] hover:underline"
           >
             Seçimi temizle
           </button>
         ) : null}
       </div>
 
-      <div className="space-y-4 rounded-2xl border border-slate-200 bg-slate-50/50 p-4">
+      <div className="space-y-4 rounded-2xl border border-border-surface bg-surface-section/50 p-4">
         <label
           htmlFor={`${idPrefix}-category-none`}
           className={`flex cursor-pointer items-center gap-3 rounded-xl border px-4 py-3 transition ${
             value === ""
               ? "border-document-primary bg-white ring-2 ring-document-primary/20"
-              : "border-slate-200 bg-white hover:border-slate-300"
+              : "border-border-surface bg-white hover:border-secondary/40"
           }`}
         >
           <input
@@ -89,18 +89,18 @@ export function EventCategoryPicker({
             onChange={() => onChange("")}
             className="sr-only"
           />
-          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-slate-100 text-xs font-bold text-slate-500">
+          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-surface-section text-xs font-bold text-subtle">
             —
           </span>
           <span>
             <span className="block text-sm font-semibold text-navy-950">Kategorisiz</span>
-            <span className="block text-xs text-slate-500">Henüz sınıflandırılmamış etkinlikler</span>
+            <span className="block text-xs text-subtle">Henüz sınıflandırılmamış etkinlikler</span>
           </span>
         </label>
 
         {groups.map((group) => (
           <section key={group.groupName} className="space-y-2">
-            <h4 className="text-xs font-bold uppercase tracking-[0.14em] text-slate-500">
+            <h4 className="text-xs font-bold uppercase tracking-[0.14em] text-subtle">
               {group.groupName}
             </h4>
             <div className="grid gap-2 sm:grid-cols-2">
@@ -115,7 +115,7 @@ export function EventCategoryPicker({
                     className={`flex cursor-pointer items-start gap-3 rounded-xl border px-4 py-3 transition ${
                       isSelected
                         ? "border-document-primary bg-white ring-2 ring-document-primary/20"
-                        : "border-slate-200 bg-white hover:border-slate-300"
+                        : "border-border-surface bg-white hover:border-secondary/40"
                     }`}
                   >
                     <input
@@ -137,7 +137,7 @@ export function EventCategoryPicker({
                     <span className="min-w-0">
                       <span className="block text-sm font-semibold text-navy-950">{category.name}</span>
                       {category.description ? (
-                        <span className="mt-0.5 block text-xs leading-relaxed text-slate-500">
+                        <span className="mt-0.5 block text-xs leading-relaxed text-subtle">
                           {category.description}
                         </span>
                       ) : null}

@@ -184,27 +184,27 @@ export default async function DashboardChildrenPage({
       : undefined;
 
   return (
-    <section className="bg-slate-50 px-4 py-10 sm:px-6 lg:px-8">
+    <section className="bg-surface-section px-4 py-10 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-5xl">
         <div
-          className={`rounded-[2rem] border border-sky-200 ${BRAND_SURFACE_GRADIENT} p-8 text-sky-950 shadow-xl`}
+          className={`rounded-[2rem] border border-border-surface ${BRAND_SURFACE_GRADIENT} p-8 text-navy-950 shadow-xl`}
         >
           <div className="flex flex-wrap items-center justify-between gap-3">
             <Link
               href="/dashboard"
-              className="text-sm font-semibold text-sky-800 transition hover:text-sky-950"
+              className="text-sm font-semibold text-navy-900 transition hover:text-navy-950"
             >
               ← Panele dön
             </Link>
             <Link
               href="/dashboard/children/enrollments"
-              className="text-sm font-semibold text-sky-800 transition hover:text-sky-950"
+              className="text-sm font-semibold text-navy-900 transition hover:text-navy-950"
             >
               Çocuk etkinlikleri →
             </Link>
           </div>
           <h1 className="mt-3 text-3xl font-black">Çocuklarım</h1>
-          <p className="mt-2 text-sm text-sky-900/80">
+          <p className="mt-2 text-sm text-[var(--text-on-surface-soft)]">
             Kullanıcı adlı çocuk hesaplarını yönet, etkinliğe kaydet ve gelişimini takip et. Giriş
             adresi:{" "}
             <Link href="/student-login" className="font-semibold underline">
@@ -226,7 +226,7 @@ export default async function DashboardChildrenPage({
               Öğrenciler yüklenirken bir hata oluştu.
             </p>
           ) : (
-            <Suspense fallback={<p className="text-sm text-slate-600">Yükleniyor...</p>}>
+            <Suspense fallback={<p className="text-sm text-muted">Yükleniyor...</p>}>
               <ChildrenStudentsClient
                 initialStudents={students}
                 upcomingEvents={upcomingEvents}

@@ -15,18 +15,18 @@ export default async function AdminInstructorsPage() {
 
     return (
       <div className="space-y-6">
-        <div className="rounded-[1.75rem] border border-slate-200 bg-white p-8 shadow-sm">
+        <div className="rounded-[1.75rem] border border-border-surface bg-white p-8 shadow-sm">
           <p className="text-sm font-semibold uppercase tracking-[0.18em] text-document-primary">
             Eğitmen Yönetimi
           </p>
-          <h1 className="mt-2 text-2xl font-bold text-slate-900">Eğitmenler</h1>
-          <p className="mt-2 text-sm text-slate-600">
+          <h1 className="mt-2 text-2xl font-bold text-navy-950">Eğitmenler</h1>
+          <p className="mt-2 text-sm text-muted">
             Eğitmenleri buradan yönetin. Yeni eğitmen eklemek için{" "}
             <strong>Veliler ve Üyeler</strong> listesinden mevcut bir hesaba (veli, üye veya admin){" "}
             <strong>Eğitmen yap</strong> deyin; ardından etkinlik düzenlerken eğitmen atayın.
           </p>
           <div className="mt-4 flex flex-wrap gap-2 text-sm">
-            <span className="rounded-full bg-slate-100 px-3 py-1 font-semibold text-slate-700">
+            <span className="rounded-full bg-surface-section px-3 py-1 font-semibold text-[var(--text-on-surface-soft)]">
               Toplam: {instructors.length}
             </span>
             <span className="rounded-full bg-emerald-100 px-3 py-1 font-semibold text-emerald-900">

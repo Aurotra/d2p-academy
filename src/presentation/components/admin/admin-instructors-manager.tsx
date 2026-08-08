@@ -162,9 +162,9 @@ export function AdminInstructorsManager({ initialInstructors }: AdminInstructors
     <div className="space-y-6">
       <AdminFeedbackToast success={success} error={error} onDismiss={clearFeedback} />
 
-      <div className="rounded-[1.75rem] border border-sky-200 bg-sky-50/70 p-6">
+      <div className="rounded-[1.75rem] border border-border-surface bg-surface-section/70 p-6">
         <h2 className="text-lg font-bold text-navy-950">Eğitmen nasıl eklenir?</h2>
-        <p className="mt-2 text-sm text-slate-700">
+        <p className="mt-2 text-sm text-[var(--text-on-surface-soft)]">
           Yeni eğitmen eklemenin en kolay yolu{" "}
           <Link href="/admin/members" className="font-semibold text-document-primary hover:underline">
             Veliler ve Üyeler
@@ -174,27 +174,27 @@ export function AdminInstructorsManager({ initialInstructors }: AdminInstructors
         </p>
       </div>
 
-      <div className="overflow-hidden rounded-[1.75rem] border border-slate-200 bg-white shadow-sm">
-        <div className="border-b border-slate-100 bg-slate-50 px-5 py-4">
-          <h2 className="text-lg font-bold text-slate-900">Eğitmen Listesi</h2>
-          <p className="mt-1 text-sm text-slate-500">{initialInstructors.length} kayıt</p>
+      <div className="overflow-hidden rounded-[1.75rem] border border-border-surface bg-white shadow-sm">
+        <div className="border-b border-border-surface bg-surface-section px-5 py-4">
+          <h2 className="text-lg font-bold text-navy-950">Eğitmen Listesi</h2>
+          <p className="mt-1 text-sm text-subtle">{initialInstructors.length} kayıt</p>
         </div>
 
         {initialInstructors.length === 0 ? (
-          <p className="px-5 py-10 text-center text-sm text-slate-500">
+          <p className="px-5 py-10 text-center text-sm text-subtle">
             Henüz eğitmen yok. Üye listesinden bir hesaba eğitmen yetkisi verin.
           </p>
         ) : (
-          <ul className="divide-y divide-slate-100">
+          <ul className="divide-y divide-border-surface">
             {initialInstructors.map((instructor) => (
               <li
                 key={instructor.id}
                 className="flex flex-col gap-3 px-5 py-4 sm:flex-row sm:items-center sm:justify-between"
               >
                 <div>
-                  <p className="font-semibold text-slate-900">{instructor.fullName}</p>
-                  <p className="text-sm text-slate-600">{instructor.email}</p>
-                  <p className="mt-1 text-xs text-slate-500">
+                  <p className="font-semibold text-navy-950">{instructor.fullName}</p>
+                  <p className="text-sm text-muted">{instructor.email}</p>
+                  <p className="mt-1 text-xs text-subtle">
                     Hesap türü: {instructor.memberRole} · Oluşturulma:{" "}
                     {formatDate(instructor.createdAt)}
                   </p>
@@ -204,7 +204,7 @@ export function AdminInstructorsManager({ initialInstructors }: AdminInstructors
                     className={`rounded-full px-3 py-1 text-xs font-semibold ${
                       instructor.isActive
                         ? "bg-emerald-100 text-emerald-800"
-                        : "bg-slate-200 text-slate-600"
+                        : "bg-surface-section text-muted"
                     }`}
                   >
                     {instructor.isActive ? "Aktif" : "Pasif"}

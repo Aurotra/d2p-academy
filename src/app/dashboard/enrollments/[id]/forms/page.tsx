@@ -12,7 +12,7 @@ export default async function EnrollmentFormsPage({ params }: PageProps) {
   const { id } = await params;
 
   return (
-    <section className="bg-slate-50 px-4 py-10 sm:px-6 lg:px-8">
+    <section className="bg-surface-section px-4 py-10 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-3xl space-y-6">
         <Link
           href="/dashboard"

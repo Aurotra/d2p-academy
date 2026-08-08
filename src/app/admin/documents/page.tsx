@@ -145,7 +145,7 @@ export default function AdminDocumentsPage() {
 
   if (isAuthorizing) {
     return (
-      <div className="rounded-[1.75rem] border border-slate-200 bg-white p-8 text-center text-sm text-slate-600">
+      <div className="rounded-[1.75rem] border border-border-surface bg-white p-8 text-center text-sm text-muted">
         Yetki kontrol ediliyor...
       </div>
     );
@@ -153,17 +153,17 @@ export default function AdminDocumentsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="rounded-[1.75rem] border border-slate-200 bg-white p-8 shadow-sm">
+      <div className="rounded-[1.75rem] border border-border-surface bg-white p-8 shadow-sm">
         <p className="text-sm font-semibold uppercase tracking-[0.18em] text-document-primary">
           Doküman Yönetimi
         </p>
-        <h1 className="mt-2 text-2xl font-bold text-slate-900">Döküman / Ödev Yükle</h1>
-        <p className="mt-2 max-w-2xl text-sm text-slate-600">
+        <h1 className="mt-2 text-2xl font-bold text-navy-950">Döküman / Ödev Yükle</h1>
+        <p className="mt-2 max-w-2xl text-sm text-muted">
           PDF veya ders materyallerini yükleyin. Öğrenciler panelinden bu dosyalara erişebilir.
         </p>
       </div>
 
-      <div className="rounded-[1.75rem] border border-slate-200 bg-white p-8 shadow-sm">
+      <div className="rounded-[1.75rem] border border-border-surface bg-white p-8 shadow-sm">
         {alert ? (
           <div
             className={`mb-6 rounded-2xl border px-4 py-3 text-sm font-medium ${
@@ -187,7 +187,7 @@ export default function AdminDocumentsPage() {
           />
 
           <div className="w-full">
-            <label htmlFor="document-file" className="mb-2 block text-sm font-medium text-slate-900">
+            <label htmlFor="document-file" className="mb-2 block text-sm font-medium text-navy-950">
               Dosya
             </label>
             <input
@@ -197,9 +197,9 @@ export default function AdminDocumentsPage() {
               accept=".pdf,.doc,.docx,.ppt,.pptx,.png,.jpg,.jpeg"
               disabled={isUploading}
               required
-              className="block w-full cursor-pointer rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700 file:mr-4 file:rounded-lg file:border-0 file:bg-document-primary file:px-4 file:py-2 file:text-sm file:font-semibold file:text-white hover:file:bg-document-primary-hover"
+              className="block w-full cursor-pointer rounded-xl border border-border-surface bg-surface-section px-4 py-3 text-sm text-[var(--text-on-surface-soft)] file:mr-4 file:rounded-lg file:border-0 file:bg-document-primary file:px-4 file:py-2 file:text-sm file:font-semibold file:text-white hover:file:bg-document-primary-hover"
             />
-            <p className="mt-2 text-xs text-slate-500">
+            <p className="mt-2 text-xs text-subtle">
               PDF, Word, PowerPoint veya görsel dosyaları desteklenir (maks. 50 MB).
             </p>
           </div>
@@ -214,26 +214,26 @@ export default function AdminDocumentsPage() {
         </form>
       </div>
 
-      <div className="rounded-[1.75rem] border border-slate-200 bg-white p-8 shadow-sm">
-        <h2 className="text-xl font-bold text-slate-900">Yüklenen Dökümanlar</h2>
-        <p className="mt-2 text-sm text-slate-600">
+      <div className="rounded-[1.75rem] border border-border-surface bg-white p-8 shadow-sm">
+        <h2 className="text-xl font-bold text-navy-950">Yüklenen Dökümanlar</h2>
+        <p className="mt-2 text-sm text-muted">
           Her döküman için öğrenci notlarını girmek üzere değerlendirme sayfasına gidin.
         </p>
 
         {isLoadingDocuments ? (
-          <p className="mt-6 text-sm text-slate-500">Dökümanlar yükleniyor...</p>
+          <p className="mt-6 text-sm text-subtle">Dökümanlar yükleniyor...</p>
         ) : documents.length === 0 ? (
-          <p className="mt-6 text-sm text-slate-500">Henüz döküman yüklenmedi.</p>
+          <p className="mt-6 text-sm text-subtle">Henüz döküman yüklenmedi.</p>
         ) : (
           <ul className="mt-6 space-y-3">
             {documents.map((document) => (
               <li
                 key={document.id}
-                className="flex flex-col gap-3 rounded-2xl border border-slate-100 bg-slate-50 px-4 py-4 sm:flex-row sm:items-center sm:justify-between"
+                className="flex flex-col gap-3 rounded-2xl border border-border-surface bg-surface-section px-4 py-4 sm:flex-row sm:items-center sm:justify-between"
               >
                 <div>
-                  <p className="font-semibold text-slate-900">{document.title}</p>
-                  <p className="text-xs text-slate-500">
+                  <p className="font-semibold text-navy-950">{document.title}</p>
+                  <p className="text-xs text-subtle">
                     {new Intl.DateTimeFormat("tr-TR", { dateStyle: "long" }).format(
                       document.createdAt,
                     )}

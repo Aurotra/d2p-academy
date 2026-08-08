@@ -93,7 +93,7 @@ const PRINT_STATUS_LABELS: Record<string, string> = {
 };
 
 const childActionLinkClass =
-  "inline-flex h-10 w-full items-center justify-center rounded-xl border border-slate-200 bg-white px-3 text-center text-sm font-semibold text-navy-950 transition hover:bg-slate-50";
+  "inline-flex h-10 w-full items-center justify-center rounded-xl border border-border-surface bg-white px-3 text-center text-sm font-semibold text-navy-950 transition hover:bg-surface-section";
 
 const childActionButtonClass = "h-10 w-full px-3 text-sm";
 
@@ -193,8 +193,8 @@ export function ChildrenStudentsClient({
 
   return (
     <div className="space-y-4">
-      <div className="overflow-hidden rounded-[1.5rem] border border-slate-200 bg-white shadow-sm">
-        <div className="flex flex-col gap-3 border-b border-slate-100 bg-slate-50/80 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
+      <div className="overflow-hidden rounded-[1.5rem] border border-border-surface bg-white shadow-sm">
+        <div className="flex flex-col gap-3 border-b border-border-surface bg-surface-section/80 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <p className="text-sm font-semibold text-navy-950">
               {students.length > 0
@@ -202,7 +202,7 @@ export function ChildrenStudentsClient({
                 : "Çocuk hesapları"}
             </p>
             {students.length > 0 ? (
-              <p className="mt-0.5 text-xs text-slate-500">
+              <p className="mt-0.5 text-xs text-subtle">
                 Detay, kayıt ve profil işlemlerini her satırdan yönetin.
               </p>
             ) : null}
@@ -215,7 +215,7 @@ export function ChildrenStudentsClient({
         {students.length === 0 ? (
           <div className="space-y-4 p-8 text-center">
             <p className="text-sm font-semibold text-navy-950">Henüz çocuk hesabı eklenmedi</p>
-            <p className="text-sm text-slate-600">
+            <p className="text-sm text-muted">
               Etkinliğe kayıt için önce çocuğunuzun kullanıcı adlı öğrenci hesabını oluşturun.
               Ardından «Etkinliğe kaydet» ile program seçebilirsiniz.
             </p>
@@ -224,14 +224,14 @@ export function ChildrenStudentsClient({
               {upcomingEvents.length > 0 ? (
                 <Link
                   href="/etkinlikler"
-                  className="inline-flex items-center justify-center rounded-xl border-2 border-sky-800 bg-white px-5 py-3 text-sm font-semibold text-sky-950 shadow-md shadow-sky-200/60 transition hover:border-sky-900 hover:bg-sky-50"
+                  className="inline-flex items-center justify-center rounded-xl border-2 border-navy-800 bg-white px-5 py-3 text-sm font-semibold text-navy-950 shadow-md shadow-secondary/10 transition hover:border-navy-900 hover:bg-surface-section"
                 >
                   Etkinlikleri gör
                 </Link>
               ) : (
                 <Link
                   href="/dashboard/kurs-talebi"
-                  className="inline-flex items-center justify-center rounded-xl border-2 border-sky-800 bg-white px-5 py-3 text-sm font-semibold text-sky-950 shadow-md shadow-sky-200/60 transition hover:border-sky-900 hover:bg-sky-50"
+                  className="inline-flex items-center justify-center rounded-xl border-2 border-navy-800 bg-white px-5 py-3 text-sm font-semibold text-navy-950 shadow-md shadow-secondary/10 transition hover:border-navy-900 hover:bg-surface-section"
                 >
                   Kurs talebi oluştur
                 </Link>
@@ -239,7 +239,7 @@ export function ChildrenStudentsClient({
             </div>
           </div>
         ) : (
-          <ul className="divide-y divide-slate-100">
+          <ul className="divide-y divide-border-surface">
             {students.map((student) => {
               const expanded = expandedId === student.id;
               const preview = student.progressPreview ?? emptyPreview();
@@ -267,13 +267,13 @@ export function ChildrenStudentsClient({
                           Profil %{profileProgress}
                         </span>
                       </div>
-                      <p className="mt-1 text-sm text-slate-500">@{student.username}</p>
+                      <p className="mt-1 text-sm text-subtle">@{student.username}</p>
                       <div className="mt-3 flex flex-wrap gap-2">
-                        <span className="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-medium text-slate-700">
+                        <span className="rounded-full bg-surface-section px-2.5 py-1 text-xs font-medium text-[var(--text-on-surface-soft)]">
                           {student.enrollmentCount ?? 0} etkinlik
                         </span>
                         {attendanceSummary ? (
-                          <span className="rounded-full bg-sky-50 px-2.5 py-1 text-xs font-medium text-sky-900">
+                          <span className="rounded-full bg-surface-section px-2.5 py-1 text-xs font-medium text-navy-900">
                             {attendanceSummary}
                           </span>
                         ) : null}
@@ -319,24 +319,24 @@ export function ChildrenStudentsClient({
                   </div>
 
                   {expanded ? (
-                    <div className="mt-4 space-y-4 rounded-2xl border border-slate-100 bg-slate-50 p-4">
+                    <div className="mt-4 space-y-4 rounded-2xl border border-border-surface bg-surface-section p-4">
                       <div className="grid gap-4 sm:grid-cols-2">
                         <DetailBlock title="Etkinlikler">
                           {preview.enrollments.length === 0 ? (
-                            <p className="text-sm text-slate-600">Kayıt yok</p>
+                            <p className="text-sm text-muted">Kayıt yok</p>
                           ) : (
                             <ul className="space-y-3">
                               {preview.enrollments.map((item) => (
-                                <li key={item.enrollmentId} className="text-sm text-slate-700">
+                                <li key={item.enrollmentId} className="text-sm text-[var(--text-on-surface-soft)]">
                                   <p>
                                     <span className="font-medium">{item.title}</span>
-                                    <span className="text-slate-500">
+                                    <span className="text-subtle">
                                       {" "}
                                       · {STATUS_LABELS[item.status] ?? item.status} ·{" "}
                                       {formatDate(item.date)}
                                     </span>
                                   </p>
-                                  <p className="mt-0.5 text-xs text-slate-500">
+                                  <p className="mt-0.5 text-xs text-subtle">
                                     {buildEnrollmentFormStatusLabel(item)}
                                   </p>
                                   {item.status !== "cancelled" ? (
@@ -373,14 +373,14 @@ export function ChildrenStudentsClient({
 
                         <DetailBlock title="Sertifikalar">
                           {preview.certificates.length === 0 ? (
-                            <p className="text-sm text-slate-600">Sertifika yok</p>
+                            <p className="text-sm text-muted">Sertifika yok</p>
                           ) : (
                             <ul className="space-y-3">
                               {preview.certificates.map((item) => (
-                                <li key={item.code} className="text-sm text-slate-700">
+                                <li key={item.code} className="text-sm text-[var(--text-on-surface-soft)]">
                                   <p>
                                     <span className="font-medium">{item.code}</span>
-                                    <span className="text-slate-500">
+                                    <span className="text-subtle">
                                       {" "}
                                       · {formatDate(item.issuedAt)}
                                     </span>
@@ -413,23 +413,23 @@ export function ChildrenStudentsClient({
                       <div className="grid gap-4 sm:grid-cols-2">
                         <DetailBlock title="Notlar">
                           {preview.grades.length === 0 ? (
-                            <p className="text-sm text-slate-600">Henüz not yok</p>
+                            <p className="text-sm text-muted">Henüz not yok</p>
                           ) : (
                             <ul className="space-y-3">
                               {preview.grades.map((item, index) => (
                                 <li
                                   key={`${item.documentTitle}-${index}`}
-                                  className="text-sm text-slate-700"
+                                  className="text-sm text-[var(--text-on-surface-soft)]"
                                 >
                                   <p>
                                     <span className="font-medium">{item.documentTitle}</span>
-                                    <span className="text-slate-500">
+                                    <span className="text-subtle">
                                       {" "}
                                       · {item.score} puan · {formatDate(item.createdAt)}
                                     </span>
                                   </p>
                                   {item.feedback ? (
-                                    <p className="mt-0.5 text-xs text-slate-500">{item.feedback}</p>
+                                    <p className="mt-0.5 text-xs text-subtle">{item.feedback}</p>
                                   ) : null}
                                   {item.documentFileUrl && item.documentFileUrl !== "#" ? (
                                     <a
@@ -449,13 +449,13 @@ export function ChildrenStudentsClient({
 
                         <DetailBlock title="Rozetler / Baskı">
                           {preview.badges.length === 0 && preview.printOrders.length === 0 ? (
-                            <p className="text-sm text-slate-600">Kayıt yok</p>
+                            <p className="text-sm text-muted">Kayıt yok</p>
                           ) : (
                             <div className="space-y-3">
                               {preview.badges.map((item) => (
-                                <p key={`${item.name}-${item.awardedAt}`} className="text-sm text-slate-700">
+                                <p key={`${item.name}-${item.awardedAt}`} className="text-sm text-[var(--text-on-surface-soft)]">
                                   <span className="font-medium">{item.name}</span>
-                                  <span className="text-slate-500">
+                                  <span className="text-subtle">
                                     {" "}
                                     · {formatDate(item.awardedAt)}
                                   </span>
@@ -464,10 +464,10 @@ export function ChildrenStudentsClient({
                               {preview.printOrders.map((item, index) => (
                                 <p
                                   key={`${item.itemName}-${index}`}
-                                  className="text-sm text-slate-700"
+                                  className="text-sm text-[var(--text-on-surface-soft)]"
                                 >
                                   <span className="font-medium">{item.itemName}</span>
-                                  <span className="text-slate-500">
+                                  <span className="text-subtle">
                                     {" "}
                                     · {PRINT_STATUS_LABELS[item.status] ?? item.status} ·{" "}
                                     {formatDate(item.requestedAt)}
@@ -479,7 +479,7 @@ export function ChildrenStudentsClient({
                         </DetailBlock>
                       </div>
 
-                      <p className="text-xs text-slate-500">
+                      <p className="text-xs text-subtle">
                         Katılımcı formlarını bu panelden çocuğunuz adına doldurabilirsiniz. Eksik
                         profil için{" "}
                         <Link
@@ -580,7 +580,7 @@ export function ChildrenStudentsClient({
 function DetailBlock({ title, children }: { title: string; children: ReactNode }) {
   return (
     <div>
-      <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">{title}</p>
+      <p className="text-xs font-semibold uppercase tracking-wide text-subtle">{title}</p>
       <div className="mt-2">{children}</div>
     </div>
   );
@@ -688,10 +688,10 @@ function AddStudentDialog({
           required
         />
         {generatedUsername ? (
-          <p className="rounded-xl border border-sky-200 bg-sky-50 px-4 py-3 text-sm text-sky-950">
+          <p className="rounded-xl border border-border-surface bg-surface-section px-4 py-3 text-sm text-navy-950">
             Tahmini kullanıcı adı:{" "}
             <span className="font-semibold">@{generatedUsername}</span>
-            <span className="mt-1 block text-xs text-sky-800">
+            <span className="mt-1 block text-xs text-navy-900">
               Kardeş hesaplarında veya isim benzerliğinde sonuna rakam eklenebilir (ör. @
               {generatedUsername}2).
             </span>
@@ -701,7 +701,7 @@ function AddStudentDialog({
             Kullanıcı adı üretilemedi. Ad ve soyadı birlikte yazdığınızdan emin olun.
           </p>
         ) : (
-          <p className="text-xs text-slate-500">
+          <p className="text-xs text-subtle">
             Her çocuk için ayrı hesap açılır. İkinci kardeş için ilk kayıttan sonra tekrar Çocuk ekle
             butonunu kullanın. Kullanıcı adı: ad + soyad + doğum yılının son 2 hanesi.
           </p>
@@ -890,7 +890,7 @@ function EnrollStudentDialog({
     return (
       <Dialog title={`${student.full_name} — profil gerekli`} onClose={onClose}>
         <div className="space-y-4">
-          <p className="text-sm leading-6 text-slate-700">{PROFILE_INCOMPLETE_SAVE_BLOCKED_MESSAGE}</p>
+          <p className="text-sm leading-6 text-[var(--text-on-surface-soft)]">{PROFILE_INCOMPLETE_SAVE_BLOCKED_MESSAGE}</p>
           <p className="text-sm font-semibold text-amber-900">Şu an profil %{profileProgress} dolu.</p>
           <Button className="w-full" onClick={() => router.push(profileHref)}>
             Profili tamamla
@@ -907,7 +907,7 @@ function EnrollStudentDialog({
     <Dialog title={`${student.full_name} — etkinliğe kaydet`} onClose={onClose} size="lg">
       {events.length === 0 ? (
         <div className="space-y-4">
-          <p className="text-sm text-slate-600">
+          <p className="text-sm text-muted">
             Şu an kayda açık yaklaşan etkinlik yok. Yeni etkinlikler yayınlandığında burada
             görünecek.
           </p>
@@ -918,13 +918,13 @@ function EnrollStudentDialog({
       ) : redirecting ? (
         <div className="space-y-4">
           <p className="text-sm font-semibold text-emerald-700">Kayıt tamamlandı.</p>
-          <p className="text-sm text-slate-600">
+          <p className="text-sm text-muted">
             Tanışma ve Onaylar formlarına yönlendiriliyorsunuz…
           </p>
         </div>
       ) : (
         <form onSubmit={handleSubmit} className="space-y-4">
-          <p className="text-sm leading-6 text-slate-600">
+          <p className="text-sm leading-6 text-muted">
             <strong className="font-semibold text-navy-950">{student.full_name}</strong> bu etkinliğe
             kaydedilecek. Kayıt sonrası tanışma ve onay formları açılır.
           </p>
@@ -938,8 +938,8 @@ function EnrollStudentDialog({
                   key={item.id}
                   className={`block cursor-pointer rounded-2xl border p-4 transition ${
                     selected
-                      ? "border-document-primary bg-sky-50/60 ring-2 ring-document-primary/15"
-                      : "border-slate-200 bg-white hover:border-sky-300"
+                      ? "border-document-primary bg-surface-section/60 ring-2 ring-document-primary/15"
+                      : "border-border-surface bg-white hover:border-secondary/40"
                   }`}
                 >
                   <input
@@ -963,14 +963,14 @@ function EnrollStudentDialog({
                       </span>
                     ) : null}
                     {item.isOnline ? (
-                      <span className="inline-flex rounded-full bg-slate-100 px-2.5 py-0.5 text-[11px] font-bold text-slate-700">
+                      <span className="inline-flex rounded-full bg-surface-section px-2.5 py-0.5 text-[11px] font-bold text-[var(--text-on-surface-soft)]">
                         Online
                       </span>
                     ) : null}
                   </div>
                   <p className="mt-3 text-base font-bold leading-snug text-navy-950">{item.title}</p>
-                  <p className="mt-2 text-sm font-medium text-slate-700">{formatEventSchedule(item)}</p>
-                  <p className="mt-1 text-sm text-slate-600">{formatEventLocation(item)}</p>
+                  <p className="mt-2 text-sm font-medium text-[var(--text-on-surface-soft)]">{formatEventSchedule(item)}</p>
+                  <p className="mt-1 text-sm text-muted">{formatEventLocation(item)}</p>
                   <Link
                     href={`/etkinlikler/${item.slug}`}
                     className="mt-3 inline-flex text-sm font-semibold text-document-primary hover:underline"
@@ -1010,17 +1010,17 @@ function Dialog({
   const widthClass = size === "lg" ? "max-w-xl" : "max-w-sm";
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center bg-slate-900/40 p-4 sm:items-center">
+    <div className="fixed inset-0 z-50 flex items-end justify-center bg-navy-950/40 p-4 sm:items-center">
       <div
-        className={`flex max-h-[min(90dvh,calc(100dvh-2rem))] w-full ${widthClass} flex-col overflow-hidden rounded-[1.5rem] border border-sky-200 bg-white shadow-xl`}
+        className={`flex max-h-[min(90dvh,calc(100dvh-2rem))] w-full ${widthClass} flex-col overflow-hidden rounded-[1.5rem] border border-border-surface bg-white shadow-xl`}
       >
-        <div className="flex shrink-0 items-start justify-between gap-3 border-b border-slate-100 px-6 py-4">
+        <div className="flex shrink-0 items-start justify-between gap-3 border-b border-border-surface px-6 py-4">
           <h2 className="pr-2 text-base font-bold leading-snug text-navy-950">{title}</h2>
           <button
             type="button"
             onClick={onClose}
             aria-label="Kapat"
-            className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-xl text-slate-500 transition hover:bg-slate-100 hover:text-slate-700"
+            className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-xl text-subtle transition hover:bg-surface-section hover:text-[var(--text-on-surface-soft)]"
           >
             ✕
           </button>

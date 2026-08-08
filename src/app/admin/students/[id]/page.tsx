@@ -29,7 +29,7 @@ export default async function AdminStudentDetailPage({ params }: AdminStudentDet
 
   return (
     <div className="space-y-6">
-      <div className="rounded-[1.75rem] border border-slate-200 bg-white p-8 shadow-sm">
+      <div className="rounded-[1.75rem] border border-border-surface bg-white p-8 shadow-sm">
         <Link
           href="/admin/students"
           className="text-sm font-semibold text-document-primary hover:text-document-primary-hover"
@@ -44,15 +44,15 @@ export default async function AdminStudentDetailPage({ params }: AdminStudentDet
                 alt={student.full_name}
                 width={72}
                 height={72}
-                className="rounded-2xl border border-slate-200 object-cover"
+                className="rounded-2xl border border-border-surface object-cover"
               />
             ) : null}
             <div>
               <p className="text-sm font-semibold uppercase tracking-[0.18em] text-document-primary">
                 Profil Düzenleme
               </p>
-              <h1 className="mt-1 text-2xl font-bold text-slate-900">{student.full_name}</h1>
-              <p className="text-sm text-slate-500">
+              <h1 className="mt-1 text-2xl font-bold text-navy-950">{student.full_name}</h1>
+              <p className="text-sm text-subtle">
                 {student.email ?? (student.username ? `@${student.username}` : "—")}
               </p>
             </div>
@@ -64,7 +64,7 @@ export default async function AdminStudentDetailPage({ params }: AdminStudentDet
             Not Raporunu Gör
           </Link>
         </div>
-        <p className="mt-4 text-sm text-slate-600">
+        <p className="mt-4 text-sm text-muted">
           Yanlış girilen bilgileri buradan düzeltebilirsiniz. E-posta hesabı güvenlik nedeniyle
           değiştirilemez.
         </p>

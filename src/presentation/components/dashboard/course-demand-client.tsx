@@ -220,14 +220,14 @@ export function CourseDemandClient() {
         <Link href="/dashboard" className="text-sm font-semibold text-document-primary hover:underline">
           ← Panele dön
         </Link>
-        <h1 className="mt-3 text-3xl font-bold text-slate-900">Kurs Talep Et</h1>
-        <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600">
+        <h1 className="mt-3 text-3xl font-bold text-navy-950">Kurs Talep Et</h1>
+        <p className="mt-2 max-w-2xl text-sm leading-6 text-muted">
           Henüz açılmış bir etkinlik yoksa, istediğiniz program ve tarih aralığı için talep
           bırakabilirsiniz. Yeterli talep birikince yeni bir sınıf açılır.
         </p>
       </div>
 
-      <div className="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm">
+      <div className="rounded-[2rem] border border-border-surface bg-white p-6 shadow-sm">
         <h2 className="text-xl font-bold text-navy-950">Yeni talep</h2>
         <form onSubmit={(event) => void handleSubmit(event)} className="mt-6 space-y-4">
           <Select
@@ -244,12 +244,12 @@ export function CourseDemandClient() {
           </Select>
 
           {durationInfo ? (
-            <p className="rounded-xl border border-sky-100 bg-sky-50 px-4 py-3 text-sm text-sky-900">
+            <p className="rounded-xl border border-border-surface bg-surface-section px-4 py-3 text-sm text-navy-900">
               {durationInfo}
             </p>
           ) : null}
           {hoursOnlyInfo ? (
-            <p className="rounded-xl border border-slate-100 bg-slate-50 px-4 py-3 text-sm text-slate-700">
+            <p className="rounded-xl border border-border-surface bg-surface-section px-4 py-3 text-sm text-[var(--text-on-surface-soft)]">
               {hoursOnlyInfo}
             </p>
           ) : null}
@@ -318,18 +318,18 @@ export function CourseDemandClient() {
         </form>
       </div>
 
-      <div className="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm">
+      <div className="rounded-[2rem] border border-border-surface bg-white p-6 shadow-sm">
         <h2 className="text-xl font-bold text-navy-950">Taleplerim</h2>
         {isLoading ? (
-          <p className="mt-4 text-sm text-slate-600">Yükleniyor...</p>
+          <p className="mt-4 text-sm text-muted">Yükleniyor...</p>
         ) : entries.length === 0 ? (
-          <p className="mt-4 text-sm text-slate-600">Henüz kurs talebiniz yok.</p>
+          <p className="mt-4 text-sm text-muted">Henüz kurs talebiniz yok.</p>
         ) : (
           <ul className="mt-4 space-y-4">
             {entries.map((entry) => (
               <li
                 key={entry.id}
-                className="rounded-2xl border border-slate-100 p-4 hover:border-amber-200 hover:bg-amber-50/30"
+                className="rounded-2xl border border-border-surface p-4 hover:border-amber-200 hover:bg-amber-50/30"
               >
                 <div className="flex flex-wrap gap-2">
                   <Badge tone="cyan">{entry.programCode}</Badge>
@@ -338,14 +338,14 @@ export function CourseDemandClient() {
                 <h3 className="mt-3 font-semibold text-navy-950">
                   {entry.studentName ?? "Öğrenci"}
                 </h3>
-                <p className="mt-1 text-sm text-slate-600">
+                <p className="mt-1 text-sm text-muted">
                   Tercih edilen tarih: {formatDateRange(entry.preferredStartDate, entry.preferredEndDate)}
                 </p>
-                <p className="mt-2 text-sm text-slate-500">
+                <p className="mt-2 text-sm text-subtle">
                   {COURSE_DEMAND_PARENT_STATUS_MESSAGES[entry.status]}
                 </p>
                 {entry.groupedEventTitle ? (
-                  <p className="mt-1 text-sm text-slate-500">Sınıf: {entry.groupedEventTitle}</p>
+                  <p className="mt-1 text-sm text-subtle">Sınıf: {entry.groupedEventTitle}</p>
                 ) : null}
               </li>
             ))}

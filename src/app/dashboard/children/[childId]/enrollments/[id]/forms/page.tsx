@@ -65,7 +65,7 @@ export default async function ParentChildEnrollmentFormsPage({ params }: PagePro
   }
 
   return (
-    <section className="bg-slate-50 px-4 py-10 sm:px-6 lg:px-8">
+    <section className="bg-surface-section px-4 py-10 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-3xl space-y-6">
         <Link
           href="/dashboard/children"
@@ -74,13 +74,13 @@ export default async function ParentChildEnrollmentFormsPage({ params }: PagePro
           ← Çocuk hesaplarına dön
         </Link>
 
-        <div className="rounded-2xl border border-sky-200 bg-sky-50 px-5 py-4 text-sm text-sky-950">
+        <div className="rounded-2xl border border-border-surface bg-surface-section px-5 py-4 text-sm text-navy-950">
           <p className="font-semibold">
             {child.full_name}
             {child.username ? ` (@${child.username})` : ""} adına form dolduruyorsunuz
             {eventTitle ? ` — ${eventTitle}` : ""}.
           </p>
-          <p className="mt-1 text-sky-900/80">
+          <p className="mt-1 text-[var(--text-on-surface-soft)]">
             Onay adımında veli / yasal temsilci imzasını kendi adınızla atın. Profil eksikse{" "}
             <Link
               href={`/dashboard/children/${childId}/profile`}
