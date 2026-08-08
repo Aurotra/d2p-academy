@@ -1,6 +1,6 @@
-import Image from "next/image";
 import Link from "next/link";
 
+import { RemoteImage } from "@/presentation/components/ui/remote-image";
 import { SITE_LOGO_SRC, SITE_NAME } from "@/shared/constants/site";
 
 interface BrandLogoProps {
@@ -13,7 +13,7 @@ interface BrandLogoProps {
 export function BrandLogo({ href = "/", className = "", height = 48 }: BrandLogoProps) {
   const logo = (
     <span className={`inline-flex shrink-0 items-center ${className}`}>
-      <Image
+      <RemoteImage
         src={SITE_LOGO_SRC}
         alt={`${SITE_NAME} logosu`}
         width={Math.round(height * 2.4)}

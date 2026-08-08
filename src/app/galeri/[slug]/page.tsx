@@ -1,4 +1,4 @@
-import Image from "next/image";
+import { RemoteImage, resolveGalleryPhotoAlt } from "@/presentation/components/ui/remote-image";
 import Link from "next/link";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
@@ -101,13 +101,13 @@ export default async function GalleryAlbumPage({ params }: PageProps) {
               <li key={photo.id} className="mb-4 break-inside-avoid">
                 <figure className="overflow-hidden rounded-2xl border border-border-surface bg-white shadow-sm">
                   <div className="relative aspect-[4/3] w-full">
-                    <Image
+                    <RemoteImage
                       src={photo.imageUrl}
-                      alt={
-                        photo.altText ||
-                        photo.caption ||
-                        `${album.title} atölye fotoğrafı`
-                      }
+                      alt={resolveGalleryPhotoAlt({
+                        altText: photo.altText,
+                        caption: photo.caption,
+                        albumTitle: album.title,
+                      })}
                       fill
                       sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
                       className="object-cover"

@@ -1,4 +1,4 @@
-import Image from "next/image";
+import { RemoteImage } from "@/presentation/components/ui/remote-image";
 import Link from "next/link";
 
 import type { GalleryAlbum } from "@/core/domain/gallery";
@@ -51,7 +51,7 @@ function AlbumCard({ album }: { album: GalleryAlbum }) {
     >
       <div className="relative aspect-[4/3] overflow-hidden bg-surface-section">
         {album.coverImageUrl ? (
-          <Image
+          <RemoteImage
             src={album.coverImageUrl}
             alt={`${album.title} albüm kapak görseli`}
             fill

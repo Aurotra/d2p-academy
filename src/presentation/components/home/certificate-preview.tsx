@@ -1,4 +1,4 @@
-import Image from "next/image";
+import { RemoteImage } from "@/presentation/components/ui/remote-image";
 
 import type { CertificateVerificationResult } from "@/core/domain/certificate-verification";
 import { SITE_LOGO_SRC, SITE_NAME } from "@/shared/constants/site";
@@ -43,7 +43,7 @@ export function CertificatePreview({ result }: { result: CertificateVerification
         />
 
         <div className="relative px-6 py-8 text-center sm:px-10 sm:py-10">
-          <Image
+          <RemoteImage
             src={SITE_LOGO_SRC}
             alt={`${SITE_NAME} logosu`}
             width={160}

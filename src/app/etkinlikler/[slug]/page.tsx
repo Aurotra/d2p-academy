@@ -1,4 +1,4 @@
-import Image from "next/image";
+import { RemoteImage } from "@/presentation/components/ui/remote-image";
 import Link from "next/link";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
@@ -88,7 +88,7 @@ export default async function EventDetailPage({ params }: PageProps) {
           <div className="mt-6 overflow-hidden rounded-[2rem] border border-border-surface bg-white shadow-sm">
             {event.coverImageUrl ? (
               <div className="relative aspect-[21/9] overflow-hidden bg-surface-section">
-                <Image
+                <RemoteImage
                   src={event.coverImageUrl}
                   alt={`${event.title} etkinlik kapak görseli`}
                   fill

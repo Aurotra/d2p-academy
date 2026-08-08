@@ -1,6 +1,6 @@
 "use client";
 
-import Image from "next/image";
+import { RemoteImage, resolveGalleryPhotoAlt } from "@/presentation/components/ui/remote-image";
 import Link from "next/link";
 import { useEffect, useMemo, useState, type CSSProperties } from "react";
 
@@ -27,9 +27,16 @@ function GalleryPhotoCard({
         tabIndex={ariaHidden ? -1 : undefined}
       >
         {/* Decorative duplicate slides are hidden from assistive tech. */}
-        <Image
+        <RemoteImage
           src={photo.imageUrl}
-          alt={ariaHidden ? "" : photo.altText || "D2P Academy atölye fotoğrafı"}
+          alt={
+            ariaHidden
+              ? ""
+              : resolveGalleryPhotoAlt({
+                  altText: photo.altText,
+                  albumTitle: photo.albumTitle ?? "D2P Academy",
+                })
+          }
           width={220}
           height={160}
           sizes="220px"
