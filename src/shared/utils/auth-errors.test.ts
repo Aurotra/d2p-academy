@@ -15,7 +15,9 @@ describe("mapAuthErrorToTurkish", () => {
     expect(mapAuthErrorToTurkish("User already registered")).toContain("zaten bir hesap var");
   });
 
-  it("returns the original message when no mapping exists", () => {
-    expect(mapAuthErrorToTurkish("Beklenmeyen hata")).toBe("Beklenmeyen hata");
+  it("returns a generic message when no mapping exists", () => {
+    expect(mapAuthErrorToTurkish("Beklenmeyen hata")).toBe(
+      "İşlem tamamlanamadı. Lütfen tekrar deneyin.",
+    );
   });
 });
