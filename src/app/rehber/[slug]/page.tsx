@@ -2,9 +2,13 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
+import { GuideArticleBody } from "@/presentation/components/guides/guide-article-body";
 import { PublicPageShell } from "@/presentation/components/layout/public-page-shell";
 import { GUIDE_ARTICLES, getGuideArticleBySlug } from "@/shared/content/guides";
 import { publicPageMetadata } from "@/shared/seo/metadata";
+
+/** Gallery figures use signed Supabase URLs — avoid stale static HTML. */
+export const dynamic = "force-dynamic";
 
 type PageProps = {
   params: Promise<{ slug: string }>;
@@ -42,6 +46,8 @@ export default async function RehberArticlePage({ params }: PageProps) {
     notFound();
   }
 
+  const showLeadDescription = !article.blocks?.length;
+
   return (
     <PublicPageShell>
       <article className="mx-auto max-w-3xl px-4 py-12 sm:px-6 lg:px-8">
@@ -55,12 +61,10 @@ export default async function RehberArticlePage({ params }: PageProps) {
           {formatDate(article.publishedAt)}
         </p>
         <h1 className="mt-2 text-3xl font-bold text-navy-950 sm:text-4xl">{article.title}</h1>
-        <p className="mt-4 text-base text-muted">{article.description}</p>
-        <div className="mt-8 space-y-4 text-base leading-7 text-[var(--text-on-surface-soft)]">
-          {article.paragraphs.map((paragraph) => (
-            <p key={paragraph}>{paragraph}</p>
-          ))}
-        </div>
+        {showLeadDescription ? (
+          <p className="mt-4 text-base text-muted">{article.description}</p>
+        ) : null}
+        <GuideArticleBody article={article} />
       </article>
     </PublicPageShell>
   );
