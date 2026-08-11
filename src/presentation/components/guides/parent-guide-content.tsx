@@ -1,5 +1,6 @@
 import Link from "next/link";
 
+import { GuideArticlesGrid } from "@/presentation/components/guides/guide-articles-grid";
 import { ParentGuideAuthCtas } from "@/presentation/components/guides/parent-guide-auth-ctas";
 import { BRAND_ACCENT_CARD_STYLES, BRAND_SURFACE_CARD } from "@/shared/constants/brand-surfaces";
 import { PARENT_GUIDE_UPDATED } from "@/shared/constants/parent-guide";
@@ -382,6 +383,8 @@ Veli = e-posta | Öğrenci = kullanıcı adı ile giriş`}
           </p>
         </section>
       </div>
+
+      <GuideArticlesGrid className="mt-14 border-t border-border-surface pt-10" />
 
       <footer className="mt-12 border-t border-border-surface pt-6 text-sm text-subtle">
         Son güncelleme: {PARENT_GUIDE_UPDATED} · Sorularınız için{" "}

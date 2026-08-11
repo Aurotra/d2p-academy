@@ -59,7 +59,7 @@ export function SiteFooter() {
               href="/rehber"
               className="inline-flex min-h-11 items-center font-semibold text-navy-900 transition hover:text-document-primary"
             >
-              Rehber
+              Makaleler
             </Link>
             <Link
               href="/kvkk"

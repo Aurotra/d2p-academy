@@ -16,7 +16,6 @@ const navItems = [
   { href: "/etkinlikler", label: "Etkinlikler" },
   { href: "/hakkimizda", label: "Hakkımızda" },
   { href: PARENT_GUIDE_PATH, label: "Veli Rehberi" },
-  { href: "/rehber", label: "Rehber" },
   { href: "/#certificate", label: "Sertifika Doğrula" },
   { href: "/galeri", label: "Galeri" },
   { href: "/kurumsal-talep", label: "Kurumsal Talep" },
