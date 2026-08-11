@@ -40,9 +40,9 @@ export default async function AdminParentsPage({ searchParams }: AdminParentsPag
           </p>
           <h1 className="mt-2 text-2xl font-bold text-navy-950">Veli Telefon Rehberi</h1>
           <p className="mt-2 text-sm text-muted">
-            Kayıtlı velilerin iletişim bilgileri. Telefon önce veli hesabından, yoksa çocuk
-            profilindeki veli telefonundan alınır. Üstteki rozetlere tıklayarak telefonu eksik
-            velileri filtreleyebilirsiniz.
+            Kayıtlı velilerin iletişim bilgileri. En son kayıt olan veliler listenin üstünde
+            görünür. Veli adı, çocuk adı veya telefon ile arama yapabilirsiniz. Telefon önce veli
+            hesabından, yoksa çocuk profilindeki veli telefonundan alınır.
           </p>
         </div>
 

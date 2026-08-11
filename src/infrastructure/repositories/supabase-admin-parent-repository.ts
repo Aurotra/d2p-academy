@@ -97,7 +97,7 @@ export class SupabaseAdminParentRepository {
       .eq("role", "parent")
       .is("parent_id", null)
       .is("username", null)
-      .order("full_name", { ascending: true });
+      .order("created_at", { ascending: false });
 
     if (parentError) {
       throw new Error(`Veli listesi alınamadı: ${parentError.message}`);
@@ -132,24 +132,28 @@ export class SupabaseAdminParentRepository {
       }
     }
 
-    const records = parents.map((parent) => {
-      const children = childrenByParent.get(parent.id) ?? [];
-      const profileContactPhone =
-        children.find((child) => child.parentPhone?.trim())?.parentPhone?.trim() ?? null;
+    const records = parents
+      .map((parent) => {
+        const children = childrenByParent.get(parent.id) ?? [];
+        const profileContactPhone =
+          children.find((child) => child.parentPhone?.trim())?.parentPhone?.trim() ?? null;
 
-      return {
-        id: parent.id,
-        fullName: parent.full_name,
-        email: parent.email,
-        accountPhone: parent.phone,
-        profileContactPhone,
-        contactPhone: resolveContactPhone(parent.phone, children),
-        childCount: children.length,
-        children,
-        createdAt: parent.created_at,
-        isActive: parent.is_active,
-      };
-    });
+        return {
+          id: parent.id,
+          fullName: parent.full_name,
+          email: parent.email,
+          accountPhone: parent.phone,
+          profileContactPhone,
+          contactPhone: resolveContactPhone(parent.phone, children),
+          childCount: children.length,
+          children,
+          createdAt: parent.created_at,
+          isActive: parent.is_active,
+        };
+      })
+      .sort(
+        (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+      );
 
     const query = input.query?.trim();
     if (!query) {

@@ -148,7 +148,7 @@ export function AdminParentsTable({
                 </th>
                 <th className="min-w-[10rem] px-4 py-4 sm:px-5">Telefon</th>
                 <th className="min-w-[12rem] px-4 py-4 sm:px-5">Çocuklar</th>
-                <th className="whitespace-nowrap px-4 py-4 sm:px-5">Kayıt</th>
+                <th className="whitespace-nowrap px-4 py-4 sm:px-5">Kayıt (yeniden eskiye)</th>
                 <th className="whitespace-nowrap px-4 py-4 sm:px-5">Durum</th>
               </tr>
             </thead>
@@ -156,7 +156,9 @@ export function AdminParentsTable({
               {parents.length === 0 ? (
                 <tr>
                   <td colSpan={5} className="px-5 py-10 text-center text-subtle">
-                    Kayıtlı veli bulunamadı.
+                    {searchParams.get("q")?.trim()
+                      ? "Aramanızla eşleşen veli bulunamadı."
+                      : "Kayıtlı veli bulunamadı."}
                   </td>
                 </tr>
               ) : (
