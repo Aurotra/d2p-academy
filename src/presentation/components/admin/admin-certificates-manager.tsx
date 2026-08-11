@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useMemo, useState, type FormEvent } from "react";
 
 import type {
@@ -36,14 +37,32 @@ function chunkArray<T>(items: T[], size: number): T[][] {
   return chunks;
 }
 
+function formatBlockers(enrollment: PendingCertificateEnrollment): string {
+  const parts: string[] = [];
+  if (enrollment.profileIncomplete) {
+    parts.push(`profil %${enrollment.profileProgress ?? 0}`);
+  }
+  if (enrollment.attendanceIncomplete) {
+    parts.push(
+      `yoklama ${enrollment.presentCount ?? 0}/${enrollment.requiredLessonCount ?? 8}`,
+    );
+  }
+  return parts.join(" · ");
+}
+
 export function AdminCertificatesManager() {
   const [certificates, setCertificates] = useState<AdminCertificateRecord[]>([]);
   const [pendingEnrollments, setPendingEnrollments] = useState<PendingCertificateEnrollment[]>([]);
   const [selectedEnrollmentIds, setSelectedEnrollmentIds] = useState<Set<string>>(new Set());
+  const [selectedBlockedEnrollmentIds, setSelectedBlockedEnrollmentIds] = useState<Set<string>>(
+    new Set(),
+  );
   const [selectedCertificateIds, setSelectedCertificateIds] = useState<Set<string>>(new Set());
   const [pendingEventFilter, setPendingEventFilter] = useState("");
+  const [blockedEventFilter, setBlockedEventFilter] = useState("");
   const [certificateEventFilter, setCertificateEventFilter] = useState("");
   const [revokeReason, setRevokeReason] = useState("");
+  const [overrideReason, setOverrideReason] = useState("");
   const [selectedRevokeCertificateId, setSelectedRevokeCertificateId] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [warning, setWarning] = useState<string | null>(null);
@@ -52,6 +71,7 @@ export function AdminCertificatesManager() {
   const [isSaving, setIsSaving] = useState(false);
   const [bulkProgress, setBulkProgress] = useState<string | null>(null);
   const [showBulkIssueConfirm, setShowBulkIssueConfirm] = useState(false);
+  const [showBlockedIssueConfirm, setShowBlockedIssueConfirm] = useState(false);
 
   const issuablePending = useMemo(
     () =>
@@ -67,11 +87,19 @@ export function AdminCertificatesManager() {
 
   const pendingEventOptions = useMemo(() => {
     const map = new Map<string, string>();
-    for (const enrollment of issuablePending) {
+    for (const enrollment of pendingEnrollments) {
       map.set(enrollment.eventId, enrollment.eventTitle);
     }
     return [...map.entries()].sort((a, b) => a[1].localeCompare(b[1], "tr"));
-  }, [issuablePending]);
+  }, [pendingEnrollments]);
+
+  const blockedEventOptions = useMemo(() => {
+    const map = new Map<string, string>();
+    for (const enrollment of blockedPending) {
+      map.set(enrollment.eventId, enrollment.eventTitle);
+    }
+    return [...map.entries()].sort((a, b) => a[1].localeCompare(b[1], "tr"));
+  }, [blockedPending]);
 
   const certificateEventOptions = useMemo(() => {
     const map = new Map<string, string>();
@@ -90,6 +118,13 @@ export function AdminCertificatesManager() {
     return issuablePending.filter((item) => item.eventId === pendingEventFilter);
   }, [issuablePending, pendingEventFilter]);
 
+  const filteredBlockedPending = useMemo(() => {
+    if (!blockedEventFilter) {
+      return blockedPending;
+    }
+    return blockedPending.filter((item) => item.eventId === blockedEventFilter);
+  }, [blockedPending, blockedEventFilter]);
+
   const filteredActiveCertificates = useMemo(() => {
     const active = certificates.filter((certificate) => certificate.status === "active");
     if (!certificateEventFilter) {
@@ -103,6 +138,14 @@ export function AdminCertificatesManager() {
     [filteredIssuablePending, selectedEnrollmentIds],
   );
 
+  const selectedBlockedIds = useMemo(
+    () =>
+      filteredBlockedPending
+        .filter((item) => selectedBlockedEnrollmentIds.has(item.id))
+        .map((item) => item.id),
+    [filteredBlockedPending, selectedBlockedEnrollmentIds],
+  );
+
   const selectedCertificateIdsList = useMemo(
     () =>
       filteredActiveCertificates
@@ -114,6 +157,10 @@ export function AdminCertificatesManager() {
   const allPendingSelected =
     filteredIssuablePending.length > 0 &&
     filteredIssuablePending.every((item) => selectedEnrollmentIds.has(item.id));
+
+  const allBlockedSelected =
+    filteredBlockedPending.length > 0 &&
+    filteredBlockedPending.every((item) => selectedBlockedEnrollmentIds.has(item.id));
 
   const allCertificatesSelected =
     filteredActiveCertificates.length > 0 &&
@@ -134,6 +181,7 @@ export function AdminCertificatesManager() {
       setCertificates(payload.data.certificates);
       setPendingEnrollments(payload.data.pendingEnrollments);
       setSelectedEnrollmentIds(new Set());
+      setSelectedBlockedEnrollmentIds(new Set());
       setSelectedCertificateIds(new Set());
     } catch (loadError) {
       setError(loadError instanceof Error ? loadError.message : "Veri yüklenemedi.");
@@ -176,6 +224,36 @@ export function AdminCertificatesManager() {
     });
   }
 
+  function toggleBlockedSelection(id: string) {
+    setSelectedBlockedEnrollmentIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
+      return next;
+    });
+  }
+
+  function toggleAllBlocked() {
+    setSelectedBlockedEnrollmentIds((prev) => {
+      if (filteredBlockedPending.every((item) => prev.has(item.id))) {
+        const next = new Set(prev);
+        for (const item of filteredBlockedPending) {
+          next.delete(item.id);
+        }
+        return next;
+      }
+
+      const next = new Set(prev);
+      for (const item of filteredBlockedPending) {
+        next.add(item.id);
+      }
+      return next;
+    });
+  }
+
   function toggleCertificateSelection(id: string) {
     setSelectedCertificateIds((prev) => {
       const next = new Set(prev);
@@ -206,8 +284,11 @@ export function AdminCertificatesManager() {
     });
   }
 
-  async function handleBulkIssue() {
-    if (selectedIssuableIds.length === 0) {
+  async function runBulkIssue(
+    enrollmentIds: string[],
+    options?: { skipEligibilityGates?: boolean; overrideReason?: string },
+  ) {
+    if (enrollmentIds.length === 0) {
       return;
     }
 
@@ -215,8 +296,9 @@ export function AdminCertificatesManager() {
     setError(null);
     setWarning(null);
     setSuccess(null);
-    setBulkProgress(`0 / ${selectedIssuableIds.length} sertifika oluşturuluyor...`);
+    setBulkProgress(`0 / ${enrollmentIds.length} sertifika oluşturuluyor...`);
     setShowBulkIssueConfirm(false);
+    setShowBlockedIssueConfirm(false);
 
     try {
       const response = await fetch("/api/v1/admin/certificates", {
@@ -224,8 +306,10 @@ export function AdminCertificatesManager() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           action: "bulk-issue",
-          enrollmentIds: selectedIssuableIds,
+          enrollmentIds,
           generatePdf: false,
+          skipEligibilityGates: options?.skipEligibilityGates === true,
+          overrideReason: options?.overrideReason?.trim(),
         }),
       });
 
@@ -279,10 +363,15 @@ export function AdminCertificatesManager() {
         pdfFailedCount += pdfPayload.data.failed.length;
       }
 
+      if (options?.skipEligibilityGates) {
+        setOverrideReason("");
+      }
+
       await loadData();
 
       const messages = [
         `${issuedCount} sertifika oluşturuldu.`,
+        options?.skipEligibilityGates ? "Profil/yoklama şartları admin onayıyla yoksayıldı." : null,
         failedCount > 0 ? `${failedCount} kayıt başarısız oldu.` : null,
         pdfSuccessCount > 0 ? `${pdfSuccessCount} PDF hazırlandı.` : null,
         pdfFailedCount > 0
@@ -301,6 +390,17 @@ export function AdminCertificatesManager() {
       setIsSaving(false);
       setBulkProgress(null);
     }
+  }
+
+  async function handleBulkIssue() {
+    await runBulkIssue(selectedIssuableIds);
+  }
+
+  async function handleBlockedBulkIssue() {
+    await runBulkIssue(selectedBlockedIds, {
+      skipEligibilityGates: true,
+      overrideReason,
+    });
   }
 
   async function handleBulkRegeneratePdf() {
@@ -448,6 +548,9 @@ export function AdminCertificatesManager() {
   const selectedPendingStudents = filteredIssuablePending.filter((item) =>
     selectedEnrollmentIds.has(item.id),
   );
+  const selectedBlockedStudents = filteredBlockedPending.filter((item) =>
+    selectedBlockedEnrollmentIds.has(item.id),
+  );
 
   return (
     <div className="space-y-6">
@@ -486,23 +589,113 @@ export function AdminCertificatesManager() {
         ) : null}
 
         {blockedPending.length > 0 ? (
-          <div className="mt-4 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-950">
-            <p className="font-semibold">
-              Formu bitmiş ama profil veya yoklama eksik ({blockedPending.length})
-            </p>
-            <ul className="mt-2 list-inside list-disc text-xs">
-              {blockedPending.slice(0, 8).map((enrollment) => (
-                <li key={enrollment.id}>
-                  {enrollment.studentName} · {enrollment.eventTitle}
-                  {enrollment.profileIncomplete
-                    ? ` · profil %${enrollment.profileProgress ?? 0}`
-                    : null}
-                  {enrollment.attendanceIncomplete
-                    ? ` · yoklama ${enrollment.presentCount ?? 0}/${enrollment.requiredLessonCount ?? 8}`
-                    : null}
-                </li>
-              ))}
-            </ul>
+          <div className="mt-6 space-y-4 rounded-2xl border border-amber-200 bg-amber-50 p-4">
+            <div>
+              <h3 className="font-semibold text-amber-950">
+                Formu bitmiş ama profil veya yoklama eksik ({blockedPending.length})
+              </h3>
+              <p className="mt-2 text-sm text-amber-950">
+                Bu öğrenciler formları tamamlamış ancak profil %100 veya yoklama eşiği henüz
+                karşılanmamış. Önce{" "}
+                <Link href="/admin/students" className="font-semibold underline">
+                  öğrenci profillerini
+                </Link>{" "}
+                ve{" "}
+                <Link href="/admin/enrollments" className="font-semibold underline">
+                  yoklamayı
+                </Link>{" "}
+                tamamlayın; acil durumda admin onayıyla sertifika verebilirsiniz.
+              </p>
+            </div>
+
+            {blockedEventOptions.length > 1 ? (
+              <div className="max-w-md">
+                <Select
+                  label="Eğitime göre filtrele"
+                  value={blockedEventFilter}
+                  onChange={(event) => setBlockedEventFilter(event.target.value)}
+                >
+                  <option value="">Tüm eğitimler</option>
+                  {blockedEventOptions.map(([eventId, eventTitle]) => (
+                    <option key={eventId} value={eventId}>
+                      {eventTitle}
+                    </option>
+                  ))}
+                </Select>
+              </div>
+            ) : null}
+
+            <div className="flex flex-wrap items-end gap-3">
+              <div className="min-w-[240px] flex-1">
+                <Input
+                  label="Admin onay gerekçesi"
+                  value={overrideReason}
+                  onChange={(event) => setOverrideReason(event.target.value)}
+                  placeholder="Örn: Yaz kursu sonu toplu sertifika"
+                />
+              </div>
+              <Button
+                type="button"
+                variant="secondary"
+                disabled={
+                  isSaving ||
+                  selectedBlockedIds.length === 0 ||
+                  overrideReason.trim().length < 3
+                }
+                onClick={() => setShowBlockedIssueConfirm(true)}
+              >
+                Admin Onayıyla Ver
+                {selectedBlockedIds.length > 0 ? ` (${selectedBlockedIds.length})` : ""}
+              </Button>
+            </div>
+
+            <div className="overflow-x-auto rounded-2xl border border-amber-200 bg-white">
+              <table className="min-w-full text-sm">
+                <thead className="bg-surface-section text-left text-xs uppercase tracking-wide text-muted">
+                  <tr>
+                    <th className="px-4 py-3">
+                      <input
+                        type="checkbox"
+                        checked={allBlockedSelected}
+                        onChange={toggleAllBlocked}
+                        aria-label="Tüm eksik kayıtları seç"
+                      />
+                    </th>
+                    <th className="px-4 py-3">Öğrenci</th>
+                    <th className="px-4 py-3">Eğitim</th>
+                    <th className="px-4 py-3">Eksik</th>
+                    <th className="px-4 py-3">İşlem</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredBlockedPending.map((enrollment) => (
+                    <tr key={enrollment.id} className="border-t border-border-surface">
+                      <td className="px-4 py-3">
+                        <input
+                          type="checkbox"
+                          checked={selectedBlockedEnrollmentIds.has(enrollment.id)}
+                          onChange={() => toggleBlockedSelection(enrollment.id)}
+                          aria-label={`${enrollment.studentName} seç`}
+                        />
+                      </td>
+                      <td className="px-4 py-3 font-medium text-navy-950">
+                        {enrollment.studentName}
+                      </td>
+                      <td className="px-4 py-3 text-muted">{enrollment.eventTitle}</td>
+                      <td className="px-4 py-3 text-amber-900">{formatBlockers(enrollment)}</td>
+                      <td className="px-4 py-3">
+                        <Link
+                          href={`/admin/events/${enrollment.eventId}/attendance`}
+                          className="font-semibold text-cyan-700 underline hover:text-cyan-900"
+                        >
+                          Yoklama
+                        </Link>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
         ) : null}
 
@@ -591,6 +784,42 @@ export function AdminCertificatesManager() {
               variant="secondary"
               disabled={isSaving}
               onClick={() => setShowBulkIssueConfirm(false)}
+            >
+              Vazgeç
+            </Button>
+          </div>
+        </div>
+      ) : null}
+
+      {showBlockedIssueConfirm ? (
+        <div className="rounded-[2rem] border border-amber-300 bg-amber-50 p-6 shadow-sm">
+          <h3 className="text-lg font-bold text-navy-950">Admin onayıyla toplu sertifika</h3>
+          <p className="mt-2 text-sm text-muted">
+            Seçilen {selectedBlockedStudents.length} öğrenciye profil/yoklama şartları
+            yoksayılarak sertifika verilecek.
+          </p>
+          <p className="mt-2 text-sm font-medium text-amber-950">
+            Gerekçe: {overrideReason.trim()}
+          </p>
+          <ul className="mt-3 list-inside list-disc text-sm text-navy-950">
+            {selectedBlockedStudents.slice(0, 8).map((student) => (
+              <li key={student.id}>
+                {student.studentName} · {student.eventTitle} · {formatBlockers(student)}
+              </li>
+            ))}
+            {selectedBlockedStudents.length > 8 ? (
+              <li>…ve {selectedBlockedStudents.length - 8} kişi daha</li>
+            ) : null}
+          </ul>
+          <div className="mt-4 flex flex-wrap gap-3">
+            <Button type="button" disabled={isSaving} onClick={() => void handleBlockedBulkIssue()}>
+              {isSaving ? "Oluşturuluyor..." : "Onayla ve Oluştur"}
+            </Button>
+            <Button
+              type="button"
+              variant="secondary"
+              disabled={isSaving}
+              onClick={() => setShowBlockedIssueConfirm(false)}
             >
               Vazgeç
             </Button>

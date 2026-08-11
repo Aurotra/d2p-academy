@@ -393,25 +393,27 @@ export class SupabaseAdminCertificateRepository implements AdminCertificateRepos
 
     const progressOptions = profile ? profileProgressOptions(profile) : undefined;
 
-    if (
-      !profile ||
-      !isProfileComplete(
-        {
-          full_name: profile.full_name,
-          gender: profile.gender,
-          grade_level: profile.grade_level,
-          school_name: profile.school_name,
-          city_district: profile.city_district,
-          experience_data: profile.experience_data,
-          interests: profile.interests,
-          motivation_data: profile.motivation_data,
-          profile_avatar_url: profile.profile_avatar_url,
-          parent_phone: profile.parent_phone,
-        },
-        progressOptions,
-      )
-    ) {
-      throw new Error(`Sertifika oluşturulamadı: ${PROFILE_REQUIRED_FOR_CERTIFICATE_MESSAGE}`);
+    if (!input.skipEligibilityGates) {
+      if (
+        !profile ||
+        !isProfileComplete(
+          {
+            full_name: profile.full_name,
+            gender: profile.gender,
+            grade_level: profile.grade_level,
+            school_name: profile.school_name,
+            city_district: profile.city_district,
+            experience_data: profile.experience_data,
+            interests: profile.interests,
+            motivation_data: profile.motivation_data,
+            profile_avatar_url: profile.profile_avatar_url,
+            parent_phone: profile.parent_phone,
+          },
+          progressOptions,
+        )
+      ) {
+        throw new Error(`Sertifika oluşturulamadı: ${PROFILE_REQUIRED_FOR_CERTIFICATE_MESSAGE}`);
+      }
     }
 
     const { data: enrollmentForms, error: enrollmentFormsError } = await this.client
@@ -460,7 +462,7 @@ export class SupabaseAdminCertificateRepository implements AdminCertificateRepos
       throw new Error(`Sertifika oluşturulamadı: ${attendanceError.message}`);
     }
 
-    if (!attendanceComplete) {
+    if (!input.skipEligibilityGates && !attendanceComplete) {
       throw new Error(
         "Sertifika oluşturulamadı: Zorunlu yoklama eşiği karşılanmadan sertifika verilemez.",
       );
@@ -509,7 +511,10 @@ export class SupabaseAdminCertificateRepository implements AdminCertificateRepos
 
     for (const enrollmentId of uniqueIds) {
       try {
-        const certificate = await this.issue({ enrollmentId });
+        const certificate = await this.issue({
+          enrollmentId,
+          skipEligibilityGates: input.skipEligibilityGates,
+        });
         succeeded.push({
           enrollmentId,
           certificate,

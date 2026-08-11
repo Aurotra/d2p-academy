@@ -219,6 +219,49 @@ function toggleInstructor(form: EventFormState, instructorId: string): EventForm
   };
 }
 
+function compareActiveEvents(a: AdminEventRecord, b: AdminEventRecord): number {
+  const statusOrder: Record<EventStatus, number> = {
+    published: 0,
+    draft: 1,
+    completed: 2,
+    cancelled: 3,
+  };
+  const statusDiff = statusOrder[a.status] - statusOrder[b.status];
+  if (statusDiff !== 0) {
+    return statusDiff;
+  }
+
+  if (a.status === "published") {
+    return a.startAt.getTime() - b.startAt.getTime();
+  }
+
+  return b.startAt.getTime() - a.startAt.getTime();
+}
+
+function compareArchivedEvents(a: AdminEventRecord, b: AdminEventRecord): number {
+  const statusDiff =
+    (a.status === "completed" ? 0 : 1) - (b.status === "completed" ? 0 : 1);
+  if (statusDiff !== 0) {
+    return statusDiff;
+  }
+
+  return b.endAt.getTime() - a.endAt.getTime();
+}
+
+function partitionAdminEvents(events: AdminEventRecord[]): {
+  activeEvents: AdminEventRecord[];
+  archivedEvents: AdminEventRecord[];
+} {
+  const activeEvents = events
+    .filter((event) => event.status === "published" || event.status === "draft")
+    .sort(compareActiveEvents);
+  const archivedEvents = events
+    .filter((event) => event.status === "completed" || event.status === "cancelled")
+    .sort(compareArchivedEvents);
+
+  return { activeEvents, archivedEvents };
+}
+
 function FormSection({
   title,
   description,
@@ -806,8 +849,41 @@ export function AdminEventsManager() {
   const eventStats = useMemo(() => {
     const published = events.filter((event) => event.status === "published").length;
     const draft = events.filter((event) => event.status === "draft").length;
-    return { total: events.length, published, draft };
+    const completed = events.filter((event) => event.status === "completed").length;
+    return { total: events.length, published, draft, completed };
   }, [events]);
+
+  const { activeEvents, archivedEvents } = useMemo(
+    () => partitionAdminEvents(events),
+    [events],
+  );
+
+  function renderEventCard(event: AdminEventRecord) {
+    const isEditing = editingEventId === event.id && Boolean(editForm);
+
+    return (
+      <EventListCard
+        key={event.id}
+        event={event}
+        isEditing={isEditing}
+        editForm={isEditing ? editForm : null}
+        setEditForm={(next) => setEditForm(next)}
+        categories={categories}
+        instructors={instructors}
+        notifyingEventId={notifyingEventId}
+        savingEventId={savingEventId}
+        editCardRef={editCardRef}
+        onStartEdit={() => startEditing(event)}
+        onCancelEdit={cancelEditing}
+        onUpdate={handleUpdate}
+        onNotify={() => void notifyEventInstructors(event)}
+        onPublishToggle={() =>
+          void updateStatus(event.id, event.status === "published" ? "draft" : "published")
+        }
+        onDelete={() => void removeEvent(event.id)}
+      />
+    );
+  }
 
   async function loadData() {
     setIsLoading(true);
@@ -1123,7 +1199,7 @@ export function AdminEventsManager() {
           <div>
             <h2 className="text-xl font-bold text-navy-950">Etkinlik Listesi</h2>
             <p className="mt-1 text-sm text-subtle">
-              Tüm etkinlikler kart görünümünde; işlemler her kartın altında gruplandı.
+              Aktif etkinlikler üstte; tamamlanan ve iptal edilenler altta listelenir.
             </p>
           </div>
           {!isLoading && events.length > 0 ? (
@@ -1131,6 +1207,7 @@ export function AdminEventsManager() {
               <Badge tone="neutral">{eventStats.total} toplam</Badge>
               <Badge tone="cyan">{eventStats.published} yayında</Badge>
               <Badge tone="navy">{eventStats.draft} taslak</Badge>
+              <Badge tone="neutral">{eventStats.completed} tamamlandı</Badge>
             </div>
           ) : null}
         </div>
@@ -1142,36 +1219,41 @@ export function AdminEventsManager() {
             Henüz etkinlik yok. Yukarıdaki formdan ilk etkinliği oluşturabilirsiniz.
           </p>
         ) : (
-          <div className="mt-6 space-y-4">
-            {events.map((event) => {
-              const isEditing = editingEventId === event.id && Boolean(editForm);
+          <div className="mt-6 space-y-8">
+            <section>
+              <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+                <div>
+                  <h3 className="text-lg font-bold text-navy-950">Aktif Etkinlikler</h3>
+                  <p className="mt-1 text-sm text-subtle">
+                    Yayında ve taslak etkinlikler; güncel işlemler için bu bölümü kullanın.
+                  </p>
+                </div>
+                <Badge tone="cyan">{activeEvents.length} aktif</Badge>
+              </div>
 
-              return (
-                <EventListCard
-                  key={event.id}
-                  event={event}
-                  isEditing={isEditing}
-                  editForm={isEditing ? editForm : null}
-                  setEditForm={(next) => setEditForm(next)}
-                  categories={categories}
-                  instructors={instructors}
-                  notifyingEventId={notifyingEventId}
-                  savingEventId={savingEventId}
-                  editCardRef={editCardRef}
-                  onStartEdit={() => startEditing(event)}
-                  onCancelEdit={cancelEditing}
-                  onUpdate={handleUpdate}
-                  onNotify={() => void notifyEventInstructors(event)}
-                  onPublishToggle={() =>
-                    void updateStatus(
-                      event.id,
-                      event.status === "published" ? "draft" : "published",
-                    )
-                  }
-                  onDelete={() => void removeEvent(event.id)}
-                />
-              );
-            })}
+              {activeEvents.length === 0 ? (
+                <p className="rounded-2xl border border-dashed border-border-surface bg-surface-section px-4 py-8 text-center text-sm text-muted">
+                  Aktif etkinlik yok. Tamamlanan etkinlikler aşağıda görünür.
+                </p>
+              ) : (
+                <div className="space-y-4">{activeEvents.map(renderEventCard)}</div>
+              )}
+            </section>
+
+            {archivedEvents.length > 0 ? (
+              <section className="border-t border-border-surface pt-8">
+                <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+                  <div>
+                    <h3 className="text-lg font-bold text-navy-950">Tamamlanan Etkinlikler</h3>
+                    <p className="mt-1 text-sm text-subtle">
+                      Geçmiş eğitimler ve iptal edilen etkinlikler.
+                    </p>
+                  </div>
+                  <Badge tone="neutral">{archivedEvents.length} arşiv</Badge>
+                </div>
+                <div className="space-y-4">{archivedEvents.map(renderEventCard)}</div>
+              </section>
+            ) : null}
           </div>
         )}
       </div>

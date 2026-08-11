@@ -83,6 +83,8 @@ export async function POST(request: Request) {
       certificateIds?: string[];
       revokeReason?: string;
       generatePdf?: boolean;
+      skipEligibilityGates?: boolean;
+      overrideReason?: string;
     };
     const repository = new SupabaseAdminCertificateRepository(access.client);
 
@@ -94,6 +96,7 @@ export async function POST(request: Request) {
 
       const certificate = await issueAdminCertificate(repository, {
         enrollmentId: enrollmentIds[0]!,
+        skipEligibilityGates: body.skipEligibilityGates === true,
       });
 
       try {
@@ -117,8 +120,18 @@ export async function POST(request: Request) {
         return NextResponse.json({ error: "En az bir kayıt seçilmelidir." }, { status: 400 });
       }
 
+      if (body.skipEligibilityGates === true && !body.overrideReason?.trim()) {
+        return NextResponse.json(
+          { error: "Admin onayı için kısa bir gerekçe yazın." },
+          { status: 400 },
+        );
+      }
+
       const shouldGeneratePdf = body.generatePdf !== false;
-      const bulkResult = await issueAdminCertificatesBulk(repository, { enrollmentIds });
+      const bulkResult = await issueAdminCertificatesBulk(repository, {
+        enrollmentIds,
+        skipEligibilityGates: body.skipEligibilityGates === true,
+      });
       const result: BulkIssueCertificateResult = {
         succeeded: [],
         failed: bulkResult.failed,

@@ -31,6 +31,8 @@ export interface PendingCertificateEnrollment {
 
 export interface IssueCertificateInput {
   enrollmentId: string;
+  /** Admin only: skip profile %100 and attendance threshold (forms still required). */
+  skipEligibilityGates?: boolean;
 }
 
 export interface RevokeCertificateInput {
@@ -40,6 +42,7 @@ export interface RevokeCertificateInput {
 
 export interface BulkIssueCertificateInput {
   enrollmentIds: string[];
+  skipEligibilityGates?: boolean;
 }
 
 export interface BulkIssueCertificateSuccess {
