@@ -56,6 +56,12 @@ export function SiteFooter() {
               Veli Rehberi
             </Link>
             <Link
+              href="/rehber"
+              className="inline-flex min-h-11 items-center font-semibold text-navy-900 transition hover:text-document-primary"
+            >
+              Rehber
+            </Link>
+            <Link
               href="/kvkk"
               className="inline-flex min-h-11 items-center font-semibold text-navy-900 transition hover:text-document-primary"
             >
