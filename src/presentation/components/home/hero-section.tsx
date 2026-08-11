@@ -22,6 +22,9 @@ export function HeroSection() {
             Fikirlerini Tasarıma,{" "}
             <span className="text-primary">Tasarımlarını Gerçek Çözümlere Dönüştür!</span>
           </h1>
+          <h2 className="mt-4 max-w-3xl text-lg font-semibold text-navy-900 sm:text-xl">
+            Denizli&apos;de Çocuklar için 3D Tasarım ve Baskı Atölyesi
+          </h2>
           <p className="mt-6 max-w-2xl text-base leading-7 text-[var(--text-on-surface-soft)] sm:text-lg">
             D2P (Düşün-Tasarla-Üret-Test Et) modeliyle; sadece teknolojiyi öğrenen değil,
             çevrelerindeki problemlere 3D tasarımlarla çözümler geliştiren ve ürettiği çözümleri
