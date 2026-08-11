@@ -2,11 +2,11 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 
 /**
- * Minimal inline markdown: **bold** and [label](/path) only.
+ * Minimal inline markdown: **bold**, *italic*, and [label](/path).
  */
 export function GuideRichText({ text }: { text: string }) {
   const nodes: ReactNode[] = [];
-  const pattern = /(\*\*[^*]+\*\*|\[[^\]]+\]\([^)]+\))/g;
+  const pattern = /(\*\*[^*]+\*\*|\*[^*]+\*|\[[^\]]+\]\([^)]+\))/g;
   let lastIndex = 0;
   let match: RegExpExecArray | null;
   let key = 0;
@@ -19,6 +19,8 @@ export function GuideRichText({ text }: { text: string }) {
     const token = match[0];
     if (token.startsWith("**") && token.endsWith("**")) {
       nodes.push(<strong key={key++}>{token.slice(2, -2)}</strong>);
+    } else if (token.startsWith("*") && token.endsWith("*")) {
+      nodes.push(<em key={key++}>{token.slice(1, -1)}</em>);
     } else {
       const linkMatch = /^\[([^\]]+)\]\(([^)]+)\)$/.exec(token);
       if (linkMatch) {
