@@ -1,5 +1,6 @@
 import type { AdminMember, AdminMemberRole } from "@/core/domain/admin-member";
 import { profileHasInstructorCapability } from "@/infrastructure/auth/instructor-capability";
+import { resolveContactPhone } from "@/shared/utils/resolve-contact-phone";
 import type { SupabaseClient } from "@supabase/supabase-js";
 
 interface ProfileMemberRow {
@@ -8,6 +9,7 @@ interface ProfileMemberRow {
   email: string | null;
   role: string;
   phone: string | null;
+  parent_phone: string | null;
   created_at: string;
   is_active: boolean;
   is_instructor?: boolean | null;
@@ -26,7 +28,8 @@ export class SupabaseAdminMemberRepository {
   constructor(private readonly client: SupabaseClient) {}
 
   async listMembers(input: ListAdminMembersInput = {}): Promise<AdminMember[]> {
-    const baseSelect = "id, full_name, email, role, phone, created_at, is_active";
+    const baseSelect =
+      "id, full_name, email, role, phone, parent_phone, created_at, is_active";
     let request = this.client
       .from("profiles")
       .select(`${baseSelect}, is_instructor`)
@@ -77,24 +80,67 @@ export class SupabaseAdminMemberRepository {
     }
 
     const rows = (data ?? []) as ProfileMemberRow[];
-    const childCountByParent = await this.countChildrenByParent(
-      rows.filter((row) => row.role === "parent").map((row) => row.id),
-    );
+    const parentIds = rows.filter((row) => row.role === "parent").map((row) => row.id);
+    const [childCountByParent, childPhonesByParent] = await Promise.all([
+      this.countChildrenByParent(parentIds),
+      this.fetchChildPhonesByParent(parentIds),
+    ]);
 
-    return rows.map((row) => ({
-      id: row.id,
-      fullName: row.full_name,
-      email: row.email,
-      role: row.role as AdminMember["role"],
-      phone: row.phone,
-      createdAt: row.created_at,
-      isActive: row.is_active,
-      childCount: childCountByParent.get(row.id) ?? 0,
-      isInstructor: profileHasInstructorCapability({
-        role: row.role,
-        is_instructor: row.is_instructor,
-      }),
-    }));
+    return rows.map((row) => {
+      const childPhones = childPhonesByParent.get(row.id) ?? [];
+      const phone =
+        row.role === "parent"
+          ? resolveContactPhone(row.phone, childPhones)
+          : resolveContactPhone(row.phone, [row.parent_phone]);
+
+      return {
+        id: row.id,
+        fullName: row.full_name,
+        email: row.email,
+        role: row.role as AdminMember["role"],
+        phone,
+        createdAt: row.created_at,
+        isActive: row.is_active,
+        childCount: childCountByParent.get(row.id) ?? 0,
+        isInstructor: profileHasInstructorCapability({
+          role: row.role,
+          is_instructor: row.is_instructor,
+        }),
+      };
+    });
+  }
+
+  private async fetchChildPhonesByParent(parentIds: string[]): Promise<Map<string, string[]>> {
+    const phonesByParent = new Map<string, string[]>();
+    if (parentIds.length === 0) {
+      return phonesByParent;
+    }
+
+    const { data, error } = await this.client
+      .from("profiles")
+      .select("parent_id, parent_phone, phone")
+      .in("parent_id", parentIds)
+      .eq("role", "student");
+
+    if (error) {
+      throw new Error(`Veli telefonları alınamadı: ${error.message}`);
+    }
+
+    for (const row of data ?? []) {
+      if (!row.parent_id) {
+        continue;
+      }
+
+      const phones = phonesByParent.get(row.parent_id) ?? [];
+      if (row.parent_phone?.trim()) {
+        phones.push(row.parent_phone.trim());
+      } else if (row.phone?.trim()) {
+        phones.push(row.phone.trim());
+      }
+      phonesByParent.set(row.parent_id, phones);
+    }
+
+    return phonesByParent;
   }
 
   private async countChildrenByParent(parentIds: string[]): Promise<Map<string, number>> {

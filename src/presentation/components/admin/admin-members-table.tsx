@@ -6,6 +6,7 @@ import { useState } from "react";
 import type { AdminMember } from "@/core/domain/admin-member";
 import { AdminFeedbackToast } from "@/presentation/components/admin/admin-feedback-toast";
 import { Button } from "@/presentation/components/ui/button";
+import { formatTurkishPhoneDisplay } from "@/shared/utils/turkish-phone";
 
 function formatDate(value: string): string {
   return new Intl.DateTimeFormat("tr-TR", {
@@ -21,6 +22,21 @@ function roleLabel(role: string): string {
   if (role === "admin") return "Admin";
   if (role === "instructor") return "Eğitmen (eski kayıt)";
   return role;
+}
+
+function PhoneCell({ phone }: { phone: string | null }) {
+  if (!phone) {
+    return <span className="text-subtle">—</span>;
+  }
+
+  const display = formatTurkishPhoneDisplay(phone);
+  const tel = phone.replace(/\s/g, "");
+
+  return (
+    <a href={`tel:${tel}`} className="font-semibold text-cyan-700 hover:text-cyan-900 hover:underline">
+      {display}
+    </a>
+  );
 }
 
 function promoteConfirmMessage(member: AdminMember): string {
@@ -240,7 +256,9 @@ export function AdminMembersTable({ members }: { members: AdminMember[] }) {
                         {roleLabel(member.role)}
                       </span>
                     </td>
-                    <td className="px-5 py-4 text-[var(--text-on-surface-soft)]">{member.phone ?? "—"}</td>
+                    <td className="px-5 py-4">
+                      <PhoneCell phone={member.phone} />
+                    </td>
                     <td className="px-5 py-4 text-[var(--text-on-surface-soft)]">
                       {member.role === "parent" ? member.childCount : "—"}
                     </td>

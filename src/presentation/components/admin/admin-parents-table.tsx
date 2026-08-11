@@ -18,7 +18,7 @@ function phoneLink(value: string) {
   const tel = value.replace(/\s/g, "");
 
   return (
-    <a href={`tel:${tel}`} className="font-semibold text-document-primary hover:underline">
+    <a href={`tel:${tel}`} className="font-semibold text-cyan-700 hover:text-cyan-900 hover:underline">
       {display}
     </a>
   );

@@ -1,6 +1,8 @@
 import type { AdminParentChildContact, AdminParentRecord } from "@/core/domain/admin-parent";
 import type { SupabaseClient } from "@supabase/supabase-js";
 
+import { resolveContactPhone as resolveContactPhoneFromValues } from "@/shared/utils/resolve-contact-phone";
+
 interface ParentRow {
   id: string;
   full_name: string;
@@ -70,23 +72,6 @@ function matchesParentQuery(
   });
 }
 
-function resolveContactPhone(
-  accountPhone: string | null,
-  children: AdminParentChildContact[],
-): string | null {
-  if (accountPhone?.trim()) {
-    return accountPhone.trim();
-  }
-
-  for (const child of children) {
-    if (child.parentPhone?.trim()) {
-      return child.parentPhone.trim();
-    }
-  }
-
-  return null;
-}
-
 export class SupabaseAdminParentRepository {
   constructor(private readonly client: SupabaseClient) {}
 
@@ -113,7 +98,6 @@ export class SupabaseAdminParentRepository {
         .select("id, parent_id, full_name, username, parent_phone")
         .in("parent_id", parentIds)
         .eq("role", "student")
-        .not("username", "is", null)
         .order("full_name", { ascending: true });
 
       if (childError) {
@@ -144,7 +128,10 @@ export class SupabaseAdminParentRepository {
           email: parent.email,
           accountPhone: parent.phone,
           profileContactPhone,
-          contactPhone: resolveContactPhone(parent.phone, children),
+          contactPhone: resolveContactPhoneFromValues(
+            parent.phone,
+            children.map((child) => child.parentPhone),
+          ),
           childCount: children.length,
           children,
           createdAt: parent.created_at,
