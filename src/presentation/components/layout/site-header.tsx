@@ -46,28 +46,23 @@ function handleSamePageHashNav(
 
 function MenuIcon({ open }: { open: boolean }) {
   return (
-    <svg
-      className="h-6 w-6"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      aria-hidden
-    >
-      {open ? (
-        <>
-          <path d="M6 6l12 12" />
-          <path d="M18 6L6 18" />
-        </>
-      ) : (
-        <>
-          <path d="M4 7h16" />
-          <path d="M4 12h16" />
-          <path d="M4 17h16" />
-        </>
-      )}
-    </svg>
+    <span className="relative block h-5 w-6" aria-hidden>
+      <span
+        className={`absolute left-0 top-0 block h-0.5 w-6 rounded-full bg-current transition-all duration-300 ease-out motion-reduce:transition-none ${
+          open ? "top-2 rotate-45" : ""
+        }`}
+      />
+      <span
+        className={`absolute left-0 top-2 block h-0.5 w-6 rounded-full bg-current transition-all duration-300 ease-out motion-reduce:transition-none ${
+          open ? "scale-x-0 opacity-0" : "scale-x-100 opacity-100"
+        }`}
+      />
+      <span
+        className={`absolute left-0 top-4 block h-0.5 w-6 rounded-full bg-current transition-all duration-300 ease-out motion-reduce:transition-none ${
+          open ? "top-2 -rotate-45" : ""
+        }`}
+      />
+    </span>
   );
 }
 
@@ -206,7 +201,9 @@ export function SiteHeader() {
 
           <button
             type="button"
-            className="relative z-[60] ml-auto inline-flex min-h-11 min-w-11 shrink-0 items-center justify-center rounded-xl border border-border-surface bg-white/80 p-2.5 text-navy-900 shadow-sm transition hover:border-primary/30 hover:text-primary xl:hidden"
+            className={`relative z-[60] ml-auto inline-flex min-h-11 min-w-11 shrink-0 items-center justify-center rounded-xl border border-border-surface bg-white/80 p-2.5 text-navy-900 shadow-sm transition hover:border-primary/30 hover:text-primary xl:hidden ${
+              isMobileMenuOpen ? "border-primary/30 text-primary" : ""
+            }`}
             aria-label={isMobileMenuOpen ? "Menüyü kapat" : "Menüyü aç"}
             aria-expanded={isMobileMenuOpen}
             aria-controls="mobile-main-menu"
@@ -217,88 +214,120 @@ export function SiteHeader() {
         </div>
       </div>
 
-      {isMobileMenuOpen ? (
-        <>
-          <button
-            type="button"
-            className="fixed inset-0 z-40 bg-navy-950/20 backdrop-blur-[2px] xl:hidden"
-            aria-label="Menüyü kapat"
-            onClick={closeMobileMenu}
-          />
-          <nav
-            id="mobile-main-menu"
-            className="fixed inset-x-0 bottom-0 top-20 z-50 overflow-y-auto overscroll-contain border-t border-border-surface bg-gradient-to-b from-surface-base to-surface-section px-4 py-5 shadow-lg shadow-secondary/10 xl:hidden sm:px-6"
-            aria-label="Mobil menü"
-          >
-            <ul className="space-y-1">
-              {navItems.map((item) => (
-                <li key={item.href}>
-                  <Link
-                    href={item.href}
-                    className="flex items-center rounded-xl px-4 py-3 text-base font-semibold text-navy-900 transition hover:bg-white/70 hover:text-primary"
-                    onClick={(event) => {
-                      handleSamePageHashNav(event, item.href, pathname);
-                      closeMobileMenu();
-                    }}
-                  >
-                    <span className="mr-3 h-2 w-2 shrink-0 rounded-full bg-accent" />
-                    {item.label}
-                  </Link>
-                </li>
-              ))}
-            </ul>
+      <button
+        type="button"
+        className={`mobile-menu-backdrop fixed inset-0 z-40 bg-navy-950/20 backdrop-blur-[2px] transition-opacity duration-300 ease-out motion-reduce:transition-none xl:hidden ${
+          isMobileMenuOpen
+            ? "pointer-events-auto opacity-100"
+            : "pointer-events-none opacity-0"
+        }`}
+        aria-label="Menüyü kapat"
+        aria-hidden={!isMobileMenuOpen}
+        tabIndex={isMobileMenuOpen ? 0 : -1}
+        onClick={closeMobileMenu}
+      />
+      <nav
+        id="mobile-main-menu"
+        inert={!isMobileMenuOpen}
+        className={`mobile-menu-panel fixed inset-x-0 bottom-0 top-20 z-50 overflow-y-auto overscroll-contain border-t border-border-surface bg-gradient-to-b from-surface-base to-surface-section px-4 py-5 shadow-lg shadow-secondary/10 transition-all duration-300 ease-out motion-reduce:transition-none xl:hidden sm:px-6 ${
+          isMobileMenuOpen
+            ? "pointer-events-auto translate-y-0 opacity-100"
+            : "pointer-events-none -translate-y-3 opacity-0"
+        }`}
+        aria-label="Mobil menü"
+        aria-hidden={!isMobileMenuOpen}
+      >
+        <ul className="space-y-1">
+          {navItems.map((item, index) => (
+            <li
+              key={item.href}
+              className={`transition-all duration-300 ease-out motion-reduce:transition-none ${
+                isMobileMenuOpen ? "translate-y-0 opacity-100" : "translate-y-2 opacity-0"
+              }`}
+              style={{
+                transitionDelay: isMobileMenuOpen ? `${index * 35}ms` : "0ms",
+              }}
+            >
+              <Link
+                href={item.href}
+                className="flex items-center rounded-xl px-4 py-3 text-base font-semibold text-navy-900 transition hover:bg-white/70 hover:text-primary"
+                tabIndex={isMobileMenuOpen ? 0 : -1}
+                onClick={(event) => {
+                  handleSamePageHashNav(event, item.href, pathname);
+                  closeMobileMenu();
+                }}
+              >
+                <span className="mr-3 h-2 w-2 shrink-0 rounded-full bg-accent" />
+                {item.label}
+              </Link>
+            </li>
+          ))}
+        </ul>
 
-            <div className="mt-5 flex min-h-[52px] flex-col gap-3 border-t border-border-surface pt-5">
-              {showLoggedInActions ? (
-                <>
-                  {userDisplayName ? (
-                    <p className="px-1 text-center text-sm font-medium text-muted">
-                      {userDisplayName}
-                    </p>
-                  ) : null}
-                  <Link
-                    href={panelHref}
-                    className="inline-flex items-center justify-center rounded-xl bg-secondary px-4 py-3 text-sm font-semibold text-white transition hover:bg-secondary-hover hover:shadow-glow-secondary"
-                    onClick={closeMobileMenu}
-                  >
-                    Panelim
-                  </Link>
-                  <button
-                    type="button"
-                    disabled={isLoggingOut}
-                    onClick={() => void handleLogout()}
-                    className="inline-flex items-center justify-center rounded-xl bg-primary px-4 py-3 text-sm font-semibold text-white transition hover:bg-primary-hover hover:shadow-glow-primary disabled:opacity-60"
-                  >
-                    {isLoggingOut ? "Çıkış..." : "Çıkış Yap"}
-                  </button>
-                </>
+        <div
+          className={`mt-5 flex min-h-[52px] flex-col gap-3 border-t border-border-surface pt-5 transition-all duration-300 ease-out motion-reduce:transition-none ${
+            isMobileMenuOpen ? "translate-y-0 opacity-100" : "translate-y-2 opacity-0"
+          }`}
+          style={{ transitionDelay: isMobileMenuOpen ? "280ms" : "0ms" }}
+        >
+          {showLoggedInActions ? (
+            <>
+              {userDisplayName ? (
+                <p className="px-1 text-center text-sm font-medium text-muted">
+                  {userDisplayName}
+                </p>
               ) : null}
-              {showGuestAuthActions ? (
-                <>
-                  <AuthPortalLink
-                    href="/student-login"
-                    kind="student"
-                    block
-                    onClick={closeMobileMenu}
-                  >
-                    Öğrenci Girişi
-                  </AuthPortalLink>
-                  <AuthPortalLink href="/login" kind="parent" block onClick={closeMobileMenu}>
-                    Veli Girişi
-                  </AuthPortalLink>
-                  <Link
-                    href="/register"
-                    className="inline-flex items-center justify-center rounded-xl bg-secondary px-4 py-3 text-sm font-semibold text-white transition hover:bg-secondary-hover hover:shadow-glow-secondary"
-                    onClick={closeMobileMenu}
-                  >
-                    Hesap Oluştur
-                  </Link>
-                </>
-              ) : null}
-            </div>
-          </nav>
-        </>
-      ) : null}
+              <Link
+                href={panelHref}
+                className="inline-flex items-center justify-center rounded-xl bg-secondary px-4 py-3 text-sm font-semibold text-white transition hover:bg-secondary-hover hover:shadow-glow-secondary"
+                tabIndex={isMobileMenuOpen ? 0 : -1}
+                onClick={closeMobileMenu}
+              >
+                Panelim
+              </Link>
+              <button
+                type="button"
+                disabled={isLoggingOut}
+                tabIndex={isMobileMenuOpen ? 0 : -1}
+                onClick={() => void handleLogout()}
+                className="inline-flex items-center justify-center rounded-xl bg-primary px-4 py-3 text-sm font-semibold text-white transition hover:bg-primary-hover hover:shadow-glow-primary disabled:opacity-60"
+              >
+                {isLoggingOut ? "Çıkış..." : "Çıkış Yap"}
+              </button>
+            </>
+          ) : null}
+          {showGuestAuthActions ? (
+            <>
+              <AuthPortalLink
+                href="/student-login"
+                kind="student"
+                block
+                tabIndex={isMobileMenuOpen ? 0 : -1}
+                onClick={closeMobileMenu}
+              >
+                Öğrenci Girişi
+              </AuthPortalLink>
+              <AuthPortalLink
+                href="/login"
+                kind="parent"
+                block
+                tabIndex={isMobileMenuOpen ? 0 : -1}
+                onClick={closeMobileMenu}
+              >
+                Veli Girişi
+              </AuthPortalLink>
+              <Link
+                href="/register"
+                className="inline-flex items-center justify-center rounded-xl bg-secondary px-4 py-3 text-sm font-semibold text-white transition hover:bg-secondary-hover hover:shadow-glow-secondary"
+                tabIndex={isMobileMenuOpen ? 0 : -1}
+                onClick={closeMobileMenu}
+              >
+                Hesap Oluştur
+              </Link>
+            </>
+          ) : null}
+        </div>
+      </nav>
     </header>
   );
 }

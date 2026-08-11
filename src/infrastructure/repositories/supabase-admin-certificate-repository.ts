@@ -2,6 +2,8 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 
 import type {
   AdminCertificateRecord,
+  BulkIssueCertificateInput,
+  BulkIssueCertificateResult,
   IssueCertificateInput,
   PendingCertificateEnrollment,
   RevokeCertificateInput,
@@ -31,6 +33,7 @@ interface CertificateRow {
   issued_at: string;
   status: CertificateStatus;
   pdf_url: string | null;
+  event_id: string;
   profiles:
     | { full_name: string; email: string | null; username: string | null }
     | { full_name: string; email: string | null; username: string | null }[]
@@ -100,6 +103,7 @@ function mapCertificate(row: CertificateRow): AdminCertificateRecord {
     certificateCode: row.certificate_code,
     holderName: profile?.full_name ?? "Öğrenci",
     holderEmail: formatStudentContact(profile?.email, profile?.username),
+    eventId: row.event_id,
     eventTitle: event?.title ?? "Eğitim",
     issuedAt: new Date(row.issued_at),
     status: row.status,
@@ -168,6 +172,7 @@ export class SupabaseAdminCertificateRepository implements AdminCertificateRepos
         issued_at,
         status,
         pdf_url,
+        event_id,
         profiles ( full_name, email, username ),
         events ( title )
       `,
@@ -341,6 +346,7 @@ export class SupabaseAdminCertificateRepository implements AdminCertificateRepos
           id: row.id,
           studentName: profile?.full_name ?? "Öğrenci",
           studentEmail: formatStudentContact(profile?.email, profile?.username),
+          eventId: row.event_id,
           eventTitle: event?.title ?? "Eğitim",
           completedAt: new Date(readyAt),
           profileIncomplete,
@@ -481,6 +487,7 @@ export class SupabaseAdminCertificateRepository implements AdminCertificateRepos
         issued_at,
         status,
         pdf_url,
+        event_id,
         profiles ( full_name, email, username ),
         events ( title )
       `,
@@ -493,6 +500,30 @@ export class SupabaseAdminCertificateRepository implements AdminCertificateRepos
     }
 
     return mapCertificate(fullRecord as CertificateRow);
+  }
+
+  async issueMany(input: BulkIssueCertificateInput): Promise<BulkIssueCertificateResult> {
+    const uniqueIds = [...new Set(input.enrollmentIds.filter(Boolean))];
+    const succeeded: BulkIssueCertificateResult["succeeded"] = [];
+    const failed: BulkIssueCertificateResult["failed"] = [];
+
+    for (const enrollmentId of uniqueIds) {
+      try {
+        const certificate = await this.issue({ enrollmentId });
+        succeeded.push({
+          enrollmentId,
+          certificate,
+          pdfUrl: certificate.pdfUrl,
+        });
+      } catch (issueError) {
+        failed.push({
+          enrollmentId,
+          error: issueError instanceof Error ? issueError.message : "Sertifika oluşturulamadı.",
+        });
+      }
+    }
+
+    return { succeeded, failed };
   }
 
   async revoke(input: RevokeCertificateInput): Promise<void> {

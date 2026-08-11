@@ -5,6 +5,7 @@ export interface AdminCertificateRecord {
   certificateCode: string;
   holderName: string;
   holderEmail: string;
+  eventId: string;
   eventTitle: string;
   issuedAt: Date;
   status: CertificateStatus;
@@ -15,6 +16,7 @@ export interface PendingCertificateEnrollment {
   id: string;
   studentName: string;
   studentEmail: string;
+  eventId: string;
   eventTitle: string;
   completedAt: Date;
   /** Forms done but profile < 100% — not issuable yet. */
@@ -34,4 +36,44 @@ export interface IssueCertificateInput {
 export interface RevokeCertificateInput {
   certificateId: string;
   revokeReason: string;
+}
+
+export interface BulkIssueCertificateInput {
+  enrollmentIds: string[];
+}
+
+export interface BulkIssueCertificateSuccess {
+  enrollmentId: string;
+  certificate: AdminCertificateRecord;
+  pdfUrl: string | null;
+  pdfWarning?: string;
+}
+
+export interface BulkIssueCertificateFailure {
+  enrollmentId: string;
+  error: string;
+}
+
+export interface BulkIssueCertificateResult {
+  succeeded: BulkIssueCertificateSuccess[];
+  failed: BulkIssueCertificateFailure[];
+}
+
+export interface BulkRegeneratePdfInput {
+  certificateIds: string[];
+}
+
+export interface BulkRegeneratePdfSuccess {
+  certificateId: string;
+  pdfUrl: string;
+}
+
+export interface BulkRegeneratePdfFailure {
+  certificateId: string;
+  error: string;
+}
+
+export interface BulkRegeneratePdfResult {
+  succeeded: BulkRegeneratePdfSuccess[];
+  failed: BulkRegeneratePdfFailure[];
 }

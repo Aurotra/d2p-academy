@@ -1,7 +1,12 @@
 import { NextResponse } from "next/server";
 
+import type {
+  BulkIssueCertificateResult,
+  BulkRegeneratePdfResult,
+} from "@/core/domain/admin-certificate";
 import {
   issueAdminCertificate,
+  issueAdminCertificatesBulk,
   listAdminCertificates,
   listPendingCertificateEnrollments,
   revokeAdminCertificate,
@@ -12,6 +17,38 @@ import { SupabaseAdminCertificateRepository } from "@/infrastructure/repositorie
 import { apiCatchResponse } from "@/shared/utils/api-error";
 
 export const maxDuration = 60;
+
+function collectEnrollmentIds(body: {
+  enrollmentId?: string;
+  enrollmentIds?: string[];
+}): string[] {
+  const ids = new Set<string>();
+  if (body.enrollmentId) {
+    ids.add(body.enrollmentId);
+  }
+  for (const id of body.enrollmentIds ?? []) {
+    if (id) {
+      ids.add(id);
+    }
+  }
+  return [...ids];
+}
+
+function collectCertificateIds(body: {
+  certificateId?: string;
+  certificateIds?: string[];
+}): string[] {
+  const ids = new Set<string>();
+  if (body.certificateId) {
+    ids.add(body.certificateId);
+  }
+  for (const id of body.certificateIds ?? []) {
+    if (id) {
+      ids.add(id);
+    }
+  }
+  return [...ids];
+}
 
 export async function GET() {
   const access = await requireAdminApiAccess();
@@ -41,14 +78,22 @@ export async function POST(request: Request) {
     const body = (await request.json()) as {
       action?: string;
       enrollmentId?: string;
+      enrollmentIds?: string[];
       certificateId?: string;
+      certificateIds?: string[];
       revokeReason?: string;
+      generatePdf?: boolean;
     };
     const repository = new SupabaseAdminCertificateRepository(access.client);
 
-    if (body.action === "issue" && body.enrollmentId) {
+    if (body.action === "issue") {
+      const enrollmentIds = collectEnrollmentIds(body);
+      if (enrollmentIds.length !== 1) {
+        return NextResponse.json({ error: "Tek kayıt seçilmelidir." }, { status: 400 });
+      }
+
       const certificate = await issueAdminCertificate(repository, {
-        enrollmentId: body.enrollmentId,
+        enrollmentId: enrollmentIds[0]!,
       });
 
       try {
@@ -66,9 +111,81 @@ export async function POST(request: Request) {
       }
     }
 
-    if (body.action === "regenerate-pdf" && body.certificateId) {
-      const pdfUrl = await issueCertificatePdf(access.client, body.certificateId);
+    if (body.action === "bulk-issue") {
+      const enrollmentIds = collectEnrollmentIds(body);
+      if (enrollmentIds.length === 0) {
+        return NextResponse.json({ error: "En az bir kayıt seçilmelidir." }, { status: 400 });
+      }
+
+      const shouldGeneratePdf = body.generatePdf !== false;
+      const bulkResult = await issueAdminCertificatesBulk(repository, { enrollmentIds });
+      const result: BulkIssueCertificateResult = {
+        succeeded: [],
+        failed: bulkResult.failed,
+      };
+
+      for (const item of bulkResult.succeeded) {
+        if (!shouldGeneratePdf) {
+          result.succeeded.push({
+            ...item,
+            pdfUrl: item.certificate.pdfUrl,
+          });
+          continue;
+        }
+
+        try {
+          const pdfUrl = await issueCertificatePdf(access.client, item.certificate.id);
+          result.succeeded.push({
+            ...item,
+            certificate: { ...item.certificate, pdfUrl },
+            pdfUrl,
+          });
+        } catch (pdfError) {
+          console.error("[admin certificates bulk-issue pdf]", pdfError);
+          result.succeeded.push({
+            ...item,
+            pdfUrl: null,
+            pdfWarning:
+              "Sertifika kaydı oluşturuldu ancak PDF henüz hazır değil. «PDF Oluştur» ile tekrar deneyin.",
+          });
+        }
+      }
+
+      return NextResponse.json({ data: result }, { status: 201 });
+    }
+
+    if (body.action === "regenerate-pdf") {
+      const certificateIds = collectCertificateIds(body);
+      if (certificateIds.length !== 1) {
+        return NextResponse.json({ error: "Tek sertifika seçilmelidir." }, { status: 400 });
+      }
+
+      const pdfUrl = await issueCertificatePdf(access.client, certificateIds[0]!);
       return NextResponse.json({ data: { pdfUrl } });
+    }
+
+    if (body.action === "bulk-regenerate-pdf") {
+      const certificateIds = collectCertificateIds(body);
+      if (certificateIds.length === 0) {
+        return NextResponse.json({ error: "En az bir sertifika seçilmelidir." }, { status: 400 });
+      }
+
+      const result: BulkRegeneratePdfResult = { succeeded: [], failed: [] };
+
+      for (const certificateId of certificateIds) {
+        try {
+          const pdfUrl = await issueCertificatePdf(access.client, certificateId);
+          result.succeeded.push({ certificateId, pdfUrl });
+        } catch (pdfError) {
+          console.error("[admin certificates bulk-regenerate-pdf]", pdfError);
+          result.failed.push({
+            certificateId,
+            error: pdfError instanceof Error ? pdfError.message : "PDF oluşturulamadı.",
+          });
+        }
+      }
+
+      return NextResponse.json({ data: result });
     }
 
     if (body.action === "revoke" && body.certificateId && body.revokeReason) {

@@ -1,5 +1,7 @@
 import type {
   AdminCertificateRecord,
+  BulkIssueCertificateInput,
+  BulkIssueCertificateResult,
   IssueCertificateInput,
   PendingCertificateEnrollment,
   RevokeCertificateInput,
@@ -9,6 +11,7 @@ export interface AdminCertificateRepository {
   listAll(): Promise<AdminCertificateRecord[]>;
   listPendingEnrollments(): Promise<PendingCertificateEnrollment[]>;
   issue(input: IssueCertificateInput): Promise<AdminCertificateRecord>;
+  issueMany(input: BulkIssueCertificateInput): Promise<BulkIssueCertificateResult>;
   revoke(input: RevokeCertificateInput): Promise<void>;
 }
 
@@ -29,6 +32,13 @@ export async function issueAdminCertificate(
   input: IssueCertificateInput,
 ): Promise<AdminCertificateRecord> {
   return repository.issue(input);
+}
+
+export async function issueAdminCertificatesBulk(
+  repository: AdminCertificateRepository,
+  input: BulkIssueCertificateInput,
+): Promise<BulkIssueCertificateResult> {
+  return repository.issueMany(input);
 }
 
 export async function revokeAdminCertificate(
