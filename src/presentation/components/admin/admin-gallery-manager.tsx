@@ -257,13 +257,16 @@ export function AdminGalleryManager() {
           .from("gallery")
           .createSignedUrl(thumbPath, 60 * 60);
 
+        const albumTitle =
+          albums.find((album) => album.id === selectedAlbumId)?.title?.trim() || "D2P Academy";
+
         await repository.addPhoto({
           albumId: selectedAlbumId,
           storagePath: displayPath,
           thumbStoragePath: thumbPath,
           imageUrl: displaySigned?.signedUrl ?? displayPath,
           thumbUrl: thumbSigned?.signedUrl ?? thumbPath,
-          altText: file.name.replace(/\.[^.]+$/, "").replaceAll("_", " "),
+          altText: `${albumTitle} — Denizli D2P Academy atölye fotoğrafı`,
         });
 
         uploaded += 1;

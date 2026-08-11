@@ -1,5 +1,7 @@
 import Image, { type ImageProps } from "next/image";
 
+export { isUnusableGalleryAlt, resolveGalleryPhotoAlt } from "@/shared/utils/gallery-photo-alt";
+
 function shouldBypassOptimizer(src: string): boolean {
   if (src.startsWith("/") && src.toLowerCase().endsWith(".svg")) {
     return true;
@@ -23,22 +25,4 @@ type RemoteImageProps = Omit<ImageProps, "src" | "unoptimized"> & {
 /** next/image wrapper that skips the optimizer for SVG logos and Supabase signed URLs. */
 export function RemoteImage({ src, ...props }: RemoteImageProps) {
   return <Image src={src} unoptimized={shouldBypassOptimizer(src)} {...props} />;
-}
-
-export function resolveGalleryPhotoAlt(input: {
-  altText?: string | null;
-  caption?: string | null;
-  albumTitle: string;
-}): string {
-  const alt = input.altText?.trim();
-  if (alt && !/^\d+$/.test(alt)) {
-    return alt;
-  }
-
-  const caption = input.caption?.trim();
-  if (caption) {
-    return caption;
-  }
-
-  return `${input.albumTitle} atölye fotoğrafı`;
 }
