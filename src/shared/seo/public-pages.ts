@@ -14,7 +14,7 @@ export const homePageMetadata = publicPageMetadata({
   title: "Denizli 3D Tasarım ve Atölye Eğitimleri",
   socialTitle: "Denizli 3D Tasarım ve 3D Baskı Atölye Eğitimleri",
   description:
-    "D2P Academy, Denizli'de çocuk ve gençlere 3D tasarım, 3D baskı, prototipleme ve maker atölye eğitimleri sunar. Tasarım ve üretim odaklı STEM programları.",
+    "D2P Academy, Denizli'de çocuklara 3D tasarım, 3D baskı ve maker atölye eğitimleri sunar. STEM odaklı tasarım ve üretim programları.",
   path: "/",
   keywords: [...denizliStemKeywords],
 });
@@ -22,7 +22,7 @@ export const homePageMetadata = publicPageMetadata({
 export const eventsPageMetadata = publicPageMetadata({
   title: "Teknoloji ve Robotik Etkinlikleri",
   description:
-    "Yaklaşan 3D tasarım, 3D baskı ve maker atölye etkinlikleri. Denizli'de çocuklar için D2P Academy program takvimi, tarihler ve online kayıt.",
+    "Denizli'de yaklaşan 3D tasarım, 3D baskı ve maker atölye etkinlikleri. D2P Academy takvimi, tarihler ve online kayıt bilgileri.",
   path: "/etkinlikler",
   keywords: [
     "Denizli çocuk etkinlikleri",
@@ -37,7 +37,7 @@ export const eventsPageMetadata = publicPageMetadata({
 export const parentGuidePageMetadata = publicPageMetadata({
   title: "Veli Rehberi ve Sıkça Sorulan Sorular",
   description:
-    "D2P Academy veli hesabı oluşturma, e-posta onayı, çocuk profili ekleme ve etkinlik kaydı adımları. Veliler için adım adım kayıt rehberi ve sık sorulan sorular.",
+    "D2P Academy veli kaydı, e-posta onayı, çocuk profili ve etkinlik kaydı adımları. Veliler için adım adım rehber ve SSS.",
   path: "/veli-rehberi",
   keywords: [
     "veli kayıt rehberi",
@@ -51,7 +51,7 @@ export const parentGuidePageMetadata = publicPageMetadata({
 export const galleryPageMetadata = publicPageMetadata({
   title: "Atölye Çalışmalarımızdan Kareler",
   description:
-    "D2P Academy atölyelerinden fotoğraflar: 3D yazıcı, dijital tasarım ve maker etkinliklerinden Denizli eğitim galerisi ve albümler.",
+    "D2P Academy atölyelerinden kareler: Denizli'de 3D yazıcı, dijital tasarım ve maker eğitim fotoğrafları ile albümler.",
   path: "/galeri",
   keywords: [
     "D2P Academy galeri",
@@ -65,7 +65,7 @@ export const galleryPageMetadata = publicPageMetadata({
 export const contactPageMetadata = publicPageMetadata({
   title: "İletişim ve Adres — Pamukkale Teknokent, Denizli",
   description:
-    "D2P Academy iletişim bilgileri: Pamukkale Teknokent, Denizli. 3D tasarım, 3D baskı ve atölye eğitimleri için telefon, e-posta, adres ve sosyal medya.",
+    "D2P Academy iletişim: Pamukkale Teknokent, Denizli. 3D tasarım ve baskı atölyeleri için telefon, e-posta, adres ve Instagram.",
   path: "/iletisim",
   keywords: [
     "D2P Academy iletişim",
@@ -78,7 +78,7 @@ export const contactPageMetadata = publicPageMetadata({
 export const aboutPageMetadata = publicPageMetadata({
   title: "Hakkımızda — Tasarım ve Üretim Odaklı STEM Eğitimi",
   description:
-    "D2P Academy; ATH Mühendislik bünyesinde 3D tasarım, prototipleme, 3D baskı ve STEM uygulamalarıyla çocukların üreten bireyler olarak yetişmesini hedefleyen Denizli merkezli eğitim markasıdır.",
+    "D2P Academy; Denizli'de ATH Mühendislik bünyesinde 3D tasarım, 3D baskı ve STEM eğitimleriyle çocukların üreten bireyler olmasını hedefler.",
   path: "/hakkimizda",
   keywords: [
     "D2P Academy hakkında",
@@ -92,7 +92,7 @@ export const aboutPageMetadata = publicPageMetadata({
 export const institutionRequestPageMetadata = publicPageMetadata({
   title: "Kurumsal Eğitim Talebi — Okul ve Belediye Atölyeleri",
   description:
-    "Okul, belediye ve kurumlar için D2P Academy toplu 3D tasarım, 3D baskı ve maker atölye eğitimi talebi. Anahtar teslim ekipman, eğitmen ve materyal desteği.",
+    "Okul ve belediyeler için D2P Academy kurumsal 3D tasarım, 3D baskı ve maker atölye eğitimi. Denizli merkezli anahtar teslim destek.",
   path: "/kurumsal-talep",
   keywords: [
     "kurumsal STEM eğitimi",
