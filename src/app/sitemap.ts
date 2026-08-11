@@ -1,5 +1,6 @@
 import type { MetadataRoute } from "next";
 
+import { GUIDE_ARTICLES } from "@/shared/content/guides";
 import { SupabaseGalleryRepository } from "@/infrastructure/repositories/supabase-gallery-repository";
 import { SupabaseEventRepository } from "@/infrastructure/repositories/supabase-event-repository";
 import { tryCreateServiceRoleClient } from "@/infrastructure/supabase/create-service-role-client";
@@ -13,6 +14,7 @@ const PUBLIC_PATHS = [
   "/galeri",
   "/iletisim",
   "/veli-rehberi",
+  "/rehber",
   "/kurumsal-talep",
   "/kvkk",
   "/gizlilik",
@@ -32,10 +34,16 @@ function buildStaticEntries(now: Date): MetadataRoute.Sitemap {
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const now = new Date();
   const staticEntries = buildStaticEntries(now);
+  const guideEntries: MetadataRoute.Sitemap = GUIDE_ARTICLES.map((article) => ({
+    url: absoluteUrl(`/rehber/${article.slug}`),
+    lastModified: new Date(`${article.publishedAt}T12:00:00`),
+    changeFrequency: "monthly",
+    priority: 0.6,
+  }));
 
   const client = tryCreateServiceRoleClient();
   if (!client) {
-    return staticEntries;
+    return [...staticEntries, ...guideEntries];
   }
 
   try {
@@ -61,8 +69,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.8,
     }));
 
-    return [...staticEntries, ...albumEntries, ...eventEntries];
+    return [...staticEntries, ...guideEntries, ...albumEntries, ...eventEntries];
   } catch {
-    return staticEntries;
+    return [...staticEntries, ...guideEntries];
   }
 }
