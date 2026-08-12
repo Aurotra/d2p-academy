@@ -75,7 +75,7 @@ export const GUIDE_ARTICLES: GuideArticle[] = [
       },
       {
         type: "paragraph",
-        text: "Honaz'dan Kaklık'a kadar Denizli'nin farklı noktalarında düzenlediğimiz atölyelerde gördük ki; doğru araçlar sunulduğunda çocuklar hayallerindeki nesneleri saatler içinde üretebilecek potansiyele sahip.",
+        text: "Honaz ve Kaklık'ta düzenlediğimiz atölyelerde gördük ki; doğru araçlar sunulduğunda çocuklar hayallerindeki nesneleri saatler içinde üretebilecek potansiyele sahip.",
       },
       {
         type: "galleryFigure",
