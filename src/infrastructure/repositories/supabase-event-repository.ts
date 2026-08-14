@@ -20,6 +20,8 @@ const EVENT_SELECT = `
         end_at,
         location_name,
         is_online,
+        is_paid,
+        price_try_cents,
         cover_image_url,
         event_categories (
           id,
@@ -39,6 +41,8 @@ interface EventRow {
   end_at: string;
   location_name: string | null;
   is_online: boolean;
+  is_paid: boolean;
+  price_try_cents: number | null;
   cover_image_url: string | null;
   event_categories: EventCategoryRow | EventCategoryRow[] | null;
 }
@@ -72,6 +76,8 @@ function mapEvent(row: EventRow): AcademyEvent {
     endAt: new Date(row.end_at),
     locationName: row.location_name,
     isOnline: row.is_online,
+    isPaid: Boolean(row.is_paid),
+    priceTryCents: row.price_try_cents,
     coverImageUrl: row.cover_image_url,
   };
 }

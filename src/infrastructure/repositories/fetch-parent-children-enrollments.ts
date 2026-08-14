@@ -132,6 +132,7 @@ export async function fetchParentChildrenEnrollments(
       childId: child.id,
       childName: child.full_name,
       childUsername: child.username,
+      eventId: event.id,
       eventTitle: event.title,
       eventSlug: event.slug,
       eventType: event.event_type,

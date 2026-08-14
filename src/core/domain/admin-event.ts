@@ -26,6 +26,8 @@ export interface AdminEventRecord {
   requiredLessonCount: number | null;
   locationName: string | null;
   isOnline: boolean;
+  isPaid: boolean;
+  priceTryCents: number | null;
   meetingUrl: string | null;
   maxCapacity: number | null;
   status: EventStatus;
@@ -59,6 +61,8 @@ export interface CreateEventInput {
   requiredLessonCount: number | null;
   locationName: string | null;
   isOnline: boolean;
+  isPaid: boolean;
+  priceTryCents: number | null;
   meetingUrl: string | null;
   maxCapacity: number | null;
   status: EventStatus;

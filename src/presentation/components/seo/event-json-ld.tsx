@@ -1,5 +1,6 @@
 import type { AcademyEvent } from "@/core/domain/event";
 import { EVENT_TYPE_LABELS } from "@/core/domain/event";
+import { formatTryCentsAsIyzicoPrice } from "@/core/domain/payment";
 import { SITE_NAME, SITE_URL } from "@/shared/constants/site";
 import { absoluteUrl } from "@/shared/seo/metadata";
 import { eventLocationLabel } from "@/shared/utils/event-format";
@@ -11,6 +12,10 @@ interface EventJsonLdProps {
 export function EventJsonLd({ event }: EventJsonLdProps) {
   const eventUrl = absoluteUrl(`/etkinlikler/${event.slug}`);
   const location = eventLocationLabel(event);
+  const price =
+    event.isPaid && event.priceTryCents != null && event.priceTryCents > 0
+      ? formatTryCentsAsIyzicoPrice(event.priceTryCents)
+      : "0";
 
   const data = {
     "@context": "https://schema.org",
@@ -47,7 +52,7 @@ export function EventJsonLd({ event }: EventJsonLdProps) {
       "@type": "Offer",
       url: eventUrl,
       availability: "https://schema.org/InStock",
-      price: "0",
+      price,
       priceCurrency: "TRY",
     },
     about: EVENT_TYPE_LABELS[event.eventType],

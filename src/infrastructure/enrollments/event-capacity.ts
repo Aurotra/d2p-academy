@@ -1,7 +1,7 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 
 import { tryCreateServiceRoleClient } from "@/infrastructure/supabase/create-service-role-client";
-import { ACTIVE_ENROLLMENT_STATUSES } from "@/shared/constants/enrollment-status";
+import { CAPACITY_HOLD_ENROLLMENT_STATUSES } from "@/shared/constants/enrollment-status";
 import { isStudentParticipantProfile } from "@/shared/utils/student-participant-profile";
 
 /**
@@ -42,7 +42,7 @@ export async function getEventCapacityBlockReason(
     `,
     )
     .eq("event_id", eventId)
-    .in("status", [...ACTIVE_ENROLLMENT_STATUSES]);
+    .in("status", [...CAPACITY_HOLD_ENROLLMENT_STATUSES]);
 
   if (countError) {
     throw new Error(countError.message);

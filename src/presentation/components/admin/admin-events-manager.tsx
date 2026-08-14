@@ -43,6 +43,9 @@ type EventFormState = {
   requiredLessonCount: string;
   locationName: string;
   isOnline: boolean;
+  isPaid: boolean;
+  /** TL as decimal string for the form, e.g. "150" or "150.50" */
+  priceTry: string;
   meetingUrl: string;
   maxCapacity: string;
   programCode: string;
@@ -64,6 +67,8 @@ const defaultForm: EventFormState = {
   requiredLessonCount: "8",
   locationName: "",
   isOnline: false,
+  isPaid: false,
+  priceTry: "",
   meetingUrl: "",
   maxCapacity: "",
   programCode: "",
@@ -132,6 +137,11 @@ function eventRecordToForm(event: AdminEventRecord): EventFormState {
     requiredLessonCount: event.requiredLessonCount?.toString() ?? "8",
     locationName: event.locationName ?? "",
     isOnline: event.isOnline,
+    isPaid: event.isPaid,
+    priceTry:
+      event.priceTryCents != null && event.priceTryCents > 0
+        ? (event.priceTryCents / 100).toFixed(event.priceTryCents % 100 === 0 ? 0 : 2)
+        : "",
     meetingUrl: event.meetingUrl ?? "",
     maxCapacity: event.maxCapacity?.toString() ?? "",
     programCode: event.programCode ?? "",
@@ -187,6 +197,19 @@ function buildEventPayload(form: EventFormState) {
     throw new Error("Zorunlu katılım, toplam ders sayısından fazla olamaz.");
   }
 
+  let priceTryCents: number | null = null;
+  if (form.isPaid) {
+    const normalized = form.priceTry.trim().replace(",", ".");
+    const lira = Number(normalized);
+    if (!Number.isFinite(lira) || lira <= 0) {
+      throw new Error("Ücretli etkinlik için geçerli bir fiyat girin (ör. 150).");
+    }
+    priceTryCents = Math.round(lira * 100);
+    if (priceTryCents <= 0) {
+      throw new Error("Ücretli etkinlik için geçerli bir fiyat girin (ör. 150).");
+    }
+  }
+
   return {
     title: form.title,
     description: form.description,
@@ -201,6 +224,8 @@ function buildEventPayload(form: EventFormState) {
     requiredLessonCount,
     locationName: form.locationName || null,
     isOnline: form.isOnline,
+    isPaid: form.isPaid,
+    priceTryCents,
     meetingUrl: form.meetingUrl || null,
     maxCapacity: form.maxCapacity ? Number(form.maxCapacity) : null,
     programCode,
@@ -467,6 +492,15 @@ function EventListCard({
               )}
               {event.isOnline ? (
                 <Badge tone="neutral">Online</Badge>
+              ) : null}
+              {event.isPaid && event.priceTryCents != null && event.priceTryCents > 0 ? (
+                <Badge tone="neutral">
+                  {(event.priceTryCents / 100).toLocaleString("tr-TR", {
+                    style: "currency",
+                    currency: "TRY",
+                    minimumFractionDigits: event.priceTryCents % 100 === 0 ? 0 : 2,
+                  })}
+                </Badge>
               ) : null}
             </div>
             <h3 className="mt-3 text-lg font-bold text-navy-950">{event.title}</h3>
@@ -747,6 +781,32 @@ function EventFormFields({
           />
           Online etkinlik
         </label>
+        <label className="flex items-center gap-2 self-end text-sm text-navy-900">
+          <input
+            type="checkbox"
+            checked={form.isPaid}
+            onChange={(e) =>
+              setForm({
+                ...form,
+                isPaid: e.target.checked,
+                priceTry: e.target.checked ? form.priceTry : "",
+              })
+            }
+          />
+          Ücretli etkinlik
+        </label>
+        <Input
+          id={`${idPrefix}-price-try`}
+          name={`${idPrefix}-price-try`}
+          label="Ücret (TL)"
+          type="number"
+          min={1}
+          step="0.01"
+          disabled={!form.isPaid}
+          value={form.priceTry}
+          onChange={(e) => setForm({ ...form, priceTry: e.target.value })}
+          placeholder="150"
+        />
       </FormSection>
 
       <FormSection title="Eğitmenler" description="Bir veya birden fazla eğitmen seçin">

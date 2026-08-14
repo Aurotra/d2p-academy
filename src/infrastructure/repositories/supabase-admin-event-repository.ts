@@ -37,6 +37,8 @@ interface EventRow {
   required_lesson_count: number | null;
   location_name: string | null;
   is_online: boolean;
+  is_paid: boolean;
+  price_try_cents: number | null;
   meeting_url: string | null;
   max_capacity: number | null;
   status: EventStatus;
@@ -63,6 +65,8 @@ const EVENT_SELECT = `
   required_lesson_count,
   location_name,
   is_online,
+  is_paid,
+  price_try_cents,
   meeting_url,
   max_capacity,
   status,
@@ -132,6 +136,8 @@ function mapEvent(row: EventRow): AdminEventRecord {
     requiredLessonCount: row.required_lesson_count,
     locationName: row.location_name,
     isOnline: row.is_online,
+    isPaid: Boolean(row.is_paid),
+    priceTryCents: row.price_try_cents,
     meetingUrl: row.meeting_url,
     maxCapacity: row.max_capacity,
     status: row.status,
@@ -255,6 +261,8 @@ export class SupabaseAdminEventRepository implements AdminEventRepository {
         required_lesson_count: input.requiredLessonCount,
         location_name: input.locationName,
         is_online: input.isOnline,
+        is_paid: input.isPaid,
+        price_try_cents: input.isPaid ? input.priceTryCents : null,
         meeting_url: input.meetingUrl,
         max_capacity: input.maxCapacity,
         status: input.status,
@@ -306,6 +314,13 @@ export class SupabaseAdminEventRepository implements AdminEventRepository {
     }
     if (input.locationName !== undefined) payload.location_name = input.locationName;
     if (input.isOnline !== undefined) payload.is_online = input.isOnline;
+    if (input.isPaid !== undefined) {
+      payload.is_paid = input.isPaid;
+      if (!input.isPaid) {
+        payload.price_try_cents = null;
+      }
+    }
+    if (input.priceTryCents !== undefined) payload.price_try_cents = input.priceTryCents;
     if (input.meetingUrl !== undefined) payload.meeting_url = input.meetingUrl;
     if (input.maxCapacity !== undefined) payload.max_capacity = input.maxCapacity;
     if (input.status !== undefined) payload.status = input.status;

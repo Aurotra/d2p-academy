@@ -18,6 +18,10 @@ export interface AcademyEvent {
   endAt: Date;
   locationName: string | null;
   isOnline: boolean;
+  /** When true, registration requires successful payment before status becomes registered. */
+  isPaid: boolean;
+  /** Fee in TRY kuruş (15000 = 150.00 TL). Null when free. */
+  priceTryCents: number | null;
   coverImageUrl: string | null;
 }
 

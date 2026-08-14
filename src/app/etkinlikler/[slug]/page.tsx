@@ -137,7 +137,7 @@ export default async function EventDetailPage({ params }: PageProps) {
               ) : null}
 
               <div className="mt-8 max-w-sm">
-                <EventEnrollButton eventId={event.id} />
+                <EventEnrollButton eventId={event.id} isPaid={event.isPaid} />
               </div>
             </div>
           </div>

@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 
 import { getEventCapacityBlockReason } from "@/infrastructure/enrollments/event-capacity";
+import { startPaidEnrollmentCheckout } from "@/infrastructure/payments/start-paid-enrollment-checkout";
 import { createServiceRoleClient } from "@/infrastructure/supabase/create-service-role-client";
 import { createSupabaseServerClient } from "@/infrastructure/supabase/create-server-client";
 import {
@@ -15,6 +16,19 @@ import { getEventEnrollmentBlockReason } from "@/shared/utils/event-enrollment-w
 const schema = z.object({
   eventId: z.string().uuid(),
 });
+
+async function cancelParentSelfEnrollment(
+  serviceClient: ReturnType<typeof createServiceRoleClient>,
+  parentUserId: string,
+  eventId: string,
+) {
+  await serviceClient
+    .from("enrollments")
+    .update({ status: "cancelled" })
+    .eq("user_id", parentUserId)
+    .eq("event_id", eventId)
+    .neq("status", "cancelled");
+}
 
 export async function POST(
   request: NextRequest,
@@ -94,7 +108,7 @@ export async function POST(
 
   const { data: event, error: eventError } = await serviceClient
     .from("events")
-    .select("id, title, status, end_at")
+    .select("id, title, status, end_at, is_paid, price_try_cents")
     .eq("id", eventId)
     .maybeSingle();
 
@@ -107,6 +121,9 @@ export async function POST(
     return NextResponse.json({ error: enrollmentBlock }, { status: 400 });
   }
 
+  const priceTryCents = event.price_try_cents ?? 0;
+  const isPaid = Boolean(event.is_paid) && priceTryCents > 0;
+
   const { data: existing } = await serviceClient
     .from("enrollments")
     .select("id, status")
@@ -114,13 +131,12 @@ export async function POST(
     .eq("event_id", eventId)
     .maybeSingle();
 
-  if (existing && existing.status !== "cancelled") {
-    await serviceClient
-      .from("enrollments")
-      .update({ status: "cancelled" })
-      .eq("user_id", auth.user.id)
-      .eq("event_id", eventId)
-      .neq("status", "cancelled");
+  if (
+    existing &&
+    existing.status !== "cancelled" &&
+    existing.status !== "pending_payment"
+  ) {
+    await cancelParentSelfEnrollment(serviceClient, auth.user.id, eventId);
 
     return NextResponse.json({
       data: {
@@ -141,7 +157,64 @@ export async function POST(
     return NextResponse.json({ error: "Kontenjan kontrolü başarısız." }, { status: 500 });
   }
 
-  if (existing?.status === "cancelled") {
+  if (isPaid) {
+    const { data: payer } = await serviceClient
+      .from("profiles")
+      .select("full_name, email, parent_phone, city_district")
+      .eq("id", auth.user.id)
+      .maybeSingle();
+
+    try {
+      const checkout = await startPaidEnrollmentCheckout({
+        serviceClient,
+        request,
+        studentId,
+        studentName: child.full_name,
+        eventId,
+        eventTitle: event.title,
+        priceTryCents,
+        payerUserId: auth.user.id,
+        payerFullName: payer?.full_name?.trim() || "Veli",
+        payerEmail: payer?.email?.trim() || auth.user.email || "veli@d2p.com.tr",
+        payerPhone: payer?.parent_phone ?? child.parent_phone,
+        payerCity: payer?.city_district,
+      });
+
+      await cancelParentSelfEnrollment(serviceClient, auth.user.id, eventId);
+
+      return NextResponse.json(
+        {
+          data: {
+            enrollmentId: checkout.enrollmentId,
+            paymentId: checkout.paymentId,
+            paymentPageUrl: checkout.paymentPageUrl,
+            requiresPayment: true,
+            alreadyEnrolled: false,
+            eventTitle: checkout.eventTitle,
+            amountTryCents: checkout.amountTryCents,
+            studentName: child.full_name,
+          },
+        },
+        { status: 201 },
+      );
+    } catch (checkoutError) {
+      const message =
+        checkoutError instanceof Error ? checkoutError.message : "Ödeme başlatılamadı.";
+      if (message === "ALREADY_ENROLLED") {
+        return NextResponse.json({
+          data: {
+            enrollmentId: existing?.id,
+            alreadyEnrolled: true,
+            eventTitle: event.title,
+          },
+        });
+      }
+      console.error("[parent enroll paid checkout]", message);
+      return NextResponse.json({ error: message }, { status: 502 });
+    }
+  }
+
+  if (existing?.status === "cancelled" || existing?.status === "pending_payment") {
     const { data: revived, error: reviveError } = await serviceClient
       .from("enrollments")
       .update({ status: "registered", completed_at: null })
@@ -155,12 +228,7 @@ export async function POST(
       return NextResponse.json({ error: "Kayıt yenilenemedi." }, { status: 500 });
     }
 
-    await serviceClient
-      .from("enrollments")
-      .update({ status: "cancelled" })
-      .eq("user_id", auth.user.id)
-      .eq("event_id", eventId)
-      .neq("status", "cancelled");
+    await cancelParentSelfEnrollment(serviceClient, auth.user.id, eventId);
 
     return NextResponse.json({
       data: {
@@ -203,12 +271,7 @@ export async function POST(
     return NextResponse.json({ error: "Kayıt oluşturulamadı." }, { status: 500 });
   }
 
-  await serviceClient
-    .from("enrollments")
-    .update({ status: "cancelled" })
-    .eq("user_id", auth.user.id)
-    .eq("event_id", eventId)
-    .neq("status", "cancelled");
+  await cancelParentSelfEnrollment(serviceClient, auth.user.id, eventId);
 
   return NextResponse.json(
     {

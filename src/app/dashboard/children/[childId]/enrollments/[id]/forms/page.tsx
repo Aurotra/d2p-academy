@@ -39,30 +39,37 @@ export default async function ParentChildEnrollmentFormsPage({ params }: PagePro
     redirect("/dashboard/children");
   }
 
-  let eventTitle: string | null = null;
+  let service;
   try {
-    const service = createServiceRoleClient();
-    const { data: enrollment } = await service
-      .from("enrollments")
-      .select("id, user_id, events(title)")
-      .eq("id", enrollmentId)
-      .eq("user_id", childId)
-      .maybeSingle();
-
-    if (!enrollment) {
-      redirect("/dashboard/children");
-    }
-
-    const eventTitleRaw = enrollment.events as
-      | { title?: string }
-      | { title?: string }[]
-      | null;
-    eventTitle = Array.isArray(eventTitleRaw)
-      ? (eventTitleRaw[0]?.title ?? null)
-      : (eventTitleRaw?.title ?? null);
+    service = createServiceRoleClient();
   } catch {
     redirect("/dashboard/children");
   }
+
+  const { data: enrollment } = await service
+    .from("enrollments")
+    .select("id, user_id, status, event_id, events(title)")
+    .eq("id", enrollmentId)
+    .eq("user_id", childId)
+    .maybeSingle();
+
+  if (!enrollment) {
+    redirect("/dashboard/children");
+  }
+
+  if (enrollment.status === "pending_payment") {
+    redirect(
+      `/dashboard/children?enroll=1&eventId=${encodeURIComponent(enrollment.event_id)}`,
+    );
+  }
+
+  const eventTitleRaw = enrollment.events as
+    | { title?: string }
+    | { title?: string }[]
+    | null;
+  const eventTitle = Array.isArray(eventTitleRaw)
+    ? (eventTitleRaw[0]?.title ?? null)
+    : (eventTitleRaw?.title ?? null);
 
   return (
     <section className="bg-surface-section px-4 py-10 sm:px-6 lg:px-8">

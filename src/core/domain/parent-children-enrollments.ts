@@ -5,6 +5,7 @@ export interface ParentChildEnrollmentItem {
   childId: string;
   childName: string;
   childUsername: string;
+  eventId: string;
   eventTitle: string;
   eventSlug: string;
   eventType: EventType;

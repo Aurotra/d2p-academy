@@ -56,6 +56,7 @@ function DashboardActionLink({
 }
 
 const ENROLLMENT_STATUS_LABELS: Record<EnrollmentStatus, string> = {
+  pending_payment: "Ödeme bekleniyor",
   registered: "Kayıtlı",
   attended: "Katıldı",
   completed: "Tamamlandı",

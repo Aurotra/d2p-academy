@@ -8,6 +8,7 @@ import type { EnrollmentStatus } from "@/core/domain/student-dashboard";
 import { Button } from "@/presentation/components/ui/button";
 
 const STATUS_LABELS: Record<EnrollmentStatus, string> = {
+  pending_payment: "Ödeme bekleniyor",
   registered: "Kayıtlı",
   attended: "Katıldı",
   completed: "Tamamlandı",
@@ -38,7 +39,7 @@ function formatDate(value: string): string {
 }
 
 function canMarkCompleted(status: EnrollmentStatus): boolean {
-  return status !== "completed" && status !== "cancelled" && status !== "no_show";
+  return status === "registered" || status === "attended";
 }
 
 function canRemoveFromEvent(row: EventEnrollmentRow): boolean {

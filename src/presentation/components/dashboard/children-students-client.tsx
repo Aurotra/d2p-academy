@@ -11,6 +11,7 @@ import { buildEnrollmentFormStatusLabel } from "@/shared/utils/enrollment-form-s
 import { EnrollmentFormProgress } from "@/presentation/components/dashboard/enrollment-form-progress";
 import { ParentEnrollmentAttendanceProgress } from "@/presentation/components/dashboard/parent-enrollment-attendance-progress";
 import { EVENT_TYPE_LABELS, type EventType } from "@/core/domain/event";
+import { formatTryCentsDisplay } from "@/core/domain/payment";
 import {
   eventLocationLabel,
   formatEventDateTimeRange,
@@ -74,9 +75,12 @@ export type EnrollableEventOption = {
   endAt: string;
   locationName: string | null;
   isOnline: boolean;
+  isPaid: boolean;
+  priceTryCents: number | null;
 };
 
 const STATUS_LABELS: Record<string, string> = {
+  pending_payment: "Ödeme bekleniyor",
   registered: "Kayıtlı",
   attended: "Katıldı",
   completed: "Tamamlandı",
@@ -339,7 +343,7 @@ export function ChildrenStudentsClient({
                                   <p className="mt-0.5 text-xs text-subtle">
                                     {buildEnrollmentFormStatusLabel(item)}
                                   </p>
-                                  {item.status !== "cancelled" ? (
+                                  {item.status !== "cancelled" && item.status !== "pending_payment" ? (
                                     <>
                                       <EnrollmentFormProgress
                                         intakeCompleted={item.intakeCompleted}
@@ -356,7 +360,14 @@ export function ChildrenStudentsClient({
                                       />
                                     </>
                                   ) : null}
+                                  {item.status === "pending_payment" ? (
+                                    <p className="mt-1 text-xs font-medium text-amber-900">
+                                      Ödeme tamamlanmalı. Kaydı yeniden deneyerek ödemeye
+                                      dönebilirsiniz.
+                                    </p>
+                                  ) : null}
                                   {item.status !== "cancelled" &&
+                                  item.status !== "pending_payment" &&
                                   !item.enrollmentId.startsWith("temp-") ? (
                                     <Link
                                       href={`/dashboard/children/${student.id}/enrollments/${item.enrollmentId}/forms`}
@@ -860,6 +871,8 @@ function EnrollStudentDialog({
           alreadyEnrolled?: boolean;
           eventTitle?: string;
           enrollmentId?: string;
+          requiresPayment?: boolean;
+          paymentPageUrl?: string;
         };
       };
       if (!response.ok) {
@@ -870,6 +883,15 @@ function EnrollStudentDialog({
       const title = payload.data?.eventTitle ?? "Etkinlik";
       const alreadyEnrolled = Boolean(payload.data?.alreadyEnrolled);
       const enrollmentId = payload.data?.enrollmentId ?? null;
+      const paymentPageUrl = payload.data?.paymentPageUrl?.trim() ?? "";
+
+      if (payload.data?.requiresPayment && paymentPageUrl) {
+        setRedirecting(true);
+        onEnrolled(title, alreadyEnrolled);
+        window.location.assign(paymentPageUrl);
+        return;
+      }
+
       onEnrolled(title, alreadyEnrolled);
 
       if (enrollmentId) {
@@ -917,16 +939,17 @@ function EnrollStudentDialog({
         </div>
       ) : redirecting ? (
         <div className="space-y-4">
-          <p className="text-sm font-semibold text-emerald-700">Kayıt tamamlandı.</p>
+          <p className="text-sm font-semibold text-emerald-700">Yönlendiriliyorsunuz…</p>
           <p className="text-sm text-muted">
-            Tanışma ve Onaylar formlarına yönlendiriliyorsunuz…
+            Ödeme veya form adımına geçiliyor. Lütfen bekleyin.
           </p>
         </div>
       ) : (
         <form onSubmit={handleSubmit} className="space-y-4">
           <p className="text-sm leading-6 text-muted">
             <strong className="font-semibold text-navy-950">{student.full_name}</strong> bu etkinliğe
-            kaydedilecek. Kayıt sonrası tanışma ve onay formları açılır.
+            kaydedilecek. Ücretli etkinliklerde önce güvenli ödeme, ardından tanışma ve onay
+            formları açılır.
           </p>
 
           <fieldset className="space-y-3">
@@ -967,6 +990,11 @@ function EnrollStudentDialog({
                         Online
                       </span>
                     ) : null}
+                    {item.isPaid && item.priceTryCents != null && item.priceTryCents > 0 ? (
+                      <span className="inline-flex rounded-full bg-amber-100 px-2.5 py-0.5 text-[11px] font-bold text-amber-950">
+                        {formatTryCentsDisplay(item.priceTryCents)}
+                      </span>
+                    ) : null}
                   </div>
                   <p className="mt-3 text-base font-bold leading-snug text-navy-950">{item.title}</p>
                   <p className="mt-2 text-sm font-medium text-[var(--text-on-surface-soft)]">{formatEventSchedule(item)}</p>
@@ -986,7 +1014,11 @@ function EnrollStudentDialog({
           {error ? <p className="text-sm text-red-600">{error}</p> : null}
           <DialogActions
             onClose={onClose}
-            confirmLabel="Kaydet"
+            confirmLabel={
+              events.find((item) => item.id === eventId)?.isPaid
+                ? "Ödemeye geç"
+                : "Kaydet"
+            }
             submitting={submitting}
             confirmType="submit"
           />

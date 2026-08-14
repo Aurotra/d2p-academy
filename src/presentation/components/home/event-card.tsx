@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 import { EVENT_TYPE_LABELS, type AcademyEvent } from "@/core/domain/event";
+import { formatTryCentsDisplay } from "@/core/domain/payment";
 import { EventEnrollButton } from "@/presentation/components/events/event-enroll-button";
 import { Badge } from "@/presentation/components/ui/badge";
 import {
@@ -34,6 +35,9 @@ function EventMetaBadges({ event }: { event: AcademyEvent }) {
         </Badge>
       ) : null}
       {event.isOnline ? <Badge tone="neutral">Online</Badge> : null}
+      {event.isPaid && event.priceTryCents != null && event.priceTryCents > 0 ? (
+        <Badge tone="neutral">{formatTryCentsDisplay(event.priceTryCents)}</Badge>
+      ) : null}
     </div>
   );
 }
@@ -89,7 +93,7 @@ export function EventCard({ event, compact = false, linkToDetail = false }: Even
           </div>
 
           <div className="shrink-0 sm:w-44">
-            <EventEnrollButton eventId={event.id} />
+            <EventEnrollButton eventId={event.id} isPaid={event.isPaid} />
           </div>
         </div>
       </article>
@@ -126,7 +130,7 @@ export function EventCard({ event, compact = false, linkToDetail = false }: Even
         ) : null}
 
         <div className="mt-4">
-          <EventEnrollButton eventId={event.id} />
+          <EventEnrollButton eventId={event.id} isPaid={event.isPaid} />
         </div>
       </div>
     </article>

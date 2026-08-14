@@ -14,11 +14,17 @@ import {
 interface EventEnrollButtonProps {
   eventId: string;
   className?: string;
+  isPaid?: boolean;
 }
 
-export function EventEnrollButton({ eventId, className = "" }: EventEnrollButtonProps) {
+export function EventEnrollButton({
+  eventId,
+  className = "",
+  isPaid = false,
+}: EventEnrollButtonProps) {
   const router = useRouter();
   const { isAuthResolved, isLoggedIn } = useSiteAuth();
+  const ctaLabel = isPaid ? "Ücretli Kayıt" : "Etkinliğe Kaydol";
 
   function startChildEnrollment() {
     router.push(buildEventEnrollPath(eventId));
@@ -42,7 +48,7 @@ export function EventEnrollButton({ eventId, className = "" }: EventEnrollButton
             "min-h-[44px] w-full bg-document-primary hover:bg-document-primary-hover hover:shadow-glow-document",
           )}
         >
-          Etkinliğe Kaydol
+          {ctaLabel}
         </Link>
         <p className="text-center text-xs leading-5 text-subtle">
           Üye değilseniz önce{" "}
@@ -66,7 +72,7 @@ export function EventEnrollButton({ eventId, className = "" }: EventEnrollButton
         onClick={startChildEnrollment}
         className="min-h-[44px] w-full bg-document-primary hover:bg-document-primary-hover hover:shadow-glow-document"
       >
-        Etkinliğe Kaydol
+        {ctaLabel}
       </Button>
       <p className="text-center text-xs leading-5 text-subtle">
         Çocuk hesabı seçerek kayıt tamamlanır; veli hesabınız etkinliğe kaydolmaz.

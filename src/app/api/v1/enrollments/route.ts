@@ -52,12 +52,22 @@ export async function POST(request: Request) {
 
     const { data: event, error: eventError } = await client
       .from("events")
-      .select("id, title, status, end_at")
+      .select("id, title, status, end_at, is_paid, price_try_cents")
       .eq("id", eventId)
       .single();
 
     if (eventError || !event) {
       return NextResponse.json({ error: "Etkinlik bulunamadı." }, { status: 404 });
+    }
+
+    if (Boolean(event.is_paid) && (event.price_try_cents ?? 0) > 0) {
+      return NextResponse.json(
+        {
+          error:
+            "Bu ücretli bir etkinlik. Kayıt ve ödeme veli paneli üzerinden çocuğunuz için yapılmalıdır.",
+        },
+        { status: 400 },
+      );
     }
 
     const enrollmentBlock = getEventEnrollmentBlockReason(event);

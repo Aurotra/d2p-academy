@@ -32,6 +32,7 @@ function formatDate(value: string): string {
 }
 
 const STATUS_LABELS: Record<string, string> = {
+  pending_payment: "Ödeme bekleniyor",
   registered: "Kayıtlı",
   attended: "Katıldı",
   completed: "Tamamlandı",

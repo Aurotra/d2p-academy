@@ -16,6 +16,7 @@ import {
 import { formatPostTestDeadlineLabel } from "@/shared/utils/post-test-unlock";
 
 const STATUS_LABELS: Record<string, string> = {
+  pending_payment: "Ödeme bekleniyor",
   registered: "Kayıtlı",
   attended: "Katıldı",
   completed: "Tamamlandı",
@@ -159,6 +160,8 @@ function EnrollmentCard({ item }: { item: ParentChildEnrollmentItem }) {
   });
   const postTestDeadlineLabel = formatPostTestDeadlineLabel(item.postTestDeadlineAt);
   const formsHref = `/dashboard/children/${item.childId}/enrollments/${item.enrollmentId}/forms`;
+  const resumePaymentHref = `/dashboard/children?enroll=1&eventId=${encodeURIComponent(item.eventId)}`;
+  const isPendingPayment = item.status === "pending_payment";
 
   return (
     <li className="rounded-[1.5rem] border border-border-surface bg-white p-5 shadow-sm transition hover:border-cyan-200">
@@ -188,35 +191,52 @@ function EnrollmentCard({ item }: { item: ParentChildEnrollmentItem }) {
             Kayıt: {formatRegisteredAt(item.registeredAt)}
           </p>
 
-          <EnrollmentFormProgress
-            intakeCompleted={item.intakeCompleted}
-            consentsCompleted={item.consentsCompleted}
-            preTestCompleted={item.preTestCompleted}
-            postTestCompleted={item.postTestCompleted}
-            postTestUnlocked={item.postTestUnlocked}
-            requiresPreTest={item.requiresPreTest}
-            requiresSurveys={item.requiresSurveys}
-          />
-          <ParentEnrollmentAttendanceProgress
-            presentCount={item.presentCount}
-            totalLessonCount={item.totalLessonCount}
-          />
-
-          {item.requiresSurveys && item.postTestUnlocked && !item.postTestCompleted ? (
-            <p className="mt-2 text-xs font-medium text-amber-800">
-              Son test (F03) açık
-              {postTestDeadlineLabel ? ` · Son tarih: ${postTestDeadlineLabel}` : ""}
+          {isPendingPayment ? (
+            <p className="mt-3 text-sm font-medium text-amber-900">
+              Ödeme tamamlanmadan kontenjan tutulur; formu sonra dolduracaksınız.
             </p>
-          ) : null}
+          ) : (
+            <>
+              <EnrollmentFormProgress
+                intakeCompleted={item.intakeCompleted}
+                consentsCompleted={item.consentsCompleted}
+                preTestCompleted={item.preTestCompleted}
+                postTestCompleted={item.postTestCompleted}
+                postTestUnlocked={item.postTestUnlocked}
+                requiresPreTest={item.requiresPreTest}
+                requiresSurveys={item.requiresSurveys}
+              />
+              <ParentEnrollmentAttendanceProgress
+                presentCount={item.presentCount}
+                totalLessonCount={item.totalLessonCount}
+              />
+
+              {item.requiresSurveys && item.postTestUnlocked && !item.postTestCompleted ? (
+                <p className="mt-2 text-xs font-medium text-amber-800">
+                  Son test (F03) açık
+                  {postTestDeadlineLabel ? ` · Son tarih: ${postTestDeadlineLabel}` : ""}
+                </p>
+              ) : null}
+            </>
+          )}
         </div>
 
         <div className="flex shrink-0 flex-col gap-2 sm:flex-row lg:flex-col">
-          <Link
-            href={formsHref}
-            className="inline-flex min-h-11 items-center justify-center rounded-xl bg-document-primary px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-document-primary-hover"
-          >
-            Formları doldur
-          </Link>
+          {isPendingPayment ? (
+            <Link
+              href={resumePaymentHref}
+              className="inline-flex min-h-11 items-center justify-center rounded-xl bg-document-primary px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-document-primary-hover"
+            >
+              Ödemeyi tamamla
+            </Link>
+          ) : (
+            <Link
+              href={formsHref}
+              className="inline-flex min-h-11 items-center justify-center rounded-xl bg-document-primary px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-document-primary-hover"
+            >
+              Formları doldur
+            </Link>
+          )}
           <Link
             href={`/etkinlikler/${item.eventSlug}`}
             className="inline-flex min-h-11 items-center justify-center rounded-xl border border-border-surface bg-white px-4 py-2.5 text-sm font-semibold text-navy-950 transition hover:bg-surface-section"

@@ -3,6 +3,7 @@ import type { AcademyEvent } from "@/core/domain/event";
 import type { Profile } from "@/core/domain/auth";
 
 export type EnrollmentStatus =
+  | "pending_payment"
   | "registered"
   | "attended"
   | "completed"
