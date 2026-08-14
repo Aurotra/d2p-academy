@@ -11,7 +11,11 @@ import type { EventType } from "@/core/domain/event";
 import type { AdminEventRepository } from "@/core/use-cases/manage-admin-events";
 import { slugify } from "@/shared/utils/slugify";
 import { normalizeProgramCode } from "@/shared/utils/program-code";
-import { eventPaymentWriteFields } from "@/infrastructure/events/event-payment-mode";
+import {
+  eventPaymentWriteFields,
+  resolveEventPaymentMode,
+  resolvePaymentModeForWrite,
+} from "@/infrastructure/events/event-payment-mode";
 
 interface InstructorAssignmentRow {
   sort_order: number;
@@ -39,7 +43,9 @@ interface EventRow {
   location_name: string | null;
   is_online: boolean;
   is_paid: boolean;
+  payment_mode: string | null;
   price_try_cents: number | null;
+  display_price_try_cents: number | null;
   meeting_url: string | null;
   max_capacity: number | null;
   status: EventStatus;
@@ -67,7 +73,9 @@ const EVENT_SELECT = `
   location_name,
   is_online,
   is_paid,
+  payment_mode,
   price_try_cents,
+  display_price_try_cents,
   meeting_url,
   max_capacity,
   status,
@@ -138,7 +146,12 @@ function mapEvent(row: EventRow): AdminEventRecord {
     locationName: row.location_name,
     isOnline: row.is_online,
     isPaid: Boolean(row.is_paid),
+    paymentMode: resolveEventPaymentMode({
+      paymentMode: row.payment_mode,
+      isPaid: row.is_paid,
+    }),
     priceTryCents: row.price_try_cents,
+    displayPriceTryCents: row.display_price_try_cents,
     meetingUrl: row.meeting_url,
     maxCapacity: row.max_capacity,
     status: row.status,
@@ -262,8 +275,14 @@ export class SupabaseAdminEventRepository implements AdminEventRepository {
         required_lesson_count: input.requiredLessonCount,
         location_name: input.locationName,
         is_online: input.isOnline,
-        ...eventPaymentWriteFields(input.isPaid),
-        price_try_cents: input.isPaid ? input.priceTryCents : null,
+        ...eventPaymentWriteFields({
+          paymentMode: resolvePaymentModeForWrite({
+            paymentMode: input.paymentMode,
+            isPaid: input.isPaid,
+          }),
+          priceTryCents: input.priceTryCents,
+          displayPriceTryCents: input.displayPriceTryCents,
+        }),
         meeting_url: input.meetingUrl,
         max_capacity: input.maxCapacity,
         status: input.status,
@@ -315,13 +334,24 @@ export class SupabaseAdminEventRepository implements AdminEventRepository {
     }
     if (input.locationName !== undefined) payload.location_name = input.locationName;
     if (input.isOnline !== undefined) payload.is_online = input.isOnline;
-    if (input.isPaid !== undefined) {
-      Object.assign(payload, eventPaymentWriteFields(input.isPaid));
-      if (!input.isPaid) {
-        payload.price_try_cents = null;
+    if (input.paymentMode !== undefined || input.isPaid !== undefined) {
+      Object.assign(
+        payload,
+        eventPaymentWriteFields({
+          paymentMode: resolvePaymentModeForWrite({
+            paymentMode: input.paymentMode,
+            isPaid: input.isPaid,
+          }),
+          priceTryCents: input.priceTryCents,
+          displayPriceTryCents: input.displayPriceTryCents,
+        }),
+      );
+    } else {
+      if (input.priceTryCents !== undefined) payload.price_try_cents = input.priceTryCents;
+      if (input.displayPriceTryCents !== undefined) {
+        payload.display_price_try_cents = input.displayPriceTryCents;
       }
     }
-    if (input.priceTryCents !== undefined) payload.price_try_cents = input.priceTryCents;
     if (input.meetingUrl !== undefined) payload.meeting_url = input.meetingUrl;
     if (input.maxCapacity !== undefined) payload.max_capacity = input.maxCapacity;
     if (input.status !== undefined) payload.status = input.status;

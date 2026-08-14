@@ -4,9 +4,11 @@ import Link from "next/link";
 import { useEffect, useMemo, useRef, useState, type FormEvent, type ReactNode, type RefObject } from "react";
 
 import {
+  EVENT_PAYMENT_MODE_LABELS,
   EVENT_STATUS_LABELS,
   type AdminEventRecord,
   type EventCategoryOption,
+  type EventPaymentMode,
   type EventStatus,
   type InstructorOption,
 } from "@/core/domain/admin-event";
@@ -43,9 +45,11 @@ type EventFormState = {
   requiredLessonCount: string;
   locationName: string;
   isOnline: boolean;
-  isPaid: boolean;
+  paymentMode: EventPaymentMode;
   /** TL as decimal string for the form, e.g. "150" or "150.50" */
   priceTry: string;
+  /** Optional display-only price for external mode */
+  displayPriceTry: string;
   meetingUrl: string;
   maxCapacity: string;
   programCode: string;
@@ -67,8 +71,9 @@ const defaultForm: EventFormState = {
   requiredLessonCount: "8",
   locationName: "",
   isOnline: false,
-  isPaid: false,
+  paymentMode: "free",
   priceTry: "",
+  displayPriceTry: "",
   meetingUrl: "",
   maxCapacity: "",
   programCode: "",
@@ -137,10 +142,16 @@ function eventRecordToForm(event: AdminEventRecord): EventFormState {
     requiredLessonCount: event.requiredLessonCount?.toString() ?? "8",
     locationName: event.locationName ?? "",
     isOnline: event.isOnline,
-    isPaid: event.isPaid,
+    paymentMode: event.paymentMode ?? (event.isPaid ? "iyzico" : "free"),
     priceTry:
       event.priceTryCents != null && event.priceTryCents > 0
         ? (event.priceTryCents / 100).toFixed(event.priceTryCents % 100 === 0 ? 0 : 2)
+        : "",
+    displayPriceTry:
+      event.displayPriceTryCents != null && event.displayPriceTryCents > 0
+        ? (event.displayPriceTryCents / 100).toFixed(
+            event.displayPriceTryCents % 100 === 0 ? 0 : 2,
+          )
         : "",
     meetingUrl: event.meetingUrl ?? "",
     maxCapacity: event.maxCapacity?.toString() ?? "",
@@ -198,15 +209,29 @@ function buildEventPayload(form: EventFormState) {
   }
 
   let priceTryCents: number | null = null;
-  if (form.isPaid) {
+  let displayPriceTryCents: number | null = null;
+
+  if (form.paymentMode === "iyzico") {
     const normalized = form.priceTry.trim().replace(",", ".");
     const lira = Number(normalized);
     if (!Number.isFinite(lira) || lira <= 0) {
-      throw new Error("Ücretli etkinlik için geçerli bir fiyat girin (ör. 150).");
+      throw new Error("Kartla ödeme için geçerli bir fiyat girin (ör. 150).");
     }
     priceTryCents = Math.round(lira * 100);
     if (priceTryCents <= 0) {
-      throw new Error("Ücretli etkinlik için geçerli bir fiyat girin (ör. 150).");
+      throw new Error("Kartla ödeme için geçerli bir fiyat girin (ör. 150).");
+    }
+  } else if (form.paymentMode === "external") {
+    const trimmed = form.displayPriceTry.trim();
+    if (trimmed) {
+      const normalized = trimmed.replace(",", ".");
+      const lira = Number(normalized);
+      if (!Number.isFinite(lira) || lira < 0) {
+        throw new Error("Bilgi amaçlı fiyat geçersiz.");
+      }
+      if (lira > 0) {
+        displayPriceTryCents = Math.round(lira * 100);
+      }
     }
   }
 
@@ -224,8 +249,10 @@ function buildEventPayload(form: EventFormState) {
     requiredLessonCount,
     locationName: form.locationName || null,
     isOnline: form.isOnline,
-    isPaid: form.isPaid,
+    paymentMode: form.paymentMode,
+    isPaid: form.paymentMode === "iyzico",
     priceTryCents,
+    displayPriceTryCents,
     meetingUrl: form.meetingUrl || null,
     maxCapacity: form.maxCapacity ? Number(form.maxCapacity) : null,
     programCode,
@@ -493,7 +520,9 @@ function EventListCard({
               {event.isOnline ? (
                 <Badge tone="neutral">Online</Badge>
               ) : null}
-              {event.isPaid && event.priceTryCents != null && event.priceTryCents > 0 ? (
+              {event.paymentMode === "iyzico" &&
+              event.priceTryCents != null &&
+              event.priceTryCents > 0 ? (
                 <Badge tone="neutral">
                   {(event.priceTryCents / 100).toLocaleString("tr-TR", {
                     style: "currency",
@@ -501,6 +530,9 @@ function EventListCard({
                     minimumFractionDigits: event.priceTryCents % 100 === 0 ? 0 : 2,
                   })}
                 </Badge>
+              ) : null}
+              {event.paymentMode === "external" ? (
+                <Badge tone="neutral">Kurum/okul tahsilatı</Badge>
               ) : null}
             </div>
             <h3 className="mt-3 text-lg font-bold text-navy-950">{event.title}</h3>
@@ -781,32 +813,62 @@ function EventFormFields({
           />
           Online etkinlik
         </label>
-        <label className="flex items-center gap-2 self-end text-sm text-navy-900">
-          <input
-            type="checkbox"
-            checked={form.isPaid}
-            onChange={(e) =>
-              setForm({
-                ...form,
-                isPaid: e.target.checked,
-                priceTry: e.target.checked ? form.priceTry : "",
-              })
-            }
+        <Select
+          id={`${idPrefix}-payment-mode`}
+          name={`${idPrefix}-payment-mode`}
+          label="Ödeme tipi"
+          value={form.paymentMode}
+          onChange={(e) => {
+            const paymentMode = e.target.value as EventPaymentMode;
+            setForm({
+              ...form,
+              paymentMode,
+              priceTry: paymentMode === "iyzico" ? form.priceTry : "",
+              displayPriceTry: paymentMode === "external" ? form.displayPriceTry : "",
+            });
+          }}
+        >
+          {(Object.keys(EVENT_PAYMENT_MODE_LABELS) as EventPaymentMode[]).map((mode) => (
+            <option key={mode} value={mode}>
+              {EVENT_PAYMENT_MODE_LABELS[mode]}
+            </option>
+          ))}
+        </Select>
+        {form.paymentMode === "iyzico" ? (
+          <Input
+            id={`${idPrefix}-price-try`}
+            name={`${idPrefix}-price-try`}
+            label="Ücret (TL)"
+            type="number"
+            min={1}
+            step="0.01"
+            required
+            value={form.priceTry}
+            onChange={(e) => setForm({ ...form, priceTry: e.target.value })}
+            placeholder="150"
           />
-          Ücretli etkinlik
-        </label>
-        <Input
-          id={`${idPrefix}-price-try`}
-          name={`${idPrefix}-price-try`}
-          label="Ücret (TL)"
-          type="number"
-          min={1}
-          step="0.01"
-          disabled={!form.isPaid}
-          value={form.priceTry}
-          onChange={(e) => setForm({ ...form, priceTry: e.target.value })}
-          placeholder="150"
-        />
+        ) : null}
+        {form.paymentMode === "external" ? (
+          <div className="md:col-span-2 space-y-2">
+            <p className="text-sm text-navy-800">
+              Bu etkinlikte ücret kurum/okul tarafından tahsil edilir.
+            </p>
+            <Input
+              id={`${idPrefix}-display-price-try`}
+              name={`${idPrefix}-display-price-try`}
+              label="Bilgi amaçlı fiyat (TL, opsiyonel)"
+              type="number"
+              min={0}
+              step="0.01"
+              value={form.displayPriceTry}
+              onChange={(e) => setForm({ ...form, displayPriceTry: e.target.value })}
+              placeholder="150"
+            />
+            <p className="text-xs text-subtle">
+              Bilgi amaçlı fiyat, ödeme tetiklemez.
+            </p>
+          </div>
+        ) : null}
       </FormSection>
 
       <FormSection title="Eğitmenler" description="Bir veya birden fazla eğitmen seçin">

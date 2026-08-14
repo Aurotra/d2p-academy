@@ -1,4 +1,4 @@
-import type { EventPaymentMode } from "@/infrastructure/events/event-payment-mode";
+import type { EventPaymentMode } from "@/core/domain/admin-event";
 import { formatTryCentsDisplay } from "@/core/domain/payment";
 
 /** Seat statuses that count toward capacity (migration 078 hold definition). */
