@@ -11,13 +11,17 @@ import {
  */
 describe("parent enroll gate for external payment_mode", () => {
   it("does not start iyzico checkout when payment_mode is external", async () => {
-    const startPaidEnrollmentCheckout = vi.fn();
-    const tryReserveCapacityAndEnroll = vi.fn(async () => ({
-      enrollmentId: "enr-1",
-      alreadyEnrolled: false,
-      revived: false,
-      status: "registered",
+    const startPaidEnrollmentCheckout = vi.fn(async (_args?: { priceTryCents?: number }) => ({
+      ok: true,
     }));
+    const tryReserveCapacityAndEnroll = vi.fn(
+      async (_args?: { targetStatus?: string }) => ({
+        enrollmentId: "enr-1",
+        alreadyEnrolled: false,
+        revived: false,
+        status: "registered",
+      }),
+    );
 
     const event = {
       payment_mode: "external",
@@ -45,8 +49,12 @@ describe("parent enroll gate for external payment_mode", () => {
   });
 
   it("still starts iyzico checkout when payment_mode is iyzico", async () => {
-    const startPaidEnrollmentCheckout = vi.fn(async () => ({ ok: true }));
-    const tryReserveCapacityAndEnroll = vi.fn();
+    const startPaidEnrollmentCheckout = vi.fn(async (_args?: { priceTryCents?: number }) => ({
+      ok: true,
+    }));
+    const tryReserveCapacityAndEnroll = vi.fn(async (_args?: { targetStatus?: string }) => ({
+      status: "registered",
+    }));
 
     const event = {
       payment_mode: "iyzico",
@@ -70,8 +78,12 @@ describe("parent enroll gate for external payment_mode", () => {
   });
 
   it("keeps free on direct registered path", async () => {
-    const startPaidEnrollmentCheckout = vi.fn();
-    const tryReserveCapacityAndEnroll = vi.fn(async () => ({ status: "registered" }));
+    const startPaidEnrollmentCheckout = vi.fn(async (_args?: { priceTryCents?: number }) => ({
+      ok: true,
+    }));
+    const tryReserveCapacityAndEnroll = vi.fn(async (_args?: { targetStatus?: string }) => ({
+      status: "registered",
+    }));
 
     const paymentMode = resolveEventPaymentMode({
       paymentMode: "free",
