@@ -8,6 +8,7 @@ function createRemoveClient(options: {
   enrollmentId: string;
   hasPaidPayment: boolean;
   auditInsert?: ReturnType<typeof vi.fn>;
+  refundFollowupInsert?: ReturnType<typeof vi.fn>;
 }) {
   const auditInsert =
     options.auditInsert ?? vi.fn(async () => ({ data: null, error: null } satisfies QueryResult));
@@ -66,6 +67,10 @@ function createRemoveClient(options: {
     })),
   };
 
+  const refundFollowupInsert =
+    options.refundFollowupInsert ??
+    vi.fn(async () => ({ data: null, error: null } satisfies QueryResult));
+
   const from = vi.fn((table: string) => {
     if (table === "enrollments") {
       return {
@@ -83,16 +88,21 @@ function createRemoveClient(options: {
         insert: auditInsert,
       };
     }
+    if (table === "refund_followups") {
+      return {
+        insert: refundFollowupInsert,
+      };
+    }
     throw new Error(`Unexpected table ${table}`);
   });
 
-  return { client: { from } as never, auditInsert, paidRow };
+  return { client: { from } as never, auditInsert, refundFollowupInsert, paidRow };
 }
 
 describe("removeEnrollmentsFromEvent paid payment warning", () => {
   it("returns warning and audits paid payment snapshot for finance refund tracing", async () => {
     const enrollmentId = "enr-paid-1";
-    const { client, auditInsert, paidRow } = createRemoveClient({
+    const { client, auditInsert, paidRow, refundFollowupInsert } = createRemoveClient({
       enrollmentId,
       hasPaidPayment: true,
     });
@@ -105,6 +115,20 @@ describe("removeEnrollmentsFromEvent paid payment warning", () => {
     });
 
     expect(result.removed).toBe(1);
+    expect(refundFollowupInsert).toHaveBeenCalledWith(
+      expect.objectContaining({
+        enrollment_id: enrollmentId,
+        event_id: "evt-1",
+        student_id: "stu-1",
+        amount_try_cents: 150000,
+        provider_payment_id: "iy-payment-99",
+        provider: "iyzico",
+        paid_at: paidRow.paid_at,
+        cancelled_by: "admin-1",
+        reason: "etkinlik iptal",
+        status: "open",
+      }),
+    );
     expect(result.paymentWarning).toEqual({
       warning: "payment_not_refunded",
       message:

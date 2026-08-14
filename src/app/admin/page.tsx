@@ -11,7 +11,7 @@ interface AdminCard {
   description: string;
   tone: string;
   badge: string;
-  pendingKey?: "registrations" | "institutionRequests" | "courseDemandRequests";
+  pendingKey?: "registrations" | "institutionRequests" | "courseDemandRequests" | "refundFollowupsOpen";
 }
 
 interface AdminCategory {
@@ -52,6 +52,15 @@ const categories: AdminCategory[] = [
         description: "Tamamlanan kayıtlara sertifika verin veya iptal edin.",
         tone: "border-violet-200 bg-violet-100 text-violet-950 hover:bg-violet-50",
         badge: "bg-violet-200/70 text-violet-800",
+      },
+      {
+        href: "/admin/refund-followups",
+        title: "Bekleyen İadeler",
+        description:
+          "Ödemesi olup iptal edilen kayıtları takip edin; manuel iadeyi işaretleyin.",
+        tone: "border-rose-200 bg-rose-100 text-rose-950 hover:bg-rose-50",
+        badge: "bg-rose-200/70 text-rose-800",
+        pendingKey: "refundFollowupsOpen",
       },
       {
         href: "/admin/logs",

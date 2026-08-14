@@ -228,6 +228,7 @@ export function AdminAuditLogsView() {
         { id: "certificate_revoked" as const, label: "Sertifika iptalleri" },
         { id: "enrollment_deleted" as const, label: "Kayıt silmeleri" },
         { id: "enrollment_removed_from_event" as const, label: "Kurstan çıkarmalar" },
+        { id: "refund_followup_resolved" as const, label: "İade takibi" },
         { id: "instructor_granted" as const, label: "Eğitmen verildi" },
         { id: "instructor_revoked" as const, label: "Eğitmen yetkisi alındı" },
       ] as const,

@@ -4,6 +4,7 @@ export interface AdminPendingCounts {
   registrations: number;
   institutionRequests: number;
   courseDemandRequests: number;
+  refundFollowupsOpen: number;
   programsMissingDuration: number;
   programsMissingDurationCodes: string[];
 }
@@ -11,8 +12,13 @@ export interface AdminPendingCounts {
 export async function getAdminPendingCounts(
   client: SupabaseClient,
 ): Promise<AdminPendingCounts> {
-  const [registrationsResult, institutionRequestsResult, courseDemandResult, programsResult] =
-    await Promise.all([
+  const [
+    registrationsResult,
+    institutionRequestsResult,
+    courseDemandResult,
+    refundFollowupsResult,
+    programsResult,
+  ] = await Promise.all([
       client
         .from("registrations")
         .select("id", { count: "exact", head: true })
@@ -25,6 +31,10 @@ export async function getAdminPendingCounts(
         .from("course_demand_requests")
         .select("id", { count: "exact", head: true })
         .eq("status", "pending"),
+      client
+        .from("refund_followups")
+        .select("id", { count: "exact", head: true })
+        .eq("status", "open"),
       client
         .from("programs")
         .select("program_code, duration_weeks, duration_hours")
@@ -39,6 +49,7 @@ export async function getAdminPendingCounts(
     registrations: registrationsResult.count ?? 0,
     institutionRequests: institutionRequestsResult.count ?? 0,
     courseDemandRequests: courseDemandResult.count ?? 0,
+    refundFollowupsOpen: refundFollowupsResult.count ?? 0,
     programsMissingDuration: programsMissingDuration.length,
     programsMissingDurationCodes: programsMissingDuration.map(
       (program) => program.program_code as string,

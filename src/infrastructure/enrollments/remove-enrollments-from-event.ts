@@ -6,6 +6,7 @@ import {
   fetchPaidPaymentsForEnrollments,
   type PaymentNotRefundedWarning,
 } from "@/infrastructure/enrollments/paid-enrollment-guard";
+import { openRefundFollowupsForPaidPayments } from "@/infrastructure/enrollments/open-refund-followups";
 
 interface EnrollmentRemovalRow {
   id: string;
@@ -132,6 +133,25 @@ export async function removeEnrollmentsFromEvent(
   // Snapshot paid payments before hard-delete (payments CASCADE with enrollments).
   const paidPaymentsByEnrollment = await fetchPaidPaymentsForEnrollments(client, enrollmentIds);
   const paymentWarning = buildPaymentNotRefundedWarning(paidPaymentsByEnrollment.keys());
+  const paidPayments = [...paidPaymentsByEnrollment.values()].flat();
+
+  if (paidPayments.length > 0) {
+    const contextByEnrollmentId = new Map(
+      (rows ?? []).map((row) => {
+        const typed = row as EnrollmentRemovalRow;
+        return [
+          typed.id,
+          { eventId: typed.event_id ?? null, studentId: typed.user_id ?? null },
+        ] as const;
+      }),
+    );
+    await openRefundFollowupsForPaidPayments(client, {
+      payments: paidPayments,
+      contextByEnrollmentId,
+      cancelledBy: input.actorId,
+      reason: input.reason,
+    });
+  }
 
   const codesToReclaim = [
     ...new Set((rows ?? []).flatMap((row) => collectCodesToReclaim(row as EnrollmentRemovalRow))),

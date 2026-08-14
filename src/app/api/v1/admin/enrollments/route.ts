@@ -9,10 +9,7 @@ import {
   CapacityFullError,
   tryReserveCapacityAndEnroll,
 } from "@/infrastructure/enrollments/try-reserve-capacity-and-enroll";
-import {
-  buildPaymentNotRefundedWarning,
-  findEnrollmentIdsWithPaidPayment,
-} from "@/infrastructure/enrollments/paid-enrollment-guard";
+import { softCancelEnrollmentsWithRefundGuard } from "@/infrastructure/enrollments/soft-cancel-enrollments-with-refund-guard";
 import { removeEnrollmentsFromEvent } from "@/infrastructure/enrollments/remove-enrollments-from-event";
 import { revalidateEventAttendancePaths } from "@/infrastructure/enrollments/revalidate-event-attendance";
 import { SupabaseAdminAuditLogRepository } from "@/infrastructure/repositories/supabase-admin-audit-log-repository";
@@ -231,16 +228,42 @@ export async function POST(request: Request) {
 }
 
 export async function PATCH(request: Request) {
-  const access = await requireAdminApiAccess();
+  const access = await getAdminApiServiceClient();
   if (access.response) return access.response;
 
   try {
     const body = (await request.json()) as UpdateEnrollmentBody;
     const status = body.status;
     const enrollmentIds = collectIds(body);
+    const reason = body.reason?.trim() || null;
 
     if (enrollmentIds.length === 0 || !status || !ALLOWED_STATUSES.includes(status)) {
       return NextResponse.json({ error: "Geçersiz kayıt veya durum." }, { status: 400 });
+    }
+
+    if (status === "cancelled") {
+      const result = await softCancelEnrollmentsWithRefundGuard(access.client, {
+        enrollmentIds,
+        actorId: access.user.id,
+        reason,
+      });
+
+      revalidatePath("/admin/enrollments");
+      revalidatePath("/admin/refund-followups");
+      revalidateEventAttendancePaths([
+        ...new Set(result.data.map((row) => row.event_id as string)),
+      ]);
+
+      return NextResponse.json({
+        data: result.data,
+        ...(result.paymentWarning
+          ? {
+              warning: result.paymentWarning.warning,
+              message: result.paymentWarning.message,
+              paidEnrollmentIds: result.paymentWarning.paidEnrollmentIds,
+            }
+          : {}),
+      });
     }
 
     const payload: {
@@ -250,13 +273,6 @@ export async function PATCH(request: Request) {
       status,
       completed_at: status === "completed" ? new Date().toISOString() : null,
     };
-
-    const paidEnrollmentIds =
-      status === "cancelled"
-        ? await findEnrollmentIdsWithPaidPayment(access.client, enrollmentIds)
-        : new Set<string>();
-    const paymentWarning =
-      status === "cancelled" ? buildPaymentNotRefundedWarning(paidEnrollmentIds) : null;
 
     const { data, error } = await access.client
       .from("enrollments")
@@ -272,16 +288,7 @@ export async function PATCH(request: Request) {
     revalidatePath("/admin/enrollments");
     revalidateEventAttendancePaths([...new Set((data ?? []).map((row) => row.event_id as string))]);
 
-    return NextResponse.json({
-      data,
-      ...(paymentWarning
-        ? {
-            warning: paymentWarning.warning,
-            message: paymentWarning.message,
-            paidEnrollmentIds: paymentWarning.paidEnrollmentIds,
-          }
-        : {}),
-    });
+    return NextResponse.json({ data });
   } catch (error) {
     return apiCatchResponse(error, "Durum güncellenemedi.", {
       logLabel: "[admin/enrollments PATCH]",
@@ -308,6 +315,7 @@ export async function DELETE(request: Request) {
 
     revalidatePath("/admin/enrollments");
     revalidatePath("/admin/events", "layout");
+    revalidatePath("/admin/refund-followups");
     revalidateEventAttendancePaths(result.eventIds);
 
     return NextResponse.json({

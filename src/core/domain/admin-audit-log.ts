@@ -12,7 +12,8 @@ export type AdminAuditAction =
   | "institution_request_submitted"
   | "enrollment_created"
   | "intake_form_submitted"
-  | "attendance_marked";
+  | "attendance_marked"
+  | "refund_followup_resolved";
 
 export const MEMBER_ACTIVITY_ACTIONS = [
   "member_registered",
@@ -64,4 +65,5 @@ export const ADMIN_AUDIT_ACTION_LABELS: Record<AdminAuditAction, string> = {
   enrollment_created: "Etkinlik kaydı",
   intake_form_submitted: "Tanıma formu",
   attendance_marked: "Yoklama işaretlendi",
+  refund_followup_resolved: "İade takibi çözüldü",
 };
