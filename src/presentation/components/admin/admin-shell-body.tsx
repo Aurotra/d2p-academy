@@ -21,6 +21,7 @@ const navItems: NavItem[] = [
   { href: "/admin/events", label: "Etkinlikler" },
   { href: "/admin/instructors", label: "Eğitmenler" },
   { href: "/admin/enrollments", label: "Etkinlik Kayıtları" },
+  { href: "/admin/reports", label: "Raporlar" },
   { href: "/admin/refund-followups", label: "Bekleyen İadeler", countKey: "refundFollowupsOpen" },
   { href: "/admin/forms", label: "Formlar" },
   { href: "/admin/certificates", label: "Sertifikalar" },

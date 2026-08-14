@@ -63,6 +63,14 @@ const categories: AdminCategory[] = [
         pendingKey: "refundFollowupsOpen",
       },
       {
+        href: "/admin/reports",
+        title: "Raporlar",
+        description:
+          "Dönemsel tahsilat, iptal oranı, popüler etkinlikler ve kayıt kaynağı trendi.",
+        tone: "border-sky-200 bg-sky-100 text-sky-950 hover:bg-sky-50",
+        badge: "bg-sky-200/70 text-sky-800",
+      },
+      {
         href: "/admin/logs",
         title: "İşlem Logları",
         description: "Sertifika iptal nedenleri ve silinen kayıtları görüntüleyin.",
