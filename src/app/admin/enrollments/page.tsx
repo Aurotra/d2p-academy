@@ -11,7 +11,10 @@ import {
   type EventEnrollmentRow,
 } from "@/presentation/components/admin/event-enrollments-table";
 import { AdminAddEnrollmentForm } from "@/presentation/components/admin/admin-add-enrollment-form";
+import { EventEnrollmentFinanceSummaryBand } from "@/presentation/components/admin/event-enrollment-finance-summary-band";
 import { ADMIN_ENROLLMENT_VISIBLE_EVENT_STATUSES, isAdminEnrollmentVisibleEventStatus } from "@/shared/constants/event-status";
+import { fetchEventEnrollmentFinanceSummary } from "@/infrastructure/enrollments/fetch-event-enrollment-finance-summary";
+import type { EventEnrollmentFinanceSummary } from "@/infrastructure/enrollments/event-enrollment-finance-summary";
 
 export const dynamic = "force-dynamic";
 
@@ -201,6 +204,9 @@ export default async function AdminEnrollmentsPage({ searchParams }: AdminEnroll
 
   let filteredEventTitle: string | null = null;
   let filteredEventStatus: string | null = null;
+  let financeSummary: EventEnrollmentFinanceSummary | null = null;
+  let financeSummaryError: string | null = null;
+
   if (eventId && groups.length > 0) {
     filteredEventTitle = groups[0].eventTitle;
   } else if (eventId) {
@@ -211,6 +217,16 @@ export default async function AdminEnrollmentsPage({ searchParams }: AdminEnroll
       .maybeSingle();
     filteredEventTitle = event?.title ?? null;
     filteredEventStatus = event?.status ?? null;
+  }
+
+  if (eventId) {
+    try {
+      financeSummary = await fetchEventEnrollmentFinanceSummary(client, eventId);
+    } catch (summaryError) {
+      financeSummaryError =
+        summaryError instanceof Error ? summaryError.message : "Finansal özet yüklenemedi.";
+      console.error("[admin/enrollments finance summary]", summaryError);
+    }
   }
 
   const filteredEventIsVisible =
@@ -287,6 +303,15 @@ export default async function AdminEnrollmentsPage({ searchParams }: AdminEnroll
           </p>
         ) : null}
       </div>
+
+      {eventId && financeSummary ? (
+        <EventEnrollmentFinanceSummaryBand summary={financeSummary} />
+      ) : null}
+      {eventId && financeSummaryError ? (
+        <p className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+          Finansal özet yüklenemedi: {financeSummaryError}
+        </p>
+      ) : null}
 
       {eventId && filteredEventTitle && filteredEventIsVisible ? (
         <AdminAddEnrollmentForm eventId={eventId} eventTitle={filteredEventTitle} />
