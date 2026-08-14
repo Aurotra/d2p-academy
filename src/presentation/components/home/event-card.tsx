@@ -17,6 +17,10 @@ interface EventCardProps {
   event: AcademyEvent;
   compact?: boolean;
   linkToDetail?: boolean;
+  /** Flush row inside a parent panel (no nested card chrome). */
+  embedded?: boolean;
+  /** Stretch to fill the parent height (single-event panel). */
+  fill?: boolean;
 }
 
 function EventDateBadge({ day, month }: { day: string; month: string }) {
@@ -74,15 +78,35 @@ function EventEnrollBlock({ event }: { event: AcademyEvent }) {
   );
 }
 
-export function EventCard({ event, compact = false, linkToDetail = false }: EventCardProps) {
+export function EventCard({
+  event,
+  compact = false,
+  linkToDetail = false,
+  embedded = false,
+  fill = false,
+}: EventCardProps) {
   const start = formatEventDateParts(event.startAt);
   const timeRange = formatEventTimeRange(event.startAt, event.endAt);
   const locationLabel = eventLocationLabel(event);
 
   if (compact) {
+    const articleClass = [
+      "group overflow-hidden bg-surface-card transition",
+      embedded
+        ? "rounded-none border-0 shadow-none hover:bg-surface-section/50"
+        : "rounded-2xl border border-border-surface shadow-sm hover:border-secondary/40 hover:shadow-md",
+      fill ? "flex h-full min-h-full flex-col justify-center" : "",
+    ]
+      .filter(Boolean)
+      .join(" ");
+
+    const bodyClass = fill
+      ? "flex flex-col gap-4 px-5 py-6 sm:flex-row sm:items-center sm:gap-6 sm:px-7 sm:py-8"
+      : "flex flex-col gap-4 p-5 sm:flex-row sm:items-center sm:gap-5 sm:px-6 sm:py-5";
+
     return (
-      <article className="group overflow-hidden rounded-2xl border border-border-surface bg-surface-card shadow-sm transition hover:border-secondary/40 hover:shadow-md">
-        <div className="flex flex-col gap-4 p-5 sm:flex-row sm:items-center sm:gap-5 sm:p-6">
+      <article className={articleClass}>
+        <div className={bodyClass}>
           <EventDateBadge day={start.day} month={start.month} />
 
           <div className="min-w-0 flex-1">
@@ -106,7 +130,7 @@ export function EventCard({ event, compact = false, linkToDetail = false }: Even
             ) : null}
           </div>
 
-          <div className="shrink-0 sm:w-44">
+          <div className="shrink-0 sm:w-48">
             <EventEnrollBlock event={event} />
           </div>
         </div>

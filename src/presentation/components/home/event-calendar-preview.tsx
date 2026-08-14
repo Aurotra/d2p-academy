@@ -56,22 +56,35 @@ export async function EventCalendarPreview() {
             </p>
           </div>
 
-          <div className="lg:grid lg:grid-cols-[minmax(0,1fr)_272px]">
-            <div className="p-5 sm:p-7">
+          <div className="lg:grid lg:grid-cols-[minmax(0,1fr)_17rem] lg:items-stretch">
+            <div className="flex min-h-0 flex-col lg:h-full">
               {events.length === 0 ? (
-                <EmptyEventsState />
-              ) : singleEvent ? (
-                <EventCard event={events[0]!} compact linkToDetail />
+                <div className="p-5 sm:p-7">
+                  <EmptyEventsState />
+                </div>
               ) : (
-                <div className="grid gap-4 sm:grid-cols-2">
+                <div
+                  className={
+                    singleEvent
+                      ? "flex h-full min-h-[240px] flex-1 flex-col lg:min-h-full"
+                      : "flex flex-col divide-y divide-border-surface"
+                  }
+                >
                   {events.map((event) => (
-                    <EventCard key={event.id} event={event} linkToDetail />
+                    <EventCard
+                      key={event.id}
+                      event={event}
+                      compact
+                      embedded
+                      fill={singleEvent}
+                      linkToDetail
+                    />
                   ))}
                 </div>
               )}
             </div>
 
-            <div className="border-t border-border-surface bg-surface-tint-yellow/30 p-5 sm:p-7 lg:border-l lg:border-t-0">
+            <div className="border-t border-border-surface bg-surface-tint-yellow/30 p-5 sm:p-6 lg:border-l lg:border-t-0">
               <ParentGuidePromo />
             </div>
           </div>
