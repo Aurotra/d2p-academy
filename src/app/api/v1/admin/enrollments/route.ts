@@ -5,7 +5,10 @@ import { z } from "zod";
 import type { EnrollmentStatus } from "@/core/domain/student-dashboard";
 import { getAdminApiServiceClient } from "@/infrastructure/auth/get-admin-api-service-client";
 import { requireAdminApiAccess } from "@/infrastructure/auth/require-admin-api-access";
-import { getEventCapacityBlockReason } from "@/infrastructure/enrollments/event-capacity";
+import {
+  CapacityFullError,
+  tryReserveCapacityAndEnroll,
+} from "@/infrastructure/enrollments/try-reserve-capacity-and-enroll";
 import { removeEnrollmentsFromEvent } from "@/infrastructure/enrollments/remove-enrollments-from-event";
 import { revalidateEventAttendancePaths } from "@/infrastructure/enrollments/revalidate-event-attendance";
 import { resolveUsernameForLookup } from "@/shared/utils/student-username";
@@ -149,57 +152,44 @@ export async function POST(request: Request) {
 
     studentId = student.id;
 
-    const { data: existing } = await access.client
-      .from("enrollments")
-      .select("id, status")
-      .eq("event_id", eventId)
-      .eq("user_id", studentId)
-      .maybeSingle();
+    try {
+      const reserved = await tryReserveCapacityAndEnroll(access.client, {
+        eventId,
+        userId: studentId,
+        targetStatus: "registered",
+      });
 
-    if (existing && existing.status !== "cancelled") {
-      return NextResponse.json(
-        { error: "Bu öğrenci zaten bu etkinliğe kayıtlı.", data: { enrollmentId: existing.id } },
-        { status: 409 },
-      );
-    }
-
-    const capacityBlock = await getEventCapacityBlockReason(access.client, eventId);
-    if (capacityBlock) {
-      return NextResponse.json({ error: capacityBlock }, { status: 409 });
-    }
-
-    if (existing?.status === "cancelled") {
-      const { data: revived, error: reviveError } = await access.client
-        .from("enrollments")
-        .update({ status: "registered", completed_at: null })
-        .eq("id", existing.id)
-        .select("id, status, user_id, event_id, registered_at")
-        .single();
-
-      if (reviveError) {
-        logSupabaseError("[admin/enrollments POST revive]", reviveError);
-        return NextResponse.json({ error: "Kayıt yenilenemedi." }, { status: 400 });
+      if (reserved.alreadyEnrolled) {
+        return NextResponse.json(
+          {
+            error: "Bu öğrenci zaten bu etkinliğe kayıtlı.",
+            data: { enrollmentId: reserved.enrollmentId },
+          },
+          { status: 409 },
+        );
       }
 
-      return NextResponse.json({ data: { enrollment: revived, student } }, { status: 200 });
+      const { data: enrollment, error: fetchError } = await access.client
+        .from("enrollments")
+        .select("id, status, user_id, event_id, registered_at")
+        .eq("id", reserved.enrollmentId)
+        .single();
+
+      if (fetchError || !enrollment) {
+        logSupabaseError("[admin/enrollments POST fetch]", fetchError);
+        return NextResponse.json({ error: "Kayıt eklenemedi." }, { status: 400 });
+      }
+
+      return NextResponse.json(
+        { data: { enrollment, student } },
+        { status: reserved.revived ? 200 : 201 },
+      );
+    } catch (reserveError) {
+      if (reserveError instanceof CapacityFullError) {
+        return NextResponse.json({ error: reserveError.message }, { status: 409 });
+      }
+      throw reserveError;
     }
-
-    const { data: enrollment, error: insertError } = await access.client
-      .from("enrollments")
-      .insert({
-        event_id: eventId,
-        user_id: studentId,
-        status: "registered",
-      })
-      .select("id, status, user_id, event_id, registered_at")
-      .single();
-
-    if (insertError) {
-      logSupabaseError("[admin/enrollments POST insert]", insertError);
-      return NextResponse.json({ error: "Kayıt eklenemedi." }, { status: 400 });
-    }
-
-    return NextResponse.json({ data: { enrollment, student } }, { status: 201 });
   } catch (error) {
     return apiCatchResponse(error, "Kayıt eklenemedi.", {
       logLabel: "[admin/enrollments POST]",

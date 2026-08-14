@@ -90,6 +90,13 @@ async function handleCallback(request: Request) {
       raw: retrieve.raw,
     });
 
+    if (finalized.recovered) {
+      console.error(
+        "[iyzico callback] recovered cancelled/failed payment after SUCCESS — ops review",
+        { paymentId, enrollmentId: finalized.enrollmentId },
+      );
+    }
+
     const params = new URLSearchParams({
       enrollmentId: finalized.enrollmentId,
       studentId: finalized.studentUserId,

@@ -1,11 +1,14 @@
 import { NextResponse } from "next/server";
 
-import { getEventCapacityBlockReason } from "@/infrastructure/enrollments/event-capacity";
 import { logMemberActivity } from "@/infrastructure/audit/log-member-activity";
+import {
+  CapacityFullError,
+  tryReserveCapacityAndEnroll,
+} from "@/infrastructure/enrollments/try-reserve-capacity-and-enroll";
 import { createSupabaseServerClient } from "@/infrastructure/supabase/create-server-client";
 import { getEventEnrollmentBlockReason } from "@/shared/utils/event-enrollment-window";
 import { isStudentParticipantProfile } from "@/shared/utils/student-participant-profile";
-import { apiCatchResponse, logSupabaseError } from "@/shared/utils/api-error";
+import { apiCatchResponse } from "@/shared/utils/api-error";
 
 interface EnrollRequestBody {
   eventId?: string;
@@ -31,7 +34,10 @@ export async function POST(request: Request) {
     } = await client.auth.getUser();
 
     if (!user) {
-      return NextResponse.json({ error: "Etkinliğe kayıt olmak için giriş yapmalısınız." }, { status: 401 });
+      return NextResponse.json(
+        { error: "Etkinliğe kayıt olmak için giriş yapmalısınız." },
+        { status: 401 },
+      );
     }
 
     const { data: actorProfile } = await client
@@ -75,58 +81,28 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: enrollmentBlock }, { status: 400 });
     }
 
-    const capacityBlock = await getEventCapacityBlockReason(client, eventId);
-    if (capacityBlock) {
-      return NextResponse.json({ error: capacityBlock }, { status: 409 });
+    let reserved;
+    try {
+      reserved = await tryReserveCapacityAndEnroll(client, {
+        eventId,
+        userId: user.id,
+        targetStatus: "registered",
+      });
+    } catch (reserveError) {
+      if (reserveError instanceof CapacityFullError) {
+        return NextResponse.json({ error: reserveError.message }, { status: 409 });
+      }
+      throw reserveError;
     }
 
-    const { data: existing } = await client
-      .from("enrollments")
-      .select("id, status")
-      .eq("user_id", user.id)
-      .eq("event_id", eventId)
-      .maybeSingle();
-
-    if (existing) {
+    if (reserved.alreadyEnrolled) {
       return NextResponse.json({
         data: {
-          enrollmentId: existing.id,
+          enrollmentId: reserved.enrollmentId,
           alreadyEnrolled: true,
           eventTitle: event.title,
         },
       });
-    }
-
-    const { data: enrollment, error: insertError } = await client
-      .from("enrollments")
-      .insert({
-        user_id: user.id,
-        event_id: eventId,
-        status: "registered",
-      })
-      .select("id")
-      .single();
-
-    if (insertError) {
-      if (insertError.code === "23505" || insertError.message.toLowerCase().includes("duplicate")) {
-        const { data: duplicate } = await client
-          .from("enrollments")
-          .select("id")
-          .eq("user_id", user.id)
-          .eq("event_id", eventId)
-          .maybeSingle();
-
-        return NextResponse.json({
-          data: {
-            enrollmentId: duplicate?.id,
-            alreadyEnrolled: true,
-            eventTitle: event.title,
-          },
-        });
-      }
-
-      logSupabaseError("[enrollments POST]", insertError);
-      return NextResponse.json({ error: "Kayıt oluşturulamadı." }, { status: 400 });
     }
 
     const { data: profile } = await client
@@ -144,12 +120,12 @@ export async function POST(request: Request) {
       studentName: profile?.full_name ?? null,
       eventId: event.id,
       eventTitle: event.title,
-      enrollmentId: enrollment.id,
+      enrollmentId: reserved.enrollmentId,
     });
 
     return NextResponse.json({
       data: {
-        enrollmentId: enrollment.id,
+        enrollmentId: reserved.enrollmentId,
         alreadyEnrolled: false,
         eventTitle: event.title,
       },

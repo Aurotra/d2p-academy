@@ -2,7 +2,10 @@ import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
-import { getEventCapacityBlockReason } from "@/infrastructure/enrollments/event-capacity";
+import {
+  CapacityFullError,
+  tryReserveCapacityAndEnroll,
+} from "@/infrastructure/enrollments/try-reserve-capacity-and-enroll";
 import { startPaidEnrollmentCheckout } from "@/infrastructure/payments/start-paid-enrollment-checkout";
 import { createServiceRoleClient } from "@/infrastructure/supabase/create-service-role-client";
 import { createSupabaseServerClient } from "@/infrastructure/supabase/create-server-client";
@@ -124,39 +127,6 @@ export async function POST(
   const priceTryCents = event.price_try_cents ?? 0;
   const isPaid = Boolean(event.is_paid) && priceTryCents > 0;
 
-  const { data: existing } = await serviceClient
-    .from("enrollments")
-    .select("id, status")
-    .eq("user_id", studentId)
-    .eq("event_id", eventId)
-    .maybeSingle();
-
-  if (
-    existing &&
-    existing.status !== "cancelled" &&
-    existing.status !== "pending_payment"
-  ) {
-    await cancelParentSelfEnrollment(serviceClient, auth.user.id, eventId);
-
-    return NextResponse.json({
-      data: {
-        enrollmentId: existing.id,
-        alreadyEnrolled: true,
-        eventTitle: event.title,
-      },
-    });
-  }
-
-  try {
-    const capacityBlock = await getEventCapacityBlockReason(serviceClient, eventId);
-    if (capacityBlock) {
-      return NextResponse.json({ error: capacityBlock }, { status: 409 });
-    }
-  } catch (capacityError) {
-    console.error("[parent enroll capacity]", capacityError);
-    return NextResponse.json({ error: "Kontenjan kontrolü başarısız." }, { status: 500 });
-  }
-
   if (isPaid) {
     const { data: payer } = await serviceClient
       .from("profiles")
@@ -198,9 +168,18 @@ export async function POST(
         { status: 201 },
       );
     } catch (checkoutError) {
+      if (checkoutError instanceof CapacityFullError) {
+        return NextResponse.json({ error: checkoutError.message }, { status: 409 });
+      }
       const message =
         checkoutError instanceof Error ? checkoutError.message : "Ödeme başlatılamadı.";
       if (message === "ALREADY_ENROLLED") {
+        const { data: existing } = await serviceClient
+          .from("enrollments")
+          .select("id")
+          .eq("user_id", studentId)
+          .eq("event_id", eventId)
+          .maybeSingle();
         return NextResponse.json({
           data: {
             enrollmentId: existing?.id,
@@ -214,74 +193,48 @@ export async function POST(
     }
   }
 
-  if (existing?.status === "cancelled" || existing?.status === "pending_payment") {
-    const { data: revived, error: reviveError } = await serviceClient
-      .from("enrollments")
-      .update({ status: "registered", completed_at: null })
-      .eq("id", existing.id)
-      .eq("user_id", studentId)
-      .select("id")
-      .single();
-
-    if (reviveError) {
-      console.error("[parent enroll revive]", reviveError.message);
-      return NextResponse.json({ error: "Kayıt yenilenemedi." }, { status: 500 });
-    }
+  try {
+    const reserved = await tryReserveCapacityAndEnroll(serviceClient, {
+      eventId,
+      userId: studentId,
+      targetStatus: "registered",
+    });
 
     await cancelParentSelfEnrollment(serviceClient, auth.user.id, eventId);
 
-    return NextResponse.json({
-      data: {
-        enrollmentId: revived.id,
-        alreadyEnrolled: false,
-        eventTitle: event.title,
-        revived: true,
-      },
-    });
-  }
-
-  const { data: enrollment, error: insertError } = await serviceClient
-    .from("enrollments")
-    .insert({
-      user_id: studentId,
-      event_id: eventId,
-      status: "registered",
-    })
-    .select("id")
-    .single();
-
-  if (insertError) {
-    if (insertError.code === "23505" || insertError.message.toLowerCase().includes("duplicate")) {
-      const { data: duplicate } = await serviceClient
-        .from("enrollments")
-        .select("id")
-        .eq("user_id", studentId)
-        .eq("event_id", eventId)
-        .maybeSingle();
-
+    if (reserved.alreadyEnrolled) {
       return NextResponse.json({
         data: {
-          enrollmentId: duplicate?.id,
+          enrollmentId: reserved.enrollmentId,
           alreadyEnrolled: true,
           eventTitle: event.title,
         },
       });
     }
-    console.error("[parent enroll insert]", insertError.message);
-    return NextResponse.json({ error: "Kayıt oluşturulamadı." }, { status: 500 });
-  }
 
-  await cancelParentSelfEnrollment(serviceClient, auth.user.id, eventId);
-
-  return NextResponse.json(
-    {
-      data: {
-        enrollmentId: enrollment.id,
-        alreadyEnrolled: false,
-        eventTitle: event.title,
-        studentName: child.full_name,
+    return NextResponse.json(
+      {
+        data: {
+          enrollmentId: reserved.enrollmentId,
+          alreadyEnrolled: false,
+          eventTitle: event.title,
+          studentName: child.full_name,
+          revived: reserved.revived,
+        },
       },
-    },
-    { status: 201 },
-  );
+      { status: reserved.revived ? 200 : 201 },
+    );
+  } catch (reserveError) {
+    if (reserveError instanceof CapacityFullError) {
+      return NextResponse.json({ error: reserveError.message }, { status: 409 });
+    }
+    console.error("[parent enroll reserve]", reserveError);
+    return NextResponse.json(
+      {
+        error:
+          reserveError instanceof Error ? reserveError.message : "Kayıt oluşturulamadı.",
+      },
+      { status: 500 },
+    );
+  }
 }

@@ -1,6 +1,14 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 
 import {
+  CapacityFullError,
+  tryReserveCapacityAndEnroll,
+} from "@/infrastructure/enrollments/try-reserve-capacity-and-enroll";
+import {
+  cancelStalePendingPaymentLocked,
+  finalizeIyzicoPaymentLocked,
+} from "@/infrastructure/payments/finalize-iyzico-payment-locked";
+import {
   buildPaymentCallbackUrl,
   initializeIyzicoCheckout,
   isIyzicoConfigured,
@@ -42,6 +50,7 @@ function splitName(fullName: string): { name: string; surname: string } {
 
 /**
  * Creates/reuses pending_payment enrollment + payments row, starts iyzico Checkout Form.
+ * Capacity reserve is atomic (RPC). Stale pending cancel uses row locks.
  */
 export async function startPaidEnrollmentCheckout(
   input: StartPaidEnrollmentInput,
@@ -58,87 +67,54 @@ export async function startPaidEnrollmentCheckout(
 
   const { serviceClient } = input;
 
-  // Cancel stale pending payments for this student+event
   const cutoff = new Date(Date.now() - PENDING_PAYMENT_TTL_MS).toISOString();
   const { data: stalePayments } = await serviceClient
     .from("payments")
-    .select("id, enrollment_id")
+    .select("id")
     .eq("student_user_id", input.studentId)
     .eq("event_id", input.eventId)
     .eq("status", "pending")
     .lt("created_at", cutoff);
 
   for (const stale of stalePayments ?? []) {
-    await serviceClient
-      .from("payments")
-      .update({ status: "cancelled" })
-      .eq("id", stale.id)
-      .eq("status", "pending");
-    if (stale.enrollment_id) {
-      await serviceClient
-        .from("enrollments")
-        .update({ status: "cancelled" })
-        .eq("id", stale.enrollment_id)
-        .eq("status", "pending_payment");
-    }
+    await cancelStalePendingPaymentLocked(serviceClient, stale.id);
   }
 
-  const { data: existingEnrollment } = await serviceClient
-    .from("enrollments")
-    .select("id, status")
-    .eq("user_id", input.studentId)
-    .eq("event_id", input.eventId)
-    .maybeSingle();
+  let reserved;
+  try {
+    reserved = await tryReserveCapacityAndEnroll(serviceClient, {
+      eventId: input.eventId,
+      userId: input.studentId,
+      targetStatus: "pending_payment",
+    });
+  } catch (error) {
+    if (error instanceof CapacityFullError) {
+      throw error;
+    }
+    throw error;
+  }
 
   if (
-    existingEnrollment &&
-    existingEnrollment.status !== "cancelled" &&
-    existingEnrollment.status !== "pending_payment"
+    reserved.alreadyEnrolled &&
+    reserved.status !== "pending_payment"
   ) {
     throw new Error("ALREADY_ENROLLED");
   }
 
-  let enrollmentId = existingEnrollment?.id ?? null;
+  const enrollmentId = reserved.enrollmentId;
 
-  if (existingEnrollment?.status === "pending_payment") {
-    enrollmentId = existingEnrollment.id;
-  } else if (existingEnrollment?.status === "cancelled") {
-    const { data: revived, error: reviveError } = await serviceClient
-      .from("enrollments")
-      .update({ status: "pending_payment", completed_at: null })
-      .eq("id", existingEnrollment.id)
-      .select("id")
-      .single();
-    if (reviveError || !revived) {
-      throw new Error("Kayıt yenilenemedi.");
-    }
-    enrollmentId = revived.id;
-  } else {
-    const { data: inserted, error: insertError } = await serviceClient
-      .from("enrollments")
-      .insert({
-        user_id: input.studentId,
-        event_id: input.eventId,
-        status: "pending_payment",
-      })
-      .select("id")
-      .single();
-
-    if (insertError || !inserted) {
-      if (insertError?.code === "23505") {
-        throw new Error("ALREADY_ENROLLED");
-      }
-      throw new Error(insertError?.message ?? "Kayıt oluşturulamadı.");
-    }
-    enrollmentId = inserted.id;
-  }
-
-  // Cancel any other open pending payment rows for this enrollment
-  await serviceClient
+  const { data: openPendings } = await serviceClient
     .from("payments")
-    .update({ status: "cancelled" })
+    .select("id")
     .eq("enrollment_id", enrollmentId)
     .eq("status", "pending");
+
+  for (const open of openPendings ?? []) {
+    // Keep enrollment seat; only retire prior pending payment rows under row lock.
+    await cancelStalePendingPaymentLocked(serviceClient, open.id, {
+      alsoCancelEnrollment: false,
+    });
+  }
 
   const { data: payment, error: paymentError } = await serviceClient
     .from("payments")
@@ -160,7 +136,6 @@ export async function startPaidEnrollmentCheckout(
     throw new Error(paymentError?.message ?? "Ödeme kaydı oluşturulamadı.");
   }
 
-  // Use payment.id as conversationId for idempotent retrieve
   await serviceClient
     .from("payments")
     .update({ provider_conversation_id: payment.id })
@@ -199,7 +174,6 @@ export async function startPaidEnrollmentCheckout(
     throw new Error("iyzico ödeme sayfası alınamadı.");
   }
 
-  // Prefer hosted page URL; fallback embeds checkout form HTML.
   return {
     enrollmentId,
     paymentId: payment.id,
@@ -212,61 +186,23 @@ export async function startPaidEnrollmentCheckout(
   };
 }
 
+/** @deprecated Prefer finalizeIyzicoPaymentLocked — kept as thin wrapper for call sites. */
 export async function finalizePaidPayment(params: {
   serviceClient: SupabaseClient;
   paymentId: string;
   providerPaymentId: string | null;
   raw: Record<string, unknown>;
-}): Promise<{ enrollmentId: string; studentUserId: string; alreadyPaid: boolean }> {
-  const { serviceClient, paymentId, providerPaymentId, raw } = params;
-
-  const { data: payment, error } = await serviceClient
-    .from("payments")
-    .select("id, status, enrollment_id, student_user_id")
-    .eq("id", paymentId)
-    .maybeSingle();
-
-  if (error || !payment) {
-    throw new Error("Ödeme kaydı bulunamadı.");
-  }
-
-  if (payment.status === "paid") {
-    return {
-      enrollmentId: payment.enrollment_id,
-      studentUserId: payment.student_user_id,
-      alreadyPaid: true,
-    };
-  }
-
-  const { error: payUpdateError } = await serviceClient
-    .from("payments")
-    .update({
-      status: "paid",
-      provider_payment_id: providerPaymentId,
-      provider_raw: raw,
-      paid_at: new Date().toISOString(),
-    })
-    .eq("id", paymentId)
-    .eq("status", "pending");
-
-  if (payUpdateError) {
-    throw new Error(payUpdateError.message);
-  }
-
-  const { error: enrollError } = await serviceClient
-    .from("enrollments")
-    .update({ status: "registered", completed_at: null })
-    .eq("id", payment.enrollment_id)
-    .in("status", ["pending_payment", "cancelled"]);
-
-  if (enrollError) {
-    throw new Error(enrollError.message);
-  }
-
+}): Promise<{ enrollmentId: string; studentUserId: string; alreadyPaid: boolean; recovered?: boolean }> {
+  const result = await finalizeIyzicoPaymentLocked(params.serviceClient, {
+    paymentId: params.paymentId,
+    providerPaymentId: params.providerPaymentId,
+    raw: params.raw,
+  });
   return {
-    enrollmentId: payment.enrollment_id,
-    studentUserId: payment.student_user_id,
-    alreadyPaid: false,
+    enrollmentId: result.enrollmentId,
+    studentUserId: result.studentUserId,
+    alreadyPaid: result.alreadyPaid,
+    recovered: result.recovered,
   };
 }
 
