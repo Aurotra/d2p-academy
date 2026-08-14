@@ -1,3 +1,7 @@
+import type { EventPaymentMode } from "@/core/domain/admin-event";
+
+export type { EventPaymentMode };
+
 export type EventType = "training" | "maker_workshop" | "bootcamp" | "seminar";
 
 export interface EventCategory {
@@ -18,10 +22,16 @@ export interface AcademyEvent {
   endAt: Date;
   locationName: string | null;
   isOnline: boolean;
-  /** When true, registration requires successful payment before status becomes registered. */
+  /**
+   * Legacy mirror of paymentMode === 'iyzico'. Prefer paymentMode for behavior.
+   * Kept for backward compatibility; DB trigger keeps it in sync.
+   */
   isPaid: boolean;
-  /** Fee in TRY kuruş (15000 = 150.00 TL). Null when free. */
+  paymentMode: EventPaymentMode;
+  /** Checkout fee in TRY kuruş (iyzico). Null when free/external. */
   priceTryCents: number | null;
+  /** Optional informational price for external (kurum) mode; does not trigger payment. */
+  displayPriceTryCents: number | null;
   coverImageUrl: string | null;
 }
 

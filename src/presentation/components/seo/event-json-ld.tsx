@@ -1,6 +1,7 @@
 import type { AcademyEvent } from "@/core/domain/event";
 import { EVENT_TYPE_LABELS } from "@/core/domain/event";
 import { formatTryCentsAsIyzicoPrice } from "@/core/domain/payment";
+import { eventPublicPriceTryCents } from "@/infrastructure/events/event-payment-mode";
 import { SITE_NAME, SITE_URL } from "@/shared/constants/site";
 import { absoluteUrl } from "@/shared/seo/metadata";
 import { eventLocationLabel } from "@/shared/utils/event-format";
@@ -12,10 +13,9 @@ interface EventJsonLdProps {
 export function EventJsonLd({ event }: EventJsonLdProps) {
   const eventUrl = absoluteUrl(`/etkinlikler/${event.slug}`);
   const location = eventLocationLabel(event);
+  const publicPrice = eventPublicPriceTryCents(event);
   const price =
-    event.isPaid && event.priceTryCents != null && event.priceTryCents > 0
-      ? formatTryCentsAsIyzicoPrice(event.priceTryCents)
-      : "0";
+    publicPrice != null ? formatTryCentsAsIyzicoPrice(publicPrice) : "0";
 
   const data = {
     "@context": "https://schema.org",

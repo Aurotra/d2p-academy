@@ -10,8 +10,13 @@ import { tryBuildStudentUsernameFromIdentity } from "@/shared/utils/student-user
 import { buildEnrollmentFormStatusLabel } from "@/shared/utils/enrollment-form-status";
 import { EnrollmentFormProgress } from "@/presentation/components/dashboard/enrollment-form-progress";
 import { ParentEnrollmentAttendanceProgress } from "@/presentation/components/dashboard/parent-enrollment-attendance-progress";
-import { EVENT_TYPE_LABELS, type EventType } from "@/core/domain/event";
+import { EVENT_TYPE_LABELS, type EventPaymentMode, type EventType } from "@/core/domain/event";
 import { formatTryCentsDisplay } from "@/core/domain/payment";
+import {
+  eventPublicPriceTryCents,
+  EXTERNAL_PAYMENT_NOTE,
+  requiresIyzicoCheckout,
+} from "@/infrastructure/events/event-payment-mode";
 import {
   eventLocationLabel,
   formatEventDateTimeRange,
@@ -76,7 +81,9 @@ export type EnrollableEventOption = {
   locationName: string | null;
   isOnline: boolean;
   isPaid: boolean;
+  paymentMode: EventPaymentMode;
   priceTryCents: number | null;
+  displayPriceTryCents: number | null;
 };
 
 const STATUS_LABELS: Record<string, string> = {
@@ -948,14 +955,15 @@ function EnrollStudentDialog({
         <form onSubmit={handleSubmit} className="space-y-4">
           <p className="text-sm leading-6 text-muted">
             <strong className="font-semibold text-navy-950">{student.full_name}</strong> bu etkinliğe
-            kaydedilecek. Ücretli etkinliklerde önce güvenli ödeme, ardından tanışma ve onay
-            formları açılır.
+            kaydedilecek. Kartla ödemeli etkinliklerde önce güvenli ödeme, ardından tanışma ve onay
+            formları açılır. Kurum/okul tahsilatlı etkinliklerde ödeme bu panelden alınmaz.
           </p>
 
           <fieldset className="space-y-3">
             <legend className="text-sm font-semibold text-navy-950">Etkinlik seçin</legend>
             {events.map((item) => {
               const selected = eventId === item.id;
+              const publicPrice = eventPublicPriceTryCents(item);
               return (
                 <label
                   key={item.id}
@@ -990,15 +998,23 @@ function EnrollStudentDialog({
                         Online
                       </span>
                     ) : null}
-                    {item.isPaid && item.priceTryCents != null && item.priceTryCents > 0 ? (
+                    {publicPrice != null ? (
                       <span className="inline-flex rounded-full bg-amber-100 px-2.5 py-0.5 text-[11px] font-bold text-amber-950">
-                        {formatTryCentsDisplay(item.priceTryCents)}
+                        {formatTryCentsDisplay(publicPrice)}
+                      </span>
+                    ) : null}
+                    {item.paymentMode === "external" ? (
+                      <span className="inline-flex rounded-full bg-surface-section px-2.5 py-0.5 text-[11px] font-bold text-[var(--text-on-surface-soft)]">
+                        Kurum/okul
                       </span>
                     ) : null}
                   </div>
                   <p className="mt-3 text-base font-bold leading-snug text-navy-950">{item.title}</p>
                   <p className="mt-2 text-sm font-medium text-[var(--text-on-surface-soft)]">{formatEventSchedule(item)}</p>
                   <p className="mt-1 text-sm text-muted">{formatEventLocation(item)}</p>
+                  {item.paymentMode === "external" ? (
+                    <p className="mt-2 text-xs leading-5 text-subtle">{EXTERNAL_PAYMENT_NOTE}</p>
+                  ) : null}
                   <Link
                     href={`/etkinlikler/${item.slug}`}
                     className="mt-3 inline-flex text-sm font-semibold text-document-primary hover:underline"
@@ -1015,9 +1031,13 @@ function EnrollStudentDialog({
           <DialogActions
             onClose={onClose}
             confirmLabel={
-              events.find((item) => item.id === eventId)?.isPaid
-                ? "Ödemeye geç"
-                : "Kaydet"
+              (() => {
+                const selected = events.find((item) => item.id === eventId);
+                if (!selected) {
+                  return "Kaydet";
+                }
+                return requiresIyzicoCheckout(selected.paymentMode) ? "Ödemeye geç" : "Kaydet";
+              })()
             }
             submitting={submitting}
             confirmType="submit"

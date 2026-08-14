@@ -1,11 +1,46 @@
 /**
- * Event payment mode helpers (FAZ 2 write path).
- * Readers may still use is_paid until CTA/enroll migration.
+ * Event payment mode helpers (FAZ 2 write + read/CTA).
+ * is_paid remains synced for legacy readers; new behavior uses payment_mode.
  */
 
 import type { EventPaymentMode } from "@/core/domain/admin-event";
 
 export type { EventPaymentMode };
+
+/** True only when checkout must run (external/free enroll directly as registered). */
+export function requiresIyzicoCheckout(mode: EventPaymentMode): boolean {
+  return mode === "iyzico";
+}
+
+export const EXTERNAL_PAYMENT_NOTE =
+  "Ücret kurum/okul tarafından tahsil edilir";
+
+export function eventEnrollCtaLabel(mode: EventPaymentMode): string {
+  if (mode === "iyzico") {
+    return "Ücretli Kayıt";
+  }
+  if (mode === "external") {
+    return "Kayıt Ol";
+  }
+  return "Etkinliğe Kaydol";
+}
+
+/** Public badge / SEO price: iyzico → checkout price; external → optional display price. */
+export function eventPublicPriceTryCents(input: {
+  paymentMode: EventPaymentMode;
+  priceTryCents?: number | null;
+  displayPriceTryCents?: number | null;
+}): number | null {
+  if (input.paymentMode === "iyzico") {
+    const price = input.priceTryCents ?? null;
+    return price != null && price > 0 ? price : null;
+  }
+  if (input.paymentMode === "external") {
+    const display = input.displayPriceTryCents ?? null;
+    return display != null && display > 0 ? display : null;
+  }
+  return null;
+}
 
 export function paymentModeFromIsPaid(isPaid: boolean): Exclude<EventPaymentMode, "external"> {
   return isPaid ? "iyzico" : "free";

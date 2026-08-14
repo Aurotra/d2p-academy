@@ -2,6 +2,9 @@ import Link from "next/link";
 
 import { EVENT_TYPE_LABELS, type AcademyEvent } from "@/core/domain/event";
 import { formatTryCentsDisplay } from "@/core/domain/payment";
+import {
+  eventPublicPriceTryCents,
+} from "@/infrastructure/events/event-payment-mode";
 import { EventEnrollButton } from "@/presentation/components/events/event-enroll-button";
 import { Badge } from "@/presentation/components/ui/badge";
 import {
@@ -26,6 +29,8 @@ function EventDateBadge({ day, month }: { day: string; month: string }) {
 }
 
 function EventMetaBadges({ event }: { event: AcademyEvent }) {
+  const publicPrice = eventPublicPriceTryCents(event);
+
   return (
     <div className="flex flex-wrap gap-2">
       <Badge tone="cyan">{EVENT_TYPE_LABELS[event.eventType]}</Badge>
@@ -35,8 +40,11 @@ function EventMetaBadges({ event }: { event: AcademyEvent }) {
         </Badge>
       ) : null}
       {event.isOnline ? <Badge tone="neutral">Online</Badge> : null}
-      {event.isPaid && event.priceTryCents != null && event.priceTryCents > 0 ? (
-        <Badge tone="neutral">{formatTryCentsDisplay(event.priceTryCents)}</Badge>
+      {publicPrice != null ? (
+        <Badge tone="neutral">{formatTryCentsDisplay(publicPrice)}</Badge>
+      ) : null}
+      {event.paymentMode === "external" ? (
+        <Badge tone="neutral">Kurum/okul</Badge>
       ) : null}
     </div>
   );
@@ -57,6 +65,12 @@ function EventTitle({ event, linkToDetail }: { event: AcademyEvent; linkToDetail
     <Link href={`/etkinlikler/${event.slug}`} className="block">
       {title}
     </Link>
+  );
+}
+
+function EventEnrollBlock({ event }: { event: AcademyEvent }) {
+  return (
+    <EventEnrollButton eventId={event.id} paymentMode={event.paymentMode} isPaid={event.isPaid} />
   );
 }
 
@@ -93,7 +107,7 @@ export function EventCard({ event, compact = false, linkToDetail = false }: Even
           </div>
 
           <div className="shrink-0 sm:w-44">
-            <EventEnrollButton eventId={event.id} isPaid={event.isPaid} />
+            <EventEnrollBlock event={event} />
           </div>
         </div>
       </article>
@@ -130,7 +144,7 @@ export function EventCard({ event, compact = false, linkToDetail = false }: Even
         ) : null}
 
         <div className="mt-4">
-          <EventEnrollButton eventId={event.id} isPaid={event.isPaid} />
+          <EventEnrollBlock event={event} />
         </div>
       </div>
     </article>

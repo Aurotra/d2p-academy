@@ -5,6 +5,10 @@ import {
   CapacityFullError,
   tryReserveCapacityAndEnroll,
 } from "@/infrastructure/enrollments/try-reserve-capacity-and-enroll";
+import {
+  requiresIyzicoCheckout,
+  resolveEventPaymentMode,
+} from "@/infrastructure/events/event-payment-mode";
 import { createSupabaseServerClient } from "@/infrastructure/supabase/create-server-client";
 import { getEventEnrollmentBlockReason } from "@/shared/utils/event-enrollment-window";
 import { isStudentParticipantProfile } from "@/shared/utils/student-participant-profile";
@@ -58,7 +62,7 @@ export async function POST(request: Request) {
 
     const { data: event, error: eventError } = await client
       .from("events")
-      .select("id, title, status, end_at, is_paid, price_try_cents")
+      .select("id, title, status, end_at, is_paid, payment_mode, price_try_cents")
       .eq("id", eventId)
       .single();
 
@@ -66,7 +70,12 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Etkinlik bulunamadı." }, { status: 404 });
     }
 
-    if (Boolean(event.is_paid) && (event.price_try_cents ?? 0) > 0) {
+    const paymentMode = resolveEventPaymentMode({
+      paymentMode: event.payment_mode,
+      isPaid: event.is_paid,
+    });
+
+    if (requiresIyzicoCheckout(paymentMode)) {
       return NextResponse.json(
         {
           error:

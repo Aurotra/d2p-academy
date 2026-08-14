@@ -7,6 +7,7 @@ import {
   fetchParentOnboardingContext,
   shouldShowParentOnboarding,
 } from "@/infrastructure/repositories/fetch-parent-onboarding-context";
+import { resolveEventPaymentMode } from "@/infrastructure/events/event-payment-mode";
 import { createSupabaseServerClient } from "@/infrastructure/supabase/create-server-client";
 import { calculateProgress, profileProgressOptions } from "@/lib/utils/progress";
 import { ParentOnboardingGuide } from "@/presentation/components/dashboard/parent-onboarding-guide";
@@ -55,7 +56,7 @@ export default async function DashboardChildrenPage({
   const { data: eventRows } = await supabase
     .from("events")
     .select(
-      "id, title, slug, event_type, start_at, end_at, location_name, is_online, is_paid, price_try_cents, event_categories ( name, color )",
+      "id, title, slug, event_type, start_at, end_at, location_name, is_online, is_paid, payment_mode, price_try_cents, display_price_try_cents, event_categories ( name, color )",
     )
     .eq("status", "published")
     .gte("end_at", new Date().toISOString())
@@ -66,6 +67,11 @@ export default async function DashboardChildrenPage({
     const category = Array.isArray(event.event_categories)
       ? event.event_categories[0]
       : event.event_categories;
+
+    const paymentMode = resolveEventPaymentMode({
+      paymentMode: event.payment_mode,
+      isPaid: event.is_paid,
+    });
 
     return {
       id: event.id,
@@ -79,7 +85,9 @@ export default async function DashboardChildrenPage({
       locationName: event.location_name,
       isOnline: Boolean(event.is_online),
       isPaid: Boolean(event.is_paid),
+      paymentMode,
       priceTryCents: event.price_try_cents ?? null,
+      displayPriceTryCents: event.display_price_try_cents ?? null,
     };
   });
 

@@ -6,6 +6,10 @@ import {
   CapacityFullError,
   tryReserveCapacityAndEnroll,
 } from "@/infrastructure/enrollments/try-reserve-capacity-and-enroll";
+import {
+  requiresIyzicoCheckout,
+  resolveEventPaymentMode,
+} from "@/infrastructure/events/event-payment-mode";
 import { startPaidEnrollmentCheckout } from "@/infrastructure/payments/start-paid-enrollment-checkout";
 import { createServiceRoleClient } from "@/infrastructure/supabase/create-service-role-client";
 import { createSupabaseServerClient } from "@/infrastructure/supabase/create-server-client";
@@ -139,7 +143,7 @@ export async function POST(
 
   const { data: event, error: eventError } = await serviceClient
     .from("events")
-    .select("id, title, status, end_at, is_paid, price_try_cents")
+    .select("id, title, status, end_at, is_paid, payment_mode, price_try_cents")
     .eq("id", eventId)
     .maybeSingle();
 
@@ -152,10 +156,20 @@ export async function POST(
     return NextResponse.json({ error: enrollmentBlock }, { status: 400 });
   }
 
+  const paymentMode = resolveEventPaymentMode({
+    paymentMode: event.payment_mode,
+    isPaid: event.is_paid,
+  });
   const priceTryCents = event.price_try_cents ?? 0;
-  const isPaid = Boolean(event.is_paid) && priceTryCents > 0;
 
-  if (isPaid) {
+  if (requiresIyzicoCheckout(paymentMode)) {
+    if (priceTryCents <= 0) {
+      return NextResponse.json(
+        { error: "Bu etkinlik için geçerli bir ücret tanımlı değil." },
+        { status: 400 },
+      );
+    }
+
     const { data: payer } = await serviceClient
       .from("profiles")
       .select("full_name, email, parent_phone, city_district")

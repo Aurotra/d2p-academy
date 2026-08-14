@@ -3,6 +3,12 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
+import type { EventPaymentMode } from "@/core/domain/event";
+import {
+  eventEnrollCtaLabel,
+  EXTERNAL_PAYMENT_NOTE,
+  resolveEventPaymentMode,
+} from "@/infrastructure/events/event-payment-mode";
 import { Button, buttonLinkClasses } from "@/presentation/components/ui/button";
 import { useSiteAuth } from "@/presentation/providers/site-auth-provider";
 import {
@@ -14,17 +20,22 @@ import {
 interface EventEnrollButtonProps {
   eventId: string;
   className?: string;
+  paymentMode?: EventPaymentMode;
+  /** @deprecated Prefer paymentMode. Kept for backward-compatible callers. */
   isPaid?: boolean;
 }
 
 export function EventEnrollButton({
   eventId,
   className = "",
+  paymentMode,
   isPaid = false,
 }: EventEnrollButtonProps) {
   const router = useRouter();
   const { isAuthResolved, isLoggedIn } = useSiteAuth();
-  const ctaLabel = isPaid ? "Ücretli Kayıt" : "Etkinliğe Kaydol";
+  const mode = resolveEventPaymentMode({ paymentMode, isPaid });
+  const ctaLabel = eventEnrollCtaLabel(mode);
+  const showExternalNote = mode === "external";
 
   function startChildEnrollment() {
     router.push(buildEventEnrollPath(eventId));
@@ -50,6 +61,9 @@ export function EventEnrollButton({
         >
           {ctaLabel}
         </Link>
+        {showExternalNote ? (
+          <p className="text-center text-xs leading-5 text-subtle">{EXTERNAL_PAYMENT_NOTE}</p>
+        ) : null}
         <p className="text-center text-xs leading-5 text-subtle">
           Üye değilseniz önce{" "}
           <Link href={buildRegisterForEventPath(eventId)} className="font-semibold text-document-primary">
@@ -74,6 +88,9 @@ export function EventEnrollButton({
       >
         {ctaLabel}
       </Button>
+      {showExternalNote ? (
+        <p className="text-center text-xs leading-5 text-subtle">{EXTERNAL_PAYMENT_NOTE}</p>
+      ) : null}
       <p className="text-center text-xs leading-5 text-subtle">
         Çocuk hesabı seçerek kayıt tamamlanır; veli hesabınız etkinliğe kaydolmaz.
       </p>

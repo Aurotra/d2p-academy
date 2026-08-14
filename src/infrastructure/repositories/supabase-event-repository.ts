@@ -2,6 +2,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 
 import type { AcademyEvent, EventCategory, EventType } from "@/core/domain/event";
 import type { EventRepository } from "@/core/use-cases/list-upcoming-events";
+import { resolveEventPaymentMode } from "@/infrastructure/events/event-payment-mode";
 
 interface EventCategoryRow {
   id: string;
@@ -21,7 +22,9 @@ const EVENT_SELECT = `
         location_name,
         is_online,
         is_paid,
+        payment_mode,
         price_try_cents,
+        display_price_try_cents,
         cover_image_url,
         event_categories (
           id,
@@ -42,7 +45,9 @@ interface EventRow {
   location_name: string | null;
   is_online: boolean;
   is_paid: boolean;
+  payment_mode: string | null;
   price_try_cents: number | null;
+  display_price_try_cents: number | null;
   cover_image_url: string | null;
   event_categories: EventCategoryRow | EventCategoryRow[] | null;
 }
@@ -77,7 +82,12 @@ function mapEvent(row: EventRow): AcademyEvent {
     locationName: row.location_name,
     isOnline: row.is_online,
     isPaid: Boolean(row.is_paid),
+    paymentMode: resolveEventPaymentMode({
+      paymentMode: row.payment_mode,
+      isPaid: row.is_paid,
+    }),
     priceTryCents: row.price_try_cents,
+    displayPriceTryCents: row.display_price_try_cents,
     coverImageUrl: row.cover_image_url,
   };
 }
