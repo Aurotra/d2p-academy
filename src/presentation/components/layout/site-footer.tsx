@@ -142,18 +142,10 @@ export function SiteFooter() {
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src="/payments/iyzico-logo-band.svg"
-                  alt="Visa, Mastercard, Troy ve iyzico ile Öde"
+                  alt="Visa, Mastercard, American Express, Troy ve iyzico ile Öde"
                   width={429}
                   height={32}
                   className="h-7 w-auto max-w-full sm:h-8"
-                />
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src="/payments/iyzico-ile-ode.svg"
-                  alt="iyzico ile Öde"
-                  width={160}
-                  height={40}
-                  className="h-8 w-auto"
                 />
               </div>
               <p className="inline-flex items-center gap-2 text-sm font-medium text-[var(--text-on-surface-soft)]">
