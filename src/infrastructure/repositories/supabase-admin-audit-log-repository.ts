@@ -127,6 +127,40 @@ export class SupabaseAdminAuditLogRepository {
     });
   }
 
+  async logEnrollmentCreated(input: {
+    actorId: string;
+    actorEmail: string | null;
+    reason?: string | null;
+    enrollmentId: string;
+    eventId: string | null;
+    eventTitle: string | null;
+    studentId: string | null;
+    studentName: string | null;
+    studentEmail: string | null;
+    metadata?: Record<string, unknown>;
+  }): Promise<void> {
+    const { error } = await this.client.from("admin_audit_logs").insert({
+      action: "enrollment_created",
+      actor_id: input.actorId,
+      actor_email: input.actorEmail,
+      reason: input.reason ?? null,
+      enrollment_id: input.enrollmentId,
+      event_id: input.eventId,
+      event_title: input.eventTitle,
+      student_id: input.studentId,
+      student_name: input.studentName,
+      student_email: input.studentEmail,
+      metadata: {
+        source: "admin_manual",
+        ...input.metadata,
+      },
+    });
+
+    if (error) {
+      throw new Error(`Kayıt oluşturma denetim kaydı yazılamadı: ${error.message}`);
+    }
+  }
+
   async logEnrollmentRemovedFromEvent(input: {
     actorId: string;
     actorEmail: string | null;

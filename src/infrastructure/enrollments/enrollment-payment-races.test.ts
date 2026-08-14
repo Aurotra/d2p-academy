@@ -38,6 +38,7 @@ describe("tryReserveCapacityAndEnroll", () => {
         eventId: "11111111-1111-1111-1111-111111111111",
         userId: "22222222-2222-2222-2222-222222222222",
         targetStatus: "registered",
+        enrollmentSource: "parent",
       }),
     ).rejects.toBeInstanceOf(CapacityFullError);
 
@@ -46,6 +47,7 @@ describe("tryReserveCapacityAndEnroll", () => {
         eventId: "11111111-1111-1111-1111-111111111111",
         userId: "22222222-2222-2222-2222-222222222222",
         targetStatus: "registered",
+        enrollmentSource: "parent",
       }),
     ).rejects.toThrow("Bu etkinliğin kontenjanı dolu (20 kişi).");
   });
@@ -63,6 +65,7 @@ describe("tryReserveCapacityAndEnroll", () => {
       eventId: "11111111-1111-1111-1111-111111111111",
       userId: "22222222-2222-2222-2222-222222222222",
       targetStatus: "pending_payment",
+      enrollmentSource: "parent",
     });
 
     expect(result).toEqual({

@@ -2,6 +2,9 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 
 export type ReserveTargetStatus = "registered" | "pending_payment";
 
+/** How the enrollment seat was created (payments join still identifies iyzico). */
+export type EnrollmentSource = "parent" | "self" | "admin_manual" | "unknown_legacy";
+
 export class CapacityFullError extends Error {
   readonly code = "CAPACITY_FULL" as const;
 
@@ -47,12 +50,14 @@ export async function tryReserveCapacityAndEnroll(
     eventId: string;
     userId: string;
     targetStatus: ReserveTargetStatus;
+    enrollmentSource: EnrollmentSource;
   },
 ): Promise<ReserveEnrollmentResult> {
   const { data, error } = await client.rpc("reserve_event_enrollment", {
     p_event_id: input.eventId,
     p_user_id: input.userId,
     p_target_status: input.targetStatus,
+    p_enrollment_source: input.enrollmentSource,
   });
 
   if (error) {

@@ -198,6 +198,7 @@ export async function POST(
       eventId,
       userId: studentId,
       targetStatus: "registered",
+      enrollmentSource: "parent",
     });
 
     await cancelParentSelfEnrollment(serviceClient, auth.user.id, eventId);

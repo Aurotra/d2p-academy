@@ -11,6 +11,7 @@ import {
 } from "@/infrastructure/enrollments/try-reserve-capacity-and-enroll";
 import { removeEnrollmentsFromEvent } from "@/infrastructure/enrollments/remove-enrollments-from-event";
 import { revalidateEventAttendancePaths } from "@/infrastructure/enrollments/revalidate-event-attendance";
+import { SupabaseAdminAuditLogRepository } from "@/infrastructure/repositories/supabase-admin-audit-log-repository";
 import { resolveUsernameForLookup } from "@/shared/utils/student-username";
 import { apiCatchResponse, logSupabaseError } from "@/shared/utils/api-error";
 
@@ -54,7 +55,7 @@ function collectIds(body: { enrollmentId?: string; enrollmentIds?: string[] }): 
 }
 
 export async function POST(request: Request) {
-  const access = await requireAdminApiAccess();
+  const access = await getAdminApiServiceClient();
   if (access.response) return access.response;
 
   try {
@@ -157,6 +158,7 @@ export async function POST(request: Request) {
         eventId,
         userId: studentId,
         targetStatus: "registered",
+        enrollmentSource: "admin_manual",
       });
 
       if (reserved.alreadyEnrolled) {
@@ -171,13 +173,39 @@ export async function POST(request: Request) {
 
       const { data: enrollment, error: fetchError } = await access.client
         .from("enrollments")
-        .select("id, status, user_id, event_id, registered_at")
+        .select("id, status, user_id, event_id, registered_at, enrollment_source")
         .eq("id", reserved.enrollmentId)
         .single();
 
       if (fetchError || !enrollment) {
         logSupabaseError("[admin/enrollments POST fetch]", fetchError);
         return NextResponse.json({ error: "Kayıt eklenemedi." }, { status: 400 });
+      }
+
+      const { data: eventMeta } = await access.client
+        .from("events")
+        .select("title")
+        .eq("id", eventId)
+        .maybeSingle();
+
+      try {
+        const audit = new SupabaseAdminAuditLogRepository(access.client);
+        await audit.logEnrollmentCreated({
+          actorId: access.user.id,
+          actorEmail: access.actorEmail,
+          enrollmentId: enrollment.id,
+          eventId,
+          eventTitle: eventMeta?.title ?? null,
+          studentId: student.id,
+          studentName: student.full_name,
+          studentEmail: student.email,
+          metadata: {
+            enrollment_source: "admin_manual",
+            revived: reserved.revived,
+          },
+        });
+      } catch (auditError) {
+        console.error("[admin/enrollments POST audit]", auditError);
       }
 
       return NextResponse.json(

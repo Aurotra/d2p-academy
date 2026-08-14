@@ -86,6 +86,7 @@ export async function startPaidEnrollmentCheckout(
       eventId: input.eventId,
       userId: input.studentId,
       targetStatus: "pending_payment",
+      enrollmentSource: "parent",
     });
   } catch (error) {
     if (error instanceof CapacityFullError) {

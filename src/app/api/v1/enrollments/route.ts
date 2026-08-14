@@ -87,6 +87,7 @@ export async function POST(request: Request) {
         eventId,
         userId: user.id,
         targetStatus: "registered",
+        enrollmentSource: "self",
       });
     } catch (reserveError) {
       if (reserveError instanceof CapacityFullError) {
