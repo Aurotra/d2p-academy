@@ -2,6 +2,24 @@ export function buildEventEnrollPath(eventId: string): string {
   return `/dashboard/children?enroll=1&eventId=${encodeURIComponent(eventId)}`;
 }
 
+export function buildAdminEventEnrollPath(eventId: string): string {
+  return `/admin/enrollments?event_id=${encodeURIComponent(eventId)}`;
+}
+
+/** Public CTA destination after the visitor is already signed in. */
+export function buildLoggedInEventEnrollPath(
+  eventId: string,
+  input: { sessionKind?: string | null; userRole?: string | null },
+): string {
+  if (input.sessionKind === "student") {
+    return "/student-dashboard";
+  }
+  if (input.userRole === "admin") {
+    return buildAdminEventEnrollPath(eventId);
+  }
+  return buildEventEnrollPath(eventId);
+}
+
 export function buildChildProfileForEnrollPath(
   childId: string,
   options?: { eventId?: string },

@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { Suspense } from "react";
 
+import { getAdminAccess } from "@/infrastructure/auth/get-admin-access";
 import { fetchChildProgress } from "@/infrastructure/repositories/fetch-child-progress";
 import {
   fetchParentOnboardingContext,
@@ -18,6 +19,7 @@ import {
 } from "@/presentation/components/dashboard/children-students-client";
 import { BRAND_SURFACE_GRADIENT } from "@/shared/constants/brand-surfaces";
 import {
+  buildAdminEventEnrollPath,
   buildChildProfileForEnrollPath,
   isChildProfileReadyForEnrollment,
 } from "@/shared/utils/event-enrollment";
@@ -38,6 +40,13 @@ export default async function DashboardChildrenPage({
   const { data: auth } = await supabase.auth.getUser();
   if (!auth?.user) {
     redirect("/login?redirectTo=/dashboard/children");
+  }
+
+  const adminAccess = await getAdminAccess(supabase);
+  if (enrollIntent && adminAccess.authorized) {
+    redirect(
+      pendingEventId ? buildAdminEventEnrollPath(pendingEventId) : "/admin/enrollments",
+    );
   }
 
   const onboardingContext = await fetchParentOnboardingContext(supabase, auth.user.id);

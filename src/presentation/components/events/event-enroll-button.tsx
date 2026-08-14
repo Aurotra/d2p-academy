@@ -12,7 +12,7 @@ import {
 import { Button, buttonLinkClasses } from "@/presentation/components/ui/button";
 import { useSiteAuth } from "@/presentation/providers/site-auth-provider";
 import {
-  buildEventEnrollPath,
+  buildLoggedInEventEnrollPath,
   buildLoginForEventPath,
   buildRegisterForEventPath,
 } from "@/shared/utils/event-enrollment";
@@ -32,13 +32,19 @@ export function EventEnrollButton({
   isPaid = false,
 }: EventEnrollButtonProps) {
   const router = useRouter();
-  const { isAuthResolved, isLoggedIn } = useSiteAuth();
+  const { isAuthResolved, isLoggedIn, userRole, sessionKind } = useSiteAuth();
   const mode = resolveEventPaymentMode({ paymentMode, isPaid });
   const ctaLabel = eventEnrollCtaLabel(mode);
   const showExternalNote = mode === "external";
+  const isAdminSession = sessionKind === "email" && userRole === "admin";
 
   function startChildEnrollment() {
-    router.push(buildEventEnrollPath(eventId));
+    router.push(
+      buildLoggedInEventEnrollPath(eventId, {
+        sessionKind,
+        userRole,
+      }),
+    );
   }
 
   if (!isAuthResolved) {
@@ -92,7 +98,9 @@ export function EventEnrollButton({
         <p className="text-center text-xs leading-5 text-subtle">{EXTERNAL_PAYMENT_NOTE}</p>
       ) : null}
       <p className="text-center text-xs leading-5 text-subtle">
-        Çocuk hesabı seçerek kayıt tamamlanır; veli hesabınız etkinliğe kaydolmaz.
+        {isAdminSession
+          ? "Admin olarak kaydı etkinlik kayıtları sayfasından yaparsınız; veli çocuğu seçilmez."
+          : "Çocuk hesabı seçerek kayıt tamamlanır; veli hesabınız etkinliğe kaydolmaz."}
       </p>
     </div>
   );
