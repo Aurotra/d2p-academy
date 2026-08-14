@@ -36,6 +36,10 @@
   --text-on-surface-soft: rgb(28 25 23 / 0.78);
   --border-surface: rgb(42 157 143 / 0.18);
   --border-surface-soft: rgb(42 157 143 / 0.12);
+
+  --font-geist-sans: "Geist Variable";
+  --font-geist-mono: "Geist Mono Variable";
+  --font-plus-jakarta: "Plus Jakarta Sans Variable";
 }
 
 @theme inline {

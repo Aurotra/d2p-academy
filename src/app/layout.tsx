@@ -1,28 +1,15 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
 import { headers } from "next/headers";
-import { Geist, Geist_Mono, Plus_Jakarta_Sans } from "next/font/google";
+import "@fontsource-variable/geist/wght.css";
+import "@fontsource-variable/geist-mono/wght.css";
+import "@fontsource-variable/plus-jakarta-sans/wght.css";
 
 import "./globals.css";
 import { OrganizationJsonLd } from "@/presentation/components/seo/organization-json-ld";
 import { SITE_DESCRIPTION, SITE_NAME, SITE_URL } from "@/shared/constants/site";
 import { CSP_NONCE_HEADER } from "@/shared/config/csp-nonce";
 import { SiteChrome } from "@/presentation/components/layout/site-chrome";
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
-
-const plusJakartaSans = Plus_Jakarta_Sans({
-  variable: "--font-plus-jakarta",
-  subsets: ["latin"],
-  weight: ["500", "600", "700", "800"],
-});
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
@@ -54,9 +41,7 @@ export default async function RootLayout({
 
   return (
     <html lang="tr" data-csp-nonce={nonce}>
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} ${plusJakartaSans.variable} font-sans antialiased`}
-      >
+      <body className="font-sans antialiased">
         <OrganizationJsonLd />
         <SiteChrome>{children}</SiteChrome>
       </body>    </html>
