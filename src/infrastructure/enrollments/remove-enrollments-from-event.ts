@@ -3,7 +3,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import { SupabaseAdminAuditLogRepository } from "@/infrastructure/repositories/supabase-admin-audit-log-repository";
 import {
   buildPaymentNotRefundedWarning,
-  findEnrollmentIdsWithPaidPayment,
+  fetchPaidPaymentsForEnrollments,
   type PaymentNotRefundedWarning,
 } from "@/infrastructure/enrollments/paid-enrollment-guard";
 
@@ -129,9 +129,9 @@ export async function removeEnrollmentsFromEvent(
     );
   }
 
-  // Capture paid flags before hard-delete (payments CASCADE with enrollments).
-  const paidEnrollmentIds = await findEnrollmentIdsWithPaidPayment(client, enrollmentIds);
-  const paymentWarning = buildPaymentNotRefundedWarning(paidEnrollmentIds);
+  // Snapshot paid payments before hard-delete (payments CASCADE with enrollments).
+  const paidPaymentsByEnrollment = await fetchPaidPaymentsForEnrollments(client, enrollmentIds);
+  const paymentWarning = buildPaymentNotRefundedWarning(paidPaymentsByEnrollment.keys());
 
   const codesToReclaim = [
     ...new Set((rows ?? []).flatMap((row) => collectCodesToReclaim(row as EnrollmentRemovalRow))),
@@ -164,7 +164,8 @@ export async function removeEnrollmentsFromEvent(
     const typedRow = row as EnrollmentRemovalRow;
     const profile = unwrapOne(typedRow.profiles);
     const event = unwrapOne(typedRow.events);
-    const hadPaidPayment = paidEnrollmentIds.has(typedRow.id);
+    const paidPayments = paidPaymentsByEnrollment.get(typedRow.id) ?? [];
+    const hadPaidPayment = paidPayments.length > 0;
 
     await audit.logEnrollmentDeleted({
       actorId: input.actorId,
@@ -187,6 +188,7 @@ export async function removeEnrollmentsFromEvent(
           ? {
               payment_not_refunded: true,
               warning: "payment_not_refunded",
+              paid_payments: paidPayments,
             }
           : {}),
       },

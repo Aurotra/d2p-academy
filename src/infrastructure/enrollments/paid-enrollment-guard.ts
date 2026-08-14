@@ -11,21 +11,37 @@ export type PaymentNotRefundedWarning = {
   paidEnrollmentIds: string[];
 };
 
+/** Snapshot of a paid payment row captured before enrollment hard-delete (CASCADE). */
+export type PaidPaymentAuditSnapshot = {
+  payment_id: string;
+  enrollment_id: string;
+  amount_try_cents: number;
+  currency: string;
+  provider: string;
+  provider_payment_id: string | null;
+  provider_conversation_id: string | null;
+  paid_at: string | null;
+  created_at: string | null;
+};
+
 /**
- * Returns enrollment ids that have at least one payments row with status = paid.
+ * Load paid payment rows for enrollments (before CASCADE delete wipes them).
  */
-export async function findEnrollmentIdsWithPaidPayment(
+export async function fetchPaidPaymentsForEnrollments(
   client: SupabaseClient,
   enrollmentIds: string[],
-): Promise<Set<string>> {
+): Promise<Map<string, PaidPaymentAuditSnapshot[]>> {
   const ids = Array.from(new Set(enrollmentIds.map((id) => id.trim()).filter(Boolean)));
+  const byEnrollment = new Map<string, PaidPaymentAuditSnapshot[]>();
   if (ids.length === 0) {
-    return new Set();
+    return byEnrollment;
   }
 
   const { data, error } = await client
     .from("payments")
-    .select("enrollment_id")
+    .select(
+      "id, enrollment_id, amount_try_cents, currency, provider, provider_payment_id, provider_conversation_id, paid_at, created_at",
+    )
     .in("enrollment_id", ids)
     .eq("status", "paid");
 
@@ -33,7 +49,39 @@ export async function findEnrollmentIdsWithPaidPayment(
     throw new Error(`Ödeme kontrolü başarısız: ${error.message}`);
   }
 
-  return new Set((data ?? []).map((row) => row.enrollment_id as string).filter(Boolean));
+  for (const row of data ?? []) {
+    const enrollmentId = row.enrollment_id as string;
+    if (!enrollmentId) continue;
+
+    const snapshot: PaidPaymentAuditSnapshot = {
+      payment_id: row.id as string,
+      enrollment_id: enrollmentId,
+      amount_try_cents: row.amount_try_cents as number,
+      currency: (row.currency as string) ?? "TRY",
+      provider: (row.provider as string) ?? "iyzico",
+      provider_payment_id: (row.provider_payment_id as string | null) ?? null,
+      provider_conversation_id: (row.provider_conversation_id as string | null) ?? null,
+      paid_at: (row.paid_at as string | null) ?? null,
+      created_at: (row.created_at as string | null) ?? null,
+    };
+
+    const list = byEnrollment.get(enrollmentId) ?? [];
+    list.push(snapshot);
+    byEnrollment.set(enrollmentId, list);
+  }
+
+  return byEnrollment;
+}
+
+/**
+ * Returns enrollment ids that have at least one payments row with status = paid.
+ */
+export async function findEnrollmentIdsWithPaidPayment(
+  client: SupabaseClient,
+  enrollmentIds: string[],
+): Promise<Set<string>> {
+  const paid = await fetchPaidPaymentsForEnrollments(client, enrollmentIds);
+  return new Set(paid.keys());
 }
 
 export function buildPaymentNotRefundedWarning(
