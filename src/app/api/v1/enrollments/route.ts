@@ -6,7 +6,7 @@ import {
   tryReserveCapacityAndEnroll,
 } from "@/infrastructure/enrollments/try-reserve-capacity-and-enroll";
 import {
-  requiresIyzicoCheckout,
+  allowsStudentSelfEnroll,
   resolveEventPaymentMode,
 } from "@/infrastructure/events/event-payment-mode";
 import { createSupabaseServerClient } from "@/infrastructure/supabase/create-server-client";
@@ -75,11 +75,11 @@ export async function POST(request: Request) {
       isPaid: event.is_paid,
     });
 
-    if (requiresIyzicoCheckout(paymentMode)) {
+    if (!allowsStudentSelfEnroll(paymentMode)) {
       return NextResponse.json(
         {
           error:
-            "Bu ücretli bir etkinlik. Kayıt ve ödeme veli paneli üzerinden çocuğunuz için yapılmalıdır.",
+            "Bu ücretli bir etkinlik. Kayıt veli paneli üzerinden çocuğunuz için yapılmalıdır.",
         },
         { status: 400 },
       );

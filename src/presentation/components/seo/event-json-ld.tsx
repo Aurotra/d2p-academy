@@ -1,6 +1,7 @@
 import type { AcademyEvent } from "@/core/domain/event";
 import { EVENT_TYPE_LABELS } from "@/core/domain/event";
 import { formatTryCentsAsIyzicoPrice } from "@/core/domain/payment";
+import type { EventPaymentMode } from "@/infrastructure/events/event-payment-mode";
 import { eventPublicPriceTryCents } from "@/infrastructure/events/event-payment-mode";
 import { SITE_NAME, SITE_URL } from "@/shared/constants/site";
 import { absoluteUrl } from "@/shared/seo/metadata";
@@ -10,12 +11,41 @@ interface EventJsonLdProps {
   event: AcademyEvent;
 }
 
+/** Omit Offer when external has no display price — price=0 would look like a free event. */
+export function eventJsonLdOffer(
+  event: {
+    paymentMode: EventPaymentMode;
+    priceTryCents?: number | null;
+    displayPriceTryCents?: number | null;
+  },
+  eventUrl: string,
+): Record<string, unknown> | undefined {
+  const publicPrice = eventPublicPriceTryCents(event);
+  if (publicPrice != null) {
+    return {
+      "@type": "Offer",
+      url: eventUrl,
+      availability: "https://schema.org/InStock",
+      price: formatTryCentsAsIyzicoPrice(publicPrice),
+      priceCurrency: "TRY",
+    };
+  }
+  if (event.paymentMode === "free") {
+    return {
+      "@type": "Offer",
+      url: eventUrl,
+      availability: "https://schema.org/InStock",
+      price: "0",
+      priceCurrency: "TRY",
+    };
+  }
+  return undefined;
+}
+
 export function EventJsonLd({ event }: EventJsonLdProps) {
   const eventUrl = absoluteUrl(`/etkinlikler/${event.slug}`);
   const location = eventLocationLabel(event);
-  const publicPrice = eventPublicPriceTryCents(event);
-  const price =
-    publicPrice != null ? formatTryCentsAsIyzicoPrice(publicPrice) : "0";
+  const offers = eventJsonLdOffer(event, eventUrl);
 
   const data = {
     "@context": "https://schema.org",
@@ -48,13 +78,7 @@ export function EventJsonLd({ event }: EventJsonLdProps) {
       name: SITE_NAME,
       url: SITE_URL,
     },
-    offers: {
-      "@type": "Offer",
-      url: eventUrl,
-      availability: "https://schema.org/InStock",
-      price,
-      priceCurrency: "TRY",
-    },
+    ...(offers ? { offers } : {}),
     about: EVENT_TYPE_LABELS[event.eventType],
   };
 

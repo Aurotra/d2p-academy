@@ -12,6 +12,11 @@ export function requiresIyzicoCheckout(mode: EventPaymentMode): boolean {
   return mode === "iyzico";
 }
 
+/** Student self-enroll is only for free events; iyzico and external require parent. */
+export function allowsStudentSelfEnroll(mode: EventPaymentMode): boolean {
+  return mode === "free";
+}
+
 export const EXTERNAL_PAYMENT_NOTE =
   "Ücret kurum/okul tarafından tahsil edilir";
 

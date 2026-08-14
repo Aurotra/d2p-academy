@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
 
+import { eventJsonLdOffer } from "@/presentation/components/seo/event-json-ld";
 import {
+  allowsStudentSelfEnroll,
   eventEnrollCtaLabel,
   eventPublicPriceTryCents,
   requiresIyzicoCheckout,
@@ -12,6 +14,12 @@ describe("enrollment payment gate (FAZ 2 read)", () => {
     expect(requiresIyzicoCheckout("free")).toBe(false);
     expect(requiresIyzicoCheckout("external")).toBe(false);
     expect(requiresIyzicoCheckout("iyzico")).toBe(true);
+  });
+
+  it("self-enroll is free only; iyzico and external require parent panel", () => {
+    expect(allowsStudentSelfEnroll("free")).toBe(true);
+    expect(allowsStudentSelfEnroll("iyzico")).toBe(false);
+    expect(allowsStudentSelfEnroll("external")).toBe(false);
   });
 
   it("external resolves from payment_mode even when legacy is_paid is false", () => {
@@ -60,5 +68,28 @@ describe("enrollment payment gate (FAZ 2 read)", () => {
         displayPriceTryCents: 15000,
       }),
     ).toBeNull();
+  });
+
+  it("JSON-LD omits Offer for external without display price (does not advertise price=0)", () => {
+    expect(
+      eventJsonLdOffer(
+        { paymentMode: "external", priceTryCents: null, displayPriceTryCents: null },
+        "https://example.com/e",
+      ),
+    ).toBeUndefined();
+
+    expect(
+      eventJsonLdOffer(
+        { paymentMode: "external", priceTryCents: null, displayPriceTryCents: 25000 },
+        "https://example.com/e",
+      ),
+    ).toMatchObject({ "@type": "Offer", price: "250.00", priceCurrency: "TRY" });
+
+    expect(
+      eventJsonLdOffer(
+        { paymentMode: "free", priceTryCents: null, displayPriceTryCents: null },
+        "https://example.com/e",
+      ),
+    ).toMatchObject({ "@type": "Offer", price: "0" });
   });
 });
