@@ -11,6 +11,7 @@ import type { EventType } from "@/core/domain/event";
 import type { AdminEventRepository } from "@/core/use-cases/manage-admin-events";
 import { slugify } from "@/shared/utils/slugify";
 import { normalizeProgramCode } from "@/shared/utils/program-code";
+import { eventPaymentWriteFields } from "@/infrastructure/events/event-payment-mode";
 
 interface InstructorAssignmentRow {
   sort_order: number;
@@ -261,7 +262,7 @@ export class SupabaseAdminEventRepository implements AdminEventRepository {
         required_lesson_count: input.requiredLessonCount,
         location_name: input.locationName,
         is_online: input.isOnline,
-        is_paid: input.isPaid,
+        ...eventPaymentWriteFields(input.isPaid),
         price_try_cents: input.isPaid ? input.priceTryCents : null,
         meeting_url: input.meetingUrl,
         max_capacity: input.maxCapacity,
@@ -315,7 +316,7 @@ export class SupabaseAdminEventRepository implements AdminEventRepository {
     if (input.locationName !== undefined) payload.location_name = input.locationName;
     if (input.isOnline !== undefined) payload.is_online = input.isOnline;
     if (input.isPaid !== undefined) {
-      payload.is_paid = input.isPaid;
+      Object.assign(payload, eventPaymentWriteFields(input.isPaid));
       if (!input.isPaid) {
         payload.price_try_cents = null;
       }
