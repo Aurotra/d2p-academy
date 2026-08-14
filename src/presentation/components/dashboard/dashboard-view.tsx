@@ -138,6 +138,11 @@ export function DashboardView({
                   variant="secondary"
                 />
                 <DashboardActionLink
+                  href="/dashboard/payments"
+                  label="Ödemelerim"
+                  variant="outline"
+                />
+                <DashboardActionLink
                   href="/dashboard/children"
                   label="Çocuk hesapları"
                   variant="outline"

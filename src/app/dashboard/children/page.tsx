@@ -198,12 +198,20 @@ export default async function DashboardChildrenPage({
             >
               ← Panele dön
             </Link>
-            <Link
-              href="/dashboard/children/enrollments"
-              className="text-sm font-semibold text-navy-900 transition hover:text-navy-950"
-            >
-              Çocuk etkinlikleri →
-            </Link>
+            <div className="flex flex-wrap gap-3">
+              <Link
+                href="/dashboard/children/enrollments"
+                className="text-sm font-semibold text-navy-900 transition hover:text-navy-950"
+              >
+                Çocuk etkinlikleri →
+              </Link>
+              <Link
+                href="/dashboard/payments"
+                className="text-sm font-semibold text-navy-900 transition hover:text-navy-950"
+              >
+                Ödemelerim →
+              </Link>
+            </div>
           </div>
           <h1 className="mt-3 text-3xl font-black">Çocuklarım</h1>
           <p className="mt-2 text-sm text-[var(--text-on-surface-soft)]">

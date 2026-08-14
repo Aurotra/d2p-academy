@@ -54,6 +54,12 @@ export default async function ParentChildrenEnrollmentsPage() {
             >
               Çocuk hesapları
             </Link>
+            <Link
+              href="/dashboard/payments"
+              className="inline-flex rounded-xl border border-border-surface bg-white px-4 py-2.5 text-sm font-semibold text-navy-950 transition hover:bg-surface-section"
+            >
+              Ödemelerim
+            </Link>
           </div>
 
           <ParentChildrenEnrollmentsView
