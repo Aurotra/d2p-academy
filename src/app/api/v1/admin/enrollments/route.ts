@@ -9,6 +9,10 @@ import {
   CapacityFullError,
   tryReserveCapacityAndEnroll,
 } from "@/infrastructure/enrollments/try-reserve-capacity-and-enroll";
+import {
+  buildPaymentNotRefundedWarning,
+  findEnrollmentIdsWithPaidPayment,
+} from "@/infrastructure/enrollments/paid-enrollment-guard";
 import { removeEnrollmentsFromEvent } from "@/infrastructure/enrollments/remove-enrollments-from-event";
 import { revalidateEventAttendancePaths } from "@/infrastructure/enrollments/revalidate-event-attendance";
 import { SupabaseAdminAuditLogRepository } from "@/infrastructure/repositories/supabase-admin-audit-log-repository";
@@ -247,6 +251,13 @@ export async function PATCH(request: Request) {
       completed_at: status === "completed" ? new Date().toISOString() : null,
     };
 
+    const paidEnrollmentIds =
+      status === "cancelled"
+        ? await findEnrollmentIdsWithPaidPayment(access.client, enrollmentIds)
+        : new Set<string>();
+    const paymentWarning =
+      status === "cancelled" ? buildPaymentNotRefundedWarning(paidEnrollmentIds) : null;
+
     const { data, error } = await access.client
       .from("enrollments")
       .update(payload)
@@ -261,7 +272,16 @@ export async function PATCH(request: Request) {
     revalidatePath("/admin/enrollments");
     revalidateEventAttendancePaths([...new Set((data ?? []).map((row) => row.event_id as string))]);
 
-    return NextResponse.json({ data });
+    return NextResponse.json({
+      data,
+      ...(paymentWarning
+        ? {
+            warning: paymentWarning.warning,
+            message: paymentWarning.message,
+            paidEnrollmentIds: paymentWarning.paidEnrollmentIds,
+          }
+        : {}),
+    });
   } catch (error) {
     return apiCatchResponse(error, "Durum güncellenemedi.", {
       logLabel: "[admin/enrollments PATCH]",
@@ -290,7 +310,16 @@ export async function DELETE(request: Request) {
     revalidatePath("/admin/events", "layout");
     revalidateEventAttendancePaths(result.eventIds);
 
-    return NextResponse.json({ data: { removed: result.removed } });
+    return NextResponse.json({
+      data: { removed: result.removed },
+      ...(result.paymentWarning
+        ? {
+            warning: result.paymentWarning.warning,
+            message: result.paymentWarning.message,
+            paidEnrollmentIds: result.paymentWarning.paidEnrollmentIds,
+          }
+        : {}),
+    });
   } catch (error) {
     return apiCatchResponse(error, "Kayıt kurstan çıkarılamadı.", {
       logLabel: "[admin/enrollments DELETE]",

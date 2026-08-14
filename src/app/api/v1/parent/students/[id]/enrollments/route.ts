@@ -25,11 +25,39 @@ async function cancelParentSelfEnrollment(
   parentUserId: string,
   eventId: string,
 ) {
+  const { data: existing } = await serviceClient
+    .from("enrollments")
+    .select("id")
+    .eq("user_id", parentUserId)
+    .eq("event_id", eventId)
+    .neq("status", "cancelled")
+    .maybeSingle();
+
+  if (!existing?.id) {
+    return;
+  }
+
+  // Do not silently cancel a paid seat — refund flow is not implemented yet.
+  const { data: paid } = await serviceClient
+    .from("payments")
+    .select("id")
+    .eq("enrollment_id", existing.id)
+    .eq("status", "paid")
+    .limit(1)
+    .maybeSingle();
+
+  if (paid) {
+    console.warn(
+      "[parent enroll] skipped cancelling parent self-enrollment with paid payment",
+      { enrollmentId: existing.id, eventId, parentUserId },
+    );
+    return;
+  }
+
   await serviceClient
     .from("enrollments")
     .update({ status: "cancelled" })
-    .eq("user_id", parentUserId)
-    .eq("event_id", eventId)
+    .eq("id", existing.id)
     .neq("status", "cancelled");
 }
 

@@ -64,6 +64,7 @@ export function EventEnrollmentsTable({
   const [pendingRemoveId, setPendingRemoveId] = useState<string | null>(null);
   const [removeReason, setRemoveReason] = useState("");
   const [removedIds, setRemovedIds] = useState<Set<string>>(new Set());
+  const [paymentRefundWarning, setPaymentRefundWarning] = useState<string | null>(null);
 
   useEffect(() => {
     setRemovedIds(new Set());
@@ -156,6 +157,7 @@ export function EventEnrollmentsTable({
 
     setIsUpdating(true);
     setError(null);
+    setPaymentRefundWarning(null);
 
     try {
       const response = await fetch("/api/v1/admin/enrollments", {
@@ -167,7 +169,11 @@ export function EventEnrollmentsTable({
         }),
       });
 
-      const payload = (await response.json()) as { error?: string };
+      const payload = (await response.json()) as {
+        error?: string;
+        warning?: string;
+        message?: string;
+      };
 
       if (!response.ok) {
         throw new Error(payload.error ?? "Öğrenci kurstan çıkarılamadı.");
@@ -190,6 +196,14 @@ export function EventEnrollmentsTable({
         }
         return next;
       });
+
+      if (payload.warning === "payment_not_refunded") {
+        setPaymentRefundWarning(
+          payload.message ??
+            "Bu kaydın ödemesi var; iptal edilirken ödeme otomatik iade edilmedi. Manuel iadeyi iyzico panelinden yapmayı unutmayın.",
+        );
+      }
+
       router.refresh();
     } catch (removeError) {
       setError(removeError instanceof Error ? removeError.message : "İşlem başarısız.");
@@ -413,6 +427,33 @@ export function EventEnrollmentsTable({
               className="min-h-[40px] px-3 py-2 text-xs"
             >
               Vazgeç
+            </Button>
+          </div>
+        </div>
+      ) : null}
+
+      {paymentRefundWarning ? (
+        <div
+          role="alertdialog"
+          aria-labelledby="payment-refund-warning-title"
+          className="border-b border-amber-300 bg-amber-50 px-5 py-4 text-sm text-amber-950"
+        >
+          <p id="payment-refund-warning-title" className="font-semibold">
+            Ödeme otomatik iade edilmedi
+          </p>
+          <p className="mt-1 text-xs text-amber-900/90">{paymentRefundWarning}</p>
+          <p className="mt-2 text-xs text-amber-900/80">
+            Bu kaydın ödemesi vardı. İptal tamamlandı; manuel iade işlemini iyzico panelinden
+            yapmayı unutmayın.
+          </p>
+          <div className="mt-3">
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={() => setPaymentRefundWarning(null)}
+              className="min-h-[40px] px-3 py-2 text-xs"
+            >
+              Anladım
             </Button>
           </div>
         </div>

@@ -1,6 +1,11 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 
 import { SupabaseAdminAuditLogRepository } from "@/infrastructure/repositories/supabase-admin-audit-log-repository";
+import {
+  buildPaymentNotRefundedWarning,
+  findEnrollmentIdsWithPaidPayment,
+  type PaymentNotRefundedWarning,
+} from "@/infrastructure/enrollments/paid-enrollment-guard";
 
 interface EnrollmentRemovalRow {
   id: string;
@@ -73,7 +78,11 @@ export async function removeEnrollmentsFromEvent(
     actorEmail: string | null;
     reason: string | null;
   },
-): Promise<{ removed: number; eventIds: string[] }> {
+): Promise<{
+  removed: number;
+  eventIds: string[];
+  paymentWarning: PaymentNotRefundedWarning | null;
+}> {
   const enrollmentIds = Array.from(
     new Set(input.enrollmentIds.map((id) => id.trim()).filter(Boolean)),
   );
@@ -120,6 +129,10 @@ export async function removeEnrollmentsFromEvent(
     );
   }
 
+  // Capture paid flags before hard-delete (payments CASCADE with enrollments).
+  const paidEnrollmentIds = await findEnrollmentIdsWithPaidPayment(client, enrollmentIds);
+  const paymentWarning = buildPaymentNotRefundedWarning(paidEnrollmentIds);
+
   const codesToReclaim = [
     ...new Set((rows ?? []).flatMap((row) => collectCodesToReclaim(row as EnrollmentRemovalRow))),
   ];
@@ -151,6 +164,7 @@ export async function removeEnrollmentsFromEvent(
     const typedRow = row as EnrollmentRemovalRow;
     const profile = unwrapOne(typedRow.profiles);
     const event = unwrapOne(typedRow.events);
+    const hadPaidPayment = paidEnrollmentIds.has(typedRow.id);
 
     await audit.logEnrollmentDeleted({
       actorId: input.actorId,
@@ -168,6 +182,13 @@ export async function removeEnrollmentsFromEvent(
         reclaimed_codes: codesToReclaim,
         purge_mode: "hard_delete",
         action_label: "enrollment_removed_from_event",
+        had_paid_payment: hadPaidPayment,
+        ...(hadPaidPayment
+          ? {
+              payment_not_refunded: true,
+              warning: "payment_not_refunded",
+            }
+          : {}),
       },
     });
   }
@@ -189,5 +210,9 @@ export async function removeEnrollmentsFromEvent(
     );
   }
 
-  return { removed: deletedCount, eventIds: [...new Set((rows ?? []).map((row) => row.event_id as string))] };
+  return {
+    removed: deletedCount,
+    eventIds: [...new Set((rows ?? []).map((row) => row.event_id as string))],
+    paymentWarning,
+  };
 }
