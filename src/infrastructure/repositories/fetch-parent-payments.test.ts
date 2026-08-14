@@ -6,7 +6,7 @@ import { filterPaymentsOwnedByParent } from "@/core/domain/parent-payments";
 import { fetchParentPayments } from "@/infrastructure/repositories/fetch-parent-payments";
 
 describe("parent payments privacy", () => {
-  it("filterPaymentsOwnedByParent drops other parents' rows", () => {
+  it("filterPaymentsOwnedByParent keeps only the authenticated parent's rows (positive + negative)", () => {
     const parentA = "parent-a";
     const parentB = "parent-b";
 
@@ -19,13 +19,15 @@ describe("parent payments privacy", () => {
       parentA,
     );
 
+    // Positive: own payments remain
     expect(filtered.map((row) => row.id)).toEqual(["1", "3"]);
-    expect(filtered.every((row) => row.payerUserId === parentA)).toBe(true);
+    // Negative: other parent's payment is absent
+    expect(filtered.some((row) => row.payerUserId === parentB)).toBe(false);
+    expect(filtered.find((row) => row.id === "2")).toBeUndefined();
   });
 
-  it("fetchParentPayments queries only payer_user_id of the authenticated parent", async () => {
+  it("fetchParentPayments scopes the query with payer_user_id = authenticated parent", async () => {
     const parentId = "11111111-1111-1111-1111-111111111111";
-    const otherParentId = "22222222-2222-2222-2222-222222222222";
 
     const eq = vi.fn(() => ({
       order: vi.fn(() => ({
@@ -41,16 +43,6 @@ describe("parent payments privacy", () => {
               events: { title: "Robotik" },
               student: { full_name: "Çocuk A" },
             },
-            {
-              id: "pay-other",
-              payer_user_id: otherParentId,
-              amount_try_cents: 9900,
-              status: "paid",
-              paid_at: "2026-08-14T11:00:00.000Z",
-              created_at: "2026-08-14T10:30:00.000Z",
-              events: { title: "Başkasının" },
-              student: { full_name: "Çocuk B" },
-            },
           ],
           error: null,
         })),
@@ -59,13 +51,59 @@ describe("parent payments privacy", () => {
 
     const select = vi.fn(() => ({ eq }));
     const from = vi.fn(() => ({ select }));
-    const client = { from };
 
-    const rows = await fetchParentPayments(client as never, parentId);
+    const rows = await fetchParentPayments({ from } as never, parentId);
 
     expect(from).toHaveBeenCalledWith("payments");
     expect(eq).toHaveBeenCalledWith("payer_user_id", parentId);
-    expect(rows.map((row) => row.id)).toEqual(["pay-own"]);
-    expect(rows.some((row) => row.eventTitle === "Başkasının")).toBe(false);
+    expect(rows).toHaveLength(1);
+    expect(rows[0]?.id).toBe("pay-own");
+  });
+
+  it("negative: another parent's payment never appears in the result set", async () => {
+    const parentA = "11111111-1111-1111-1111-111111111111";
+    const parentB = "22222222-2222-2222-2222-222222222222";
+
+    // Simulate a polluted/misconfigured client returning both parents' rows.
+    // App-layer filter must still drop parent B.
+    const eq = vi.fn(() => ({
+      order: vi.fn(() => ({
+        limit: vi.fn(async () => ({
+          data: [
+            {
+              id: "pay-a",
+              payer_user_id: parentA,
+              amount_try_cents: 15000,
+              status: "paid",
+              paid_at: "2026-08-14T10:00:00.000Z",
+              created_at: "2026-08-14T09:00:00.000Z",
+              events: { title: "Veli A etkinlik" },
+              student: { full_name: "Çocuk A" },
+            },
+            {
+              id: "pay-b",
+              payer_user_id: parentB,
+              amount_try_cents: 9900,
+              status: "paid",
+              paid_at: "2026-08-14T11:00:00.000Z",
+              created_at: "2026-08-14T10:30:00.000Z",
+              events: { title: "Veli B etkinlik" },
+              student: { full_name: "Çocuk B" },
+            },
+          ],
+          error: null,
+        })),
+      })),
+    }));
+
+    const rows = await fetchParentPayments(
+      { from: vi.fn(() => ({ select: vi.fn(() => ({ eq })) })) } as never,
+      parentA,
+    );
+
+    expect(rows.map((row) => row.id)).toEqual(["pay-a"]);
+    expect(rows.find((row) => row.id === "pay-b")).toBeUndefined();
+    expect(rows.some((row) => row.eventTitle === "Veli B etkinlik")).toBe(false);
+    expect(rows.some((row) => row.studentName === "Çocuk B")).toBe(false);
   });
 });
