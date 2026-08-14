@@ -15,9 +15,13 @@ export type PaymentNotRefundedWarning = {
 export type PaidPaymentAuditSnapshot = {
   payment_id: string;
   enrollment_id: string;
+  /** Canonical payments.amount_try_cents */
   amount_try_cents: number;
+  /** Alias of amount_try_cents for finance/mutabakat readers */
+  price_try_cents: number;
   currency: string;
   provider: string;
+  status: "paid";
   provider_payment_id: string | null;
   provider_conversation_id: string | null;
   paid_at: string | null;
@@ -40,7 +44,7 @@ export async function fetchPaidPaymentsForEnrollments(
   const { data, error } = await client
     .from("payments")
     .select(
-      "id, enrollment_id, amount_try_cents, currency, provider, provider_payment_id, provider_conversation_id, paid_at, created_at",
+      "id, enrollment_id, amount_try_cents, currency, provider, status, provider_payment_id, provider_conversation_id, paid_at, created_at",
     )
     .in("enrollment_id", ids)
     .eq("status", "paid");
@@ -53,12 +57,15 @@ export async function fetchPaidPaymentsForEnrollments(
     const enrollmentId = row.enrollment_id as string;
     if (!enrollmentId) continue;
 
+    const amountTryCents = row.amount_try_cents as number;
     const snapshot: PaidPaymentAuditSnapshot = {
       payment_id: row.id as string,
       enrollment_id: enrollmentId,
-      amount_try_cents: row.amount_try_cents as number,
+      amount_try_cents: amountTryCents,
+      price_try_cents: amountTryCents,
       currency: (row.currency as string) ?? "TRY",
       provider: (row.provider as string) ?? "iyzico",
+      status: "paid",
       provider_payment_id: (row.provider_payment_id as string | null) ?? null,
       provider_conversation_id: (row.provider_conversation_id as string | null) ?? null,
       paid_at: (row.paid_at as string | null) ?? null,
