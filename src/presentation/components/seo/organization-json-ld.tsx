@@ -19,7 +19,7 @@ export function OrganizationJsonLd() {
     },
     address: {
       "@type": "PostalAddress",
-      streetAddress: "Pamukkale Teknokent, Çamlaraltı Mah. Hüseyin Yılmaz Cad. No:67",
+      streetAddress: CONTACT.addressLines.slice(0, -1).join(", "),
       addressLocality: "Pamukkale",
       addressRegion: "Denizli",
       addressCountry: "TR",

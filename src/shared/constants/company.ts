@@ -6,11 +6,12 @@ export const COMPANY = {
   brandDomain: "d2p.com.tr",
   mersisNo: "0101125115300001",
   addressLines: [
-    "Teknokent, Kınıklı, Hüseyin Yılmaz Cd. No:67",
-    "20160 Pamukkale / Denizli",
+    "Kınıklı Mah. Hüseyin Yılmaz Cad. No:67",
+    "Pamukkale Teknokent D Blok Z07-05",
+    "Pamukkale / Denizli",
   ] as const,
   addressFull:
-    "Teknokent, Kınıklı, Hüseyin Yılmaz Cd. No:67, 20160 Pamukkale/Denizli",
+    "Kınıklı Mah. Hüseyin Yılmaz Cad. No:67, Pamukkale Teknokent D Blok Z07-05, Pamukkale / Denizli",
 } as const;
 
 export const LEGAL_PATHS = {
