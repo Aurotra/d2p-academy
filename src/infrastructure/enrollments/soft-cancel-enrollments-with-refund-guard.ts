@@ -20,6 +20,8 @@ export async function softCancelEnrollmentsWithRefundGuard(
 ): Promise<{
   data: Array<{ id: string; status: string; completed_at: string | null; event_id: string }>;
   paymentWarning: PaymentNotRefundedWarning | null;
+  cancelledCount: number;
+  paidEnrollmentCount: number;
 }> {
   const enrollmentIds = Array.from(
     new Set(input.enrollmentIds.map((id) => id.trim()).filter(Boolean)),
@@ -88,5 +90,7 @@ export async function softCancelEnrollmentsWithRefundGuard(
       event_id: string;
     }>,
     paymentWarning,
+    cancelledCount: data?.length ?? 0,
+    paidEnrollmentCount: paidPaymentsByEnrollment.size,
   };
 }

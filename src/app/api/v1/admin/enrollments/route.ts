@@ -256,6 +256,8 @@ export async function PATCH(request: Request) {
 
       return NextResponse.json({
         data: result.data,
+        cancelledCount: result.cancelledCount,
+        paidEnrollmentCount: result.paidEnrollmentCount,
         ...(result.paymentWarning
           ? {
               warning: result.paymentWarning.warning,

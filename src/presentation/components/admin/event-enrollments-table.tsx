@@ -23,6 +23,7 @@ export interface EventEnrollmentRow {
   studentName: string;
   studentEmail: string;
   hasActiveCertificate: boolean;
+  hasPaidPayment: boolean;
 }
 
 interface EventEnrollmentsTableProps {
@@ -61,10 +62,13 @@ export function EventEnrollmentsTable({
   const [pendingSingleId, setPendingSingleId] = useState<string | null>(null);
   const [showBulkConfirm, setShowBulkConfirm] = useState(false);
   const [showBulkRemoveConfirm, setShowBulkRemoveConfirm] = useState(false);
+  const [showBulkCancelConfirm, setShowBulkCancelConfirm] = useState(false);
   const [pendingRemoveId, setPendingRemoveId] = useState<string | null>(null);
   const [removeReason, setRemoveReason] = useState("");
+  const [cancelReason, setCancelReason] = useState("");
   const [removedIds, setRemovedIds] = useState<Set<string>>(new Set());
   const [paymentRefundWarning, setPaymentRefundWarning] = useState<string | null>(null);
+  const [cancelSummary, setCancelSummary] = useState<string | null>(null);
 
   useEffect(() => {
     setRemovedIds(new Set());
@@ -144,6 +148,7 @@ export function EventEnrollmentsTable({
       setSelectedIds(new Set());
       setPendingSingleId(null);
       setShowBulkConfirm(false);
+      setShowBulkCancelConfirm(false);
       router.refresh();
     } catch (updateError) {
       setError(updateError instanceof Error ? updateError.message : "İşlem başarısız.");
@@ -224,6 +229,68 @@ export function EventEnrollmentsTable({
     selectedCompletable.includes(row.id),
   );
   const bulkRemoveStudents = visibleEnrollments.filter((row) => selectedIdsList.includes(row.id));
+  const bulkCancelStudents = bulkRemoveStudents;
+  const selectedPaidCount = bulkCancelStudents.filter((row) => row.hasPaidPayment).length;
+
+  async function softCancelEnrollments(ids: string[]) {
+    if (ids.length === 0) return;
+
+    setIsUpdating(true);
+    setError(null);
+    setPaymentRefundWarning(null);
+    setCancelSummary(null);
+
+    try {
+      const response = await fetch("/api/v1/admin/enrollments", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          enrollmentIds: ids,
+          status: "cancelled",
+          reason: cancelReason.trim() || null,
+        }),
+      });
+
+      const payload = (await response.json()) as {
+        error?: string;
+        warning?: string;
+        message?: string;
+        cancelledCount?: number;
+        paidEnrollmentCount?: number;
+        paidEnrollmentIds?: string[];
+      };
+
+      if (!response.ok) {
+        throw new Error(payload.error ?? "Kayıtlar iptal edilemedi.");
+      }
+
+      const cancelledCount = payload.cancelledCount ?? ids.length;
+      const paidCount =
+        payload.paidEnrollmentCount ?? payload.paidEnrollmentIds?.length ?? 0;
+
+      setShowBulkCancelConfirm(false);
+      setCancelReason("");
+      setSelectedIds(new Set());
+      setCancelSummary(
+        paidCount > 0
+          ? `${cancelledCount} kayıt iptal edildi; ${paidCount} tanesinde ödeme vardı ve Bekleyen İadeler kuyruğuna eklendi.`
+          : `${cancelledCount} kayıt iptal edildi (ödemeli kayıt yok).`,
+      );
+
+      if (payload.warning === "payment_not_refunded") {
+        setPaymentRefundWarning(
+          payload.message ??
+            "Ödemeli kayıtlar iptal edildi; otomatik iade yok. Bekleyen İadeler listesini kontrol edin.",
+        );
+      }
+
+      router.refresh();
+    } catch (cancelError) {
+      setError(cancelError instanceof Error ? cancelError.message : "İşlem başarısız.");
+    } finally {
+      setIsUpdating(false);
+    }
+  }
 
   return (
     <div>
@@ -235,6 +302,7 @@ export function EventEnrollmentsTable({
             disabled={selectedCompletable.length === 0 || isUpdating}
             onClick={() => {
               setShowBulkRemoveConfirm(false);
+              setShowBulkCancelConfirm(false);
               setShowBulkConfirm(true);
             }}
             className="min-h-[40px] px-3 py-2 text-xs"
@@ -248,6 +316,21 @@ export function EventEnrollmentsTable({
             disabled={selectedIdsList.length === 0 || isUpdating}
             onClick={() => {
               setShowBulkConfirm(false);
+              setShowBulkRemoveConfirm(false);
+              setShowBulkCancelConfirm(true);
+            }}
+            className="min-h-[40px] px-3 py-2 text-xs text-rose-800 hover:bg-rose-50"
+          >
+            Seçilenleri iptal et
+            {selectedIdsList.length > 0 ? ` (${selectedIdsList.length})` : ""}
+          </Button>
+          <Button
+            type="button"
+            variant="ghost"
+            disabled={selectedIdsList.length === 0 || isUpdating}
+            onClick={() => {
+              setShowBulkConfirm(false);
+              setShowBulkCancelConfirm(false);
               setShowBulkRemoveConfirm(true);
             }}
             className="min-h-[40px] px-3 py-2 text-xs text-amber-800 hover:bg-amber-50"
@@ -308,7 +391,8 @@ export function EventEnrollmentsTable({
           </p>
           <p className="mt-1 text-xs text-amber-900/80">
             Kayıt, yoklama ve form verileri tamamen silinir; atanmış kurs/sertifika numaraları serbest
-            bırakılır. Aktif sertifikası olanlar seçilemez. İşlem loglara yazılır.
+            bırakılır. Aktif sertifikası olanlar seçilemez. İşlem loglara yazılır. Bu, “İptal Et”
+            işleminden farklıdır.
           </p>
           <ul className="mt-2 list-inside list-disc text-xs text-amber-900/80">
             {bulkRemoveStudents.slice(0, 8).map((student) => (
@@ -344,6 +428,68 @@ export function EventEnrollmentsTable({
               onClick={() => {
                 setShowBulkRemoveConfirm(false);
                 setRemoveReason("");
+              }}
+              className="min-h-[40px] px-3 py-2 text-xs"
+            >
+              Vazgeç
+            </Button>
+          </div>
+        </div>
+      ) : null}
+
+      {showBulkCancelConfirm ? (
+        <div className="border-b border-rose-200 bg-rose-50 px-5 py-4 text-sm text-rose-950">
+          <p className="font-semibold">
+            Seçilen {bulkCancelStudents.length} kaydı iptal etmek (cancelled) istediğinize emin
+            misiniz?
+          </p>
+          <p className="mt-1 text-xs text-rose-900/80">
+            Kayıt silinmez; durum “İptal” olur. Yoklama/form verisi kalır. Bu işlem “Kurstan çıkar”
+            (kalıcı silme) değildir.
+          </p>
+          {selectedPaidCount > 0 ? (
+            <p className="mt-2 rounded-xl border border-rose-200 bg-white/70 px-3 py-2 text-xs font-semibold text-rose-900">
+              Seçilen {bulkCancelStudents.length} kayıttan {selectedPaidCount} tanesi ödemeli —
+              iptal sonrası Bekleyen İadeler listesine düşecek. Otomatik iade yok.
+            </p>
+          ) : null}
+          <ul className="mt-2 list-inside list-disc text-xs text-rose-900/80">
+            {bulkCancelStudents.slice(0, 8).map((student) => (
+              <li key={student.id}>
+                {student.studentName}
+                {student.hasPaidPayment ? " (ödemeli)" : ""}
+              </li>
+            ))}
+            {bulkCancelStudents.length > 8 ? (
+              <li>…ve {bulkCancelStudents.length - 8} kişi daha</li>
+            ) : null}
+          </ul>
+          <label className="mt-3 block text-xs font-semibold text-rose-900">
+            İptal nedeni (opsiyonel)
+            <input
+              value={cancelReason}
+              onChange={(e) => setCancelReason(e.target.value)}
+              className="mt-1 w-full rounded-xl border border-rose-200 bg-white px-3 py-2 text-sm text-navy-950"
+              placeholder="Örn. etkinlik iptal / veli talebi"
+            />
+          </label>
+          <div className="mt-3 flex flex-wrap gap-2">
+            <Button
+              type="button"
+              variant="secondary"
+              disabled={isUpdating}
+              onClick={() => void softCancelEnrollments(selectedIdsList)}
+              className="min-h-[40px] px-3 py-2 text-xs"
+            >
+              {isUpdating ? "İptal ediliyor..." : "Evet, iptal et"}
+            </Button>
+            <Button
+              type="button"
+              variant="ghost"
+              disabled={isUpdating}
+              onClick={() => {
+                setShowBulkCancelConfirm(false);
+                setCancelReason("");
               }}
               className="min-h-[40px] px-3 py-2 text-xs"
             >
@@ -428,6 +574,27 @@ export function EventEnrollmentsTable({
             >
               Vazgeç
             </Button>
+          </div>
+        </div>
+      ) : null}
+
+      {cancelSummary ? (
+        <div className="border-b border-emerald-200 bg-emerald-50 px-5 py-3 text-sm text-emerald-950">
+          <p className="font-semibold">{cancelSummary}</p>
+          <div className="mt-2 flex flex-wrap gap-2">
+            <Link
+              href="/admin/refund-followups"
+              className="text-xs font-semibold text-emerald-900 underline hover:text-emerald-950"
+            >
+              Bekleyen İadeler →
+            </Link>
+            <button
+              type="button"
+              className="text-xs font-semibold text-emerald-900 underline"
+              onClick={() => setCancelSummary(null)}
+            >
+              Kapat
+            </button>
           </div>
         </div>
       ) : null}

@@ -62,7 +62,10 @@ function unwrapOne<T>(value: T | T[] | null): T | null {
   return Array.isArray(value) ? (value[0] ?? null) : value;
 }
 
-function groupByEvent(rows: EnrollmentListRow[]): EventEnrollmentGroup[] {
+function groupByEvent(
+  rows: EnrollmentListRow[],
+  paidEnrollmentIds: Set<string>,
+): EventEnrollmentGroup[] {
   const groups = new Map<string, EventEnrollmentGroup>();
 
   for (const row of rows) {
@@ -93,6 +96,7 @@ function groupByEvent(rows: EnrollmentListRow[]): EventEnrollmentGroup[] {
         profile?.email ??
         (profile?.username ? `@${profile.username}` : "—"),
       hasActiveCertificate: certificates.some((certificate) => certificate.status === "active"),
+      hasPaidPayment: paidEnrollmentIds.has(row.id),
     };
 
     const existing = groups.get(eventKey);
@@ -177,7 +181,23 @@ export default async function AdminEnrollmentsPage({ searchParams }: AdminEnroll
 
   const { data, error } = await query;
   const rows = (data ?? []) as EnrollmentListRow[];
-  const groups = groupByEvent(rows);
+
+  const enrollmentIds = rows.map((row) => row.id);
+  const paidEnrollmentIds = new Set<string>();
+  if (enrollmentIds.length > 0) {
+    const { data: paidRows } = await client
+      .from("payments")
+      .select("enrollment_id")
+      .in("enrollment_id", enrollmentIds)
+      .eq("status", "paid");
+    for (const paid of paidRows ?? []) {
+      if (paid.enrollment_id) {
+        paidEnrollmentIds.add(paid.enrollment_id as string);
+      }
+    }
+  }
+
+  const groups = groupByEvent(rows, paidEnrollmentIds);
 
   let filteredEventTitle: string | null = null;
   let filteredEventStatus: string | null = null;
