@@ -2,6 +2,7 @@ import Link from "next/link";
 
 import { BrandLogo } from "@/presentation/components/layout/brand-logo";
 import { BRAND_SURFACE_FOOTER } from "@/shared/constants/brand-surfaces";
+import { COMPANY, LEGAL_PATHS } from "@/shared/constants/company";
 import { CONTACT } from "@/shared/constants/contact";
 import { PARENT_GUIDE_PATH } from "@/shared/constants/parent-guide";
 
@@ -13,79 +14,158 @@ function InstagramIcon({ className = "h-4 w-4" }: { className?: string }) {
   );
 }
 
+function LockIcon({ className = "h-4 w-4" }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" aria-hidden>
+      <path
+        d="M7 11V8a5 5 0 0110 0v3"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+      />
+      <rect
+        x="5"
+        y="11"
+        width="14"
+        height="10"
+        rx="2"
+        stroke="currentColor"
+        strokeWidth="1.8"
+      />
+    </svg>
+  );
+}
+
+const discoverLinks = [
+  { href: "/etkinlikler", label: "Etkinlikler" },
+  { href: "/galeri", label: "Galeri" },
+  { href: "/iletisim", label: "İletişim" },
+  { href: PARENT_GUIDE_PATH, label: "Veli Rehberi" },
+  { href: "/rehber", label: "Makaleler" },
+] as const;
+
+const legalLinks = [
+  { href: LEGAL_PATHS.about, label: "Hakkımızda" },
+  { href: LEGAL_PATHS.privacy, label: "Gizlilik Sözleşmesi" },
+  { href: LEGAL_PATHS.deliveryRefund, label: "Teslimat ve İade Şartları" },
+  { href: LEGAL_PATHS.distanceSales, label: "Mesafeli Satış Sözleşmesi" },
+  { href: LEGAL_PATHS.kvkk, label: "KVKK Aydınlatma" },
+] as const;
+
 export function SiteFooter() {
   return (
     <footer className={`${BRAND_SURFACE_FOOTER} text-navy-900`}>
-      <div className="mx-auto flex max-w-7xl flex-col gap-6 px-4 py-10 sm:px-6 lg:flex-row lg:items-center lg:justify-between lg:px-8">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
-          <BrandLogo href="/" height={36} />
-          <p className="max-w-xl text-sm text-muted">
-            Okullara ve öğrencilere yönelik modern, ölçeklenebilir eğitim platformu.
-          </p>
-        </div>
-        <div className="flex flex-col gap-3 text-sm sm:items-end">
-          <div className="flex flex-wrap gap-x-4 gap-y-2">
-            <Link
-              href="/etkinlikler"
-              className="inline-flex min-h-11 items-center font-semibold text-navy-900 transition hover:text-document-primary"
+      <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
+        <div className="grid gap-10 lg:grid-cols-12">
+          <div className="space-y-4 lg:col-span-5">
+            <BrandLogo href="/" height={36} />
+            <p className="text-sm font-semibold leading-6 text-navy-950">{COMPANY.legalName}</p>
+            <p className="max-w-md text-sm leading-6 text-muted">
+              {COMPANY.brandName} ({COMPANY.brandDomain}) — eğitim teknolojileri, 3D tasarım/üretim
+              atölyeleri ve teknik eğitimler.
+            </p>
+            <div className="space-y-1 text-sm leading-6 text-[var(--text-on-surface-soft)]">
+              <p>{COMPANY.addressFull}</p>
+              <p>
+                E-posta:{" "}
+                <a
+                  href={`mailto:${CONTACT.email}`}
+                  className="font-semibold text-navy-950 underline-offset-2 hover:underline"
+                >
+                  {CONTACT.email}
+                </a>
+              </p>
+              <p>
+                Telefon:{" "}
+                <a
+                  href={`tel:${CONTACT.phoneTel}`}
+                  className="font-semibold text-navy-950 underline-offset-2 hover:underline"
+                >
+                  {CONTACT.phoneDisplay}
+                </a>
+              </p>
+              <p>MERSİS: {COMPANY.mersisNo}</p>
+            </div>
+            <a
+              href={CONTACT.instagramUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex min-h-11 items-center gap-2 text-sm font-semibold text-navy-900 transition hover:text-document-primary"
             >
-              Etkinlikler
-            </Link>
-            <Link
-              href="/hakkimizda"
-              className="inline-flex min-h-11 items-center font-semibold text-navy-900 transition hover:text-document-primary"
-            >
-              Hakkımızda
-            </Link>
-            <Link
-              href="/galeri"
-              className="inline-flex min-h-11 items-center font-semibold text-navy-900 transition hover:text-document-primary"
-            >
-              Galeri
-            </Link>
-            <Link
-              href="/iletisim"
-              className="inline-flex min-h-11 items-center font-semibold text-navy-900 transition hover:text-document-primary"
-            >
-              İletişim
-            </Link>
-            <Link
-              href={PARENT_GUIDE_PATH}
-              className="inline-flex min-h-11 items-center font-semibold text-navy-900 transition hover:text-document-primary"
-            >
-              Veli Rehberi
-            </Link>
-            <Link
-              href="/rehber"
-              className="inline-flex min-h-11 items-center font-semibold text-navy-900 transition hover:text-document-primary"
-            >
-              Makaleler
-            </Link>
-            <Link
-              href="/kvkk"
-              className="inline-flex min-h-11 items-center font-semibold text-navy-900 transition hover:text-document-primary"
-            >
-              KVKK
-            </Link>
-            <Link
-              href="/gizlilik"
-              className="inline-flex min-h-11 items-center font-semibold text-navy-900 transition hover:text-document-primary"
-            >
-              Gizlilik
-            </Link>
+              <InstagramIcon />
+              Instagram · @{CONTACT.instagramHandle}
+            </a>
           </div>
-          <a
-            href={CONTACT.instagramUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex min-h-11 items-center gap-2 font-semibold text-navy-900 transition hover:text-document-primary"
-          >
-            <InstagramIcon />
-            Instagram · @{CONTACT.instagramHandle}
-          </a>
-          <p className="text-subtle">
-            © {new Date().getFullYear()} D2P Academy. Tüm hakları saklıdır.
-          </p>
+
+          <div className="lg:col-span-3">
+            <p className="text-xs font-bold uppercase tracking-[0.16em] text-navy-950">Keşfet</p>
+            <ul className="mt-3 space-y-1">
+              {discoverLinks.map((item) => (
+                <li key={item.href}>
+                  <Link
+                    href={item.href}
+                    className="inline-flex min-h-10 items-center text-sm font-semibold text-navy-900 transition hover:text-document-primary"
+                  >
+                    {item.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          <div className="lg:col-span-4">
+            <p className="text-xs font-bold uppercase tracking-[0.16em] text-navy-950">
+              Kurumsal &amp; Yasal
+            </p>
+            <ul className="mt-3 space-y-1">
+              {legalLinks.map((item) => (
+                <li key={item.href}>
+                  <Link
+                    href={item.href}
+                    className="inline-flex min-h-10 items-center text-sm font-semibold text-navy-900 transition hover:text-document-primary"
+                  >
+                    {item.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+
+        <div className="mt-10 border-t border-navy-900/10 pt-8">
+          <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
+            <div className="space-y-3">
+              <p className="text-xs font-bold uppercase tracking-[0.16em] text-navy-950">
+                Güvenli ödeme
+              </p>
+              <div className="flex flex-wrap items-center gap-4">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src="/payments/iyzico-logo-band.svg"
+                  alt="Visa, Mastercard, Troy ve iyzico ile Öde"
+                  width={429}
+                  height={32}
+                  className="h-7 w-auto max-w-full sm:h-8"
+                />
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src="/payments/iyzico-ile-ode.svg"
+                  alt="iyzico ile Öde"
+                  width={160}
+                  height={40}
+                  className="h-8 w-auto"
+                />
+              </div>
+              <p className="inline-flex items-center gap-2 text-sm font-medium text-[var(--text-on-surface-soft)]">
+                <LockIcon className="h-4 w-4 shrink-0 text-document-primary" />
+                Sitemizde 256-bit SSL güvenlik sertifikası kullanılmaktadır.
+              </p>
+            </div>
+            <p className="text-sm text-subtle lg:text-right">
+              © {new Date().getFullYear()} {COMPANY.brandName}. {COMPANY.legalName}. Tüm hakları
+              saklıdır.
+            </p>
+          </div>
         </div>
       </div>
     </footer>

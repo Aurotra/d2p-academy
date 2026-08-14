@@ -104,15 +104,31 @@ export const institutionRequestPageMetadata = publicPageMetadata({
 });
 
 export const privacyPageMetadata = publicPageMetadata({
-  title: "Gizlilik Politikası",
+  title: "Gizlilik Sözleşmesi ve KVKK",
   description:
-    "D2P Academy web sitesi ve dijital hizmetlerinde kişisel verilerin korunması, çerez kullanımı ve gizlilik ilkeleri.",
-  path: "/gizlilik",
+    "D2P Academy gizlilik sözleşmesi, KVKK, çerez politikası ve iyzico 256-bit SSL ödeme güvenliği bilgileri.",
+  path: "/gizlilik-sozlesmesi",
 });
+
+export const privacyContractPageMetadata = privacyPageMetadata;
 
 export const kvkkPageMetadata = publicPageMetadata({
   title: "KVKK Aydınlatma Metni",
   description:
     "D2P Academy kişisel verilerin işlenmesine ilişkin KVKK aydınlatma metni, veri sorumlusu bilgileri ve haklarınız.",
   path: "/kvkk",
+});
+
+export const deliveryRefundPageMetadata = publicPageMetadata({
+  title: "Teslimat ve İade Şartları",
+  description:
+    "D2P Academy eğitim ve etkinlik hizmetlerinde teslimat, iptal, iade ve hak devri şartları.",
+  path: "/teslimat-ve-iade-sartlari",
+});
+
+export const distanceSalesPageMetadata = publicPageMetadata({
+  title: "Mesafeli Satış Sözleşmesi",
+  description:
+    "D2P Academy / ATH Mühendislik mesafeli hizmet satış sözleşmesi — satıcı, alıcı ve tüketici hakları.",
+  path: "/mesafeli-satis-sozlesmesi",
 });

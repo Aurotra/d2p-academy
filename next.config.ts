@@ -55,7 +55,11 @@ const nextConfig: NextConfig = {
         destination: "/etkinlikler",
         permanent: true,
       },
+      {
+        source: "/gizlilik",
+        destination: "/gizlilik-sozlesmesi",
+        permanent: true,
+      },
     ];
   },
-};
-export default nextConfig;
+};export default nextConfig;

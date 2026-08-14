@@ -1,6 +1,8 @@
 /** Public contact details — single source for /iletisim, footer, etc. */
 export const CONTACT = {
-  organization: "D2P Academy | ATH Mühendislik",
+  organization:
+    "ATH Eğitim Teknolojileri Mühendislik Danışmanlık Sanayi ve Ticaret Limited Şirketi",
+  brandName: "D2P Academy",
   addressLines: [
     "Pamukkale Teknokent",
     "Çamlaraltı Mah. Hüseyin Yılmaz Cad. No:67",

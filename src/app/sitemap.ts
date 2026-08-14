@@ -17,7 +17,9 @@ const PUBLIC_PATHS = [
   "/rehber",
   "/kurumsal-talep",
   "/kvkk",
-  "/gizlilik",
+  "/gizlilik-sozlesmesi",
+  "/teslimat-ve-iade-sartlari",
+  "/mesafeli-satis-sozlesmesi",
 ] as const;
 
 export const revalidate = 3600;
