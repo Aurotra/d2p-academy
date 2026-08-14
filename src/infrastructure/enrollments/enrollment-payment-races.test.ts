@@ -120,6 +120,98 @@ describe("finalizeIyzicoPaymentLocked recovery", () => {
     expect(result.alreadyPaid).toBe(true);
     expect(result.recovered).toBe(false);
   });
+
+  it("second identical callback is a pure alreadyPaid no-op (no recovery log)", async () => {
+    const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+    let paymentStatus: "pending" | "paid" = "pending";
+    let finalizeWrites = 0;
+
+    const client = mockClient(async (fn) => {
+      expect(fn).toBe("finalize_iyzico_payment");
+      if (paymentStatus === "paid") {
+        return {
+          ok: true,
+          already_paid: true,
+          recovered: false,
+          enrollment_id: "e1",
+          student_user_id: "s1",
+        };
+      }
+      finalizeWrites += 1;
+      paymentStatus = "paid";
+      return {
+        ok: true,
+        already_paid: false,
+        recovered: false,
+        enrollment_id: "e1",
+        student_user_id: "s1",
+        previous_payment_status: "pending",
+      };
+    });
+
+    const payload = {
+      paymentId: "p1",
+      providerPaymentId: "iy-99",
+      raw: { paymentStatus: "SUCCESS", conversationId: "p1" },
+    };
+
+    const first = await finalizeIyzicoPaymentLocked(client, payload);
+    const second = await finalizeIyzicoPaymentLocked(client, payload);
+
+    expect(first).toMatchObject({
+      alreadyPaid: false,
+      recovered: false,
+      enrollmentId: "e1",
+      studentUserId: "s1",
+    });
+    expect(second).toMatchObject({
+      alreadyPaid: true,
+      recovered: false,
+      enrollmentId: "e1",
+      studentUserId: "s1",
+    });
+    expect(finalizeWrites).toBe(1);
+    expect(paymentStatus).toBe("paid");
+    expect(errorSpy).not.toHaveBeenCalled();
+    errorSpy.mockRestore();
+  });
+
+  it("maps provider_payment_id unique conflict to alreadyPaid when row is paid", async () => {
+    const client = {
+      rpc: vi.fn(async () => ({
+        data: null,
+        error: { message: 'duplicate key value violates unique constraint "payments_provider_payment_id_uidx"' },
+      })),
+      from: vi.fn(() => ({
+        select: vi.fn(() => ({
+          eq: vi.fn(() => ({
+            maybeSingle: vi.fn(async () => ({
+              data: {
+                id: "p1",
+                status: "paid",
+                enrollment_id: "e1",
+                student_user_id: "s1",
+              },
+              error: null,
+            })),
+          })),
+        })),
+      })),
+    } as never;
+
+    const result = await finalizeIyzicoPaymentLocked(client, {
+      paymentId: "p1",
+      providerPaymentId: "iy-99",
+      raw: {},
+    });
+
+    expect(result).toEqual({
+      enrollmentId: "e1",
+      studentUserId: "s1",
+      alreadyPaid: true,
+      recovered: false,
+    });
+  });
 });
 
 describe("cancelStalePendingPaymentLocked", () => {

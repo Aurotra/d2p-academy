@@ -26,8 +26,19 @@ interface CancelStaleRpcRow {
   payment_status?: string;
 }
 
+function isProviderPaymentIdConflictMessage(message: string): boolean {
+  const normalized = message.toLowerCase();
+  return (
+    normalized.includes("provider_payment_id") ||
+    normalized.includes("payments_provider_payment_id_uidx") ||
+    normalized.includes("duplicate key") ||
+    normalized.includes("unique constraint")
+  );
+}
+
 /**
  * Finalize payment under row lock. Recovers cancelled/failed → paid when provider succeeded.
+ * Second call on an already-paid row returns alreadyPaid without recovery logging.
  */
 export async function finalizeIyzicoPaymentLocked(
   client: SupabaseClient,
@@ -44,11 +55,43 @@ export async function finalizeIyzicoPaymentLocked(
   });
 
   if (error) {
+    if (isProviderPaymentIdConflictMessage(error.message)) {
+      const { data: payment } = await client
+        .from("payments")
+        .select("id, status, enrollment_id, student_user_id")
+        .eq("id", input.paymentId)
+        .maybeSingle();
+
+      if (payment?.status === "paid" && payment.enrollment_id && payment.student_user_id) {
+        return {
+          enrollmentId: payment.enrollment_id,
+          studentUserId: payment.student_user_id,
+          alreadyPaid: true,
+          recovered: false,
+        };
+      }
+    }
     throw new Error(error.message);
   }
 
   const row = (data ?? {}) as FinalizeRpcRow;
   if (!row.ok) {
+    if (row.error_code === "PROVIDER_PAYMENT_ID_CONFLICT") {
+      const { data: payment } = await client
+        .from("payments")
+        .select("id, status, enrollment_id, student_user_id")
+        .eq("id", input.paymentId)
+        .maybeSingle();
+
+      if (payment?.status === "paid" && payment.enrollment_id && payment.student_user_id) {
+        return {
+          enrollmentId: payment.enrollment_id,
+          studentUserId: payment.student_user_id,
+          alreadyPaid: true,
+          recovered: false,
+        };
+      }
+    }
     throw new Error(row.error_message ?? "Ödeme tamamlanamadı.");
   }
 

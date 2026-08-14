@@ -90,6 +90,7 @@ async function handleCallback(request: Request) {
       raw: retrieve.raw,
     });
 
+    // alreadyPaid / unique-conflict→alreadyPaid: success page (no failure UX)
     if (finalized.recovered) {
       console.error(
         "[iyzico callback] recovered cancelled/failed payment after SUCCESS — ops review",
