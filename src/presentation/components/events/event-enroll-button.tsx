@@ -32,17 +32,22 @@ export function EventEnrollButton({
   isPaid = false,
 }: EventEnrollButtonProps) {
   const router = useRouter();
-  const { isAuthResolved, isLoggedIn, userRole, sessionKind } = useSiteAuth();
+  const { isAuthResolved, isLoggedIn, userRole, sessionKind, isInstructor } = useSiteAuth();
   const mode = resolveEventPaymentMode({ paymentMode, isPaid });
   const ctaLabel = eventEnrollCtaLabel(mode);
   const showExternalNote = mode === "external";
-  const isAdminSession = sessionKind === "email" && userRole === "admin";
+  const isStaffSession =
+    sessionKind === "email" &&
+    (userRole === "admin" ||
+      userRole === "instructor" ||
+      (isInstructor && userRole !== "parent" && userRole !== "student"));
 
   function startChildEnrollment() {
     router.push(
       buildLoggedInEventEnrollPath(eventId, {
         sessionKind,
         userRole,
+        isInstructor,
       }),
     );
   }
@@ -98,8 +103,8 @@ export function EventEnrollButton({
         <p className="text-center text-xs leading-5 text-subtle">{EXTERNAL_PAYMENT_NOTE}</p>
       ) : null}
       <p className="text-center text-xs leading-5 text-subtle">
-        {isAdminSession
-          ? "Admin olarak kaydı etkinlik kayıtları sayfasından yaparsınız; veli çocuğu seçilmez."
+        {isStaffSession
+          ? "Personel hesabıyla kayıt veli çocuğu üzerinden açılmaz; yönetim panelinden yapılır."
           : "Çocuk hesabı seçerek kayıt tamamlanır; veli hesabınız etkinliğe kaydolmaz."}
       </p>
     </div>

@@ -9,13 +9,23 @@ export function buildAdminEventEnrollPath(eventId: string): string {
 /** Public CTA destination after the visitor is already signed in. */
 export function buildLoggedInEventEnrollPath(
   eventId: string,
-  input: { sessionKind?: string | null; userRole?: string | null },
+  input: {
+    sessionKind?: string | null;
+    userRole?: string | null;
+    isInstructor?: boolean | null;
+  },
 ): string {
   if (input.sessionKind === "student") {
     return "/student-dashboard";
   }
   if (input.userRole === "admin") {
     return buildAdminEventEnrollPath(eventId);
+  }
+  if (
+    input.userRole === "instructor" ||
+    (input.isInstructor && input.userRole !== "parent" && input.userRole !== "student")
+  ) {
+    return "/instructor";
   }
   return buildEventEnrollPath(eventId);
 }

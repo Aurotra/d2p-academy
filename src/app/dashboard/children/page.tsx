@@ -3,6 +3,8 @@ import { redirect } from "next/navigation";
 import { Suspense } from "react";
 
 import { getAdminAccess } from "@/infrastructure/auth/get-admin-access";
+import { getInstructorAccess } from "@/infrastructure/auth/get-instructor-access";
+import { isInstructorOnlyAccount } from "@/infrastructure/auth/instructor-capability";
 import { fetchChildProgress } from "@/infrastructure/repositories/fetch-child-progress";
 import {
   fetchParentOnboardingContext,
@@ -20,7 +22,6 @@ import {
 import { BRAND_SURFACE_GRADIENT } from "@/shared/constants/brand-surfaces";
 import {
   buildAdminEventEnrollPath,
-  buildChildProfileForEnrollPath,
   isChildProfileReadyForEnrollment,
 } from "@/shared/utils/event-enrollment";
 
@@ -49,6 +50,18 @@ export default async function DashboardChildrenPage({
     );
   }
 
+  const instructorAccess = await getInstructorAccess(supabase);
+  if (
+    enrollIntent &&
+    instructorAccess.authorized &&
+    isInstructorOnlyAccount({
+      role: instructorAccess.profile.role,
+      is_instructor: instructorAccess.profile.isInstructor,
+    })
+  ) {
+    redirect("/instructor");
+  }
+
   const onboardingContext = await fetchParentOnboardingContext(supabase, auth.user.id);
   const showOnboarding = shouldShowParentOnboarding(onboardingContext);
 
@@ -61,6 +74,8 @@ export default async function DashboardChildrenPage({
     .eq("parent_id", auth.user.id)
     .not("username", "is", null)
     .order("created_at", { ascending: false });
+
+  const ownedChildren = (data ?? []).filter((row) => row.parent_id === auth.user.id);
 
   const { data: eventRows } = await supabase
     .from("events")
@@ -100,7 +115,7 @@ export default async function DashboardChildrenPage({
     };
   });
 
-  const baseStudents = data ?? [];
+  const baseStudents = ownedChildren;
 
   const students: ChildStudent[] = await Promise.all(
     baseStudents.map(async (student) => {
@@ -178,20 +193,6 @@ export default async function DashboardChildrenPage({
       };
     }),
   );
-
-  if (enrollIntent && students.length > 0) {
-    const readyStudents = students.filter((student) =>
-      isChildProfileReadyForEnrollment(student.profileProgress),
-    );
-
-    if (readyStudents.length === 0) {
-      redirect(
-        buildChildProfileForEnrollPath(students[0]!.id, {
-          eventId: pendingEventId || undefined,
-        }),
-      );
-    }
-  }
 
   const autoEnrollStudentId =
     enrollIntent && students.length > 0

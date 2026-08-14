@@ -24,9 +24,12 @@ describe("buildLoggedInEventEnrollPath", () => {
     ).toBe("/student-dashboard");
   });
 
-  it("keeps parents on the children enroll flow", () => {
-    expect(buildLoggedInEventEnrollPath(eventId, { userRole: "parent" })).toBe(
-      buildEventEnrollPath(eventId),
-    );
+  it("sends instructor-only accounts to the instructor panel, not a child profile", () => {
+    expect(
+      buildLoggedInEventEnrollPath(eventId, { userRole: "instructor", isInstructor: true }),
+    ).toBe("/instructor");
+    expect(
+      buildLoggedInEventEnrollPath(eventId, { userRole: "parent", isInstructor: true }),
+    ).toBe(buildEventEnrollPath(eventId));
   });
 });

@@ -190,11 +190,6 @@ export function ChildrenStudentsClient({
 
       if (target) {
         if (!isChildProfileReadyForEnrollment(target.profileProgress)) {
-          router.replace(
-            buildChildProfileForEnrollPath(target.id, {
-              eventId: pendingEventId || undefined,
-            }),
-          );
           return;
         }
         setEnrollTarget(target);
