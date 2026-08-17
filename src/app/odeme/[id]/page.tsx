@@ -32,7 +32,7 @@ export default async function PaymentEmbedPage({
 
   const { data: payment } = await serviceClient
     .from("payments")
-    .select("id, payer_user_id, status, provider_raw")
+    .select("id, payer_user_id, status, provider, provider_raw")
     .eq("id", paymentId)
     .maybeSingle();
 
@@ -41,13 +41,17 @@ export default async function PaymentEmbedPage({
   }
 
   if (payment.status === "paid") {
-    redirect("/odeme/basarili");
+    redirect(`/odeme/basarili?paymentId=${encodeURIComponent(paymentId)}`);
   }
 
-  const raw = (payment.provider_raw ?? {}) as { checkoutFormContent?: string };
+  const raw = (payment.provider_raw ?? {}) as {
+    checkoutFormContent?: string;
+    iframeUrl?: string;
+  };
+  const iframeUrl = raw.iframeUrl?.trim() ?? "";
   const html = raw.checkoutFormContent?.trim() ?? "";
 
-  if (!html || query.embed !== "1") {
+  if (query.embed !== "1" || (!iframeUrl && !html)) {
     redirect("/dashboard/children?enroll=1");
   }
 
@@ -56,12 +60,18 @@ export default async function PaymentEmbedPage({
       <div className="mx-auto max-w-3xl">
         <h1 className="text-2xl font-black text-navy-950">Güvenli ödeme</h1>
         <p className="mt-2 text-sm text-muted">
-          Ödemeyi iyzico güvenli formu üzerinden tamamlayın. İşlem bitince otomatik yönlendirilirsiniz.
+          Ödemeyi güvenli ödeme formu üzerinden tamamlayın. İşlem bitince otomatik
+          yönlendirilirsiniz.
         </p>
-        <div
-          className="mt-6"
-          dangerouslySetInnerHTML={{ __html: html }}
-        />
+        {iframeUrl ? (
+          <iframe
+            title="PayTR güvenli ödeme"
+            src={iframeUrl}
+            className="mt-6 min-h-[720px] w-full rounded-2xl border border-border-surface"
+          />
+        ) : (
+          <div className="mt-6" dangerouslySetInnerHTML={{ __html: html }} />
+        )}
       </div>
     </section>
   );

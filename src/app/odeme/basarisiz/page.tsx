@@ -17,7 +17,7 @@ export default async function PaymentFailedPage({
       : reason === "config"
         ? "Ödeme sistemi yapılandırması eksik."
         : reason === "retrieve"
-          ? "Ödeme sonucu iyzico üzerinden doğrulanamadı."
+          ? "Ödeme sonucu doğrulanamadı."
           : "Ödeme tamamlanamadı veya iptal edildi.";
 
   return (

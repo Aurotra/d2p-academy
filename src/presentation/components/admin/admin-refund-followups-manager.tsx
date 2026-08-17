@@ -145,7 +145,7 @@ export function AdminRefundFollowupsManager({
             {pendingRow.studentName ?? "Öğrenci"} — {formatMoney(pendingRow.amountTryCents)}
           </p>
           <p className="mt-1 text-xs text-amber-900/80">
-            iyzico işlem no: {pendingRow.providerPaymentId ?? "—"} · İade panelden manuel
+            PayTR işlem no: {pendingRow.providerPaymentId ?? "—"} · İade panelden manuel
             yapıldıysa veya iade gerekmiyorsa işaretleyin.
           </p>
           <label className="mt-3 block text-xs font-semibold">
@@ -154,7 +154,7 @@ export function AdminRefundFollowupsManager({
               value={note}
               onChange={(e) => setNote(e.target.value)}
               className="mt-1 w-full rounded-xl border border-amber-200 bg-white px-3 py-2 text-sm text-navy-950"
-              placeholder="Örn. iyzico panelinden iade edildi / etkinlik iptali, iade yok"
+              placeholder="Örn. PayTR panelinden iade edildi / etkinlik iptali, iade yok"
             />
           </label>
           <div className="mt-3 flex flex-wrap gap-2">

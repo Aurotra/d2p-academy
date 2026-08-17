@@ -142,7 +142,7 @@ export function SiteFooter() {
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src="/payments/iyzico-logo-band.svg"
-                  alt="Visa, Mastercard, American Express, Troy ve iyzico ile Öde"
+                  alt="Visa, Mastercard, American Express, Troy — PayTR ile güvenli ödeme"
                   width={429}
                   height={32}
                   className="h-7 w-auto max-w-full sm:h-8"

@@ -73,7 +73,7 @@ export default function DeliveryRefundPage() {
           <h2>4. İade Süreci</h2>
           <p>
             İade talepleri {CONTACT.email} adresine yazılı olarak iletilir. Onaylanan iadeler,
-            ödemenin alındığı kart üzerinden <strong>iyzico</strong> altyapısı aracılığıyla
+            ödemenin alındığı kart üzerinden <strong>PayTR</strong> altyapısı aracılığıyla
             işlenir ve bankanıza göre genellikle <strong>7–14 iş günü</strong> içinde kartınıza
             yansır. Yansıma süresi bankanıza bağlı olarak değişebilir.
           </p>

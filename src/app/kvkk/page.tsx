@@ -53,7 +53,7 @@ export default function KvkkPage() {
             </li>
             <li>
               <strong>Ödeme meta verileri:</strong> Tutar, tarih ve işlem durumu; kart bilgileri
-              sitemizde saklanmaz, iyzico altyapısında 256-bit SSL ile işlenir.
+              sitemizde saklanmaz, PayTR altyapısında 256-bit SSL ile işlenir.
             </li>
           </ul>
         </section>
@@ -79,7 +79,7 @@ export default function KvkkPage() {
           <h2>5. Veri Aktarımı ve Üçüncü Taraflar</h2>
           <p>
             Kişisel verileriniz; kanuni yükümlülüklerimizi yerine getirmek, ödeme altyapısı
-            (iyzico), bilişim altyapımızı yönetmek ve eğitim/danışmanlık faaliyetlerimizi
+            (PayTR), bilişim altyapımızı yönetmek ve eğitim/danışmanlık faaliyetlerimizi
             kesintisiz sürdürmek amacıyla, güvenliğini taahhüt ettiğimiz çözüm ortaklarımız ile
             paylaşılabilir.
           </p>

@@ -48,9 +48,9 @@ export default function PrivacyContractPage() {
           <h2>3. Ödeme Güvenliği ve Kredi Kartı Bilgileri</h2>
           <p>
             <strong>Kredi kartı / banka kartı bilgileriniz sitemizde saklanmaz.</strong> Ödeme
-            işlemleri, PCI DSS uyumlu <strong>iyzico</strong> ödeme altyapısı üzerinden,{" "}
+            işlemleri, PCI DSS uyumlu <strong>PayTR</strong> ödeme altyapısı üzerinden,{" "}
             <strong>256-bit SSL</strong> şifreleme ile güvenli biçimde gerçekleştirilir. Kart
-            numarası, CVV ve son kullanma tarihi gibi hassas veriler yalnızca iyzico&apos;nun
+            numarası, CVV ve son kullanma tarihi gibi hassas veriler yalnızca PayTR&apos;nin
             güvenli ödeme sayfasında işlenir; D2P Academy sunucularına iletilmez.
           </p>
         </section>
@@ -70,7 +70,7 @@ export default function PrivacyContractPage() {
           <h2>5. Çerez (Cookie) Politikası</h2>
           <p>
             Web sitemizde oturum yönetimi, güvenlik ve temel kullanıcı deneyimi için zorunlu
-            çerezler kullanılır. Ödeme sürecinde iyzico kendi güvenli çerezlerini kullanabilir.
+            çerezler kullanılır. Ödeme sürecinde PayTR kendi güvenli çerezlerini kullanabilir.
             Tarayıcı ayarlarınızdan çerezleri yönetebilirsiniz; zorunlu çerezlerin kapatılması
             giriş ve ödeme adımlarının çalışmamasına yol açabilir.
           </p>
@@ -79,7 +79,7 @@ export default function PrivacyContractPage() {
         <section>
           <h2>6. Veri Aktarımı</h2>
           <p>
-            Kişisel verileriniz; hizmetin ifası, ödeme altyapısı (iyzico), barındırma ve yasal
+            Kişisel verileriniz; hizmetin ifası, ödeme altyapısı (PayTR), barındırma ve yasal
             yükümlülükler kapsamında, gizlilik taahhütleriyle bağlı çözüm ortaklarımızla
             paylaşılabilir. Verileriniz ticari amaçla üçüncü şahıslara satılmaz.
           </p>

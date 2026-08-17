@@ -79,7 +79,7 @@ export default async function DistanceSalesPage({ searchParams }: DistanceSalesP
               <strong>Bedel (KDV dâhil):</strong> {coursePrice}
             </li>
             <li>
-              <strong>Ödeme yöntemi:</strong> iyzico güvenli ödeme altyapısı (kredi/banka kartı)
+              <strong>Ödeme yöntemi:</strong> PayTR güvenli ödeme altyapısı (kredi/banka kartı)
             </li>
           </ul>
           <p className="text-sm text-subtle">
@@ -118,7 +118,7 @@ export default async function DistanceSalesPage({ searchParams }: DistanceSalesP
         <section>
           <h2>6. Ödeme Güvenliği</h2>
           <p>
-            Kart bilgileri Satıcı tarafından saklanmaz; ödeme iyzico altyapısında 256-bit SSL ile
+            Kart bilgileri Satıcı tarafından saklanmaz; ödeme PayTR altyapısında 256-bit SSL ile
             işlenir. Ayrıntılar için{" "}
             <a href={LEGAL_PATHS.privacy} className="font-semibold text-document-primary underline">
               Gizlilik Sözleşmesi ve KVKK

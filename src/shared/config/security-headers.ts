@@ -45,7 +45,7 @@ export function buildContentSecurityPolicy(nonce: string): string {
     `img-src 'self' data: blob: ${supabase.https}`,
     "font-src 'self' data:",
     `connect-src 'self' ${supabase.https} ${supabase.wss}`,
-    "frame-src 'self' https://www.google.com https://maps.google.com https://www.google.com.tr",
+    "frame-src 'self' https://www.paytr.com https://www.google.com https://maps.google.com https://www.google.com.tr",
     "object-src 'none'",
     "base-uri 'self'",
     "form-action 'self'",

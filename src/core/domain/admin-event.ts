@@ -13,7 +13,7 @@ export const EVENT_STATUS_LABELS: Record<EventStatus, string> = {
 
 export const EVENT_PAYMENT_MODE_LABELS: Record<EventPaymentMode, string> = {
   free: "Ücretsiz",
-  iyzico: "Kartla ödeme (iyzico)",
+  iyzico: "Kartla ödeme (PayTR)",
   external: "Kurum/okul tahsilatı",
 };
 

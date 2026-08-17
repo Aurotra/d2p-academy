@@ -106,7 +106,7 @@ export const institutionRequestPageMetadata = publicPageMetadata({
 export const privacyPageMetadata = publicPageMetadata({
   title: "Gizlilik Sözleşmesi ve KVKK",
   description:
-    "D2P Academy gizlilik sözleşmesi, KVKK, çerez politikası ve iyzico 256-bit SSL ödeme güvenliği bilgileri.",
+    "D2P Academy gizlilik sözleşmesi, KVKK, çerez politikası ve PayTR 256-bit SSL ödeme güvenliği bilgileri.",
   path: "/gizlilik-sozlesmesi",
 });
 

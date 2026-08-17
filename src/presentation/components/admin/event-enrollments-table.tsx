@@ -205,7 +205,7 @@ export function EventEnrollmentsTable({
       if (payload.warning === "payment_not_refunded") {
         setPaymentRefundWarning(
           payload.message ??
-            "Bu kaydın ödemesi var; iptal edilirken ödeme otomatik iade edilmedi. Manuel iadeyi iyzico panelinden yapmayı unutmayın.",
+            "Bu kaydın ödemesi var; iptal edilirken ödeme otomatik iade edilmedi. Manuel iadeyi PayTR panelinden yapmayı unutmayın.",
         );
       }
 
@@ -610,7 +610,7 @@ export function EventEnrollmentsTable({
           </p>
           <p className="mt-1 text-xs text-amber-900/90">{paymentRefundWarning}</p>
           <p className="mt-2 text-xs text-amber-900/80">
-            Bu kaydın ödemesi vardı. İptal tamamlandı; manuel iade işlemini iyzico panelinden
+            Bu kaydın ödemesi vardı. İptal tamamlandı; manuel iade işlemini PayTR panelinden
             yapmayı unutmayın.
           </p>
           <div className="mt-3">

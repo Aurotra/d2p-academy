@@ -40,8 +40,16 @@ const recommended = [
     hint: "Supabase Edge Function webhook doğrulaması",
   },
   {
-    key: "CHROMIUM_PACK_URL",
-    hint: "Vercel'de sertifika PDF üretimi",
+    key: "PAYTR_MERCHANT_ID",
+    hint: "PayTR mağaza no; kartlı ödeme için gerekli",
+  },
+  {
+    key: "PAYTR_MERCHANT_KEY",
+    hint: "PayTR mağaza paneli entegrasyon bilgileri",
+  },
+  {
+    key: "PAYTR_MERCHANT_SALT",
+    hint: "PayTR mağaza paneli entegrasyon bilgileri",
   },
 ];
 

@@ -8,11 +8,13 @@ import {
   cancelStalePendingPaymentLocked,
   finalizeIyzicoPaymentLocked,
 } from "@/infrastructure/payments/finalize-iyzico-payment-locked";
+import { isCardCheckoutConfigured, resolveCardCheckoutProvider } from "@/infrastructure/payments/card-checkout-provider";
 import {
   buildPaymentCallbackUrl,
   initializeIyzicoCheckout,
-  isIyzicoConfigured,
 } from "@/infrastructure/payments/iyzico-client";
+import { initializePaytrCheckout } from "@/infrastructure/payments/paytr-client";
+import { merchantOidFromPaymentId } from "@/infrastructure/payments/paytr-hash";
 import { getClientIp } from "@/lib/utils/request-ip";
 
 const PENDING_PAYMENT_TTL_MS = 45 * 60 * 1000;
@@ -49,17 +51,19 @@ function splitName(fullName: string): { name: string; surname: string } {
 }
 
 /**
- * Creates/reuses pending_payment enrollment + payments row, starts iyzico Checkout Form.
+ * Creates/reuses pending_payment enrollment + payments row, then starts card checkout.
  * Capacity reserve is atomic (RPC). Stale pending cancel uses row locks.
  */
 export async function startPaidEnrollmentCheckout(
   input: StartPaidEnrollmentInput,
 ): Promise<PaidEnrollmentCheckoutResult> {
-  if (!isIyzicoConfigured()) {
+  if (!isCardCheckoutConfigured()) {
     throw new Error(
       "Bu etkinlik ücretli ancak ödeme sistemi henüz yapılandırılmadı. Lütfen daha sonra tekrar deneyin.",
     );
   }
+
+  const provider = resolveCardCheckoutProvider();
 
   if (input.priceTryCents <= 0) {
     throw new Error("Etkinlik ücreti geçersiz.");
@@ -126,7 +130,7 @@ export async function startPaidEnrollmentCheckout(
       student_user_id: input.studentId,
       amount_try_cents: input.priceTryCents,
       currency: "TRY",
-      provider: "iyzico",
+      provider,
       status: "pending",
       provider_conversation_id: undefined,
     })
@@ -137,12 +141,48 @@ export async function startPaidEnrollmentCheckout(
     throw new Error(paymentError?.message ?? "Ödeme kaydı oluşturulamadı.");
   }
 
+  const conversationId =
+    provider === "paytr" ? merchantOidFromPaymentId(payment.id) : payment.id;
+
   await serviceClient
     .from("payments")
-    .update({ provider_conversation_id: payment.id })
+    .update({ provider_conversation_id: conversationId })
     .eq("id", payment.id);
 
   const { name, surname } = splitName(input.payerFullName);
+  const buyerIp = getClientIp(input.request) ?? "85.34.78.112";
+
+  if (provider === "paytr") {
+    const init = await initializePaytrCheckout({
+      paymentId: payment.id,
+      priceTryCents: input.priceTryCents,
+      eventTitle: input.eventTitle,
+      buyer: {
+        name: input.payerFullName,
+        email: input.payerEmail,
+        phone: input.payerPhone,
+        ip: buyerIp,
+      },
+    });
+
+    await serviceClient
+      .from("payments")
+      .update({
+        provider_token: init.token,
+        provider_raw: { iframeUrl: init.iframeUrl, merchantOid: init.merchantOid },
+      })
+      .eq("id", payment.id);
+
+    return {
+      enrollmentId,
+      paymentId: payment.id,
+      paymentPageUrl: `/odeme/${payment.id}?embed=1`,
+      requiresPayment: true,
+      eventTitle: input.eventTitle,
+      amountTryCents: input.priceTryCents,
+    };
+  }
+
   const init = await initializeIyzicoCheckout({
     conversationId: payment.id,
     priceTryCents: input.priceTryCents,
@@ -156,7 +196,7 @@ export async function startPaidEnrollmentCheckout(
       surname,
       email: input.payerEmail,
       gsmNumber: input.payerPhone,
-      ip: getClientIp(input.request) ?? "85.34.78.112",
+      ip: buyerIp,
       city: input.payerCity,
     },
   });
@@ -172,7 +212,7 @@ export async function startPaidEnrollmentCheckout(
     .eq("id", payment.id);
 
   if (!init.paymentPageUrl && !init.checkoutFormContent) {
-    throw new Error("iyzico ödeme sayfası alınamadı.");
+    throw new Error("Ödeme sayfası alınamadı.");
   }
 
   return {

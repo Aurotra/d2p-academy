@@ -108,7 +108,7 @@ export default async function AdminRefundFollowupsPage({
         </p>
         <h1 className="mt-2 text-2xl font-bold text-navy-950">Bekleyen İadeler</h1>
         <p className="mt-2 text-sm text-muted">
-          Ücretli kaydı iptal/çıkarma sonrası otomatik iade yok. iyzico panelinden manuel iade
+          Ücretli kaydı iptal/çıkarma sonrası otomatik iade yok. PayTR panelinden manuel iade
           yaptıktan sonra satırı çözün; iade gerekmiyorsa vazgeçildi olarak işaretleyin.
         </p>
       </div>

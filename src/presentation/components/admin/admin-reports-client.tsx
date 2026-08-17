@@ -191,7 +191,7 @@ export function AdminReportsClient({
         <section className="space-y-4">
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
             <MetricCard
-              title="Toplam tahsilat (iyzico)"
+              title="Toplam tahsilat (kart)"
               value={formatTryCentsDisplay(overview.iyzicoCollectedTryCents)}
               hint={formatTrend(
                 overview.iyzicoTrendPct,
@@ -202,7 +202,7 @@ export function AdminReportsClient({
             <MetricCard
               title="Kurum/okul tahmini"
               value={formatTryCentsDisplay(overview.externalEstimateTryCents)}
-              hint="display_price × onaylı koltuk; ödeme tetiklemez, iyzico toplamına eklenmez"
+              hint="display_price × onaylı koltuk; ödeme tetiklemez, kart tahsilatına eklenmez"
             />
             <MetricCard
               title="İptal oranı"
