@@ -138,12 +138,20 @@ export function SiteFooter() {
               <p className="text-xs font-bold uppercase tracking-[0.16em] text-navy-950">
                 Güvenli ödeme
               </p>
-              <div className="flex flex-wrap items-center gap-4">
+              <div className="flex flex-wrap items-center gap-3 sm:gap-4">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
-                  src="/payments/iyzico-logo-band.svg"
-                  alt="Visa, Mastercard, American Express, Troy — PayTR ile güvenli ödeme"
-                  width={429}
+                  src="/payments/paytr-mark.svg"
+                  alt="PayTR"
+                  width={80}
+                  height={32}
+                  className="h-7 w-auto sm:h-8"
+                />
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src="/payments/card-logo-band.svg"
+                  alt="Visa, Mastercard, American Express, Troy"
+                  width={300}
                   height={32}
                   className="h-7 w-auto max-w-full sm:h-8"
                 />

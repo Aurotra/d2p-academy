@@ -1,4 +1,4 @@
-/** Legal entity details for footer, contracts, and iyzico compliance pages. */
+/** Legal entity details for footer, contracts, and payment compliance pages. */
 export const COMPANY = {
   legalName:
     "ATH Eğitim Teknolojileri Mühendislik Danışmanlık Sanayi ve Ticaret Limited Şirketi",
