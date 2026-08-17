@@ -38,13 +38,11 @@ export async function EventCalendarPreview() {
     events = [];
   }
 
-  const singleEvent = events.length === 1;
-
   return (
     <section id="events" className="bg-surface-section px-4 py-14 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-6xl">
         <div className="overflow-hidden rounded-3xl border border-border-surface bg-white shadow-lg shadow-secondary/10">
-          <div className="border-b border-border-surface px-5 py-6 sm:px-7">
+          <div className="border-b border-border-surface px-5 py-5 sm:px-7 sm:py-6">
             <h2 className="text-xl font-black text-navy-950 sm:text-2xl">
               Etkinlik seçin, kaydı 3 adımda tamamlayın
             </h2>
@@ -57,26 +55,19 @@ export async function EventCalendarPreview() {
           </div>
 
           <div className="lg:grid lg:grid-cols-[minmax(0,1fr)_17rem] lg:items-stretch">
-            <div className="flex min-h-0 flex-col lg:h-full">
+            <div className="flex min-h-0 flex-col bg-surface-section/80">
               {events.length === 0 ? (
                 <div className="p-5 sm:p-7">
                   <EmptyEventsState />
                 </div>
               ) : (
-                <div
-                  className={
-                    singleEvent
-                      ? "flex h-full min-h-[240px] flex-1 flex-col lg:min-h-full"
-                      : "flex flex-col divide-y divide-border-surface"
-                  }
-                >
+                <div className="flex flex-1 flex-col divide-y divide-border-surface">
                   {events.map((event) => (
                     <EventCard
                       key={event.id}
                       event={event}
                       compact
                       embedded
-                      fill={singleEvent}
                       linkToDetail
                     />
                   ))}
