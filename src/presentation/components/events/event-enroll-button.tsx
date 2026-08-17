@@ -102,11 +102,11 @@ export function EventEnrollButton({
       {showExternalNote ? (
         <p className="text-center text-xs leading-5 text-subtle">{EXTERNAL_PAYMENT_NOTE}</p>
       ) : null}
-      <p className="text-center text-xs leading-5 text-subtle">
-        {isStaffSession
-          ? "Personel hesabıyla kayıt veli çocuğu üzerinden açılmaz; yönetim panelinden yapılır."
-          : "Çocuk hesabı seçerek kayıt tamamlanır; veli hesabınız etkinliğe kaydolmaz."}
-      </p>
+      {!isStaffSession ? (
+        <p className="text-center text-xs leading-5 text-subtle">
+          Çocuk hesabı seçerek kayıt tamamlanır; veli hesabınız etkinliğe kaydolmaz.
+        </p>
+      ) : null}
     </div>
   );
 }
