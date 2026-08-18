@@ -30,14 +30,38 @@ export default async function DashboardPage() {
   }
 
   const repository = new SupabaseStudentDashboardRepository(client);
-  const [dashboardData, childrenEnrollmentsData] = await Promise.all([
-    getStudentDashboard(repository, user.id),
-    fetchParentChildrenEnrollments(user.id),
-  ]);
   const onboardingContext = await fetchParentOnboardingContext(client, user.id);
 
   if (onboardingContext.childrenCount === 0) {
     redirect(PARENT_DEFAULT_LANDING_PATH);
+  }
+
+  let dashboardData: Awaited<ReturnType<typeof getStudentDashboard>>;
+  let childrenEnrollments: Awaited<
+    ReturnType<typeof fetchParentChildrenEnrollments>
+  >["enrollments"] = [];
+  let loadError: string | null = null;
+
+  try {
+    const [dashboardResult, childrenEnrollmentsResult] = await Promise.all([
+      getStudentDashboard(repository, user.id),
+      fetchParentChildrenEnrollments(user.id),
+    ]);
+    dashboardData = dashboardResult;
+    childrenEnrollments = childrenEnrollmentsResult.enrollments;
+  } catch (error) {
+    loadError = error instanceof Error ? error.message : "Panel verileri yüklenemedi.";
+    console.error("[dashboard]", error);
+    dashboardData = {
+      profile: {
+        id: user.id,
+        fullName: user.email?.split("@")[0] ?? "Veli",
+        email: user.email ?? "",
+        role: "parent",
+      },
+      upcomingEnrollments: [],
+      certificates: [],
+    };
   }
 
   const adminAccess = await getAdminAccess(client);
@@ -46,11 +70,12 @@ export default async function DashboardPage() {
   return (
     <DashboardView
       data={dashboardData}
-      childrenEnrollments={childrenEnrollmentsData.enrollments}
+      childrenEnrollments={childrenEnrollments}
       isAdmin={adminAccess.authorized}
       isInstructor={instructorAccess.authorized}
       onboardingContext={onboardingContext}
       showOnboarding={shouldShowParentOnboarding(onboardingContext)}
+      loadError={loadError}
     />
   );
 }

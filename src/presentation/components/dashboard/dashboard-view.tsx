@@ -21,6 +21,7 @@ interface DashboardViewProps {
   isInstructor: boolean;
   onboardingContext: ParentOnboardingContext;
   showOnboarding: boolean;
+  loadError?: string | null;
 }
 
 type DashboardActionVariant = "secondary" | "accent" | "document" | "outline";
@@ -65,6 +66,10 @@ const ENROLLMENT_STATUS_LABELS: Record<EnrollmentStatus, string> = {
 };
 
 function formatDate(date: Date): string {
+  if (Number.isNaN(date.getTime())) {
+    return "Tarih belirtilmedi";
+  }
+
   return new Intl.DateTimeFormat("tr-TR", {
     dateStyle: "long",
     timeStyle: "short",
@@ -79,6 +84,7 @@ export function DashboardView({
   isInstructor,
   onboardingContext,
   showOnboarding,
+  loadError = null,
 }: DashboardViewProps) {
   return (
     <section className="bg-surface-section px-4 py-10 sm:px-6 lg:px-8">
@@ -86,6 +92,16 @@ export function DashboardView({
         <Suspense fallback={null}>
           <DashboardEnrollHandler />
         </Suspense>
+
+        {loadError ? (
+          <div className="mb-6 rounded-2xl border border-red-200 bg-red-50 px-5 py-4 text-sm text-red-800">
+            {loadError} Sayfayı yenileyin veya{" "}
+            <Link href="/dashboard/children" className="font-semibold underline">
+              Çocuklarım
+            </Link>{" "}
+            sayfasına gidin.
+          </div>
+        ) : null}
 
         <div
           className={`rounded-[2rem] border border-border-surface ${BRAND_SURFACE_GRADIENT} p-6 text-navy-950 shadow-xl sm:p-8`}

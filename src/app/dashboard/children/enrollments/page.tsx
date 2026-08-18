@@ -19,7 +19,18 @@ export default async function ParentChildrenEnrollmentsPage() {
     redirect("/login?redirectTo=/dashboard/children/enrollments");
   }
 
-  const data = await fetchParentChildrenEnrollments(auth.user.id);
+  let data: Awaited<ReturnType<typeof fetchParentChildrenEnrollments>> = {
+    childrenCount: 0,
+    enrollments: [],
+  };
+  let loadError: string | null = null;
+
+  try {
+    data = await fetchParentChildrenEnrollments(auth.user.id);
+  } catch (error) {
+    loadError = error instanceof Error ? error.message : "Etkinlik kayıtları yüklenemedi.";
+    console.error("[dashboard/children/enrollments]", error);
+  }
 
   return (
     <section className="bg-surface-section px-4 py-10 sm:px-6 lg:px-8">
@@ -62,10 +73,16 @@ export default async function ParentChildrenEnrollmentsPage() {
             </Link>
           </div>
 
-          <ParentChildrenEnrollmentsView
-            enrollments={data.enrollments}
-            childrenCount={data.childrenCount}
-          />
+          {loadError ? (
+            <p className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+              {loadError}
+            </p>
+          ) : (
+            <ParentChildrenEnrollmentsView
+              enrollments={data.enrollments}
+              childrenCount={data.childrenCount}
+            />
+          )}
         </div>
       </div>
     </section>

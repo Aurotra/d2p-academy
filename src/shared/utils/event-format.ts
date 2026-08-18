@@ -1,6 +1,14 @@
 const TURKEY_TIME_ZONE = "Europe/Istanbul";
 
+function isValidDate(date: Date): boolean {
+  return !Number.isNaN(date.getTime());
+}
+
 export function formatEventDateLong(date: Date): string {
+  if (!isValidDate(date)) {
+    return "Tarih belirtilmedi";
+  }
+
   return new Intl.DateTimeFormat("tr-TR", {
     dateStyle: "long",
     timeZone: TURKEY_TIME_ZONE,
@@ -21,6 +29,10 @@ export function formatEventDateParts(date: Date): { day: string; month: string }
 }
 
 export function formatEventTime(date: Date): string {
+  if (!isValidDate(date)) {
+    return "—";
+  }
+
   return new Intl.DateTimeFormat("tr-TR", {
     hour: "2-digit",
     minute: "2-digit",
