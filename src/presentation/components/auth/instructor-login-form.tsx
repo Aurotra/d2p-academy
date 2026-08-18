@@ -10,6 +10,7 @@ import { Input } from "@/presentation/components/ui/input";
 import { createSupabaseBrowserClient } from "@/infrastructure/supabase/create-browser-client";
 import { profileHasInstructorCapability } from "@/infrastructure/auth/instructor-capability";
 import { mapAuthErrorToTurkish } from "@/shared/utils/auth-errors";
+import { resolvePostLoginPath } from "@/shared/utils/auth-redirect";
 
 export function InstructorLoginForm() {
   const router = useRouter();
@@ -40,12 +41,12 @@ export function InstructorLoginForm() {
         .maybeSingle();
 
       if (profile && profileHasInstructorCapability(profile)) {
-        const redirectTo = searchParams.get("redirectTo");
-        const safeRedirect =
-          redirectTo?.startsWith("/") && !redirectTo.startsWith("//")
-            ? redirectTo
-            : "/instructor";
-        router.replace(safeRedirect);
+        const redirectTo = resolvePostLoginPath({
+          requestedPath: searchParams.get("redirectTo"),
+          isInstructor: true,
+          portal: "instructor",
+        });
+        router.replace(redirectTo);
         return;
       }
 
@@ -86,7 +87,11 @@ export function InstructorLoginForm() {
         throw new Error("Bu hesap eğitmen yetkisine sahip değil. Veli girişini kullanın.");
       }
 
-      const redirectTo = searchParams.get("redirectTo") ?? "/instructor";
+      const redirectTo = resolvePostLoginPath({
+        requestedPath: searchParams.get("redirectTo"),
+        isInstructor: true,
+        portal: "instructor",
+      });
       router.push(redirectTo);
       router.refresh();
     } catch (loginError) {

@@ -12,6 +12,7 @@ import {
 import { profileHasInstructorCapability } from "@/infrastructure/auth/instructor-capability";
 import { buildContentSecurityPolicy } from "@/shared/config/security-headers";
 import { createCspNonce, CSP_NONCE_HEADER } from "@/shared/config/csp-nonce";
+import { isInstructorAppPath, resolvePostLoginPath } from "@/shared/utils/auth-redirect";
 
 function finalizeResponse(
   request: NextRequest,
@@ -117,9 +118,9 @@ async function handleAuthMiddleware(
     data: { user },
   } = await supabase.auth.getUser();
 
-  if (!user && pathname.startsWith("/instructor")) {
+  if (!user && isInstructorAppPath(pathname)) {
     const loginUrl = request.nextUrl.clone();
-    loginUrl.pathname = "/login";
+    loginUrl.pathname = "/instructor-login";
     loginUrl.searchParams.set("redirectTo", pathname);
     return redirect(request, loginUrl, nonce);
   }
@@ -152,32 +153,16 @@ async function handleAuthMiddleware(
     }
   }
 
-  if (user && pathname.startsWith("/instructor")) {
+  if (user && isInstructorAppPath(pathname)) {
     if (!profileIsInstructor) {
       return redirect(request, new URL("/dashboard", request.url), nonce);
     }
   }
 
-  if (!user && pathname === "/instructor-login") {
-    const loginUrl = request.nextUrl.clone();
-    loginUrl.pathname = "/login";
-    const redirectTo = request.nextUrl.searchParams.get("redirectTo");
-    if (redirectTo) {
-      loginUrl.searchParams.set("redirectTo", redirectTo);
-    } else {
-      loginUrl.searchParams.set("redirectTo", "/instructor");
-    }
-    return redirect(request, loginUrl, nonce);
-  }
-
-  if (user && pathname === "/instructor-login") {
+  if (user && pathname === "/instructor-login" && profileIsInstructor) {
     const redirectTo = request.nextUrl.searchParams.get("redirectTo");
     const safeRedirect =
-      redirectTo && redirectTo.startsWith("/") && !redirectTo.startsWith("//")
-        ? redirectTo
-        : profileIsInstructor
-          ? "/instructor"
-          : "/dashboard";
+      redirectTo && isInstructorAppPath(redirectTo) ? redirectTo : "/instructor";
     return redirect(request, new URL(safeRedirect, request.url), nonce);
   }
 
@@ -186,7 +171,6 @@ async function handleAuthMiddleware(
   }
 
   if (user && (pathname === "/login" || pathname === "/register")) {
-    const redirectTo = request.nextUrl.searchParams.get("redirectTo");
     const defaultPath =
       profileRole === "admin"
         ? "/admin"
@@ -195,10 +179,12 @@ async function handleAuthMiddleware(
           : profileIsInstructor && profileRole !== "parent" && profileRole !== "student"
             ? "/instructor"
             : "/dashboard";
-    const safeRedirect =
-      redirectTo && redirectTo.startsWith("/") && !redirectTo.startsWith("//")
-        ? redirectTo
-        : defaultPath;
+    const safeRedirect = resolvePostLoginPath({
+      requestedPath: request.nextUrl.searchParams.get("redirectTo"),
+      isInstructor: profileIsInstructor,
+      defaultRedirect: defaultPath,
+      portal: "parent",
+    });
     return redirect(request, new URL(safeRedirect, request.url), nonce);
   }
 

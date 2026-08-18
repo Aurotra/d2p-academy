@@ -18,12 +18,16 @@ export default async function InstructorAttendancePage({ params }: InstructorAtt
   const client = await createSupabaseServerClient();
 
   if (!client) {
-    redirect("/login?redirectTo=/instructor");
+    redirect("/instructor-login?redirectTo=/instructor");
   }
 
   const instructorAccess = await getInstructorAccess(client);
   if (!instructorAccess.authorized) {
-    redirect("/login?redirectTo=/instructor");
+    redirect(
+      instructorAccess.reason === "unauthenticated"
+        ? "/instructor-login?redirectTo=/instructor"
+        : "/dashboard",
+    );
   }
 
   const access = await getEventAttendanceAccess(client, eventId);

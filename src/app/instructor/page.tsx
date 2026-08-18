@@ -7,23 +7,32 @@ import { createSupabaseServerClient } from "@/infrastructure/supabase/create-ser
 export const dynamic = "force-dynamic";
 
 function formatDateTime(value: string): string {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return "Tarih belirtilmedi";
+  }
+
   return new Intl.DateTimeFormat("tr-TR", {
     dateStyle: "medium",
     timeStyle: "short",
     timeZone: "Europe/Istanbul",
-  }).format(new Date(value));
+  }).format(date);
 }
 
 export default async function InstructorHomePage() {
   const client = await createSupabaseServerClient();
 
   if (!client) {
-    redirect("/login?redirectTo=/instructor");
+    redirect("/instructor-login?redirectTo=/instructor");
   }
 
   const access = await getInstructorAccess(client);
   if (!access.authorized) {
-    redirect("/login?redirectTo=/instructor");
+    redirect(
+      access.reason === "unauthenticated"
+        ? "/instructor-login?redirectTo=/instructor"
+        : "/dashboard",
+    );
   }
 
   const { data: assignments, error } = await client

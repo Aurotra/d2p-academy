@@ -15,6 +15,7 @@ import {
   mapAuthQueryErrorToTurkish,
   mapAuthErrorToTurkish,
 } from "@/shared/utils/auth-errors";
+import { resolvePostLoginPath } from "@/shared/utils/auth-redirect";
 import { PARENT_GUIDE_PATH } from "@/shared/constants/parent-guide";
 
 export function LoginForm() {
@@ -65,15 +66,19 @@ export function LoginForm() {
 
       const payload = (await response.json()) as {
         error?: string;
-        data?: { defaultRedirect?: string };
+        data?: { role?: string; isInstructor?: boolean; defaultRedirect?: string };
       };
 
       if (!response.ok) {
         throw new Error(mapAuthErrorToTurkish(payload.error ?? "Giriş başarısız oldu."));
       }
 
-      const redirectTo =
-        searchParams.get("redirectTo") ?? payload.data?.defaultRedirect ?? "/dashboard";
+      const redirectTo = resolvePostLoginPath({
+        requestedPath: searchParams.get("redirectTo"),
+        isInstructor: payload.data?.isInstructor,
+        defaultRedirect: payload.data?.defaultRedirect ?? "/dashboard",
+        portal: "parent",
+      });
       router.push(redirectTo);
       router.refresh();
     } catch (loginError) {
@@ -134,6 +139,9 @@ export function LoginForm() {
         <p className="text-sm text-muted">Öğrenci misiniz?</p>
         <AuthPortalLink href="/student-login" kind="student" block>
           Öğrenci Girişi
+        </AuthPortalLink>
+        <AuthPortalLink href="/instructor-login" kind="instructor" block>
+          Eğitmen Girişi
         </AuthPortalLink>
       </div>
 

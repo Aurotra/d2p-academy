@@ -4,6 +4,53 @@ import { SITE_URL } from "@/shared/constants/site";
 
 export const PARENT_DEFAULT_LANDING_PATH = "/dashboard/children?add=1";
 
+export function pathnameOnly(path: string): string {
+  const trimmed = path.trim();
+  const withoutQuery = trimmed.split("?")[0] ?? trimmed;
+  return withoutQuery.split("#")[0] ?? withoutQuery;
+}
+
+/** Instructor panel routes. `/instructor-login` is not a panel path. */
+export function isInstructorAppPath(path: string | null | undefined): boolean {
+  const pathname = pathnameOnly(path ?? "");
+  return pathname === "/instructor" || pathname.startsWith("/instructor/");
+}
+
+export function sanitizeLoginRedirectPath(path: string | null | undefined): string | null {
+  const raw = path?.trim();
+  if (!raw || !raw.startsWith("/") || raw.startsWith("//")) {
+    return null;
+  }
+  return raw;
+}
+
+export function resolvePostLoginPath(input: {
+  requestedPath?: string | null;
+  isInstructor?: boolean | null;
+  defaultRedirect?: string | null;
+  portal: "parent" | "instructor";
+}): string {
+  const requested = sanitizeLoginRedirectPath(input.requestedPath);
+  const fallback = input.defaultRedirect?.startsWith("/")
+    ? input.defaultRedirect
+    : input.portal === "instructor"
+      ? "/instructor"
+      : "/dashboard";
+
+  if (input.portal === "instructor") {
+    if (requested && isInstructorAppPath(requested)) {
+      return requested;
+    }
+    return "/instructor";
+  }
+
+  if (requested && (isInstructorAppPath(requested) || pathnameOnly(requested) === "/instructor-login")) {
+    return input.isInstructor ? "/instructor" : fallback;
+  }
+
+  return requested ?? fallback;
+}
+
 export function sanitizeAuthNextPath(path: string | null | undefined): string {
   if (!path || !path.startsWith("/") || path.startsWith("//")) {
     return "/dashboard";
