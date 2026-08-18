@@ -190,8 +190,8 @@ async function fetchPaymentRowsInRange(
   const endIso = range.endExclusive.toISOString();
   const byId = new Map<string, PaymentQueryRow>();
 
-  const created = await fetchPaged<PaymentQueryRow>((from, to) =>
-    client
+  const created = await fetchPaged<PaymentQueryRow>(async (from, to) =>
+    await client
       .from("payments")
       .select(PAYMENT_COLUMNS)
       .gte("created_at", startIso)
@@ -203,8 +203,8 @@ async function fetchPaymentRowsInRange(
     byId.set(row.id, row);
   }
 
-  const paid = await fetchPaged<PaymentQueryRow>((from, to) =>
-    client
+  const paid = await fetchPaged<PaymentQueryRow>(async (from, to) =>
+    await client
       .from("payments")
       .select(PAYMENT_COLUMNS)
       .eq("status", "paid")
@@ -224,8 +224,8 @@ async function fetchStuckPaymentRows(
   client: SupabaseClient,
   nowMs?: number,
 ): Promise<AdminPaymentLedgerRow[]> {
-  const rows = await fetchPaged<PaymentQueryRow>((from, to) =>
-    client
+  const rows = await fetchPaged<PaymentQueryRow>(async (from, to) =>
+    await client
       .from("payments")
       .select(PAYMENT_COLUMNS)
       .in("status", ["pending", "failed"])
@@ -249,14 +249,14 @@ async function hydratePaymentRows(
   const profileIds = rows.flatMap((row) => [row.student_user_id, row.payer_user_id]);
 
   const [events, enrollments, profiles] = await Promise.all([
-    selectIn<{ id: string; title: string | null; payment_mode: string | null }>(eventIds, (chunk) =>
-      client.from("events").select("id, title, payment_mode").in("id", chunk),
+    selectIn<{ id: string; title: string | null; payment_mode: string | null }>(eventIds, async (chunk) =>
+      await client.from("events").select("id, title, payment_mode").in("id", chunk),
     ),
-    selectIn<{ id: string; status: string }>(enrollmentIds, (chunk) =>
-      client.from("enrollments").select("id, status").in("id", chunk),
+    selectIn<{ id: string; status: string }>(enrollmentIds, async (chunk) =>
+      await client.from("enrollments").select("id, status").in("id", chunk),
     ),
-    selectIn<ProfileSnippet>(profileIds, (chunk) =>
-      client
+    selectIn<ProfileSnippet>(profileIds, async (chunk) =>
+      await client
         .from("profiles")
         .select("id, full_name, email, parent_id, parent_phone, username")
         .in("id", chunk),
@@ -269,11 +269,11 @@ async function hydratePaymentRows(
 
   const parentIds = [...profilesById.values()]
     .map((profile) => profile.parent_id?.trim())
-    .filter((id): id is string => Boolean(id) && !profilesById.has(id));
+    .filter((id): id is string => typeof id === "string" && id.length > 0 && !profilesById.has(id));
 
   if (parentIds.length > 0) {
-    const parents = await selectIn<ProfileSnippet>(parentIds, (chunk) =>
-      client.from("profiles").select("id, full_name, email, parent_phone, username").in("id", chunk),
+    const parents = await selectIn<ProfileSnippet>(parentIds, async (chunk) =>
+      await client.from("profiles").select("id, full_name, email, parent_phone, username").in("id", chunk),
     );
     for (const parent of parents) {
       profilesById.set(parent.id, parent);
@@ -352,8 +352,8 @@ async function fetchKurumEnrollmentRows(
           payment_mode: string | null;
           display_price_try_cents: number | null;
         }>;
-  }>((from, to) =>
-    client
+  }>(async (from, to) =>
+    await client
       .from("enrollments")
       .select(
         `
@@ -380,8 +380,8 @@ async function fetchKurumEnrollmentRows(
 
   const students = await selectIn<ProfileSnippet>(
     enrollments.map((row) => row.user_id),
-    (chunk) =>
-      client
+    async (chunk) =>
+      await client
         .from("profiles")
         .select("id, full_name, email, parent_id, parent_phone, username")
         .in("id", chunk),
@@ -393,8 +393,8 @@ async function fetchKurumEnrollmentRows(
 
   const parentsById = new Map<string, ProfileSnippet>();
   if (parentIds.length > 0) {
-    const parents = await selectIn<ProfileSnippet>(parentIds, (chunk) =>
-      client.from("profiles").select("id, full_name, email, parent_phone, username").in("id", chunk),
+    const parents = await selectIn<ProfileSnippet>(parentIds, async (chunk) =>
+      await client.from("profiles").select("id, full_name, email, parent_phone, username").in("id", chunk),
     );
     for (const parent of parents) {
       parentsById.set(parent.id, parent);
