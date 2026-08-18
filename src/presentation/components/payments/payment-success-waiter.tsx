@@ -3,13 +3,15 @@
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
+import { parentEnrollmentFormsPath } from "@/shared/utils/parent-enrollment-forms-path";
+
 interface PaymentSuccessWaiterProps {
   paymentId: string;
 }
 
 export function PaymentSuccessWaiter({ paymentId }: PaymentSuccessWaiterProps) {
   const router = useRouter();
-  const [message, setMessage] = useState("Ödemeniz doğrulanıyor…");
+  const [message, setMessage] = useState("Ödemeniz doğrulanıyor, ardından formlara geçeceksiniz…");
 
   useEffect(() => {
     let cancelled = false;
@@ -30,11 +32,10 @@ export function PaymentSuccessWaiter({ paymentId }: PaymentSuccessWaiterProps) {
 
         const status = json.data?.status;
         if (status === "paid") {
-          const params = new URLSearchParams({
-            enrollmentId: json.data?.enrollmentId ?? "",
-            studentId: json.data?.studentId ?? "",
-          });
-          router.replace(`/odeme/basarili?${params.toString()}`);
+          setMessage("Ödemeniz alındı. Formlara yönlendiriliyorsunuz…");
+          router.replace(
+            parentEnrollmentFormsPath(json.data?.studentId ?? "", json.data?.enrollmentId ?? ""),
+          );
           return;
         }
         if (status === "failed" || status === "cancelled") {
