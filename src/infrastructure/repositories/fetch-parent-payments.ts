@@ -9,11 +9,6 @@ import {
   type ParentPaymentListItem,
 } from "@/core/domain/parent-payments";
 
-function unwrapOne<T>(value: T | T[] | null | undefined): T | null {
-  if (!value) return null;
-  return Array.isArray(value) ? (value[0] ?? null) : value;
-}
-
 function asPaymentStatus(value: string): PaymentStatus {
   if (
     value === "paid" ||
@@ -30,6 +25,8 @@ function asPaymentStatus(value: string): PaymentStatus {
 /**
  * Loads payments where the authenticated parent is the payer.
  * Always filters by payer_user_id = parentUserId (never by student alone).
+ * Event/student names are loaded separately so a relationship/RLS embed error
+ * cannot blank the whole payments page.
  */
 export async function fetchParentPayments(
   client: SupabaseClient,
@@ -38,16 +35,7 @@ export async function fetchParentPayments(
   const { data, error } = await client
     .from("payments")
     .select(
-      `
-      id,
-      payer_user_id,
-      amount_try_cents,
-      status,
-      paid_at,
-      created_at,
-      events ( title ),
-      student:profiles!payments_student_user_id_fkey ( full_name )
-    `,
+      "id, payer_user_id, student_user_id, event_id, amount_try_cents, status, paid_at, created_at",
     )
     .eq("payer_user_id", parentUserId)
     .order("created_at", { ascending: false })
@@ -57,23 +45,39 @@ export async function fetchParentPayments(
     throw new Error(`Ödemeler alınamadı: ${error.message}`);
   }
 
-  const mapped = (data ?? []).map((row) => {
-    const event = unwrapOne(row.events as { title?: string } | { title?: string }[] | null);
-    const student = unwrapOne(
-      row.student as { full_name?: string } | { full_name?: string }[] | null,
-    );
+  const rows = data ?? [];
+  const eventIds = [...new Set(rows.map((row) => row.event_id as string).filter(Boolean))];
+  const studentIds = [...new Set(rows.map((row) => row.student_user_id as string).filter(Boolean))];
 
-    return {
-      id: row.id as string,
-      payerUserId: row.payer_user_id as string,
-      eventTitle: event?.title?.trim() || "Etkinlik",
-      studentName: student?.full_name?.trim() || "Öğrenci",
-      amountTryCents: row.amount_try_cents as number,
-      status: asPaymentStatus(String(row.status)),
-      paidAt: (row.paid_at as string | null) ?? null,
-      createdAt: row.created_at as string,
-    };
-  });
+  const [eventsResult, studentsResult] = await Promise.all([
+    eventIds.length > 0
+      ? client.from("events").select("id, title").in("id", eventIds)
+      : Promise.resolve({ data: [] as { id: string; title: string | null }[], error: null }),
+    studentIds.length > 0
+      ? client.from("profiles").select("id, full_name").in("id", studentIds)
+      : Promise.resolve({ data: [] as { id: string; full_name: string | null }[], error: null }),
+  ]);
+
+  const eventTitleById = new Map(
+    (eventsResult.data ?? []).map((event) => [event.id, event.title?.trim() || "Etkinlik"]),
+  );
+  const studentNameById = new Map(
+    (studentsResult.data ?? []).map((profile) => [
+      profile.id,
+      profile.full_name?.trim() || "Öğrenci",
+    ]),
+  );
+
+  const mapped = rows.map((row) => ({
+    id: row.id as string,
+    payerUserId: row.payer_user_id as string,
+    eventTitle: eventTitleById.get(row.event_id as string) ?? "Etkinlik",
+    studentName: studentNameById.get(row.student_user_id as string) ?? "Öğrenci",
+    amountTryCents: row.amount_try_cents as number,
+    status: asPaymentStatus(String(row.status)),
+    paidAt: (row.paid_at as string | null) ?? null,
+    createdAt: row.created_at as string,
+  }));
 
   return filterPaymentsOwnedByParent(mapped, parentUserId).map(
     ({ payerUserId: _payerUserId, ...item }) => item,

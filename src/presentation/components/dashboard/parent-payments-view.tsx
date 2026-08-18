@@ -5,11 +5,16 @@ import {
 } from "@/core/domain/parent-payments";
 
 function formatDate(value: string): string {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return "Tarih belirtilmedi";
+  }
+
   return new Intl.DateTimeFormat("tr-TR", {
     dateStyle: "medium",
     timeStyle: "short",
     timeZone: "Europe/Istanbul",
-  }).format(new Date(value));
+  }).format(date);
 }
 
 interface ParentPaymentsViewProps {

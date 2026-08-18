@@ -19,16 +19,6 @@ export default async function ParentPaymentsPage() {
     redirect("/login?redirectTo=/dashboard/payments");
   }
 
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("role")
-    .eq("id", auth.user.id)
-    .maybeSingle();
-
-  if (profile?.role !== "parent" && profile?.role !== "admin") {
-    redirect("/dashboard");
-  }
-
   let payments: Awaited<ReturnType<typeof fetchParentPayments>> = [];
   let loadError: string | null = null;
   try {
