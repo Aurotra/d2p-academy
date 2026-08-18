@@ -75,6 +75,27 @@ describe("tryReserveCapacityAndEnroll", () => {
       status: "pending_payment",
     });
   });
+
+  it("treats a revived cancelled/no_show seat as a new paid checkout, not already enrolled", async () => {
+    const client = mockClient(async () => ({
+      ok: true,
+      enrollment_id: "44444444-4444-4444-4444-444444444444",
+      already_enrolled: false,
+      revived: true,
+      status: "pending_payment",
+    }));
+
+    const result = await tryReserveCapacityAndEnroll(client, {
+      eventId: "11111111-1111-1111-1111-111111111111",
+      userId: "22222222-2222-2222-2222-222222222222",
+      targetStatus: "pending_payment",
+      enrollmentSource: "parent",
+    });
+
+    expect(result.alreadyEnrolled).toBe(false);
+    expect(result.revived).toBe(true);
+    expect(result.status).toBe("pending_payment");
+  });
 });
 
 describe("finalizeIyzicoPaymentLocked recovery", () => {

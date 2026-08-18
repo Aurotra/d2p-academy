@@ -1,8 +1,10 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 
+import { resolvePaidCheckoutReserveAction } from "@/infrastructure/enrollments/paid-reenrollment";
 import {
   CapacityFullError,
   tryReserveCapacityAndEnroll,
+  type ReserveEnrollmentResult,
 } from "@/infrastructure/enrollments/try-reserve-capacity-and-enroll";
 import {
   cancelStalePendingPaymentLocked,
@@ -42,6 +44,78 @@ interface StartPaidEnrollmentInput {
   payerEmail: string;
   payerPhone?: string | null;
   payerCity?: string | null;
+}
+
+async function enrollmentHasPaidPayment(
+  serviceClient: SupabaseClient,
+  enrollmentId: string,
+): Promise<boolean> {
+  const { data } = await serviceClient
+    .from("payments")
+    .select("id")
+    .eq("enrollment_id", enrollmentId)
+    .eq("status", "paid")
+    .limit(1)
+    .maybeSingle();
+
+  return Boolean(data?.id);
+}
+
+/**
+ * Hard-deleted seats insert as pending_payment. Soft-cancelled seats revive.
+ * Leftover unpaid registered rows (former free enrollments) are converted so
+ * checkout is not skipped with ALREADY_ENROLLED.
+ */
+async function ensurePendingPaymentSeat(
+  serviceClient: SupabaseClient,
+  reserved: ReserveEnrollmentResult,
+): Promise<ReserveEnrollmentResult> {
+  const preliminary = resolvePaidCheckoutReserveAction({
+    alreadyEnrolled: reserved.alreadyEnrolled,
+    status: reserved.status,
+    hasPaidPayment: false,
+  });
+
+  if (preliminary === "proceed") {
+    return reserved;
+  }
+
+  const hasPaidPayment = await enrollmentHasPaidPayment(
+    serviceClient,
+    reserved.enrollmentId,
+  );
+  const action = resolvePaidCheckoutReserveAction({
+    alreadyEnrolled: reserved.alreadyEnrolled,
+    status: reserved.status,
+    hasPaidPayment,
+  });
+
+  if (action === "already_enrolled") {
+    throw new Error("ALREADY_ENROLLED");
+  }
+
+  if (action === "convert_unpaid_to_pending") {
+    const { error } = await serviceClient
+      .from("enrollments")
+      .update({
+        status: "pending_payment",
+        completed_at: null,
+      })
+      .eq("id", reserved.enrollmentId);
+
+    if (error) {
+      throw new Error(error.message);
+    }
+
+    return {
+      ...reserved,
+      alreadyEnrolled: false,
+      revived: true,
+      status: "pending_payment",
+    };
+  }
+
+  return reserved;
 }
 
 function splitName(fullName: string): { name: string; surname: string } {
@@ -100,12 +174,7 @@ export async function startPaidEnrollmentCheckout(
     throw error;
   }
 
-  if (
-    reserved.alreadyEnrolled &&
-    reserved.status !== "pending_payment"
-  ) {
-    throw new Error("ALREADY_ENROLLED");
-  }
+  reserved = await ensurePendingPaymentSeat(serviceClient, reserved);
 
   const enrollmentId = reserved.enrollmentId;
 
