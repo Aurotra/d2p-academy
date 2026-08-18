@@ -1,61 +1,39 @@
-"use client";
-
 import Link from "next/link";
 
-import { AuthPortalLink } from "@/presentation/components/auth/auth-portal-link";
-import { GuestOnly } from "@/presentation/components/auth/guest-only";
 import { PARENT_GUIDE_PATH } from "@/shared/constants/parent-guide";
 
-const quickSteps = [
-  "Hesap oluştur, e-postanı onayla",
-  "Çocuk hesabı ekle (kullanıcı adını not al)",
-  "Etkinliğe kaydet veya kurs talebi bırak → formları doldur",
-];
+const steps = [
+  { title: "Hesap oluştur", detail: "E-postanı onayla" },
+  { title: "Çocuk ekle", detail: "Kullanıcı adını not al" },
+  { title: "Etkinliğe kaydet", detail: "Formları sonra doldurursun" },
+] as const;
 
 export function ParentGuidePromo() {
   return (
-    <div id="veli-rehberi" className="scroll-mt-24">
-      <p className="text-xs font-semibold uppercase tracking-[0.16em] text-secondary">
-        Veli kaydı
-      </p>
-      <h3 className="mt-1 text-base font-bold text-navy-950">3 adımda kayıt</h3>
-
-      <ol className="relative mt-4 space-y-0">
-        {quickSteps.map((step, index) => (
-          <li key={step} className="relative flex gap-3 pb-4 last:pb-0">
-            {index < quickSteps.length - 1 ? (
-              <span
-                className="absolute left-[11px] top-6 h-[calc(100%-0.5rem)] w-px bg-emerald-200"
-                aria-hidden
-              />
-            ) : null}
-            <span className="relative z-10 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-secondary text-[11px] font-bold text-white">
+    <div
+      id="veli-rehberi"
+      className="scroll-mt-24 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between sm:gap-6"
+    >
+      <ol className="grid flex-1 grid-cols-1 gap-3 sm:grid-cols-3 sm:gap-4">
+        {steps.map((step, index) => (
+          <li key={step.title} className="flex min-w-0 items-start gap-2.5">
+            <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-secondary text-[11px] font-bold text-white">
               {index + 1}
             </span>
-            <span className="pt-0.5 text-sm leading-5 text-muted">{step}</span>
+            <span className="min-w-0">
+              <span className="block text-sm font-semibold text-navy-950">{step.title}</span>
+              <span className="block text-xs leading-5 text-muted">{step.detail}</span>
+            </span>
           </li>
         ))}
       </ol>
 
-      <div className="mt-5 space-y-2">
-        <GuestOnly>
-          <AuthPortalLink href="/register" kind="parent" block className="py-2.5 text-sm">
-            Hemen Hesap Oluştur
-          </AuthPortalLink>
-        </GuestOnly>
-        <Link
-          href={PARENT_GUIDE_PATH}
-          className="inline-flex w-full items-center justify-center rounded-xl border border-secondary/30 bg-white px-4 py-2.5 text-sm font-semibold text-secondary transition hover:border-secondary hover:bg-emerald-50/50"
-        >
-          Veli Rehberi →
-        </Link>
-        <Link
-          href={PARENT_GUIDE_PATH}
-          className="block text-center text-xs font-medium text-subtle hover:text-secondary"
-        >
-          SSS ve detaylı anlatım
-        </Link>
-      </div>
+      <Link
+        href={PARENT_GUIDE_PATH}
+        className="shrink-0 text-sm font-semibold text-secondary hover:underline sm:text-right"
+      >
+        Veli rehberi →
+      </Link>
     </div>
   );
 }

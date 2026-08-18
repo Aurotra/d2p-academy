@@ -9,7 +9,7 @@ import { ParentGuidePromo } from "@/presentation/components/home/parent-guide-pr
 
 function EmptyEventsState() {
   return (
-    <div className="rounded-2xl border border-dashed border-border-surface bg-surface-tint-green/40 px-5 py-8 text-center">
+    <div className="px-5 py-10 text-center sm:px-7">
       <p className="text-sm font-semibold text-navy-950">Yaklaşan etkinlik bulunamadı</p>
       <p className="mt-1 text-sm text-muted">
         Yayınlanmış etkinlik eklendiğinde burada listelenecek.
@@ -42,42 +42,34 @@ export async function EventCalendarPreview() {
     <section id="events" className="bg-surface-section px-4 py-14 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-6xl">
         <div className="overflow-hidden rounded-3xl border border-border-surface bg-white shadow-lg shadow-secondary/10">
-          <div className="border-b border-border-surface px-5 py-5 sm:px-7 sm:py-6">
-            <h2 className="text-xl font-black text-navy-950 sm:text-2xl">
-              Etkinlik seçin, kaydı 3 adımda tamamlayın
-            </h2>
-            <p className="mt-2 max-w-2xl text-sm leading-6 text-muted">
-              Soldan etkinliği seçin; sağdaki adımlarla veli hesabı açıp çocuğunuzu kaydedin.{" "}
-              <Link href="/etkinlikler" className="font-semibold text-document-primary hover:underline">
-                Tüm etkinlikler →
-              </Link>
-            </p>
+          <div className="flex flex-col gap-2 border-b border-border-surface px-5 py-5 sm:flex-row sm:items-end sm:justify-between sm:px-7 sm:py-6">
+            <div>
+              <h2 className="text-xl font-black text-navy-950 sm:text-2xl">Yaklaşan atölyeler</h2>
+              <p className="mt-1 text-sm text-muted">Tarihi seçin, kaydı başlatın.</p>
+            </div>
+            <Link
+              href="/etkinlikler"
+              className="text-sm font-semibold text-document-primary hover:underline"
+            >
+              Tüm etkinlikler →
+            </Link>
           </div>
 
-          <div className="lg:grid lg:grid-cols-[minmax(0,1fr)_17rem]">
-            <div className="min-h-0 bg-surface-section/80 lg:h-full">
-              {events.length === 0 ? (
-                <div className="p-5 sm:p-7">
-                  <EmptyEventsState />
-                </div>
-              ) : (
-                <div className="divide-y divide-border-surface">
-                  {events.map((event) => (
-                    <EventCard
-                      key={event.id}
-                      event={event}
-                      compact
-                      embedded
-                      linkToDetail
-                    />
-                  ))}
-                </div>
-              )}
+          {events.length === 0 ? (
+            <EmptyEventsState />
+          ) : (
+            <div className="divide-y divide-border-surface">
+              {events.map((event) => (
+                <EventCard key={event.id} event={event} compact embedded linkToDetail />
+              ))}
             </div>
+          )}
 
-            <div className="border-t border-border-surface bg-surface-tint-yellow/30 p-5 sm:p-6 lg:border-l lg:border-t-0">
-              <ParentGuidePromo />
-            </div>
+          <div className="border-t border-border-surface bg-surface-section/80 px-5 py-4 sm:px-7">
+            <p className="mb-3 text-xs font-semibold uppercase tracking-[0.16em] text-secondary">
+              Veli kaydı · 3 adım
+            </p>
+            <ParentGuidePromo />
           </div>
         </div>
       </div>

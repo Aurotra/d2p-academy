@@ -65,7 +65,7 @@ function EventTitle({
     <h3
       className={
         compact
-          ? "mt-1 text-base font-bold leading-snug text-navy-950 group-hover:text-secondary sm:text-lg"
+          ? "text-base font-bold leading-snug text-navy-950 group-hover:text-secondary sm:text-lg"
           : "mt-2 text-lg font-bold text-navy-950 group-hover:text-secondary md:mt-3"
       }
     >
@@ -107,38 +107,44 @@ export function EventCard({
 
   if (compact) {
     const articleClass = embedded
-      ? "group bg-transparent transition hover:bg-white/70"
+      ? "group bg-transparent transition hover:bg-surface-section/40"
       : "group overflow-hidden rounded-2xl border border-border-surface bg-white shadow-sm transition hover:border-secondary/40 hover:shadow-md";
 
     return (
       <article className={articleClass}>
-        <div className="flex flex-col gap-4 p-4 sm:flex-row sm:items-start sm:gap-5 sm:px-5 sm:py-4 lg:px-6">
+        <div className="flex flex-col gap-4 px-5 py-4 sm:flex-row sm:items-center sm:gap-5 sm:px-7">
           <div className="flex min-w-0 flex-1 items-start gap-4">
             <EventDateBadge day={start.day} month={start.month} />
 
             <div className="min-w-0 flex-1">
-              <EventMetaBadges event={event} />
               <EventTitle event={event} linkToDetail={linkToDetail} compact />
-              <p className="mt-1 line-clamp-2 text-sm leading-5 text-muted">{event.description}</p>
+              <div className="mt-1.5">
+                <EventMetaBadges event={event} />
+              </div>
               <p className="mt-2 text-sm text-subtle">
                 {timeRange}
                 <span className="mx-2 text-border-surface" aria-hidden>
                   ·
                 </span>
                 {locationLabel}
+                {linkToDetail ? (
+                  <>
+                    <span className="mx-2 text-border-surface" aria-hidden>
+                      ·
+                    </span>
+                    <Link
+                      href={`/etkinlikler/${event.slug}`}
+                      className="font-semibold text-document-primary hover:underline"
+                    >
+                      Detay
+                    </Link>
+                  </>
+                ) : null}
               </p>
-              {linkToDetail ? (
-                <Link
-                  href={`/etkinlikler/${event.slug}`}
-                  className="mt-2 inline-block text-sm font-semibold text-document-primary hover:underline"
-                >
-                  Detayları gör →
-                </Link>
-              ) : null}
             </div>
           </div>
 
-          <div className="w-full shrink-0 sm:w-44">
+          <div className="w-full shrink-0 sm:w-40">
             <EventEnrollBlock event={event} compact />
           </div>
         </div>
