@@ -26,4 +26,11 @@ describe("getClientIp", () => {
     const request = requestWithHeaders({});
     expect(getClientIp(request)).toBeNull();
   });
+
+  it("prefers IPv4 when the first forwarded hop is IPv6", () => {
+    const request = requestWithHeaders({
+      "x-forwarded-for": "2001:db8::1, 203.0.113.20",
+    });
+    expect(getClientIp(request)).toBe("203.0.113.20");
+  });
 });

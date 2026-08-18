@@ -1,7 +1,10 @@
+import { headers } from "next/headers";
 import { notFound, redirect } from "next/navigation";
 
 import { createSupabaseServerClient } from "@/infrastructure/supabase/create-server-client";
 import { createServiceRoleClient } from "@/infrastructure/supabase/create-service-role-client";
+import { PaytrCheckoutFrame } from "@/presentation/components/payments/paytr-checkout-frame";
+import { CSP_NONCE_HEADER } from "@/shared/config/csp-nonce";
 
 export default async function PaymentEmbedPage({
   params,
@@ -12,6 +15,7 @@ export default async function PaymentEmbedPage({
 }) {
   const { id: paymentId } = await params;
   const query = await searchParams;
+  const nonce = (await headers()).get(CSP_NONCE_HEADER) ?? undefined;
 
   const supabase = await createSupabaseServerClient();
   if (!supabase) {
@@ -64,10 +68,9 @@ export default async function PaymentEmbedPage({
           yönlendirilirsiniz.
         </p>
         {iframeUrl ? (
-          <iframe
-            title="PayTR güvenli ödeme"
-            src={iframeUrl}
-            className="mt-6 min-h-[720px] w-full rounded-2xl border border-border-surface"
+          <PaytrCheckoutFrame
+            iframeUrl={iframeUrl}
+            nonce={nonce}
           />
         ) : (
           <div className="mt-6" dangerouslySetInnerHTML={{ __html: html }} />

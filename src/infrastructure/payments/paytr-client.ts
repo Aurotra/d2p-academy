@@ -142,6 +142,7 @@ export async function initializePaytrCheckout(
     no_installment: noInstallment,
     max_installment: maxInstallment,
     currency,
+    iframe_v2: "1",
     paytr_token: paytrToken,
   });
 

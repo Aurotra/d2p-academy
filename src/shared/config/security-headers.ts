@@ -38,14 +38,14 @@ export function buildContentSecurityPolicy(nonce: string): string {
 
   const directives = [
     "default-src 'self'",
-    `script-src ${scriptSrc.join(" ")}`,
+    `script-src ${scriptSrc.join(" ")} https://www.paytr.com`,
     "style-src 'self'",
     "style-src-elem 'self' 'unsafe-inline'",
     "style-src-attr 'unsafe-inline'",
     `img-src 'self' data: blob: ${supabase.https}`,
     "font-src 'self' data:",
-    `connect-src 'self' ${supabase.https} ${supabase.wss}`,
-    "frame-src 'self' https://www.paytr.com https://www.google.com https://maps.google.com https://www.google.com.tr",
+    `connect-src 'self' ${supabase.https} ${supabase.wss} https://www.paytr.com`,
+    "frame-src 'self' https://www.paytr.com https://*.paytr.com https://www.google.com https://maps.google.com https://www.google.com.tr",
     "object-src 'none'",
     "base-uri 'self'",
     "form-action 'self'",
