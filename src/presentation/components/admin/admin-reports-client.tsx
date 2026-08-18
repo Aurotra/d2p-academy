@@ -119,7 +119,7 @@ export function AdminReportsClient({
         </p>
         <h1 className="mt-2 text-2xl font-bold text-navy-950">Raporlar</h1>
         <p className="mt-2 text-sm text-muted">
-          Dönem: {rangeLabel} (Europe/Istanbul). Platform tahsilatı ile kurum/okul tahmini
+          Dönem: {rangeLabel} (Europe/Istanbul). Kart, havale ve kurum/okul tahmini ayrı tutulur;
           toplanmaz.
         </p>
 
@@ -189,7 +189,7 @@ export function AdminReportsClient({
 
       {tab === "overview" ? (
         <section className="space-y-4">
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
             <MetricCard
               title="Toplam tahsilat (kart)"
               value={formatTryCentsDisplay(overview.iyzicoCollectedTryCents)}
@@ -200,9 +200,18 @@ export function AdminReportsClient({
               )}
             />
             <MetricCard
+              title="Toplam tahsilat (havale)"
+              value={formatTryCentsDisplay(overview.havaleCollectedTryCents)}
+              hint={formatTrend(
+                overview.havaleTrendPct,
+                overview.previousHavaleCollectedTryCents,
+                overview.havaleCollectedTryCents,
+              )}
+            />
+            <MetricCard
               title="Kurum/okul tahmini"
               value={formatTryCentsDisplay(overview.externalEstimateTryCents)}
-              hint="display_price × onaylı koltuk; ödeme tetiklemez, kart tahsilatına eklenmez"
+              hint="display_price × onaylı koltuk; ödeme tetiklemez, kart/havale tahsilatına eklenmez"
             />
             <MetricCard
               title="İptal oranı"

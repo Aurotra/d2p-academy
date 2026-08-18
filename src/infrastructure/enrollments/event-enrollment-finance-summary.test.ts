@@ -35,6 +35,7 @@ describe("buildEventEnrollmentFinanceSummary", () => {
     expect(summary.openRefundFollowupCount).toBe(1);
 
     expect(formatCollectionMetric(summary).value).toContain("399");
+    expect(formatCollectionMetric(summary).hint).toMatch(/havale/i);
     expect(formatCapacityOccupancy(summary)).toEqual({
       label: "%25",
       detail: "5 / 20",

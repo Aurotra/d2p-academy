@@ -123,6 +123,6 @@ export function formatCollectionMetric(summary: EventEnrollmentFinanceSummary): 
   return {
     title: "Toplam tahsilat",
     value: formatTryCentsDisplay(summary.totalCollectedTryCents),
-    hint: "Ödenmiş (paid) ödemelerin toplamı",
+    hint: "Kart ve havale (paid) toplamı",
   };
 }

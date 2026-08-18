@@ -1,6 +1,10 @@
 import { CONFIRMED_SEAT_STATUSES } from "@/infrastructure/enrollments/event-enrollment-finance-summary";
 import { resolveEventPaymentMode } from "@/infrastructure/events/event-payment-mode";
 import {
+  isCardPaymentProvider,
+  isHavalePaymentProvider,
+} from "@/infrastructure/payments/payment-providers";
+import {
   bucketKeyForTimestamp,
   enumerateBucketKeys,
   formatBucketLabel,
@@ -39,6 +43,7 @@ export type AdminReportPaymentRow = {
   amountTryCents: number;
   paidAt: string | null;
   createdAt: string;
+  provider?: string | null;
 };
 
 export type AdminReportEventRow = {
@@ -70,6 +75,9 @@ export type AdminReportOverview = {
   iyzicoCollectedTryCents: number;
   previousIyzicoCollectedTryCents: number;
   iyzicoTrendPct: number | null;
+  havaleCollectedTryCents: number;
+  previousHavaleCollectedTryCents: number;
+  havaleTrendPct: number | null;
   externalEstimateTryCents: number;
   enrollmentCount: number;
   cancelledCount: number;
@@ -97,9 +105,13 @@ function normalizeSource(value: string | null | undefined): ReportEnrollmentSour
   return "unknown_legacy";
 }
 
-function sumPaidInRange(payments: AdminReportPaymentRow[], range: AdminReportRange): number {
+function sumPaidInRange(
+  payments: AdminReportPaymentRow[],
+  range: AdminReportRange,
+  match: (payment: AdminReportPaymentRow) => boolean = () => true,
+): number {
   return payments.reduce((sum, payment) => {
-    if (!paymentTimestampInRange(payment.paidAt, payment.createdAt, range)) {
+    if (!match(payment) || !paymentTimestampInRange(payment.paidAt, payment.createdAt, range)) {
       return sum;
     }
     const cents = Number(payment.amountTryCents);
@@ -201,14 +213,35 @@ export function buildAdminReportOverview(input: {
   const eventsById = new Map(input.events.map((event) => [event.id, event]));
   const cancel = buildCancelRate(inRange);
   const previousRange = previousEqualRange(input.range);
-  const iyzicoCollectedTryCents = sumPaidInRange(input.payments, input.range);
-  const previousIyzicoCollectedTryCents = sumPaidInRange(input.payments, previousRange);
+  const iyzicoCollectedTryCents = sumPaidInRange(
+    input.payments,
+    input.range,
+    (payment) => isCardPaymentProvider(payment.provider),
+  );
+  const previousIyzicoCollectedTryCents = sumPaidInRange(
+    input.payments,
+    previousRange,
+    (payment) => isCardPaymentProvider(payment.provider),
+  );
+  const havaleCollectedTryCents = sumPaidInRange(
+    input.payments,
+    input.range,
+    (payment) => isHavalePaymentProvider(payment.provider),
+  );
+  const previousHavaleCollectedTryCents = sumPaidInRange(
+    input.payments,
+    previousRange,
+    (payment) => isHavalePaymentProvider(payment.provider),
+  );
 
   return {
     range: input.range,
     iyzicoCollectedTryCents,
     previousIyzicoCollectedTryCents,
     iyzicoTrendPct: trendPct(iyzicoCollectedTryCents, previousIyzicoCollectedTryCents),
+    havaleCollectedTryCents,
+    previousHavaleCollectedTryCents,
+    havaleTrendPct: trendPct(havaleCollectedTryCents, previousHavaleCollectedTryCents),
     externalEstimateTryCents: buildExternalEstimateTryCents(inRange, eventsById),
     ...cancel,
     hardDeletedCount: Math.max(0, input.hardDeletedCount),

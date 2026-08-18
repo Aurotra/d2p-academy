@@ -204,19 +204,24 @@ export default async function AdminEnrollmentsPage({ searchParams }: AdminEnroll
 
   let filteredEventTitle: string | null = null;
   let filteredEventStatus: string | null = null;
+  let eventPriceTryCents: number | null = null;
   let financeSummary: EventEnrollmentFinanceSummary | null = null;
   let financeSummaryError: string | null = null;
 
-  if (eventId && groups.length > 0) {
-    filteredEventTitle = groups[0].eventTitle;
-  } else if (eventId) {
-    const { data: event } = await client
+  if (eventId) {
+    const { data: eventRow } = await client
       .from("events")
-      .select("title, status")
+      .select("title, status, price_try_cents")
       .eq("id", eventId)
       .maybeSingle();
-    filteredEventTitle = event?.title ?? null;
-    filteredEventStatus = event?.status ?? null;
+    filteredEventTitle = eventRow?.title ?? filteredEventTitle;
+    filteredEventStatus = eventRow?.status ?? null;
+    eventPriceTryCents =
+      typeof eventRow?.price_try_cents === "number" ? eventRow.price_try_cents : null;
+  }
+
+  if (eventId && groups.length > 0) {
+    filteredEventTitle = groups[0].eventTitle;
   }
 
   if (eventId) {
@@ -314,7 +319,11 @@ export default async function AdminEnrollmentsPage({ searchParams }: AdminEnroll
       ) : null}
 
       {eventId && filteredEventTitle && filteredEventIsVisible ? (
-        <AdminAddEnrollmentForm eventId={eventId} eventTitle={filteredEventTitle} />
+        <AdminAddEnrollmentForm
+          eventId={eventId}
+          eventTitle={filteredEventTitle}
+          defaultPriceTryCents={eventPriceTryCents}
+        />
       ) : null}
 
       {groups.length === 0 ? (

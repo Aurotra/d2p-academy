@@ -16,7 +16,7 @@ const range = resolveAdminReportRange({
 });
 
 describe("buildAdminReportOverview", () => {
-  it("sums only paid iyzico amounts in range and keeps external estimate separate", () => {
+  it("sums card and havale separately and keeps external estimate out of both", () => {
     const overview = buildAdminReportOverview({
       range,
       hardDeletedCount: 2,
@@ -45,9 +45,29 @@ describe("buildAdminReportOverview", () => {
         },
       ],
       payments: [
-        { amountTryCents: 15000, paidAt: "2026-08-05T10:00:00.000Z", createdAt: "2026-08-05T09:00:00.000Z" },
-        { amountTryCents: 15000, paidAt: "2026-07-01T10:00:00.000Z", createdAt: "2026-07-01T09:00:00.000Z" },
-        { amountTryCents: 8000, paidAt: "2026-08-12T10:00:00.000Z", createdAt: "2026-08-12T09:00:00.000Z" },
+        {
+          amountTryCents: 15000,
+          paidAt: "2026-08-05T10:00:00.000Z",
+          createdAt: "2026-08-05T09:00:00.000Z",
+          provider: "paytr",
+        },
+        {
+          amountTryCents: 15000,
+          paidAt: "2026-07-01T10:00:00.000Z",
+          createdAt: "2026-07-01T09:00:00.000Z",
+          provider: "paytr",
+        },
+        {
+          amountTryCents: 8000,
+          paidAt: "2026-08-12T10:00:00.000Z",
+          createdAt: "2026-08-12T09:00:00.000Z",
+        },
+        {
+          amountTryCents: 4000,
+          paidAt: "2026-08-10T10:00:00.000Z",
+          createdAt: "2026-08-10T09:00:00.000Z",
+          provider: "havale",
+        },
       ],
       enrollments: [
         {
@@ -84,7 +104,9 @@ describe("buildAdminReportOverview", () => {
     });
 
     expect(overview.iyzicoCollectedTryCents).toBe(23000);
+    expect(overview.havaleCollectedTryCents).toBe(4000);
     expect(overview.externalEstimateTryCents).toBe(25000);
+    expect(overview.iyzicoCollectedTryCents + overview.havaleCollectedTryCents).toBe(27000);
     expect(overview.iyzicoCollectedTryCents + overview.externalEstimateTryCents).not.toBe(
       overview.iyzicoCollectedTryCents,
     );

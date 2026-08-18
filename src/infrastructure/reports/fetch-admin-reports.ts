@@ -140,6 +140,7 @@ async function fetchPagedPayments(
       amount_try_cents: number;
       paid_at: string | null;
       created_at: string;
+      provider: string | null;
     }>,
   ) => {
     for (const row of rows) {
@@ -147,6 +148,7 @@ async function fetchPagedPayments(
         amountTryCents: row.amount_try_cents,
         paidAt: row.paid_at,
         createdAt: row.created_at,
+        provider: row.provider,
       });
     }
   };
@@ -155,7 +157,7 @@ async function fetchPagedPayments(
   while (true) {
     const { data, error } = await client
       .from("payments")
-      .select("id, amount_try_cents, paid_at, created_at")
+      .select("id, amount_try_cents, paid_at, created_at, provider")
       .eq("status", "paid")
       .gte("paid_at", startIso)
       .lt("paid_at", endIso)
@@ -177,7 +179,7 @@ async function fetchPagedPayments(
   while (true) {
     const { data, error } = await client
       .from("payments")
-      .select("id, amount_try_cents, paid_at, created_at")
+      .select("id, amount_try_cents, paid_at, created_at, provider")
       .eq("status", "paid")
       .is("paid_at", null)
       .gte("created_at", startIso)

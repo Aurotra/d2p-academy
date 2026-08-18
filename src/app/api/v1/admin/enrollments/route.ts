@@ -4,7 +4,6 @@ import { z } from "zod";
 
 import type { EnrollmentStatus } from "@/core/domain/student-dashboard";
 import { getAdminApiServiceClient } from "@/infrastructure/auth/get-admin-api-service-client";
-import { requireAdminApiAccess } from "@/infrastructure/auth/require-admin-api-access";
 import {
   CapacityFullError,
   tryReserveCapacityAndEnroll,
@@ -12,6 +11,15 @@ import {
 import { softCancelEnrollmentsWithRefundGuard } from "@/infrastructure/enrollments/soft-cancel-enrollments-with-refund-guard";
 import { removeEnrollmentsFromEvent } from "@/infrastructure/enrollments/remove-enrollments-from-event";
 import { revalidateEventAttendancePaths } from "@/infrastructure/enrollments/revalidate-event-attendance";
+import {
+  parseTryLiraToCents,
+  resolveHavaleAmountTryCents,
+} from "@/infrastructure/payments/payment-providers";
+import {
+  cancelOpenPendingPaymentsKeepingSeat,
+  enrollmentHasPaidPayment,
+  insertPaidHavalePayment,
+} from "@/infrastructure/payments/record-havale-payment";
 import { SupabaseAdminAuditLogRepository } from "@/infrastructure/repositories/supabase-admin-audit-log-repository";
 import { resolveUsernameForLookup } from "@/shared/utils/student-username";
 import { apiCatchResponse, logSupabaseError } from "@/shared/utils/api-error";
@@ -30,6 +38,10 @@ const createSchema = z.object({
   username: z.string().min(1).max(40).optional(),
   email: z.string().email().optional(),
   query: z.string().min(1).max(80).optional(),
+  paymentMethod: z.enum(["none", "havale"]).optional().default("none"),
+  amountTry: z.string().max(20).optional(),
+  receiptNo: z.string().max(80).optional(),
+  note: z.string().max(500).optional(),
 });
 
 interface UpdateEnrollmentBody {
@@ -84,7 +96,7 @@ export async function POST(request: Request) {
 
     const { data: event, error: eventError } = await access.client
       .from("events")
-      .select("id, status")
+      .select("id, status, title, price_try_cents")
       .eq("id", eventId)
       .maybeSingle();
 
@@ -92,17 +104,19 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Etkinlik bulunamadı." }, { status: 404 });
     }
 
+    const studentSelect = "id, full_name, email, username, parent_id";
     let student: {
       id: string;
       full_name: string;
       email: string | null;
       username: string | null;
+      parent_id: string | null;
     } | null = null;
 
     if (studentId) {
       const { data, error } = await access.client
         .from("profiles")
-        .select("id, full_name, email, username")
+        .select(studentSelect)
         .eq("role", "student")
         .eq("is_active", true)
         .eq("id", studentId)
@@ -122,7 +136,7 @@ export async function POST(request: Request) {
       }
       const { data, error } = await access.client
         .from("profiles")
-        .select("id, full_name, email, username")
+        .select(studentSelect)
         .eq("role", "student")
         .eq("is_active", true)
         .eq("username", lookup)
@@ -136,7 +150,7 @@ export async function POST(request: Request) {
       const lookup = email ?? query!;
       const { data, error } = await access.client
         .from("profiles")
-        .select("id, full_name, email, username")
+        .select(studentSelect)
         .eq("role", "student")
         .eq("is_active", true)
         .eq("email", lookup)
@@ -153,6 +167,27 @@ export async function POST(request: Request) {
     }
 
     studentId = student.id;
+    const paymentMethod = parsed.data.paymentMethod ?? "none";
+    const recordHavale = paymentMethod === "havale";
+    let havaleAmountTryCents: number | null = null;
+    if (recordHavale) {
+      try {
+        havaleAmountTryCents = resolveHavaleAmountTryCents({
+          overrideTryCents: parseTryLiraToCents(parsed.data.amountTry ?? ""),
+          eventPriceTryCents: event.price_try_cents ?? null,
+        });
+      } catch (amountError) {
+        return NextResponse.json(
+          {
+            error:
+              amountError instanceof Error
+                ? amountError.message
+                : "Havale tutarı girin veya etkinlikte bir kurs ücreti tanımlı olsun.",
+          },
+          { status: 400 },
+        );
+      }
+    }
 
     try {
       const reserved = await tryReserveCapacityAndEnroll(access.client, {
@@ -163,13 +198,29 @@ export async function POST(request: Request) {
       });
 
       if (reserved.alreadyEnrolled) {
-        return NextResponse.json(
-          {
-            error: "Bu öğrenci zaten bu etkinliğe kayıtlı.",
-            data: { enrollmentId: reserved.enrollmentId },
-          },
-          { status: 409 },
+        if (!recordHavale) {
+          return NextResponse.json(
+            {
+              error: "Bu öğrenci zaten bu etkinliğe kayıtlı.",
+              data: { enrollmentId: reserved.enrollmentId },
+            },
+            { status: 409 },
+          );
+        }
+
+        const alreadyPaid = await enrollmentHasPaidPayment(
+          access.client,
+          reserved.enrollmentId,
         );
+        if (alreadyPaid) {
+          return NextResponse.json(
+            {
+              error: "Bu öğrenci bu etkinlik için zaten ödenmiş.",
+              data: { enrollmentId: reserved.enrollmentId },
+            },
+            { status: 409 },
+          );
+        }
       }
 
       const { data: enrollment, error: fetchError } = await access.client
@@ -183,11 +234,32 @@ export async function POST(request: Request) {
         return NextResponse.json({ error: "Kayıt eklenemedi." }, { status: 400 });
       }
 
-      const { data: eventMeta } = await access.client
-        .from("events")
-        .select("title")
-        .eq("id", eventId)
-        .maybeSingle();
+      let havalePaymentId: string | null = null;
+      if (recordHavale && havaleAmountTryCents != null) {
+        try {
+          await cancelOpenPendingPaymentsKeepingSeat(access.client, enrollment.id);
+          const havale = await insertPaidHavalePayment(access.client, {
+            enrollmentId: enrollment.id,
+            eventId,
+            payerUserId: student.parent_id?.trim() || access.user.id,
+            studentUserId: student.id,
+            amountTryCents: havaleAmountTryCents,
+            receiptNo: parsed.data.receiptNo ?? null,
+            note: parsed.data.note ?? null,
+            recordedBy: access.user.id,
+          });
+          havalePaymentId = havale.paymentId;
+        } catch (havaleError) {
+          if (!reserved.alreadyEnrolled) {
+            await access.client
+              .from("enrollments")
+              .update({ status: "cancelled" })
+              .eq("id", enrollment.id)
+              .eq("status", "registered");
+          }
+          throw havaleError;
+        }
+      }
 
       try {
         const audit = new SupabaseAdminAuditLogRepository(access.client);
@@ -196,22 +268,47 @@ export async function POST(request: Request) {
           actorEmail: access.actorEmail,
           enrollmentId: enrollment.id,
           eventId,
-          eventTitle: eventMeta?.title ?? null,
+          eventTitle: event.title ?? null,
           studentId: student.id,
           studentName: student.full_name,
           studentEmail: student.email,
           metadata: {
             enrollment_source: "admin_manual",
             revived: reserved.revived,
+            already_enrolled: reserved.alreadyEnrolled,
+            payment_method: paymentMethod,
+            ...(havalePaymentId
+              ? {
+                  havale_payment_id: havalePaymentId,
+                  amount_try_cents: havaleAmountTryCents,
+                  receipt_no: parsed.data.receiptNo?.trim() || null,
+                }
+              : {}),
           },
         });
       } catch (auditError) {
         console.error("[admin/enrollments POST audit]", auditError);
       }
 
+      revalidatePath("/admin/enrollments");
+      revalidatePath("/admin/reports");
+      revalidatePath("/dashboard/payments");
+
       return NextResponse.json(
-        { data: { enrollment, student } },
-        { status: reserved.revived ? 200 : 201 },
+        {
+          data: {
+            enrollment,
+            student,
+            ...(havalePaymentId
+              ? {
+                  paymentId: havalePaymentId,
+                  amountTryCents: havaleAmountTryCents,
+                  paymentMethod: "havale",
+                }
+              : {}),
+          },
+        },
+        { status: reserved.alreadyEnrolled || reserved.revived ? 200 : 201 },
       );
     } catch (reserveError) {
       if (reserveError instanceof CapacityFullError) {
