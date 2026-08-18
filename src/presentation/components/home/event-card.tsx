@@ -84,9 +84,14 @@ function EventTitle({
   );
 }
 
-function EventEnrollBlock({ event }: { event: AcademyEvent }) {
+function EventEnrollBlock({ event, compact = false }: { event: AcademyEvent; compact?: boolean }) {
   return (
-    <EventEnrollButton eventId={event.id} paymentMode={event.paymentMode} isPaid={event.isPaid} />
+    <EventEnrollButton
+      eventId={event.id}
+      paymentMode={event.paymentMode}
+      isPaid={event.isPaid}
+      compact={compact}
+    />
   );
 }
 
@@ -102,13 +107,13 @@ export function EventCard({
 
   if (compact) {
     const articleClass = embedded
-      ? "group flex w-full flex-1 flex-col bg-transparent transition hover:bg-white/70"
+      ? "group bg-transparent transition hover:bg-white/70"
       : "group overflow-hidden rounded-2xl border border-border-surface bg-white shadow-sm transition hover:border-secondary/40 hover:shadow-md";
 
     return (
       <article className={articleClass}>
-        <div className="grid h-full w-full flex-1 gap-4 p-4 sm:grid-cols-[minmax(0,1fr)_12.5rem] sm:items-stretch sm:gap-0 sm:p-0">
-          <div className="flex items-start gap-4 sm:px-5 sm:py-4 lg:px-6">
+        <div className="flex flex-col gap-4 p-4 sm:flex-row sm:items-start sm:gap-5 sm:px-5 sm:py-4 lg:px-6">
+          <div className="flex min-w-0 flex-1 items-start gap-4">
             <EventDateBadge day={start.day} month={start.month} />
 
             <div className="min-w-0 flex-1">
@@ -133,8 +138,8 @@ export function EventCard({
             </div>
           </div>
 
-          <div className="flex flex-col justify-center border-t border-border-surface pt-4 sm:border-l sm:border-t-0 sm:px-4 sm:py-4 lg:px-5">
-            <EventEnrollBlock event={event} />
+          <div className="w-full shrink-0 sm:w-44">
+            <EventEnrollBlock event={event} compact />
           </div>
         </div>
       </article>

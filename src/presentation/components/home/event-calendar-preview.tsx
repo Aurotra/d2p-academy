@@ -54,14 +54,14 @@ export async function EventCalendarPreview() {
             </p>
           </div>
 
-          <div className="lg:grid lg:grid-cols-[minmax(0,1fr)_17rem] lg:items-stretch">
-            <div className="flex min-h-0 flex-col bg-surface-section/80">
+          <div className="lg:grid lg:grid-cols-[minmax(0,1fr)_17rem]">
+            <div className="min-h-0 bg-surface-section/80 lg:h-full">
               {events.length === 0 ? (
                 <div className="p-5 sm:p-7">
                   <EmptyEventsState />
                 </div>
               ) : (
-                <div className="flex flex-1 flex-col divide-y divide-border-surface">
+                <div className="divide-y divide-border-surface">
                   {events.map((event) => (
                     <EventCard
                       key={event.id}

@@ -23,6 +23,7 @@ interface EventEnrollButtonProps {
   paymentMode?: EventPaymentMode;
   /** @deprecated Prefer paymentMode. Kept for backward-compatible callers. */
   isPaid?: boolean;
+  compact?: boolean;
 }
 
 export function EventEnrollButton({
@@ -30,6 +31,7 @@ export function EventEnrollButton({
   className = "",
   paymentMode,
   isPaid = false,
+  compact = false,
 }: EventEnrollButtonProps) {
   const router = useRouter();
   const { isAuthResolved, isLoggedIn, userRole, sessionKind, isInstructor } = useSiteAuth();
@@ -75,17 +77,19 @@ export function EventEnrollButton({
         {showExternalNote ? (
           <p className="text-center text-xs leading-5 text-subtle">{EXTERNAL_PAYMENT_NOTE}</p>
         ) : null}
-        <p className="text-center text-xs leading-5 text-subtle">
-          Üye değilseniz önce{" "}
-          <Link href={buildRegisterForEventPath(eventId)} className="font-semibold text-document-primary">
-            veli hesabı oluşturun
-          </Link>
-          ; hesabınız varsa{" "}
-          <Link href={buildLoginForEventPath(eventId)} className="font-semibold text-document-primary">
-            giriş yapın
-          </Link>
-          . Kayıt çocuğunuzun hesabı üzerinden tamamlanır.
-        </p>
+        {!compact ? (
+          <p className="text-center text-xs leading-5 text-subtle">
+            Üye değilseniz önce{" "}
+            <Link href={buildRegisterForEventPath(eventId)} className="font-semibold text-document-primary">
+              veli hesabı oluşturun
+            </Link>
+            ; hesabınız varsa{" "}
+            <Link href={buildLoginForEventPath(eventId)} className="font-semibold text-document-primary">
+              giriş yapın
+            </Link>
+            . Kayıt çocuğunuzun hesabı üzerinden tamamlanır.
+          </p>
+        ) : null}
       </div>
     );
   }
@@ -102,7 +106,7 @@ export function EventEnrollButton({
       {showExternalNote ? (
         <p className="text-center text-xs leading-5 text-subtle">{EXTERNAL_PAYMENT_NOTE}</p>
       ) : null}
-      {!isStaffSession ? (
+      {!compact && !isStaffSession ? (
         <p className="text-center text-xs leading-5 text-subtle">
           Çocuk hesabı seçerek kayıt tamamlanır; veli hesabınız etkinliğe kaydolmaz.
         </p>
