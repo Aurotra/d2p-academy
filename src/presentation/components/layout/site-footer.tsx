@@ -141,11 +141,11 @@ export function SiteFooter() {
               <div className="flex flex-wrap items-center gap-3 sm:gap-4">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
-                  src="/payments/paytr-mark.svg"
+                  src="/payments/paytr-mark.png"
                   alt="PayTR"
-                  width={80}
+                  width={148}
                   height={32}
-                  className="h-7 w-auto sm:h-8"
+                  className="h-8 w-auto sm:h-9"
                 />
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
