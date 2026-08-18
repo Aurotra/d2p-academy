@@ -1,6 +1,8 @@
 import { headers } from "next/headers";
 import { notFound, redirect } from "next/navigation";
 
+import { rotatePendingPaytrCheckout } from "@/infrastructure/payments/start-paid-enrollment-checkout";
+import { shouldRotatePaytrCheckout } from "@/infrastructure/payments/paytr-session";
 import { createSupabaseServerClient } from "@/infrastructure/supabase/create-server-client";
 import { createServiceRoleClient } from "@/infrastructure/supabase/create-service-role-client";
 import { PaytrCheckoutFrame } from "@/presentation/components/payments/paytr-checkout-frame";
@@ -11,11 +13,12 @@ export default async function PaymentEmbedPage({
   searchParams,
 }: {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ embed?: string }>;
+  searchParams: Promise<{ embed?: string; fresh?: string }>;
 }) {
   const { id: paymentId } = await params;
   const query = await searchParams;
-  const nonce = (await headers()).get(CSP_NONCE_HEADER) ?? undefined;
+  const headerStore = await headers();
+  const nonce = headerStore.get(CSP_NONCE_HEADER) ?? undefined;
 
   const supabase = await createSupabaseServerClient();
   if (!supabase) {
@@ -36,7 +39,9 @@ export default async function PaymentEmbedPage({
 
   const { data: payment } = await serviceClient
     .from("payments")
-    .select("id, payer_user_id, status, provider, provider_raw")
+    .select(
+      "id, payer_user_id, student_user_id, event_id, enrollment_id, amount_try_cents, status, provider, provider_raw, created_at",
+    )
     .eq("id", paymentId)
     .maybeSingle();
 
@@ -48,6 +53,43 @@ export default async function PaymentEmbedPage({
     redirect(`/odeme/basarili?paymentId=${encodeURIComponent(paymentId)}`);
   }
 
+  const enrollHref = payment.event_id
+    ? `/dashboard/children?enroll=1&eventId=${encodeURIComponent(payment.event_id)}`
+    : "/dashboard/children?enroll=1";
+
+  if (payment.status === "failed" || payment.status === "cancelled") {
+    redirect(enrollHref);
+  }
+
+  if (
+    shouldRotatePaytrCheckout({
+      status: payment.status,
+      provider: payment.provider,
+      createdAt: payment.created_at,
+      isFreshLoad: query.fresh === "1",
+    })
+  ) {
+    let rotated: { paymentPageUrl: string };
+    try {
+      rotated = await rotatePendingPaytrCheckout({
+        serviceClient,
+        request: new Request("https://www.d2p.com.tr/odeme", { headers: headerStore }),
+        payment: {
+          id: payment.id,
+          enrollmentId: payment.enrollment_id,
+          eventId: payment.event_id,
+          studentUserId: payment.student_user_id,
+          payerUserId: payment.payer_user_id,
+          amountTryCents: payment.amount_try_cents,
+        },
+      });
+    } catch (error) {
+      console.error("[odeme rotate paytr]", error);
+      redirect(enrollHref);
+    }
+    redirect(rotated.paymentPageUrl);
+  }
+
   const raw = (payment.provider_raw ?? {}) as {
     checkoutFormContent?: string;
     iframeUrl?: string;
@@ -56,7 +98,7 @@ export default async function PaymentEmbedPage({
   const html = raw.checkoutFormContent?.trim() ?? "";
 
   if (query.embed !== "1" || (!iframeUrl && !html)) {
-    redirect("/dashboard/children?enroll=1");
+    redirect(enrollHref);
   }
 
   return (
@@ -68,10 +110,7 @@ export default async function PaymentEmbedPage({
           yönlendirilirsiniz.
         </p>
         {iframeUrl ? (
-          <PaytrCheckoutFrame
-            iframeUrl={iframeUrl}
-            nonce={nonce}
-          />
+          <PaytrCheckoutFrame iframeUrl={iframeUrl} nonce={nonce} enrollHref={enrollHref} />
         ) : (
           <div className="mt-6" dangerouslySetInnerHTML={{ __html: html }} />
         )}

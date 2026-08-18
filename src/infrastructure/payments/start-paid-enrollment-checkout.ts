@@ -15,6 +15,7 @@ import {
 } from "@/infrastructure/payments/iyzico-client";
 import { initializePaytrCheckout } from "@/infrastructure/payments/paytr-client";
 import { merchantOidFromPaymentId } from "@/infrastructure/payments/paytr-hash";
+import { paytrEmbedUrl } from "@/infrastructure/payments/paytr-session";
 import { getClientIp } from "@/lib/utils/request-ip";
 
 const PENDING_PAYMENT_TTL_MS = 45 * 60 * 1000;
@@ -176,7 +177,7 @@ export async function startPaidEnrollmentCheckout(
     return {
       enrollmentId,
       paymentId: payment.id,
-      paymentPageUrl: `/odeme/${payment.id}?embed=1`,
+      paymentPageUrl: paytrEmbedUrl(payment.id),
       requiresPayment: true,
       eventTitle: input.eventTitle,
       amountTryCents: input.priceTryCents,
@@ -224,6 +225,87 @@ export async function startPaidEnrollmentCheckout(
     requiresPayment: true,
     eventTitle: input.eventTitle,
     amountTryCents: input.priceTryCents,
+  };
+}
+
+export async function rotatePendingPaytrCheckout(input: {
+  serviceClient: SupabaseClient;
+  request: Request;
+  payment: {
+    id: string;
+    enrollmentId: string;
+    eventId: string;
+    studentUserId: string;
+    payerUserId: string;
+    amountTryCents: number;
+  };
+}): Promise<{ paymentId: string; paymentPageUrl: string }> {
+  const { serviceClient, payment } = input;
+
+  await cancelStalePendingPaymentLocked(serviceClient, payment.id, {
+    alsoCancelEnrollment: false,
+  });
+
+  const { data: event } = await serviceClient
+    .from("events")
+    .select("title")
+    .eq("id", payment.eventId)
+    .maybeSingle();
+
+  const { data: payer } = await serviceClient
+    .from("profiles")
+    .select("full_name, email, parent_phone, city_district")
+    .eq("id", payment.payerUserId)
+    .maybeSingle();
+
+  const { data: nextPayment, error: paymentError } = await serviceClient
+    .from("payments")
+    .insert({
+      enrollment_id: payment.enrollmentId,
+      event_id: payment.eventId,
+      payer_user_id: payment.payerUserId,
+      student_user_id: payment.studentUserId,
+      amount_try_cents: payment.amountTryCents,
+      currency: "TRY",
+      provider: "paytr",
+      status: "pending",
+    })
+    .select("id")
+    .single();
+
+  if (paymentError || !nextPayment) {
+    throw new Error(paymentError?.message ?? "Yeni ödeme kaydı oluşturulamadı.");
+  }
+
+  const merchantOid = merchantOidFromPaymentId(nextPayment.id);
+  await serviceClient
+    .from("payments")
+    .update({ provider_conversation_id: merchantOid })
+    .eq("id", nextPayment.id);
+
+  const init = await initializePaytrCheckout({
+    paymentId: nextPayment.id,
+    priceTryCents: payment.amountTryCents,
+    eventTitle: event?.title?.trim() || "Etkinlik",
+    buyer: {
+      name: payer?.full_name?.trim() || "Veli",
+      email: payer?.email?.trim() || "veli@d2p.com.tr",
+      phone: payer?.parent_phone,
+      ip: getClientIp(input.request) ?? "85.34.78.112",
+    },
+  });
+
+  await serviceClient
+    .from("payments")
+    .update({
+      provider_token: init.token,
+      provider_raw: { iframeUrl: init.iframeUrl, merchantOid: init.merchantOid },
+    })
+    .eq("id", nextPayment.id);
+
+  return {
+    paymentId: nextPayment.id,
+    paymentPageUrl: paytrEmbedUrl(nextPayment.id),
   };
 }
 

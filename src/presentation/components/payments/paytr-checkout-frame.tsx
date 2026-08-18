@@ -1,7 +1,10 @@
 "use client";
 
+import Link from "next/link";
 import Script from "next/script";
-import { useCallback, useRef } from "react";
+import { useCallback, useEffect, useRef } from "react";
+
+import { buttonLinkClasses } from "@/presentation/components/ui/button";
 
 declare global {
   interface Window {
@@ -12,9 +15,10 @@ declare global {
 interface PaytrCheckoutFrameProps {
   iframeUrl: string;
   nonce?: string;
+  enrollHref: string;
 }
 
-export function PaytrCheckoutFrame({ iframeUrl, nonce }: PaytrCheckoutFrameProps) {
+export function PaytrCheckoutFrame({ iframeUrl, nonce, enrollHref }: PaytrCheckoutFrameProps) {
   const startedRef = useRef(false);
 
   const startResize = useCallback(() => {
@@ -23,6 +27,16 @@ export function PaytrCheckoutFrame({ iframeUrl, nonce }: PaytrCheckoutFrameProps
     }
     startedRef.current = true;
     window.iFrameResize({}, "#paytriframe");
+  }, []);
+
+  useEffect(() => {
+    const url = new URL(window.location.href);
+    if (!url.searchParams.has("fresh")) {
+      return;
+    }
+    url.searchParams.delete("fresh");
+    const search = url.searchParams.toString();
+    window.history.replaceState(null, "", `${url.pathname}${search ? `?${search}` : ""}`);
   }, []);
 
   return (
@@ -36,6 +50,12 @@ export function PaytrCheckoutFrame({ iframeUrl, nonce }: PaytrCheckoutFrameProps
         className="mt-6 min-h-[720px] w-full rounded-2xl border border-border-surface"
         style={{ width: "100%" }}
       />
+      <p className="mt-4 text-sm text-muted">
+        Form geçersiz görünürse sayfayı yenilemeyin; yeni ödeme başlatın.
+      </p>
+      <Link href={enrollHref} className={`${buttonLinkClasses("outline")} mt-3 min-h-[44px] w-full`}>
+        Yeni ödeme başlat
+      </Link>
       <Script
         src="https://www.paytr.com/js/iframeResizer.min.js?v2"
         strategy="afterInteractive"
