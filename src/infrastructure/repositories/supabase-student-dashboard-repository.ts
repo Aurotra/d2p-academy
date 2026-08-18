@@ -118,7 +118,7 @@ export class SupabaseStudentDashboardRepository implements StudentDashboardRepos
     const { error: ensureProfileError } = await this.client.rpc("ensure_user_profile");
 
     if (ensureProfileError) {
-      throw new Error(`Profil oluşturulamadı: ${ensureProfileError.message}`);
+      console.error("[ensure_user_profile]", ensureProfileError.message);
     }
 
     const [profileResult, enrollmentsResult, certificatesResult] = await Promise.all([
@@ -179,9 +179,11 @@ export class SupabaseStudentDashboardRepository implements StudentDashboardRepos
 
     if (profileResult.error || !profileResult.data) {
       throw new Error(
-        profileResult.error
-          ? `Profil bilgileri alınamadı: ${profileResult.error.message}`
-          : "Profil bilgileri alınamadı.",
+        ensureProfileError
+          ? "Profiliniz yüklenemedi. Sayfayı yenileyin veya destek ile iletişime geçin."
+          : profileResult.error
+            ? `Profil bilgileri alınamadı: ${profileResult.error.message}`
+            : "Profil bilgileri alınamadı.",
       );
     }
 
