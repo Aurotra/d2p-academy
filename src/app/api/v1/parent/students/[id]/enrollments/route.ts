@@ -11,6 +11,7 @@ import {
   resolveEventPaymentMode,
 } from "@/infrastructure/events/event-payment-mode";
 import { startPaidEnrollmentCheckout } from "@/infrastructure/payments/start-paid-enrollment-checkout";
+import { scheduleAdminParentEnrollmentNotify } from "@/infrastructure/email/notify-admin-parent-enrollment";
 import { createServiceRoleClient } from "@/infrastructure/supabase/create-service-role-client";
 import { createSupabaseServerClient } from "@/infrastructure/supabase/create-server-client";
 import {
@@ -254,6 +255,13 @@ export async function POST(
         },
       });
     }
+
+    scheduleAdminParentEnrollmentNotify(serviceClient, {
+      enrollmentId: reserved.enrollmentId,
+      paymentLabel:
+        paymentMode === "external" ? "Kurum/okul tahsilatı" : "Ücretsiz kayıt",
+      alreadyEnrolled: false,
+    });
 
     return NextResponse.json(
       {

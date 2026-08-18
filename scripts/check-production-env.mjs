@@ -36,6 +36,10 @@ const required = [
 
 const recommended = [
   {
+    key: "ADMIN_EMAIL",
+    hint: "Veli/çocuk kurs kaydı bildiriminin gideceği admin adresi",
+  },
+  {
     key: "WEBHOOK_SECRET",
     hint: "Supabase Edge Function webhook doğrulaması",
   },

@@ -1,5 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 
+import { scheduleAdminParentEnrollmentNotify } from "@/infrastructure/email/notify-admin-parent-enrollment";
 import { resolvePaidCheckoutReserveAction } from "@/infrastructure/enrollments/paid-reenrollment";
 import {
   CapacityFullError,
@@ -390,6 +391,15 @@ export async function finalizePaidPayment(params: {
     providerPaymentId: params.providerPaymentId,
     raw: params.raw,
   });
+
+  if (!result.alreadyPaid) {
+    scheduleAdminParentEnrollmentNotify(params.serviceClient, {
+      enrollmentId: result.enrollmentId,
+      paymentLabel: "Kartla ödendi",
+      alreadyPaid: false,
+    });
+  }
+
   return {
     enrollmentId: result.enrollmentId,
     studentUserId: result.studentUserId,
