@@ -9,7 +9,17 @@ import type {
   AdminPaymentStatusFilter,
   AdminPaymentsView,
 } from "@/infrastructure/payments/admin-payment-ledger";
+import {
+  EMPTY_ADMIN_PAYMENT_LEDGER_SUMMARY,
+  adminPaymentLedgerCsvFilename,
+  type AdminPaymentLedgerSummary,
+} from "@/infrastructure/payments/admin-payment-ledger-summary";
 import { fetchAdminPaymentLedger } from "@/infrastructure/payments/fetch-admin-payment-ledger";
+import {
+  istanbulYmd,
+  resolveAdminReportRange,
+  type AdminReportPeriodPreset,
+} from "@/infrastructure/reports/admin-report-period";
 import { AdminPaymentsManager } from "@/presentation/components/admin/admin-payments-manager";
 
 export const dynamic = "force-dynamic";
@@ -34,10 +44,34 @@ function parseStatus(value: string | undefined): AdminPaymentStatusFilter {
   return "all";
 }
 
+function parsePeriod(value: string | undefined): AdminReportPeriodPreset {
+  if (
+    value === "last_3_months" ||
+    value === "last_12_months" ||
+    value === "custom" ||
+    value === "this_month"
+  ) {
+    return value;
+  }
+  return "this_month";
+}
+
+function istanbulInputDate(date: Date): string {
+  const { year, month, day } = istanbulYmd(date);
+  return `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+}
+
 export default async function AdminPaymentsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ view?: string; method?: string; status?: string }>;
+  searchParams: Promise<{
+    view?: string;
+    method?: string;
+    status?: string;
+    period?: string;
+    from?: string;
+    to?: string;
+  }>;
 }) {
   const sessionClient = await createSupabaseServerClient();
   if (!sessionClient) {
@@ -53,15 +87,31 @@ export default async function AdminPaymentsPage({
   const view: AdminPaymentsView = params.view === "stuck" ? "stuck" : "ledger";
   const method = parseMethod(params.method);
   const status = parseStatus(params.status);
+  const period = parsePeriod(params.period);
+
+  let periodError: string | null = null;
+  let range = resolveAdminReportRange({ preset: "this_month" });
+  try {
+    range = resolveAdminReportRange({
+      preset: period,
+      from: params.from,
+      to: params.to,
+    });
+  } catch (error) {
+    periodError = error instanceof Error ? error.message : "Tarih aralığı geçersiz.";
+    range = resolveAdminReportRange({ preset: "this_month" });
+  }
 
   const client = await getAdminDataClient();
   let rows: AdminPaymentLedgerRow[] = [];
+  let summary: AdminPaymentLedgerSummary = EMPTY_ADMIN_PAYMENT_LEDGER_SUMMARY;
   let stuckCount = 0;
   let loadError: string | null = null;
 
   try {
-    const ledger = await fetchAdminPaymentLedger(client, { method, status, view });
+    const ledger = await fetchAdminPaymentLedger(client, { method, status, view, range });
     rows = ledger.rows;
+    summary = ledger.summary;
     stuckCount = ledger.stuckCount;
   } catch (error) {
     loadError = error instanceof Error ? error.message : "Ödemeler yüklenemedi.";
@@ -76,8 +126,8 @@ export default async function AdminPaymentsPage({
         </p>
         <h1 className="mt-2 text-2xl font-bold text-navy-950">Ödemeler</h1>
         <p className="mt-2 text-sm text-muted">
-          Kart, havale ve kurum kayıtları tek listede. Sağlayıcı no / dekont mutabakat içindir.
-          Takılı kart kuyruğu 45 dakikayı geçen veya başarısız PayTR denemelerini gösterir.
+          Dönem: {range.label} (Europe/Istanbul). Kart ve havale hesaba geçen tahsilat; kurum
+          okul tahsilatı tahmini. Mutabakat bu dönem özetinden biter.
         </p>
       </div>
 
@@ -88,10 +138,17 @@ export default async function AdminPaymentsPage({
       ) : (
         <AdminPaymentsManager
           rows={rows}
+          summary={summary}
           stuckCount={stuckCount}
           view={view}
           method={method}
           status={status}
+          period={range.preset}
+          from={params.from ?? istanbulInputDate(range.startInclusive)}
+          to={params.to ?? istanbulInputDate(new Date(range.endExclusive.getTime() - 1))}
+          rangeLabel={range.label}
+          csvFilename={adminPaymentLedgerCsvFilename(range)}
+          periodError={periodError}
         />
       )}
     </div>

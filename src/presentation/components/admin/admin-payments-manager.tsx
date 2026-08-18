@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useMemo, useState } from "react";
+import { useMemo, useState, type FormEvent } from "react";
 
 import { formatTryCentsDisplay } from "@/core/domain/payment";
 import {
@@ -14,15 +14,29 @@ import {
   type AdminPaymentStatusFilter,
   type AdminPaymentsView,
 } from "@/infrastructure/payments/admin-payment-ledger";
+import {
+  adminPaymentsHref,
+  buildAdminPaymentLedgerCsv,
+  type AdminPaymentLedgerSummary,
+} from "@/infrastructure/payments/admin-payment-ledger-summary";
+import type { AdminReportPeriodPreset } from "@/infrastructure/reports/admin-report-period";
 import { Button } from "@/presentation/components/ui/button";
 import { Input } from "@/presentation/components/ui/input";
+import { Select } from "@/presentation/components/ui/select";
 
 interface AdminPaymentsManagerProps {
   rows: AdminPaymentLedgerRow[];
+  summary: AdminPaymentLedgerSummary;
   stuckCount: number;
   view: AdminPaymentsView;
   method: AdminPaymentMethodFilter;
   status: AdminPaymentStatusFilter;
+  period: AdminReportPeriodPreset;
+  from: string;
+  to: string;
+  rangeLabel: string;
+  csvFilename: string;
+  periodError?: string | null;
 }
 
 function formatDate(value: string | null): string {
@@ -58,21 +72,26 @@ function hrefFor(input: {
   view: AdminPaymentsView;
   method: AdminPaymentMethodFilter;
   status: AdminPaymentStatusFilter;
+  period: AdminReportPeriodPreset;
+  from: string;
+  to: string;
 }): string {
-  const params = new URLSearchParams();
-  if (input.view === "stuck") params.set("view", "stuck");
-  if (input.method !== "all") params.set("method", input.method);
-  if (input.status !== "all") params.set("status", input.status);
-  const query = params.toString();
-  return query ? `/admin/payments?${query}` : "/admin/payments";
+  return adminPaymentsHref(input);
 }
 
 export function AdminPaymentsManager({
   rows,
+  summary,
   stuckCount,
   view,
   method,
   status,
+  period,
+  from,
+  to,
+  rangeLabel,
+  csvFilename,
+  periodError,
 }: AdminPaymentsManagerProps) {
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
@@ -81,6 +100,53 @@ export function AdminPaymentsManager({
   const [receiptNo, setReceiptNo] = useState("");
   const [note, setNote] = useState("");
   const [amountTry, setAmountTry] = useState("");
+  const [periodDraft, setPeriodDraft] = useState<AdminReportPeriodPreset>(period);
+  const [customFrom, setCustomFrom] = useState(from);
+  const [customTo, setCustomTo] = useState(to);
+
+  function applyPeriod(event: FormEvent) {
+    event.preventDefault();
+    router.push(
+      hrefFor({
+        view,
+        method,
+        status,
+        period: periodDraft,
+        from: customFrom,
+        to: customTo,
+      }),
+    );
+  }
+
+  function exportExcel() {
+    const csv = buildAdminPaymentLedgerCsv({
+      rangeLabel,
+      summary,
+      rows,
+    });
+    const blob = new Blob([`\uFEFF${csv}`], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const anchor = document.createElement("a");
+    anchor.href = url;
+    anchor.download = csvFilename;
+    anchor.click();
+    URL.revokeObjectURL(url);
+  }
+
+  function link(next: {
+    view?: AdminPaymentsView;
+    method?: AdminPaymentMethodFilter;
+    status?: AdminPaymentStatusFilter;
+  }): string {
+    return hrefFor({
+      view: next.view ?? view,
+      method: next.method ?? method,
+      status: next.status ?? status,
+      period,
+      from,
+      to,
+    });
+  }
 
   const havaleRow = useMemo(
     () => rows.find((row) => row.id === havaleId) ?? null,
@@ -137,9 +203,92 @@ export function AdminPaymentsManager({
 
   return (
     <div className="space-y-4">
+      <form
+        onSubmit={applyPeriod}
+        className="grid gap-3 rounded-2xl border border-border-surface bg-white px-4 py-4 sm:grid-cols-2 lg:grid-cols-4"
+      >
+        <Select
+          id="payments-period"
+          label="Dönem"
+          value={periodDraft}
+          onChange={(event) => setPeriodDraft(event.target.value as AdminReportPeriodPreset)}
+        >
+          <option value="this_month">Bu ay</option>
+          <option value="last_3_months">Son 3 ay</option>
+          <option value="last_12_months">Son 12 ay</option>
+          <option value="custom">Özel aralık</option>
+        </Select>
+        {periodDraft === "custom" ? (
+          <>
+            <Input
+              id="payments-from"
+              label="Başlangıç"
+              type="date"
+              value={customFrom}
+              onChange={(event) => setCustomFrom(event.target.value)}
+              required
+            />
+            <Input
+              id="payments-to"
+              label="Bitiş"
+              type="date"
+              value={customTo}
+              onChange={(event) => setCustomTo(event.target.value)}
+              required
+            />
+          </>
+        ) : null}
+        <div className="flex items-end">
+          <Button type="submit" className="w-full min-h-[44px]">
+            Dönemi uygula
+          </Button>
+        </div>
+      </form>
+      {periodError ? <p className="text-sm text-red-600">{periodError}</p> : null}
+
+      {view === "ledger" ? (
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="rounded-2xl border border-border-surface bg-emerald-50 px-4 py-4">
+            <p className="text-[11px] font-semibold uppercase tracking-wide text-subtle">Kart</p>
+            <p className="mt-1 text-2xl font-bold text-navy-950">
+              {formatTryCentsDisplay(summary.cardPaidTryCents)}
+            </p>
+            <p className="mt-1 text-xs text-muted">PayTR / kart tahsilatı</p>
+          </div>
+          <div className="rounded-2xl border border-border-surface bg-emerald-50/70 px-4 py-4">
+            <p className="text-[11px] font-semibold uppercase tracking-wide text-subtle">Havale</p>
+            <p className="mt-1 text-2xl font-bold text-navy-950">
+              {formatTryCentsDisplay(summary.havalePaidTryCents)}
+            </p>
+            <p className="mt-1 text-xs text-muted">Banka transferi</p>
+          </div>
+          <div className="rounded-2xl border border-border-surface bg-surface-section/60 px-4 py-4">
+            <p className="text-[11px] font-semibold uppercase tracking-wide text-subtle">Kurum</p>
+            <p className="mt-1 text-2xl font-bold text-navy-950">
+              {formatTryCentsDisplay(summary.kurumPaidTryCents)}
+            </p>
+            <p className="mt-1 text-xs text-muted">Okul tahsilatı tahmini</p>
+          </div>
+          <div className="rounded-2xl border border-secondary/30 bg-white px-4 py-4">
+            <p className="text-[11px] font-semibold uppercase tracking-wide text-subtle">
+              Kart + havale
+            </p>
+            <p className="mt-1 text-2xl font-bold text-navy-950">
+              {formatTryCentsDisplay(summary.cardHavalePaidTryCents)}
+            </p>
+            <p className="mt-1 text-xs text-muted">
+              {summary.paidRowCount} ödenen kayıt
+              {summary.refundedTryCents > 0
+                ? ` · iade ${formatTryCentsDisplay(summary.refundedTryCents)}`
+                : ""}
+            </p>
+          </div>
+        </div>
+      ) : null}
+
       <div className="flex flex-wrap gap-2">
         <Link
-          href={hrefFor({ view: "stuck", method: "all", status: "all" })}
+          href={link({ view: "stuck", method: "all", status: "all" })}
           className={`rounded-full px-3 py-1.5 text-xs font-semibold ${
             view === "stuck"
               ? "bg-amber-600 text-white"
@@ -149,7 +298,7 @@ export function AdminPaymentsManager({
           Takılı kart{stuckCount > 0 ? ` (${stuckCount})` : ""}
         </Link>
         <Link
-          href={hrefFor({ view: "ledger", method: "all", status: "all" })}
+          href={link({ view: "ledger", method: "all", status: "all" })}
           className={`rounded-full px-3 py-1.5 text-xs font-semibold ${
             view === "ledger" && method === "all" && status === "all"
               ? "bg-document-primary text-white"
@@ -172,7 +321,7 @@ export function AdminPaymentsManager({
           ).map(([value, label]) => (
             <Link
               key={value}
-              href={hrefFor({ view: "ledger", method: value, status })}
+              href={link({ view: "ledger", method: value, status })}
               className={`rounded-full px-3 py-1.5 text-xs font-semibold ${
                 method === value
                   ? "bg-navy-950 text-white"
@@ -199,7 +348,7 @@ export function AdminPaymentsManager({
           ).map(([value, label]) => (
             <Link
               key={value}
-              href={hrefFor({ view: "ledger", method, status: value })}
+              href={link({ view: "ledger", method, status: value })}
               className={`rounded-full px-3 py-1.5 text-xs font-semibold ${
                 status === value
                   ? "bg-navy-950 text-white"
@@ -425,6 +574,18 @@ export function AdminPaymentsManager({
           </tbody>
         </table>
       </div>
+
+      {view === "ledger" ? (
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+          <p className="text-sm text-muted">
+            Tabloda {rows.length} satır. Üst toplamlar dönemdeki tüm ödenen kayıtlar; tablo
+            yöntem/durum filtresine göre.
+          </p>
+          <Button type="button" variant="secondary" onClick={exportExcel} className="min-h-[44px]">
+            Excel&apos;e aktar
+          </Button>
+        </div>
+      ) : null}
     </div>
   );
 }
