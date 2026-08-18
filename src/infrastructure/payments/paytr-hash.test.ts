@@ -2,8 +2,11 @@ import { describe, expect, it } from "vitest";
 
 import {
   buildPaytrGetTokenHash,
+  buildPaytrInstallmentTableScriptUrl,
+  buildPaytrInstallmentTableToken,
   buildPaytrNotificationHash,
   encodePaytrBasket,
+  formatPaytrInstallmentAmount,
   merchantOidFromPaymentId,
   paytrHashesMatch,
 } from "@/infrastructure/payments/paytr-hash";
@@ -66,5 +69,24 @@ describe("paytr-hash", () => {
     });
     expect(paytrHashesMatch(hash, hash)).toBe(true);
     expect(paytrHashesMatch(hash, "nope")).toBe(false);
+  });
+
+  it("builds the installment table script URL with the product price", () => {
+    const token = buildPaytrInstallmentTableToken({
+      merchantId: "737306",
+      merchantKey: "key",
+      merchantSalt: "salt",
+    });
+    expect(token).toHaveLength(64);
+    expect(formatPaytrInstallmentAmount(1300)).toBe("13.00");
+    expect(
+      buildPaytrInstallmentTableScriptUrl({
+        merchantId: "737306",
+        token: "abc",
+        amountTryCents: 1350,
+      }),
+    ).toBe(
+      "https://www.paytr.com/odeme/taksit-tablosu/v2?token=abc&merchant_id=737306&amount=13.50&taksit=0&tumu=0",
+    );
   });
 });

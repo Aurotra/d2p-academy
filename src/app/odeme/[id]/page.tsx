@@ -6,6 +6,8 @@ import { shouldRotatePaytrCheckout } from "@/infrastructure/payments/paytr-sessi
 import { createSupabaseServerClient } from "@/infrastructure/supabase/create-server-client";
 import { createServiceRoleClient } from "@/infrastructure/supabase/create-service-role-client";
 import { PaytrCheckoutFrame } from "@/presentation/components/payments/paytr-checkout-frame";
+import { PaytrInstallmentTable } from "@/presentation/components/payments/paytr-installment-table";
+import { getPaytrInstallmentTableScriptUrl } from "@/infrastructure/payments/paytr-hash";
 import { CSP_NONCE_HEADER } from "@/shared/config/csp-nonce";
 
 export default async function PaymentEmbedPage({
@@ -96,6 +98,7 @@ export default async function PaymentEmbedPage({
   };
   const iframeUrl = raw.iframeUrl?.trim() ?? "";
   const html = raw.checkoutFormContent?.trim() ?? "";
+  const installmentScriptUrl = getPaytrInstallmentTableScriptUrl(payment.amount_try_cents ?? 0);
 
   if (query.embed !== "1" || (!iframeUrl && !html)) {
     redirect(enrollHref);
@@ -106,14 +109,17 @@ export default async function PaymentEmbedPage({
       <div className="mx-auto max-w-3xl">
         <h1 className="text-2xl font-black text-navy-950">Güvenli ödeme</h1>
         <p className="mt-2 text-sm text-muted">
-          Ödemeyi güvenli ödeme formu üzerinden tamamlayın. İşlem bitince otomatik
-          yönlendirilirsiniz.
+          Ödemeyi güvenli ödeme formu üzerinden tamamlayın. Kartınız uygunsa taksit seçenekleri
+          formda görünür. İşlem bitince otomatik yönlendirilirsiniz.
         </p>
         {iframeUrl ? (
           <PaytrCheckoutFrame iframeUrl={iframeUrl} nonce={nonce} enrollHref={enrollHref} />
         ) : (
           <div className="mt-6" dangerouslySetInnerHTML={{ __html: html }} />
         )}
+        {installmentScriptUrl ? (
+          <PaytrInstallmentTable scriptUrl={installmentScriptUrl} nonce={nonce} />
+        ) : null}
       </div>
     </section>
   );

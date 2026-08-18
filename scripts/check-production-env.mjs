@@ -51,6 +51,10 @@ const recommended = [
     key: "PAYTR_MERCHANT_SALT",
     hint: "PayTR mağaza paneli entegrasyon bilgileri",
   },
+  {
+    key: "PAYTR_INSTALLMENT_TABLE_TOKEN",
+    hint: "PayTR taksit tablosu hazır kodundaki token (ürün sayfasında taksit dökümü)",
+  },
 ];
 
 let hasError = false;

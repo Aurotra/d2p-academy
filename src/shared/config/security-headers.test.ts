@@ -30,6 +30,7 @@ describe("buildContentSecurityPolicy", () => {
     expect(csp).toContain(
       "frame-src 'self' https://www.paytr.com https://*.paytr.com https://www.google.com",
     );
+    expect(csp).toContain("https://www.paytr.com https://*.paytr.com");
     expect(csp).toMatch(/form-action 'self'(?:;|$)/);
     expect(csp).not.toMatch(/frame-src 'self' https:(?:;|$)/);
     expect(csp).not.toMatch(/form-action 'self' https:(?:;|$)/);

@@ -99,7 +99,7 @@ export async function initializePaytrCheckout(
   const paymentAmount = String(input.priceTryCents);
   const unitPrice = formatTryCentsAsIyzicoPrice(input.priceTryCents);
   const userBasket = encodePaytrBasket(input.eventTitle, unitPrice);
-  const noInstallment = "1";
+  const noInstallment = "0";
   const maxInstallment = "0";
   const currency = "TL";
   const testMode = isPaytrTestMode() ? "1" : "0";

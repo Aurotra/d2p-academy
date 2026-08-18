@@ -58,7 +58,7 @@ export function buildContentSecurityPolicy(
     "style-src 'self'",
     "style-src-elem 'self' 'unsafe-inline'",
     "style-src-attr 'unsafe-inline'",
-    `img-src 'self' data: blob: ${supabase.https}`,
+    `img-src 'self' data: blob: ${supabase.https} https://www.paytr.com https://*.paytr.com`,
     "font-src 'self' data:",
     `connect-src 'self' ${supabase.https} ${supabase.wss} https://www.paytr.com`,
     frameSrc,

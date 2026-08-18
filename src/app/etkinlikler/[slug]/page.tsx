@@ -1,18 +1,22 @@
 import { RemoteImage } from "@/presentation/components/ui/remote-image";
 import Link from "next/link";
 import type { Metadata } from "next";
+import { headers } from "next/headers";
 import { notFound } from "next/navigation";
 
 import { EVENT_TYPE_LABELS } from "@/core/domain/event";
 import { SupabaseEventRepository } from "@/infrastructure/repositories/supabase-event-repository";
 import { createSupabaseServerClient } from "@/infrastructure/supabase/create-server-client";
+import { getPaytrInstallmentTableScriptUrl } from "@/infrastructure/payments/paytr-hash";
 import { EventEnrollButton } from "@/presentation/components/events/event-enroll-button";
 import { PublicPageShell } from "@/presentation/components/layout/public-page-shell";
+import { PaytrInstallmentTable } from "@/presentation/components/payments/paytr-installment-table";
 import { EventJsonLd } from "@/presentation/components/seo/event-json-ld";
 import { Badge } from "@/presentation/components/ui/badge";
 import { eventsPageMetadata } from "@/shared/seo/public-pages";
 import { BRAND_ACCENT_CARD_STYLES } from "@/shared/constants/brand-surfaces";
 import { publicPageMetadata } from "@/shared/seo/metadata";
+import { CSP_NONCE_HEADER } from "@/shared/config/csp-nonce";
 import {
   eventLocationLabel,
   formatEventDateTimeRange,
@@ -74,6 +78,12 @@ export default async function EventDetailPage({ params }: PageProps) {
 
   const location = eventLocationLabel(event);
   const schedule = formatEventDateTimeRange(event.startAt, event.endAt);
+  const headerStore = await headers();
+  const nonce = headerStore.get(CSP_NONCE_HEADER) ?? undefined;
+  const installmentScriptUrl =
+    event.isPaid && event.priceTryCents
+      ? getPaytrInstallmentTableScriptUrl(event.priceTryCents)
+      : null;
 
   return (
     <>
@@ -143,6 +153,10 @@ export default async function EventDetailPage({ params }: PageProps) {
                   isPaid={event.isPaid}
                 />
               </div>
+
+              {installmentScriptUrl ? (
+                <PaytrInstallmentTable scriptUrl={installmentScriptUrl} nonce={nonce} />
+              ) : null}
             </div>
           </div>
         </div>

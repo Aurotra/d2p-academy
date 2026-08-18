@@ -57,6 +57,66 @@ export function buildPaytrNotificationHash(input: {
     .digest("base64");
 }
 
+/** PayTR merchant-panel installment table token (HMAC-SHA256 hex). */
+export function buildPaytrInstallmentTableToken(input: {
+  merchantId: string;
+  merchantKey: string;
+  merchantSalt: string;
+}): string {
+  return createHmac("sha256", input.merchantKey)
+    .update(input.merchantId + input.merchantSalt)
+    .digest("hex");
+}
+
+export function formatPaytrInstallmentAmount(amountTryCents: number): string {
+  return (amountTryCents / 100).toFixed(2);
+}
+
+export function buildPaytrInstallmentTableScriptUrl(input: {
+  merchantId: string;
+  token: string;
+  amountTryCents: number;
+}): string {
+  const params = new URLSearchParams({
+    token: input.token,
+    merchant_id: input.merchantId,
+    amount: formatPaytrInstallmentAmount(input.amountTryCents),
+    taksit: "0",
+    tumu: "0",
+  });
+  return `https://www.paytr.com/odeme/taksit-tablosu/v2?${params.toString()}`;
+}
+
+export function resolvePaytrInstallmentTableToken(): string | null {
+  const override = process.env.PAYTR_INSTALLMENT_TABLE_TOKEN?.trim();
+  if (override) {
+    return override;
+  }
+
+  const merchantId = process.env.PAYTR_MERCHANT_ID?.trim();
+  const merchantKey = process.env.PAYTR_MERCHANT_KEY?.trim();
+  const merchantSalt = process.env.PAYTR_MERCHANT_SALT?.trim();
+  if (!merchantId || !merchantKey || !merchantSalt) {
+    return null;
+  }
+
+  return buildPaytrInstallmentTableToken({ merchantId, merchantKey, merchantSalt });
+}
+
+export function getPaytrInstallmentTableScriptUrl(amountTryCents: number): string | null {
+  if (!Number.isFinite(amountTryCents) || amountTryCents <= 0) {
+    return null;
+  }
+
+  const merchantId = process.env.PAYTR_MERCHANT_ID?.trim();
+  const token = resolvePaytrInstallmentTableToken();
+  if (!merchantId || !token) {
+    return null;
+  }
+
+  return buildPaytrInstallmentTableScriptUrl({ merchantId, token, amountTryCents });
+}
+
 export function paytrHashesMatch(expected: string, received: string): boolean {
   const left = Buffer.from(expected);
   const right = Buffer.from(received);
