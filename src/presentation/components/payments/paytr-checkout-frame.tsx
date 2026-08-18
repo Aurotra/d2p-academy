@@ -45,6 +45,7 @@ export function PaytrCheckoutFrame({ iframeUrl, nonce, enrollHref }: PaytrChecko
         id="paytriframe"
         title="PayTR güvenli ödeme"
         src={iframeUrl}
+        allow="payment *; publickey-credentials-get *"
         frameBorder={0}
         scrolling="no"
         className="mt-6 min-h-[720px] w-full rounded-2xl border border-border-surface"

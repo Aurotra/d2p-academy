@@ -19,7 +19,7 @@ function finalizeResponse(
   response: NextResponse,
   nonce: string,
 ): NextResponse {
-  const csp = buildContentSecurityPolicy(nonce);
+  const csp = buildContentSecurityPolicy(nonce, { pathname: request.nextUrl.pathname });
 
   if (response.status >= 300 && response.status < 400) {
     response.headers.set("Content-Security-Policy", csp);
@@ -188,7 +188,10 @@ async function handleAuthMiddleware(
     return redirect(request, new URL(safeRedirect, request.url), nonce);
   }
 
-  supabaseResponse.headers.set("Content-Security-Policy", buildContentSecurityPolicy(nonce));
+  supabaseResponse.headers.set(
+    "Content-Security-Policy",
+    buildContentSecurityPolicy(nonce, { pathname }),
+  );
   return supabaseResponse;
 }
 

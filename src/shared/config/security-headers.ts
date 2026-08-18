@@ -24,10 +24,19 @@ function shouldSendHsts(): boolean {
   return process.env.NODE_ENV === "production";
 }
 
+/** PayTR iframe then navigates to the issuing bank ACS for 3-D Secure. */
+export function isCardCheckoutPath(pathname: string): boolean {
+  return pathname === "/odeme" || pathname.startsWith("/odeme/");
+}
+
 /** CSP with per-request nonce — set from middleware, not next.config. */
-export function buildContentSecurityPolicy(nonce: string): string {
+export function buildContentSecurityPolicy(
+  nonce: string,
+  options?: { pathname?: string },
+): string {
   const supabase = getSupabaseCspOrigins();
   const isProd = process.env.NODE_ENV === "production";
+  const allowBankAcsFrames = isCardCheckoutPath(options?.pathname ?? "");
 
   const scriptSrc = [
     "'self'",
@@ -35,6 +44,13 @@ export function buildContentSecurityPolicy(nonce: string): string {
     "'strict-dynamic'",
     ...(isProd ? [] : ["'unsafe-eval'"]),
   ];
+
+  // 3-D Secure ACS hosts are per-bank and cannot be allowlisted. Relax frames
+  // only on /odeme so SMS/OTP challenge pages can load inside the PayTR iframe.
+  const frameSrc = allowBankAcsFrames
+    ? "frame-src 'self' https:"
+    : "frame-src 'self' https://www.paytr.com https://*.paytr.com https://www.google.com https://maps.google.com https://www.google.com.tr";
+  const formAction = allowBankAcsFrames ? "form-action 'self' https:" : "form-action 'self'";
 
   const directives = [
     "default-src 'self'",
@@ -45,10 +61,10 @@ export function buildContentSecurityPolicy(nonce: string): string {
     `img-src 'self' data: blob: ${supabase.https}`,
     "font-src 'self' data:",
     `connect-src 'self' ${supabase.https} ${supabase.wss} https://www.paytr.com`,
-    "frame-src 'self' https://www.paytr.com https://*.paytr.com https://www.google.com https://maps.google.com https://www.google.com.tr",
+    frameSrc,
     "object-src 'none'",
     "base-uri 'self'",
-    "form-action 'self'",
+    formAction,
     "frame-ancestors 'self'",
   ];
 
@@ -90,6 +106,13 @@ export function getStaticAssetCorsHeaders(): Header[] {
   ];
 }
 
-export function applyContentSecurityPolicy(response: Response, nonce: string): void {
-  response.headers.set("Content-Security-Policy", buildContentSecurityPolicy(nonce));
+export function applyContentSecurityPolicy(
+  response: Response,
+  nonce: string,
+  pathname?: string,
+): void {
+  response.headers.set(
+    "Content-Security-Policy",
+    buildContentSecurityPolicy(nonce, { pathname }),
+  );
 }
