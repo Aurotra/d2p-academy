@@ -11,7 +11,7 @@ interface AdminCard {
   description: string;
   tone: string;
   badge: string;
-  pendingKey?: "registrations" | "institutionRequests" | "courseDemandRequests" | "refundFollowupsOpen";
+  pendingKey?: "registrations" | "institutionRequests" | "courseDemandRequests" | "refundFollowupsOpen" | "stuckCardPayments";
 }
 
 interface AdminCategory {
@@ -52,6 +52,15 @@ const categories: AdminCategory[] = [
         description: "Tamamlanan kayıtlara sertifika verin veya iptal edin.",
         tone: "border-violet-200 bg-violet-100 text-violet-950 hover:bg-violet-50",
         badge: "bg-violet-200/70 text-violet-800",
+      },
+      {
+        href: "/admin/payments",
+        title: "Ödemeler",
+        description:
+          "Kart, havale ve kurum tahsilatı; takılı PayTR denemelerini bırakın veya havale ile kapatın.",
+        tone: "border-emerald-200 bg-emerald-100 text-emerald-950 hover:bg-emerald-50",
+        badge: "bg-emerald-200/70 text-emerald-800",
+        pendingKey: "stuckCardPayments",
       },
       {
         href: "/admin/refund-followups",
