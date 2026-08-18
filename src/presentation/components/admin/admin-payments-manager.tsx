@@ -34,6 +34,16 @@ function formatDate(value: string | null): string {
   }).format(new Date(value));
 }
 
+function isPaidRow(row: AdminPaymentLedgerRow): boolean {
+  return row.status === "paid" && !row.isStuck;
+}
+
+function statusBadgeClass(row: AdminPaymentLedgerRow): string {
+  if (row.isStuck) return "bg-amber-100 text-amber-950";
+  if (row.status === "paid") return "bg-emerald-100 text-emerald-900";
+  return "bg-document-primary/10 text-document-primary";
+}
+
 function statusLabel(row: AdminPaymentLedgerRow): string {
   if (row.kind === "kurum_enrollment") {
     return row.status === "pending" ? "Kurum kaydı (bekliyor)" : "Kurum kaydı";
@@ -307,7 +317,12 @@ export function AdminPaymentsManager({
                   : null;
 
                 return (
-                  <tr key={row.id} className="border-b border-border-surface last:border-0">
+                  <tr
+                    key={row.id}
+                    className={`border-b border-border-surface last:border-0 ${
+                      isPaidRow(row) ? "bg-emerald-50" : ""
+                    }`}
+                  >
                     <td className="px-5 py-4">
                       <p className="font-semibold text-navy-950">{row.studentName}</p>
                       <p className="text-xs text-subtle">{row.parentName}</p>
@@ -325,11 +340,7 @@ export function AdminPaymentsManager({
                     <td className="px-5 py-4">{ADMIN_PAYMENT_METHOD_LABELS[row.method]}</td>
                     <td className="px-5 py-4">
                       <span
-                        className={`inline-flex rounded-full px-3 py-1 text-xs font-bold ${
-                          row.isStuck
-                            ? "bg-amber-100 text-amber-950"
-                            : "bg-document-primary/10 text-document-primary"
-                        }`}
+                        className={`inline-flex rounded-full px-3 py-1 text-xs font-bold ${statusBadgeClass(row)}`}
                       >
                         {statusLabel(row)}
                       </span>
