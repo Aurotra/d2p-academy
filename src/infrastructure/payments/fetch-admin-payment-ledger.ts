@@ -46,10 +46,11 @@ type PaymentQueryRow = {
   provider_conversation_id: string | null;
   paid_at: string | null;
   created_at: string;
+  stuck_warned_at: string | null;
 };
 
 const PAYMENT_COLUMNS =
-  "id, enrollment_id, event_id, payer_user_id, student_user_id, amount_try_cents, provider, status, provider_payment_id, provider_conversation_id, paid_at, created_at";
+  "id, enrollment_id, event_id, payer_user_id, student_user_id, amount_try_cents, provider, status, provider_payment_id, provider_conversation_id, paid_at, created_at, stuck_warned_at";
 
 function asStatus(value: string): PaymentStatus {
   if (
@@ -323,6 +324,7 @@ async function hydratePaymentRows(
         createdAt: row.created_at,
         nowMs,
       }),
+      stuckWarnedAt: (row.stuck_warned_at as string | null | undefined) ?? null,
     };
   });
 }
@@ -431,6 +433,7 @@ async function fetchKurumEnrollmentRows(
       createdAt: row.registered_at,
       paidAt: enrollmentStatus === "pending_payment" ? null : row.registered_at,
       isStuck: false,
+      stuckWarnedAt: null,
     };
   });
 }

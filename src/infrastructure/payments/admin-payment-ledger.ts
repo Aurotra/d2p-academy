@@ -5,6 +5,8 @@ import {
 import type { PaymentStatus } from "@/core/domain/payment";
 
 export const STALE_CARD_CHECKOUT_TTL_MS = 45 * 60 * 1000;
+export const STUCK_CARD_WARN_AFTER_MS = 2 * 60 * 60 * 1000;
+export const STUCK_CARD_RELEASE_AFTER_MS = 3 * 60 * 60 * 1000;
 
 export type AdminPaymentMethod = "card" | "havale" | "kurum";
 export type AdminPaymentMethodFilter = AdminPaymentMethod | "all";
@@ -31,6 +33,7 @@ export type AdminPaymentLedgerRow = {
   createdAt: string;
   paidAt: string | null;
   isStuck: boolean;
+  stuckWarnedAt: string | null;
 };
 
 export function classifyAdminPaymentMethod(input: {
@@ -94,6 +97,41 @@ export function isStuckCardPayment(input: {
     return false;
   }
   return now - created >= ttl;
+}
+
+export type StuckCardSweepAction = "none" | "warn" | "release";
+
+/** 45 dk kuyruk; 2 saat uyarı maili; 3 saat koltuğu bırak. */
+export function resolveStuckCardSweepAction(input: {
+  isStuck: boolean;
+  createdAt: string;
+  warnedAt?: string | null;
+  releasedAt?: string | null;
+  nowMs?: number;
+  warnAfterMs?: number;
+  releaseAfterMs?: number;
+}): StuckCardSweepAction {
+  if (!input.isStuck || input.releasedAt) {
+    return "none";
+  }
+
+  const created = Date.parse(input.createdAt);
+  if (!Number.isFinite(created)) {
+    return "none";
+  }
+
+  const now = input.nowMs ?? Date.now();
+  const ageMs = now - created;
+  const releaseAfter = input.releaseAfterMs ?? STUCK_CARD_RELEASE_AFTER_MS;
+  const warnAfter = input.warnAfterMs ?? STUCK_CARD_WARN_AFTER_MS;
+
+  if (ageMs >= releaseAfter) {
+    return "release";
+  }
+  if (ageMs >= warnAfter && !input.warnedAt) {
+    return "warn";
+  }
+  return "none";
 }
 
 export function stuckCardReleasePlan(input: {

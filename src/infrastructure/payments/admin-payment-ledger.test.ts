@@ -4,8 +4,11 @@ import {
   classifyAdminPaymentMethod,
   isStuckCardPayment,
   resolvePaymentProviderRef,
+  resolveStuckCardSweepAction,
   stuckCardReleasePlan,
   STALE_CARD_CHECKOUT_TTL_MS,
+  STUCK_CARD_RELEASE_AFTER_MS,
+  STUCK_CARD_WARN_AFTER_MS,
   whatsappHref,
 } from "@/infrastructure/payments/admin-payment-ledger";
 
@@ -119,6 +122,75 @@ describe("resolvePaymentProviderRef", () => {
         providerConversationId: "oid-99",
       }),
     ).toBe("oid-99");
+  });
+});
+
+describe("resolveStuckCardSweepAction", () => {
+  const createdAt = "2026-08-18T12:00:00.000Z";
+  const createdMs = Date.parse(createdAt);
+
+  it("does nothing before the 2 hour warning window", () => {
+    expect(
+      resolveStuckCardSweepAction({
+        isStuck: true,
+        createdAt,
+        nowMs: createdMs + STUCK_CARD_WARN_AFTER_MS - 1,
+      }),
+    ).toBe("none");
+  });
+
+  it("warns once after 2 hours", () => {
+    expect(
+      resolveStuckCardSweepAction({
+        isStuck: true,
+        createdAt,
+        nowMs: createdMs + STUCK_CARD_WARN_AFTER_MS,
+      }),
+    ).toBe("warn");
+    expect(
+      resolveStuckCardSweepAction({
+        isStuck: true,
+        createdAt,
+        warnedAt: "2026-08-18T14:00:00.000Z",
+        nowMs: createdMs + STUCK_CARD_WARN_AFTER_MS + 30 * 60 * 1000,
+      }),
+    ).toBe("none");
+  });
+
+  it("releases after 3 hours even if the warning was skipped", () => {
+    expect(
+      resolveStuckCardSweepAction({
+        isStuck: true,
+        createdAt,
+        nowMs: createdMs + STUCK_CARD_RELEASE_AFTER_MS,
+      }),
+    ).toBe("release");
+    expect(
+      resolveStuckCardSweepAction({
+        isStuck: true,
+        createdAt,
+        warnedAt: "2026-08-18T14:00:00.000Z",
+        nowMs: createdMs + STUCK_CARD_RELEASE_AFTER_MS,
+      }),
+    ).toBe("release");
+  });
+
+  it("skips paid or already released seats", () => {
+    expect(
+      resolveStuckCardSweepAction({
+        isStuck: false,
+        createdAt,
+        nowMs: createdMs + STUCK_CARD_RELEASE_AFTER_MS,
+      }),
+    ).toBe("none");
+    expect(
+      resolveStuckCardSweepAction({
+        isStuck: true,
+        createdAt,
+        releasedAt: "2026-08-18T15:00:00.000Z",
+        nowMs: createdMs + STUCK_CARD_RELEASE_AFTER_MS,
+      }),
+    ).toBe("none");
   });
 });
 

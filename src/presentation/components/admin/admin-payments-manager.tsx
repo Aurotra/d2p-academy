@@ -362,7 +362,8 @@ export function AdminPaymentsManager({
       ) : (
         <p className="text-sm text-muted">
           PayTR açıldıktan sonra 45 dakika içinde bitmeyen veya başarısız olan, hâlâ kontenjan
-          tutan kart denemeleri. Veliye yazın, koltuğu bırakın veya gelen havaleyi işleyin.
+          tutan kart denemeleri. 2 saatte veliye uyarı maili gider; 3 saatte koltuk otomatik
+          bırakılır. İsterseniz elle veliye yazın, koltuğu bırakın veya gelen havaleyi işleyin.
         </p>
       )}
 
@@ -493,6 +494,9 @@ export function AdminPaymentsManager({
                       >
                         {statusLabel(row)}
                       </span>
+                      {row.isStuck && row.stuckWarnedAt ? (
+                        <p className="mt-1 text-[11px] text-amber-800">Uyarı maili gitti</p>
+                      ) : null}
                     </td>
                     <td className="px-5 py-4 text-muted">
                       {formatDate(row.paidAt ?? row.createdAt)}

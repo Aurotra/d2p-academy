@@ -31,6 +31,7 @@ function row(
     providerRef: "oid-1",
     paidAt: null,
     isStuck: false,
+    stuckWarnedAt: null,
     ...overrides,
   };
 }
