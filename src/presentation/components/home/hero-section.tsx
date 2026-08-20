@@ -44,7 +44,7 @@ export function HeroSection() {
             </div>
             <div>
               <dt className="text-2xl font-bold text-navy-950">4</dt>
-              <dd className="text-sm text-muted">Okul İş Birliği</dd>
+              <dd className="text-sm text-muted">Kurum İşbirliği</dd>
             </div>
           </dl>
         </div>
