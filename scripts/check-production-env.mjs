@@ -59,6 +59,11 @@ const recommended = [
     key: "PAYTR_INSTALLMENT_TABLE_TOKEN",
     hint: "PayTR taksit tablosu hazır kodundaki token (ürün sayfasında taksit dökümü)",
   },
+  {
+    key: "CRON_SECRET",
+    hint: "Takılı kart tarama API’si; Vercel Cron ve dış cron Authorization Bearer ile kullanır",
+    minLength: 16,
+  },
 ];
 
 let hasError = false;

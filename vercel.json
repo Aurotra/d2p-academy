@@ -1,5 +1,11 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "framework": "nextjs",
-  "regions": ["fra1"]
+  "regions": ["fra1"],
+  "crons": [
+    {
+      "path": "/api/v1/cron/stuck-card-payments",
+      "schedule": "0 3 * * *"
+    }
+  ]
 }
