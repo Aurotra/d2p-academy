@@ -11,7 +11,7 @@ interface AdminCard {
   description: string;
   tone: string;
   badge: string;
-  pendingKey?: "registrations" | "institutionRequests" | "courseDemandRequests" | "refundFollowupsOpen" | "stuckCardPayments";
+  pendingKey?: "institutionRequests" | "courseDemandRequests" | "refundFollowupsOpen" | "stuckCardPayments";
 }
 
 interface AdminCategory {
@@ -124,17 +124,8 @@ const categories: AdminCategory[] = [
   },
   {
     title: "Başvurular",
-    description:
-      "Kurs talepleri, kurumsal eğitim başvuruları, program tanımları ve eski ön kayıt arşivi.",
+    description: "Kurs talepleri, kurumsal eğitim başvuruları ve program tanımları.",
     cards: [
-      {
-        href: "/admin/registrations",
-        title: "Eski Ön Kayıtlar",
-        description: "Kapatılan ön kayıt formundan gelen başvuruları arşiv olarak görüntüleyin.",
-        tone: "border-lime-200 bg-lime-100 text-lime-950 hover:bg-lime-50",
-        badge: "bg-lime-200/70 text-lime-900",
-        pendingKey: "registrations",
-      },
       {
         href: "/admin/institution-requests",
         title: "Kurumsal Talepler",

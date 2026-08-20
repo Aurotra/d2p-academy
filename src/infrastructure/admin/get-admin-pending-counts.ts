@@ -6,7 +6,6 @@ import {
 } from "@/infrastructure/payments/admin-payment-ledger";
 
 export interface AdminPendingCounts {
-  registrations: number;
   institutionRequests: number;
   courseDemandRequests: number;
   refundFollowupsOpen: number;
@@ -19,17 +18,12 @@ export async function getAdminPendingCounts(
   client: SupabaseClient,
 ): Promise<AdminPendingCounts> {
   const [
-    registrationsResult,
     institutionRequestsResult,
     courseDemandResult,
     refundFollowupsResult,
     stuckPaymentsResult,
     programsResult,
   ] = await Promise.all([
-      client
-        .from("registrations")
-        .select("id", { count: "exact", head: true })
-        .eq("status", "yeni"),
       client
         .from("institution_requests")
         .select("id", { count: "exact", head: true })
@@ -78,7 +72,6 @@ export async function getAdminPendingCounts(
   }).length;
 
   return {
-    registrations: registrationsResult.count ?? 0,
     institutionRequests: institutionRequestsResult.count ?? 0,
     courseDemandRequests: courseDemandResult.count ?? 0,
     refundFollowupsOpen: refundFollowupsResult.count ?? 0,

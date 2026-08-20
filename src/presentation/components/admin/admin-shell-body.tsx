@@ -10,7 +10,7 @@ import { AdminBackLink } from "@/presentation/components/admin/admin-back-link";
 interface NavItem {
   href: string;
   label: string;
-  countKey?: "registrations" | "institutionRequests" | "courseDemandRequests" | "refundFollowupsOpen" | "stuckCardPayments";
+  countKey?: "institutionRequests" | "courseDemandRequests" | "refundFollowupsOpen" | "stuckCardPayments";
 }
 
 const navItems: NavItem[] = [
@@ -29,7 +29,6 @@ const navItems: NavItem[] = [
   { href: "/admin/logs", label: "İşlem Logları" },
   { href: "/admin/gallery", label: "Galeri" },
   { href: "/admin/documents", label: "Dökümanlar" },
-  { href: "/admin/registrations", label: "Eski Ön Kayıtlar", countKey: "registrations" },
   {
     href: "/admin/institution-requests",
     label: "Kurumsal Talepler",

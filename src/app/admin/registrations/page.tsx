@@ -47,7 +47,7 @@ export default async function AdminRegistrationsPage() {
         <h1 className="mt-2 text-2xl font-bold text-navy-950">Eski Ön Kayıtlar</h1>
         <p className="mt-2 text-sm text-muted">
           Kapatılan ön kayıt formundan gelen başvurular. Yeni kayıtlar veli hesabı ve etkinlik
-          kaydı üzerinden alınır.
+          kaydı üzerinden alınır. Bu arşiv menüde yer almaz; doğrudan bu adresten açılır.
         </p>
 
         {error ? (
