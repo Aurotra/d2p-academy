@@ -13,8 +13,9 @@ const checklist = [
   "Oluşan kullanıcı adını mutlaka not alın.",
   "Açılan çocuk profili sayfasında bilgileri doldurun (veli telefon numarası dahil, %100 zorunlu).",
   "Yayınlanmış etkinlik varsa: Çocuk hesapları → Etkinliğe kaydet.",
+  "Ücretli etkinlikte PayTR güvenli ödeme ekranında kart ile ödemeyi tamamlayın (ödeme bitmeden formlar açılmaz).",
   "Uygun etkinlik yoksa: Panel → Kurs talebi ile program ve tarih tercihi bırakın.",
-  "Kayıt oluştuktan hemen sonra Detay → Formları doldur sayfasına geçin.",
+  "Ödeme ve kayıt tamamlandıktan hemen sonra Detay → Formları doldur sayfasına geçin.",
   "Tanışma (F01) ve ön test (F02) ile onayları (F05–F07) kayıt öncesi tamamlayın. Son test (F03) yalnızca 2–8. sınıflarda, etkinlik sonrası açılır.",
   "Profili düzenle ile tüm zorunlu alanları %100 yapın (veli telefon numarası dahil; sertifika için zorunlu).",
 ];
@@ -66,6 +67,26 @@ const faqItems = [
       "Sınıf açıldıktan sonra Çocuk hesapları bölümünden aynı adla öğrenci profili oluşturun. Sistem talebi otomatik eşleştirir ve kaydı tamamlar. Mümkünse talep verirken mevcut çocuk profilini seçmek daha hızlıdır.",
   },
   {
+    question: "Ödeme nasıl yapılır?",
+    answer:
+      "Ücretli etkinlikte kayıt adımından sonra PayTR güvenli ödeme ekranı açılır. Kredi veya banka kartı ile ödersiniz; kartınız uygunsa taksit seçenekleri formda görünür. Ödeme geçmişinizi Panel → Ödemelerim sayfasından takip edebilirsiniz.",
+  },
+  {
+    question: "Ödemeyi yarım bıraktım / ekranı kapattım, ne olur?",
+    answer:
+      "Kısa süre kontenjan sizin için tutulur; Panel → Çocuk hesapları veya kayıtlar üzerinden «Ödemeyi tamamla» ile devam edebilirsiniz. Ödeme uzun süre bitmezse e-posta ile hatırlatma gelir; süre dolunca yer başka kayıt için açılır — yeniden kayıt deneyebilirsiniz.",
+  },
+  {
+    question: "Okul / kurum üzerinden kayıt oldum, yine de kart ödemesi mi yapacağım?",
+    answer:
+      "Hayır. Kurum iş birliğiyle tahsilat yapılan etkinliklerde online kart ödemesi istenmez; katılım hakkınız kurum süreciyle tanımlanır. Emin değilseniz etkinlik bilgisini veya info@d2p.com.tr adresini kontrol edin.",
+  },
+  {
+    question: "İptal ve iade nasıl işler?",
+    answer:
+      "Etkinlik başlamasına 7 gün veya daha fazla kala iptalde ücretin tamamı iade edilir; 7 günden az kaldığında iade yerine uygun programa hak devri değerlendirilebilir. Kurum kaynaklı iptalde ücret kesintisiz iade edilir. Talepler için info@d2p.com.tr; ayrıntılar Teslimat ve İade Şartları sayfasındadır.",
+  },
+  {
     question: "Formları kim doldurmalı?",
     answer:
       "18 yaş altı çocuklar için formları veli adına doldurmanız yeterlidir. Onay adımında kendi adınızı imza olarak yazarsınız.",
@@ -110,9 +131,9 @@ export function ParentGuideContent() {
           Veli Kayıt Rehberi
         </h1>
         <p className="mt-4 text-base leading-7 text-muted">
-          Çocuğunuzun etkinlik kaydı, kurs talebi, formları ve sertifikası web sitemiz üzerinden
-          yürütülür. Yayınlanmış bir etkinlik varsa doğrudan kayıt olabilir; uygun tarih yoksa kurs
-          talebi bırakabilirsiniz.
+          Çocuğunuzun etkinlik kaydı, ödeme, kurs talebi, formları ve sertifikası web sitemiz
+          üzerinden yürütülür. Yayınlanmış bir etkinlik varsa doğrudan kayıt olabilir; uygun tarih
+          yoksa kurs talebi bırakabilirsiniz.
         </p>
         <ParentGuideAuthCtas />
       </header>
@@ -208,7 +229,7 @@ export function ParentGuideContent() {
                 </tr>
                 <tr>
                   <td className="px-4 py-3 font-medium text-navy-950">Ne yapılır?</td>
-                  <td className="px-4 py-3">Çocuk ekleme, kayıt, kurs talebi, form, profil</td>
+                  <td className="px-4 py-3">Çocuk ekleme, kayıt, ödeme, kurs talebi, form, profil</td>
                   <td className="px-4 py-3">Rozet, sertifika, kendi paneli</td>
                 </tr>
                 <tr>
@@ -233,15 +254,110 @@ export function ParentGuideContent() {
             Detay bölümünde çocuğunuzun etkinlik listesinde görünür.
           </p>
           <p className="mt-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-950">
-            <strong>Önemli:</strong> Etkinliğe kayıt tek başına yeterli değildir. Kayıttan hemen
-            sonra aşağıdaki formları doldurmanız gerekir — bunları aramanıza gerek yok, panelden
-            doğrudan ulaşırsınız.
+            <strong>Önemli:</strong> Ücretli etkinlikte önce ödemeyi tamamlayın; ardından formları
+            doldurun. Formlar ayrı bir sitede değildir — panelden doğrudan ulaşırsınız.
+          </p>
+        </section>
+
+        <section>
+          <h2 className="text-xl font-bold text-navy-950">5. Ödeme süreçleri</h2>
+          <p className="mt-3">
+            Ücretli etkinliklerde kayıt adımından sonra{" "}
+            <strong>PayTR</strong> güvenli ödeme ekranı açılır. Ödeme kredi veya banka kartı ile
+            yapılır; kartınız uygunsa taksit seçenekleri aynı formda görünür. Kart bilgileriniz D2P
+            sunucularında saklanmaz.
+          </p>
+
+          <div className="mt-4 overflow-x-auto rounded-xl border border-border-surface">
+            <table className="min-w-[32rem] w-full text-left text-sm">
+              <thead className="bg-surface-section text-muted">
+                <tr>
+                  <th className="px-4 py-3 font-semibold">Durum</th>
+                  <th className="px-4 py-3 font-semibold">Ne anlama gelir?</th>
+                  <th className="px-4 py-3 font-semibold">Ne yapmalısınız?</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-border-surface">
+                <tr>
+                  <td className="px-4 py-3 font-medium text-navy-950">Ödeme bekleniyor</td>
+                  <td className="px-4 py-3">
+                    Yer sizin için tutuluyor; ödeme henüz tamamlanmadı
+                  </td>
+                  <td className="px-4 py-3">
+                    Panelden <strong>Ödemeyi tamamla</strong> ile PayTR ekranına dönün
+                  </td>
+                </tr>
+                <tr>
+                  <td className="px-4 py-3 font-medium text-navy-950">Ödeme başarılı</td>
+                  <td className="px-4 py-3">Kayıt onaylanır; formlar açılır</td>
+                  <td className="px-4 py-3">
+                    Detay → <strong>Formları doldur</strong> adımına geçin
+                  </td>
+                </tr>
+                <tr>
+                  <td className="px-4 py-3 font-medium text-navy-950">Ödeme yarım kaldı</td>
+                  <td className="px-4 py-3">
+                    Ekran kapanmış veya işlem uzun süre bitmemiş olabilir
+                  </td>
+                  <td className="px-4 py-3">
+                    Hatırlatma e-postasındaki link veya panelden yeniden deneyin; süre dolunca yer
+                    açılır
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div className="mt-4 rounded-xl border border-border-surface bg-surface-tint-yellow px-4 py-4 text-sm text-navy-950">
+            <p className="font-semibold">Ödeme adımları</p>
+            <ol className="mt-2 list-decimal space-y-1 pl-5 leading-7">
+              <li>
+                <strong>Çocuk hesapları</strong> → çocuğunuz için{" "}
+                <strong>Etkinliğe kaydet</strong>
+              </li>
+              <li>Açılan PayTR formunda kart bilgilerinizi girin ve ödemeyi onaylayın</li>
+              <li>
+                Başarılı ödemeden sonra otomatik yönlendirilirsiniz; formlara panelden devam edin
+              </li>
+              <li>
+                Geçmiş işlemler için <strong>Panel → Ödemelerim</strong>
+              </li>
+            </ol>
+          </div>
+
+          <p className="mt-4">
+            <strong>Kurum / okul iş birliği:</strong> Tahsilat kurum üzerinden yapılıyorsa online
+            kart ödemesi istenmez. Bu durumda kayıt ve form adımları yine panelden yürür.
+          </p>
+          <p className="mt-3">
+            <strong>İptal ve iade:</strong> Başlangıca 7 gün veya daha fazla kala iptalde ücretin
+            tamamı iade edilir; 7 günden az kaldığında iade yerine uygun programa hak devri
+            değerlendirilebilir. Onaylanan kart iadeleri PayTR üzerinden, bankanıza göre genellikle
+            7–14 iş gününde yansır. Yazılı talep için{" "}
+            <a href="mailto:info@d2p.com.tr" className="font-semibold text-document-primary hover:underline">
+              info@d2p.com.tr
+            </a>
+            ; ayrıntılar{" "}
+            <Link
+              href="/teslimat-ve-iade-sartlari"
+              className="font-semibold text-document-primary hover:underline"
+            >
+              Teslimat ve İade Şartları
+            </Link>{" "}
+            ve{" "}
+            <Link
+              href="/mesafeli-satis-sozlesmesi"
+              className="font-semibold text-document-primary hover:underline"
+            >
+              Mesafeli Satış Sözleşmesi
+            </Link>{" "}
+            sayfalarındadır.
           </p>
         </section>
 
         <section>
           <h2 className="text-xl font-bold text-navy-950">
-            5. Kurs talebi (uygun etkinlik yoksa)
+            6. Kurs talebi (uygun etkinlik yoksa)
           </h2>
           <p className="mt-3">
             Takvimde size uygun etkinlik yoksa <strong>Panel → Kurs talebi</strong> sayfasından
@@ -272,7 +388,7 @@ export function ParentGuideContent() {
 
         <section>
           <h2 className="text-xl font-bold text-navy-950">
-            6. Formları doldurma (kayıttan hemen sonra)
+            7. Formları doldurma (ödeme ve kayıttan hemen sonra)
           </h2>
           <p className="mt-3">
             Formlar veli panelinde, çocuğunuzun etkinlik kaydının içindedir. Ayrı bir site veya
@@ -343,7 +459,7 @@ export function ParentGuideContent() {
         </section>
 
         <section>
-          <h2 className="text-xl font-bold text-navy-950">7. Profil ve sertifika</h2>
+          <h2 className="text-xl font-bold text-navy-950">8. Profil ve sertifika</h2>
           <p className="mt-3">
             <strong>Profili düzenle</strong> ile okul, sınıf, veli telefon numarası ve diğer zorunlu
             bilgileri tamamlayın. Çocuk ekledikten sonra doğrudan profil sayfasına yönlendirilirsiniz.{" "}
@@ -376,7 +492,8 @@ export function ParentGuideContent() {
 3) Çocuk hesapları → Çocuk ekle (ad, doğum tarihi, şifre)
 4) Kullanıcı adını not al (ör. emreyılmaz15)
 5a) Etkinlik varsa → Etkinliğe kaydet
-5b) Etkinlik yoksa → Kurs talebi bırak
+5b) Ücretliyse → PayTR ile kart ödemesini tamamla (Panel → Ödemelerim)
+5c) Etkinlik yoksa → Kurs talebi bırak
 6) Detay → Formları doldur (Tanışma + ön test + Onaylar aynı gün)
 7) Profili %100 yap — veli telefonu dahil (sertifika için)
 Veli = e-posta | Öğrenci = kullanıcı adı ile giriş`}
