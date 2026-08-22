@@ -685,7 +685,7 @@ function AddStudentDialog({
           value={fullName}
           onChange={(e) => setFullName(e.target.value)}
           placeholder="örn: Emre Yılmaz"
-          autoComplete="off"
+          autoComplete="name"
           readOnly
           onFocus={(event) => event.currentTarget.removeAttribute("readonly")}
           required

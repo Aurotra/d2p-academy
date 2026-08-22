@@ -5,32 +5,44 @@ import { ParentGuideAuthCtas } from "@/presentation/components/guides/parent-gui
 import { BRAND_ACCENT_CARD_STYLES, BRAND_SURFACE_CARD } from "@/shared/constants/brand-surfaces";
 import { PARENT_GUIDE_UPDATED } from "@/shared/constants/parent-guide";
 
-const checklist = [
+const checklistCommon = [
   "d2p.com.tr adresine girin.",
   "Sağ üstten Hesap Oluştur ile veli hesabı açın (ad, e-posta, şifre).",
   "E-postanıza gelen onay linkine tıklayın; ardından Veli Girişi yapın.",
   "Panel → Çocuk hesapları → + Çocuk ekle (ad soyad, doğum tarihi, şifre).",
   "Oluşan kullanıcı adını mutlaka not alın.",
-  "Açılan çocuk profili sayfasında bilgileri doldurun (veli telefon numarası dahil, %100 zorunlu).",
-  "Yayınlanmış etkinlik varsa: Çocuk hesapları → Etkinliğe kaydet.",
-  "Ücretli etkinlikte PayTR güvenli ödeme ekranında kart ile ödemeyi tamamlayın (ödeme bitmeden formlar açılmaz).",
-  "Uygun etkinlik yoksa: Panel → Kurs talebi ile program ve tarih tercihi bırakın.",
-  "Ödeme ve kayıt tamamlandıktan hemen sonra Detay → Formları doldur sayfasına geçin.",
-  "Tanışma (F01) ve ön test (F02) ile onayları (F05–F07) kayıt öncesi tamamlayın. Son test (F03) yalnızca 2–8. sınıflarda, etkinlik sonrası açılır.",
-  "Profili düzenle ile tüm zorunlu alanları %100 yapın (veli telefon numarası dahil; sertifika için zorunlu).",
-];
+  "Çocuk profilini %100 tamamlayın (veli telefon numarası dahil; etkinliğe kayıt ve sertifika için zorunlu).",
+] as const;
+
+const checklistYol1 = [
+  "Çocuk hesapları → Etkinliğe kaydet.",
+  "Ücretliyse PayTR güvenli ödeme ekranında kart ile ödemeyi tamamlayın (ödeme bitmeden formlar açılmaz).",
+  "Detay → Formları doldur: Tanışma ve Onaylar aynı gün; Son test etkinlik sonrası (2–8. sınıflar).",
+] as const;
+
+const checklistYol2 = [
+  "Panel → Kurs talebi ile program ve tarih tercihi bırakın.",
+  "Sınıf açıldığında aynı isimle çocuk profili oluşturun veya mevcut profili seçerek talebi eşleştirin.",
+] as const;
+
+function buildShareableSummary(): string {
+  return [
+    "D2P Academy — veli kayıt özeti (d2p.com.tr)",
+    "",
+    "Ortak adımlar:",
+    ...checklistCommon.map((item, index) => `${index + 1}. ${item}`),
+    "",
+    "Yol 1 — Yayınlanmış etkinlik var:",
+    ...checklistYol1.map((item) => `• ${item}`),
+    "",
+    "Yol 2 — Uygun etkinlik yok:",
+    ...checklistYol2.map((item) => `• ${item}`),
+    "",
+    "Veli girişi = e-posta | Öğrenci girişi = kullanıcı adı",
+  ].join("\n");
+}
 
 const faqItems = [
-  {
-    question: "Önce veli mi kayıt olmalıyım, çocuk mu?",
-    answer:
-      "Önce veli kayıt olur. Ardından veli panelinden her çocuk için ayrı öğrenci hesabı eklenir.",
-  },
-  {
-    question: "Kullanıcı adını ben mi seçiyorum?",
-    answer:
-      "Hayır. Sistem otomatik oluşturur: ad + soyad + doğum yılının son 2 hanesi (ör. emreyılmaz15). Aynı isim ve yıl varsa sonuna rakam eklenir.",
-  },
   {
     question: "E-posta onayı gelmedi veya onay linki hata verdi, ne yapmalıyım?",
     answer:
@@ -44,32 +56,7 @@ const faqItems = [
   {
     question: "Çocuk ekle formunda e-posta adresim görünüyor, normal mi?",
     answer:
-      "Hayır — bu tarayıcının otomatik doldurmasıdır. Ad Soyad alanına çocuğun gerçek adını yazın (ör. Emre Yılmaz). Veli e-postası bu alana girilmemelidir.",
-  },
-  {
-    question: "Çocuğum kendi giriş yapabilir mi?",
-    answer:
-      "Evet. Öğrenci Girişi ile kullanıcı adı ve şifre kullanır. Kayıt ve form işlemleri için veli hesabı gerekir.",
-  },
-  {
-    question: "Birden fazla çocuğum var.",
-    answer:
-      "Aynı veli hesabından + Çocuk ekle ile her çocuk için ayrı hesap açabilirsiniz. Her çocuğun kullanıcı adı farklı olur.",
-  },
-  {
-    question: "Uygun etkinlik yoksa ne yapmalıyım?",
-    answer:
-      "Panel → Kurs talebi sayfasından program (ör. 3D tasarım, prototipleme) ve tercih ettiğiniz tarih aralığını bırakın. Yeterli talep birikince sınıf açılır; kaydınız panele düşer. Talep durumunu aynı sayfadan takip edebilirsiniz.",
-  },
-  {
-    question: "Kurs talebinde çocuk profili seçmeden sadece isim yazdım, sonra ne olur?",
-    answer:
-      "Sınıf açıldıktan sonra Çocuk hesapları bölümünden aynı adla öğrenci profili oluşturun. Sistem talebi otomatik eşleştirir ve kaydı tamamlar. Mümkünse talep verirken mevcut çocuk profilini seçmek daha hızlıdır.",
-  },
-  {
-    question: "Ödeme nasıl yapılır?",
-    answer:
-      "Ücretli etkinlikte kayıt adımından sonra PayTR güvenli ödeme ekranı açılır. Kredi veya banka kartı ile ödersiniz; kartınız uygunsa taksit seçenekleri formda görünür. Ödeme geçmişinizi Panel → Ödemelerim sayfasından takip edebilirsiniz.",
+      "Nadiren tarayıcı yanlış öneri gösterebilir; Ad Soyad alanının çocuğun gerçek adı olduğundan emin olun (ör. Emre Yılmaz). Veli e-postası bu alana girilmemelidir.",
   },
   {
     question: "Ödemeyi yarım bıraktım / ekranı kapattım, ne olur?",
@@ -77,46 +64,11 @@ const faqItems = [
       "Kısa süre kontenjan sizin için tutulur; Panel → Çocuk hesapları veya kayıtlar üzerinden «Ödemeyi tamamla» ile devam edebilirsiniz. Ödeme uzun süre bitmezse e-posta ile hatırlatma gelir; süre dolunca yer başka kayıt için açılır — yeniden kayıt deneyebilirsiniz.",
   },
   {
-    question: "Okul / kurum üzerinden kayıt oldum, yine de kart ödemesi mi yapacağım?",
-    answer:
-      "Hayır. Kurum iş birliğiyle tahsilat yapılan etkinliklerde online kart ödemesi istenmez; katılım hakkınız kurum süreciyle tanımlanır. Emin değilseniz etkinlik bilgisini veya info@d2p.com.tr adresini kontrol edin.",
-  },
-  {
-    question: "İptal ve iade nasıl işler?",
-    answer:
-      "Etkinlik başlamasına 7 gün veya daha fazla kala iptalde ücretin tamamı iade edilir; 7 günden az kaldığında iade yerine uygun programa hak devri değerlendirilebilir. Kurum kaynaklı iptalde ücret kesintisiz iade edilir. Talepler için info@d2p.com.tr; ayrıntılar Teslimat ve İade Şartları sayfasındadır.",
-  },
-  {
     question: "Formları kim doldurmalı?",
     answer:
       "18 yaş altı çocuklar için formları veli adına doldurmanız yeterlidir. Onay adımında kendi adınızı imza olarak yazarsınız.",
   },
-  {
-    question: "Formları nerede bulurum? Aramam gerekir mi?",
-    answer:
-      "Hayır. Veli Girişi → Panel → Çocuk hesapları → çocuğunuzun satırında Detay → etkinlik altında Formları doldur bağlantısı vardır. Etkinliğe yeni kayıt olduysanız aynı sayfadan hemen devam edin; formlar ayrı bir menüde gizli değildir.",
-  },
-  {
-    question: "Hangi formlar var, sırası ne?",
-    answer:
-      "1) Tanışma (F01 + tüm sınıf düzeylerinde ön test F02), 2) Onaylar (F05, F06, F07), 3) Etkinlik sonrası son test (F03 — yalnızca 2–8. sınıflar), 4) Sertifika onay. Tanışma bitmeden Onaylar açılmaz; son test yoklamada «geldi» işaretlendiğinde veya etkinlik bittiğinde açılır.",
-  },
-  {
-    question: "Formları ne zaman doldurmalıyım?",
-    answer:
-      "Etkinliğe kayıt yaptıktan hemen sonra Tanışma ve Onaylar adımlarını tamamlayın. Son test (F03) etkinlik günü yoklama alındıktan veya etkinlik süresi bittikten sonra açılır.",
-  },
-  {
-    question: "Profilde veli telefon numarası neden isteniyor?",
-    answer:
-      "Etkinlik ve iletişim süreçlerinde size ulaşabilmek için çocuk profilinde veli telefon numarası zorunludur. Veli hesabınızda kayıtlı telefon varsa alan otomatik dolar; dilediğinizde güncelleyebilirsiniz. Bu alan doldurulmadan profil %100 sayılmaz ve kayıt/sertifika adımları tamamlanamaz.",
-  },
-  {
-    question: "Sertifikayı ne zaman alırız?",
-    answer:
-      "Etkinlik tamamlandıktan, formlar doldurulduktan ve profil %100 olduktan sonra sertifika oluşturulur. Veli ve öğrenci panelinden görülebilir.",
-  },
-];
+] as const;
 
 export function ParentGuideContent() {
   return (
@@ -132,8 +84,9 @@ export function ParentGuideContent() {
         </h1>
         <p className="mt-4 text-base leading-7 text-muted">
           Çocuğunuzun etkinlik kaydı, ödeme, kurs talebi, formları ve sertifikası web sitemiz
-          üzerinden yürütülür. Yayınlanmış bir etkinlik varsa doğrudan kayıt olabilir; uygun tarih
-          yoksa kurs talebi bırakabilirsiniz.
+          üzerinden yürütülür. Etkinliğe kayıt için çocuk profilinin tamamlanmış (%100) olması
+          gerekir. Yayınlanmış bir etkinlik varsa kayıt olabilir; uygun tarih yoksa kurs talebi
+          bırakabilirsiniz.
         </p>
         <ParentGuideAuthCtas />
       </header>
@@ -141,10 +94,26 @@ export function ParentGuideContent() {
       <section className={`rounded-2xl border p-6 ${BRAND_ACCENT_CARD_STYLES.accent}`}>
         <h2 className="text-lg font-bold text-navy-950">Hızlı kontrol listesi</h2>
         <ol className="mt-4 list-decimal space-y-2 pl-5 text-sm leading-7 text-[var(--text-on-surface-soft)]">
-          {checklist.map((item) => (
+          {checklistCommon.map((item) => (
             <li key={item}>{item}</li>
           ))}
         </ol>
+        <div className="mt-5">
+          <p className="text-sm font-semibold text-navy-950">Yol 1 — Yayınlanmış etkinlik var</p>
+          <ol className="mt-2 list-decimal space-y-2 pl-5 text-sm leading-7 text-[var(--text-on-surface-soft)]">
+            {checklistYol1.map((item) => (
+              <li key={item}>{item}</li>
+            ))}
+          </ol>
+        </div>
+        <div className="mt-5">
+          <p className="text-sm font-semibold text-navy-950">Yol 2 — Uygun etkinlik yok</p>
+          <ol className="mt-2 list-decimal space-y-2 pl-5 text-sm leading-7 text-[var(--text-on-surface-soft)]">
+            {checklistYol2.map((item) => (
+              <li key={item}>{item}</li>
+            ))}
+          </ol>
+        </div>
       </section>
 
       <div className="mt-10 space-y-10 text-base leading-8 text-[var(--text-on-surface-soft)]">
@@ -199,9 +168,8 @@ export function ParentGuideContent() {
             <code className="rounded bg-surface-section px-1.5 py-0.5">emreyılmaz15</code>
           </p>
           <p className="mt-3 rounded-xl border border-border-surface bg-surface-tint-yellow px-4 py-3 text-sm text-navy-950">
-            Kayıt sonrası ekranda görünen kullanıcı adını mutlaka bir yere yazın. Çocuğunuz giriş
-            yaparken buna ihtiyaç duyacak. Tarayıcı Ad Soyad alanına veli e-postanızı otomatik
-            yazarsa silip çocuğun adını girin.
+            Kayıt sonrası ekranda görünen kullanıcı adını mutlaka bir yere yazın; çocuğunuz öğrenci
+            girişinde buna ihtiyaç duyacak.
           </p>
         </section>
 
@@ -419,34 +387,47 @@ export function ParentGuideContent() {
               <thead className="bg-surface-section text-muted">
                 <tr>
                   <th className="px-4 py-3 font-semibold">Adım</th>
-                  <th className="px-4 py-3 font-semibold">Ne var?</th>
+                  <th className="px-4 py-3 font-semibold">Panelde görünen ad</th>
+                  <th className="px-4 py-3 font-semibold">Tür</th>
                   <th className="px-4 py-3 font-semibold">Not</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border-surface">
                 <tr>
-                  <td className="px-4 py-3 font-medium text-navy-950">1. Tanışma</td>
+                  <td className="px-4 py-3 font-medium text-navy-950">1</td>
+                  <td className="px-4 py-3">Tanışma</td>
+                  <td className="px-4 py-3">Doldurulabilir form</td>
                   <td className="px-4 py-3">
-                    F01 tanıma formu; tüm sınıf düzeylerinde ön test (F02) de bu adımda
-                  </td>
-                  <td className="px-4 py-3">Kayıttan sonra ilk yapılacak</td>
-                </tr>
-                <tr>
-                  <td className="px-4 py-3 font-medium text-navy-950">2. Onaylar</td>
-                  <td className="px-4 py-3">F05, F06 (medya izinleri), F07 onay metinleri</td>
-                  <td className="px-4 py-3">F06&apos;da tüm kalemlerde izin gerekir</td>
-                </tr>
-                <tr>
-                  <td className="px-4 py-3 font-medium text-navy-950">3. Son test</td>
-                  <td className="px-4 py-3">Etkinlik sonrası değerlendirme (F03)</td>
-                  <td className="px-4 py-3">
-                    Yalnızca 2–8. sınıflar; eğitmen ders yoklamasında zorunlu katılım sağlandığında
+                    Tanıma formu ve tüm sınıf düzeylerinde ön değerlendirme; kayıttan sonra ilk
+                    adım
                   </td>
                 </tr>
                 <tr>
-                  <td className="px-4 py-3 font-medium text-navy-950">4. Sertifika onay</td>
-                  <td className="px-4 py-3">Sertifika süreci</td>
-                  <td className="px-4 py-3">Formlar ve profil tamamlandıktan sonra</td>
+                  <td className="px-4 py-3 font-medium text-navy-950">2</td>
+                  <td className="px-4 py-3">Onaylar</td>
+                  <td className="px-4 py-3">Doldurulabilir form</td>
+                  <td className="px-4 py-3">
+                    Bilimsel ölçüm, medya izinleri ve katılım onayları; medya izinlerinde tüm
+                    kalemler gerekir
+                  </td>
+                </tr>
+                <tr>
+                  <td className="px-4 py-3 font-medium text-navy-950">3</td>
+                  <td className="px-4 py-3">Son test</td>
+                  <td className="px-4 py-3">Doldurulabilir form</td>
+                  <td className="px-4 py-3">
+                    Yalnızca 2–8. sınıflar; eğitmen yoklamasında zorunlu katılım sağlandığında
+                    açılır
+                  </td>
+                </tr>
+                <tr>
+                  <td className="px-4 py-3 font-medium text-navy-950">4</td>
+                  <td className="px-4 py-3">Sertifika onay</td>
+                  <td className="px-4 py-3">Durum / koşul adımı</td>
+                  <td className="px-4 py-3">
+                    Doldurulacak form değil; profil, yoklama ve admin onayı tamamlanınca sertifika
+                    oluşturulur
+                  </td>
                 </tr>
               </tbody>
             </table>
@@ -463,8 +444,11 @@ export function ParentGuideContent() {
           <p className="mt-3">
             <strong>Profili düzenle</strong> ile okul, sınıf, veli telefon numarası ve diğer zorunlu
             bilgileri tamamlayın. Çocuk ekledikten sonra doğrudan profil sayfasına yönlendirilirsiniz.{" "}
-            <strong>Profil %100 olmadan etkinliğe kayıt ve sertifika verilemez.</strong> Etkinlik
-            tamamlandıktan sonra sertifika oluşturulur ve panelden görüntülenebilir.
+            <strong>
+              Etkinliğe kayıt ve sertifika için profil %100 zorunludur. Kurs talebi profil olmadan
+              da bırakılabilir; sınıf açıldığında profil tamamlanmalıdır.
+            </strong>{" "}
+            Etkinlik tamamlandıktan sonra sertifika oluşturulur ve panelden görüntülenebilir.
           </p>
         </section>
 
@@ -484,19 +468,9 @@ export function ParentGuideContent() {
         </section>
 
         <section className={`${BRAND_SURFACE_CARD} p-6`}>
-          <h2 className="text-lg font-bold text-navy-950">Kısa özet (paylaşmak için)</h2>
+          <h2 className="text-lg font-bold text-navy-950">Paylaşılabilir özet</h2>
           <p className="mt-3 whitespace-pre-line text-sm leading-7 text-[var(--text-on-surface-soft)]">
-            {`D2P Academy kayıt:
-1) d2p.com.tr → Hesap Oluştur (veli e-posta + şifre)
-2) E-postayı onayla → Veli Girişi
-3) Çocuk hesapları → Çocuk ekle (ad, doğum tarihi, şifre)
-4) Kullanıcı adını not al (ör. emreyılmaz15)
-5a) Etkinlik varsa → Etkinliğe kaydet
-5b) Ücretliyse → PayTR ile kart ödemesini tamamla (Panel → Ödemelerim)
-5c) Etkinlik yoksa → Kurs talebi bırak
-6) Detay → Formları doldur (Tanışma + ön test + Onaylar aynı gün)
-7) Profili %100 yap — veli telefonu dahil (sertifika için)
-Veli = e-posta | Öğrenci = kullanıcı adı ile giriş`}
+            {buildShareableSummary()}
           </p>
         </section>
       </div>
