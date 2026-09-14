@@ -42,7 +42,7 @@ export default async function PaymentEmbedPage({
   const { data: payment } = await serviceClient
     .from("payments")
     .select(
-      "id, payer_user_id, student_user_id, event_id, enrollment_id, amount_try_cents, status, provider, provider_raw, created_at",
+      "id, payer_user_id, student_user_id, event_id, enrollment_id, amount_try_cents, status, provider, provider_raw, created_at, coupon_id, coupon_code, original_amount_try_cents, discount_try_cents",
     )
     .eq("id", paymentId)
     .maybeSingle();
@@ -83,6 +83,10 @@ export default async function PaymentEmbedPage({
           studentUserId: payment.student_user_id,
           payerUserId: payment.payer_user_id,
           amountTryCents: payment.amount_try_cents,
+          couponId: payment.coupon_id,
+          couponCode: payment.coupon_code,
+          originalAmountTryCents: payment.original_amount_try_cents,
+          discountTryCents: payment.discount_try_cents,
         },
       });
     } catch (error) {

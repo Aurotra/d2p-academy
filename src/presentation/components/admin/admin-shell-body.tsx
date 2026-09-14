@@ -40,6 +40,7 @@ const navItems: NavItem[] = [
     countKey: "courseDemandRequests",
   },
   { href: "/admin/programs", label: "Programlar" },
+  { href: "/admin/coupons", label: "İndirim Kodları" },
 ];
 
 function CountBadge({ count }: { count: number }) {

@@ -836,6 +836,26 @@ function EnrollStudentDialog({
   const [error, setError] = useState<string | null>(null);
   const [redirecting, setRedirecting] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [couponInput, setCouponInput] = useState("");
+  const [couponApplying, setCouponApplying] = useState(false);
+  const [couponError, setCouponError] = useState<string | null>(null);
+  const [appliedCoupon, setAppliedCoupon] = useState<{
+    code: string;
+    discountRate: number;
+    originalAmountTryCents: number;
+    discountAmountTryCents: number;
+    finalAmountTryCents: number;
+    discountAmountDisplay: string;
+    finalAmountDisplay: string;
+    originalAmountDisplay: string;
+  } | null>(null);
+
+  const selectedEvent = events.find((item) => item.id === eventId) ?? null;
+  const selectedIsCardPaid = selectedEvent
+    ? requiresIyzicoCheckout(selectedEvent.paymentMode)
+    : false;
+  const listPriceTryCents =
+    selectedEvent && selectedIsCardPaid ? (selectedEvent.priceTryCents ?? 0) : 0;
 
   useEffect(() => {
     if (!profileReady) {
@@ -852,6 +872,82 @@ function EnrollStudentDialog({
     }
   }, [events, initialEventId, profileReady]);
 
+  useEffect(() => {
+    setAppliedCoupon(null);
+    setCouponError(null);
+    setCouponInput("");
+  }, [eventId]);
+
+  async function applyCoupon() {
+    setCouponError(null);
+    if (!selectedIsCardPaid || listPriceTryCents <= 0) {
+      setCouponError("İndirim kodu yalnızca kartla ödemeli etkinliklerde kullanılabilir.");
+      return;
+    }
+    const code = couponInput.trim();
+    if (!code) {
+      setCouponError("İndirim kodu girin.");
+      return;
+    }
+
+    setCouponApplying(true);
+    try {
+      const response = await fetch("/api/v1/coupons/validate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          code,
+          baseAmountTryCents: listPriceTryCents,
+        }),
+      });
+      const payload = (await response.json()) as {
+        error?: string;
+        data?: {
+          code?: string;
+          discountRate?: number;
+          originalAmountTryCents?: number;
+          discountAmountTryCents?: number;
+          finalAmountTryCents?: number;
+          discountAmountDisplay?: string;
+          finalAmountDisplay?: string;
+          originalAmountDisplay?: string;
+        };
+      };
+      if (!response.ok || !payload.data) {
+        setAppliedCoupon(null);
+        setCouponError(payload.error ?? "İndirim kodu uygulanamadı.");
+        return;
+      }
+
+      setAppliedCoupon({
+        code: payload.data.code ?? code.toUpperCase(),
+        discountRate: payload.data.discountRate ?? 0,
+        originalAmountTryCents: payload.data.originalAmountTryCents ?? listPriceTryCents,
+        discountAmountTryCents: payload.data.discountAmountTryCents ?? 0,
+        finalAmountTryCents: payload.data.finalAmountTryCents ?? listPriceTryCents,
+        discountAmountDisplay:
+          payload.data.discountAmountDisplay ??
+          formatTryCentsDisplay(payload.data.discountAmountTryCents ?? 0),
+        finalAmountDisplay:
+          payload.data.finalAmountDisplay ??
+          formatTryCentsDisplay(payload.data.finalAmountTryCents ?? listPriceTryCents),
+        originalAmountDisplay:
+          payload.data.originalAmountDisplay ?? formatTryCentsDisplay(listPriceTryCents),
+      });
+      setCouponInput(payload.data.code ?? code.toUpperCase());
+    } catch {
+      setCouponError("Bağlantı hatası. Tekrar deneyin.");
+    } finally {
+      setCouponApplying(false);
+    }
+  }
+
+  function clearCoupon() {
+    setAppliedCoupon(null);
+    setCouponError(null);
+    setCouponInput("");
+  }
+
   async function handleSubmit(event: FormEvent) {
     event.preventDefault();
     setError(null);
@@ -862,10 +958,15 @@ function EnrollStudentDialog({
 
     setSubmitting(true);
     try {
+      const body: { eventId: string; couponCode?: string } = { eventId };
+      if (appliedCoupon?.code && selectedIsCardPaid) {
+        body.couponCode = appliedCoupon.code;
+      }
+
       const response = await fetch(`/api/v1/parent/students/${student.id}/enrollments`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ eventId }),
+        body: JSON.stringify(body),
       });
       const payload = (await response.json()) as {
         error?: string;
@@ -1022,6 +1123,70 @@ function EnrollStudentDialog({
             })}
           </fieldset>
 
+          {selectedIsCardPaid && listPriceTryCents > 0 ? (
+            <div className="rounded-2xl border border-border-surface bg-surface-section/40 p-4">
+              <p className="text-sm font-semibold text-navy-950">İndirim kodu</p>
+              <p className="mt-1 text-xs leading-5 text-subtle">
+                Kod doğrulandığında tutar güncellenir; kullanım hakkı yalnızca ödeme tamamlanınca
+                düşülür.
+              </p>
+              <div className="mt-3 flex flex-col gap-2 sm:flex-row">
+                <Input
+                  name="coupon_code"
+                  value={couponInput}
+                  onChange={(e) => setCouponInput(e.target.value.toUpperCase())}
+                  placeholder="Örn. YAZ25"
+                  disabled={Boolean(appliedCoupon) || couponApplying || submitting}
+                  className="min-h-[44px] flex-1 font-semibold tracking-wide"
+                  autoComplete="off"
+                />
+                {appliedCoupon ? (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="min-h-[44px] shrink-0"
+                    onClick={clearCoupon}
+                    disabled={submitting}
+                  >
+                    Kaldır
+                  </Button>
+                ) : (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="min-h-[44px] shrink-0"
+                    onClick={() => void applyCoupon()}
+                    disabled={couponApplying || submitting || !couponInput.trim()}
+                  >
+                    {couponApplying ? "Kontrol…" : "Uygula"}
+                  </Button>
+                )}
+              </div>
+              {couponError ? <p className="mt-2 text-sm text-red-600">{couponError}</p> : null}
+              {appliedCoupon ? (
+                <div className="mt-3 space-y-1 rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-3 text-sm text-emerald-950">
+                  <p>
+                    <span className="font-semibold">{appliedCoupon.code}</span>
+                    {" · "}
+                    %{appliedCoupon.discountRate} indirim
+                  </p>
+                  <p className="text-emerald-900/80">
+                    Liste: {appliedCoupon.originalAmountDisplay}
+                    {" → İndirim: −"}
+                    {appliedCoupon.discountAmountDisplay}
+                  </p>
+                  <p className="font-bold">
+                    Ödenecek: {appliedCoupon.finalAmountDisplay}
+                  </p>
+                </div>
+              ) : (
+                <p className="mt-3 text-sm font-medium text-navy-900">
+                  Ödenecek: {formatTryCentsDisplay(listPriceTryCents)}
+                </p>
+              )}
+            </div>
+          ) : null}
+
           {error ? <p className="text-sm text-red-600">{error}</p> : null}
           <DialogActions
             onClose={onClose}
@@ -1031,7 +1196,13 @@ function EnrollStudentDialog({
                 if (!selected) {
                   return "Kaydet";
                 }
-                return requiresIyzicoCheckout(selected.paymentMode) ? "Ödemeye geç" : "Kaydet";
+                if (!requiresIyzicoCheckout(selected.paymentMode)) {
+                  return "Kaydet";
+                }
+                if (appliedCoupon && appliedCoupon.finalAmountTryCents === 0) {
+                  return "Ücretsiz kaydet";
+                }
+                return "Ödemeye geç";
               })()
             }
             submitting={submitting}

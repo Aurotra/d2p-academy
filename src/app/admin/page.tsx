@@ -149,6 +149,13 @@ const categories: AdminCategory[] = [
         tone: "border-fuchsia-200 bg-fuchsia-100 text-fuchsia-950 hover:bg-fuchsia-50",
         badge: "bg-fuchsia-200/70 text-fuchsia-900",
       },
+      {
+        href: "/admin/coupons",
+        title: "İndirim Kodları",
+        description: "Kart ödemelerinde kullanılacak kuponları ve kullanım sayaçlarını yönetin.",
+        tone: "border-teal-200 bg-teal-100 text-teal-950 hover:bg-teal-50",
+        badge: "bg-teal-200/70 text-teal-900",
+      },
     ],
   },
 ];

@@ -13,6 +13,10 @@ export interface PaymentRecord {
   providerConversationId: string | null;
   providerToken: string | null;
   providerPaymentId: string | null;
+  couponId?: string | null;
+  couponCode?: string | null;
+  originalAmountTryCents?: number | null;
+  discountTryCents?: number | null;
   paidAt: Date | null;
   createdAt: Date;
 }

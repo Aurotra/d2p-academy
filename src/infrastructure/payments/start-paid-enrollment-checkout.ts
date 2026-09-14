@@ -19,6 +19,7 @@ import {
 import { initializePaytrCheckout } from "@/infrastructure/payments/paytr-client";
 import { merchantOidFromPaymentId } from "@/infrastructure/payments/paytr-hash";
 import { paytrEmbedUrl } from "@/infrastructure/payments/paytr-session";
+import { recordCouponRedemptionForPayment } from "@/infrastructure/coupons/record-coupon-redemption";
 import { getClientIp } from "@/lib/utils/request-ip";
 
 const PENDING_PAYMENT_TTL_MS = 45 * 60 * 1000;
@@ -30,6 +31,16 @@ export interface PaidEnrollmentCheckoutResult {
   requiresPayment: true;
   eventTitle: string;
   amountTryCents: number;
+  originalAmountTryCents?: number;
+  discountTryCents?: number;
+  couponCode?: string | null;
+}
+
+export interface CheckoutCouponSnapshot {
+  couponId: string;
+  code: string;
+  originalAmountTryCents: number;
+  discountTryCents: number;
 }
 
 interface StartPaidEnrollmentInput {
@@ -39,7 +50,9 @@ interface StartPaidEnrollmentInput {
   studentName: string;
   eventId: string;
   eventTitle: string;
+  /** Charged amount (after coupon). Must be > 0 for card gateway. */
   priceTryCents: number;
+  coupon?: CheckoutCouponSnapshot | null;
   payerUserId: string;
   payerFullName: string;
   payerEmail: string;
@@ -192,6 +205,8 @@ export async function startPaidEnrollmentCheckout(
     });
   }
 
+  const coupon = input.coupon ?? null;
+
   const { data: payment, error: paymentError } = await serviceClient
     .from("payments")
     .insert({
@@ -204,6 +219,10 @@ export async function startPaidEnrollmentCheckout(
       provider,
       status: "pending",
       provider_conversation_id: undefined,
+      coupon_id: coupon?.couponId ?? null,
+      coupon_code: coupon?.code ?? null,
+      original_amount_try_cents: coupon?.originalAmountTryCents ?? null,
+      discount_try_cents: coupon?.discountTryCents ?? null,
     })
     .select("id")
     .single();
@@ -251,6 +270,9 @@ export async function startPaidEnrollmentCheckout(
       requiresPayment: true,
       eventTitle: input.eventTitle,
       amountTryCents: input.priceTryCents,
+      originalAmountTryCents: coupon?.originalAmountTryCents,
+      discountTryCents: coupon?.discountTryCents,
+      couponCode: coupon?.code ?? null,
     };
   }
 
@@ -295,6 +317,9 @@ export async function startPaidEnrollmentCheckout(
     requiresPayment: true,
     eventTitle: input.eventTitle,
     amountTryCents: input.priceTryCents,
+    originalAmountTryCents: coupon?.originalAmountTryCents,
+    discountTryCents: coupon?.discountTryCents,
+    couponCode: coupon?.code ?? null,
   };
 }
 
@@ -308,6 +333,10 @@ export async function rotatePendingPaytrCheckout(input: {
     studentUserId: string;
     payerUserId: string;
     amountTryCents: number;
+    couponId?: string | null;
+    couponCode?: string | null;
+    originalAmountTryCents?: number | null;
+    discountTryCents?: number | null;
   };
 }): Promise<{ paymentId: string; paymentPageUrl: string }> {
   const { serviceClient, payment } = input;
@@ -339,6 +368,10 @@ export async function rotatePendingPaytrCheckout(input: {
       currency: "TRY",
       provider: "paytr",
       status: "pending",
+      coupon_id: payment.couponId ?? null,
+      coupon_code: payment.couponCode ?? null,
+      original_amount_try_cents: payment.originalAmountTryCents ?? null,
+      discount_try_cents: payment.discountTryCents ?? null,
     })
     .select("id")
     .single();
@@ -391,6 +424,9 @@ export async function finalizePaidPayment(params: {
     providerPaymentId: params.providerPaymentId,
     raw: params.raw,
   });
+
+  // Increment coupon used_count only after successful payment confirmation.
+  await recordCouponRedemptionForPayment(params.serviceClient, params.paymentId);
 
   if (!result.alreadyPaid) {
     scheduleAdminParentEnrollmentNotify(params.serviceClient, {

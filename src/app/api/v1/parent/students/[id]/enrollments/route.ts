@@ -10,6 +10,9 @@ import {
   requiresIyzicoCheckout,
   resolveEventPaymentMode,
 } from "@/infrastructure/events/event-payment-mode";
+import { CouponValidationError } from "@/core/domain/coupon";
+import { validateCouponForAmount } from "@/infrastructure/coupons/coupon-repository";
+import { recordSuccessfulCouponRedemption } from "@/infrastructure/coupons/record-coupon-redemption";
 import { startPaidEnrollmentCheckout } from "@/infrastructure/payments/start-paid-enrollment-checkout";
 import { scheduleAdminParentEnrollmentNotify } from "@/infrastructure/email/notify-admin-parent-enrollment";
 import { createServiceRoleClient } from "@/infrastructure/supabase/create-service-role-client";
@@ -23,6 +26,7 @@ import { getEventEnrollmentBlockReason } from "@/shared/utils/event-enrollment-w
 
 const schema = z.object({
   eventId: z.string().uuid(),
+  couponCode: z.string().min(1).max(64).optional(),
 });
 
 async function cancelParentSelfEnrollment(
@@ -89,6 +93,7 @@ export async function POST(
   }
 
   const eventId = parsed.data.eventId;
+  const couponCodeRaw = parsed.data.couponCode?.trim() || null;
 
   const { data: child, error: lookupError } = await supabase
     .from("profiles")
@@ -171,11 +176,147 @@ export async function POST(
       );
     }
 
+    let chargedTryCents = priceTryCents;
+    let couponSnapshot: {
+      couponId: string;
+      code: string;
+      originalAmountTryCents: number;
+      discountTryCents: number;
+    } | null = null;
+
+    if (couponCodeRaw) {
+      try {
+        const quote = await validateCouponForAmount(serviceClient, {
+          code: couponCodeRaw,
+          baseAmountTryCents: priceTryCents,
+        });
+        chargedTryCents = quote.finalAmountTryCents;
+        couponSnapshot = {
+          couponId: quote.couponId,
+          code: quote.code,
+          originalAmountTryCents: quote.originalAmountTryCents,
+          discountTryCents: quote.discountAmountTryCents,
+        };
+      } catch (couponError) {
+        if (couponError instanceof CouponValidationError) {
+          return NextResponse.json(
+            { error: couponError.message, code: couponError.code },
+            { status: 400 },
+          );
+        }
+        throw couponError;
+      }
+    }
+
     const { data: payer } = await serviceClient
       .from("profiles")
       .select("full_name, email, parent_phone, city_district")
       .eq("id", auth.user.id)
       .maybeSingle();
+
+    const payerEmail = payer?.email?.trim() || auth.user.email || "veli@d2p.com.tr";
+
+    // 100% coupon: register without card gateway; increment used_count now (payment confirmed).
+    if (chargedTryCents === 0 && couponSnapshot) {
+      try {
+        const reserved = await tryReserveCapacityAndEnroll(serviceClient, {
+          eventId,
+          userId: studentId,
+          targetStatus: "registered",
+          enrollmentSource: "parent",
+        });
+
+        await cancelParentSelfEnrollment(serviceClient, auth.user.id, eventId);
+
+        if (reserved.alreadyEnrolled) {
+          return NextResponse.json({
+            data: {
+              enrollmentId: reserved.enrollmentId,
+              alreadyEnrolled: true,
+              eventTitle: event.title,
+            },
+          });
+        }
+
+        const { data: freePayment, error: freePaymentError } = await serviceClient
+          .from("payments")
+          .insert({
+            enrollment_id: reserved.enrollmentId,
+            event_id: eventId,
+            payer_user_id: auth.user.id,
+            student_user_id: studentId,
+            amount_try_cents: 0,
+            currency: "TRY",
+            provider: "coupon",
+            status: "paid",
+            paid_at: new Date().toISOString(),
+            coupon_id: couponSnapshot.couponId,
+            coupon_code: couponSnapshot.code,
+            original_amount_try_cents: couponSnapshot.originalAmountTryCents,
+            discount_try_cents: couponSnapshot.discountTryCents,
+          })
+          .select("id")
+          .single();
+
+        if (freePaymentError || !freePayment) {
+          console.error("[parent enroll free coupon payment]", freePaymentError?.message);
+          return NextResponse.json(
+            { error: "Ücretsiz kupon kaydı oluşturulamadı." },
+            { status: 500 },
+          );
+        }
+
+        try {
+          await recordSuccessfulCouponRedemption(serviceClient, {
+            couponId: couponSnapshot.couponId,
+            paymentId: freePayment.id,
+            originalAmountTryCents: couponSnapshot.originalAmountTryCents,
+            discountAmountTryCents: couponSnapshot.discountTryCents,
+            finalAmountTryCents: 0,
+            customerEmail: payerEmail,
+          });
+        } catch (redemptionError) {
+          console.error("[parent enroll free coupon redemption]", redemptionError);
+        }
+
+        scheduleAdminParentEnrollmentNotify(serviceClient, {
+          enrollmentId: reserved.enrollmentId,
+          paymentLabel: `Kupon (%100) — ${couponSnapshot.code}`,
+          alreadyEnrolled: false,
+        });
+
+        return NextResponse.json(
+          {
+            data: {
+              enrollmentId: reserved.enrollmentId,
+              paymentId: freePayment.id,
+              alreadyEnrolled: false,
+              requiresPayment: false,
+              eventTitle: event.title,
+              studentName: child.full_name,
+              amountTryCents: 0,
+              originalAmountTryCents: couponSnapshot.originalAmountTryCents,
+              discountTryCents: couponSnapshot.discountTryCents,
+              couponCode: couponSnapshot.code,
+              revived: reserved.revived,
+            },
+          },
+          { status: reserved.revived ? 200 : 201 },
+        );
+      } catch (reserveError) {
+        if (reserveError instanceof CapacityFullError) {
+          return NextResponse.json({ error: reserveError.message }, { status: 409 });
+        }
+        console.error("[parent enroll free coupon]", reserveError);
+        return NextResponse.json(
+          {
+            error:
+              reserveError instanceof Error ? reserveError.message : "Kayıt oluşturulamadı.",
+          },
+          { status: 500 },
+        );
+      }
+    }
 
     try {
       const checkout = await startPaidEnrollmentCheckout({
@@ -185,10 +326,11 @@ export async function POST(
         studentName: child.full_name,
         eventId,
         eventTitle: event.title,
-        priceTryCents,
+        priceTryCents: chargedTryCents,
+        coupon: couponSnapshot,
         payerUserId: auth.user.id,
         payerFullName: payer?.full_name?.trim() || "Veli",
-        payerEmail: payer?.email?.trim() || auth.user.email || "veli@d2p.com.tr",
+        payerEmail,
         payerPhone: payer?.parent_phone ?? child.parent_phone,
         payerCity: payer?.city_district,
       });
@@ -205,6 +347,9 @@ export async function POST(
             alreadyEnrolled: false,
             eventTitle: checkout.eventTitle,
             amountTryCents: checkout.amountTryCents,
+            originalAmountTryCents: checkout.originalAmountTryCents,
+            discountTryCents: checkout.discountTryCents,
+            couponCode: checkout.couponCode,
             studentName: child.full_name,
           },
         },
