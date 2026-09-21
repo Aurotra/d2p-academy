@@ -10,9 +10,17 @@ const CERTIFICATE_RPC_ERRORS: Record<string, string> = {
   "Event program_code is missing. Set program_code on the event (e.g. DC) before issuing a certificate.":
     "Etkinlikte program kodu eksik. Sertifika vermeden önce program_code atayın (ör. DC).",
   "Invalid program_code. Use 2–4 letters (e.g. DC).":
-    "Geçersiz program kodu. 2–4 harf kullanın (ör. DC).",
+    "Geçersiz program kodu. 2–4 karakter kullanın (A–Z, 0–9; ör. DC, 3DTY).",
   "Invalid program_code. Only A–Z letters are allowed (e.g. DC).":
-    "Geçersiz program kodu. Yalnızca A–Z harflerine izin verilir (ör. DC).",
+    "Geçersiz program kodu. Yalnızca A–Z ve 0–9 karakterlere izin verilir (ör. DC, 3DTY).",
+  "Geçersiz program kodu. 2–4 harf kullanın (ör. DC).":
+    "Geçersiz program kodu. 2–4 karakter kullanın (A–Z, 0–9; ör. DC, 3DTY).",
+  "Geçersiz program kodu. Yalnızca A–Z harflerine izin verilir (ör. DC).":
+    "Geçersiz program kodu. Yalnızca A–Z ve 0–9 karakterlere izin verilir (ör. DC, 3DTY).",
+  "Geçersiz program kodu. 2–4 karakter kullanın (A–Z, 0–9; ör. DC, 3DTY).":
+    "Geçersiz program kodu. 2–4 karakter kullanın (A–Z, 0–9; ör. DC, 3DTY).",
+  "Geçersiz program kodu. Yalnızca A–Z ve 0–9 karakterlere izin verilir (ör. DC, 3DTY).":
+    "Geçersiz program kodu. Yalnızca A–Z ve 0–9 karakterlere izin verilir (ör. DC, 3DTY).",
   "Sertifika iptal etmek için admin yetkisi gerekli.":
     "Sertifika iptal etmek için admin yetkisi gerekli.",
   "Sertifika bulunamadı.": "Sertifika bulunamadı.",

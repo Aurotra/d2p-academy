@@ -168,7 +168,7 @@ function buildEventPayload(form: EventFormState) {
   if (trimmedProgramCode) {
     programCode = tryNormalizeProgramCode(trimmedProgramCode);
     if (!programCode) {
-      throw new Error("Program kodu 2–4 harf olmalıdır (ör. KYK, DC).");
+      throw new Error("Program kodu 2–4 karakter olmalıdır (A–Z, 0–9; ör. KYK, DC, 3DTY).");
     }
   }
 
@@ -695,7 +695,7 @@ function EventFormFields({
             maxLength={4}
           />
           <p className="mt-1 text-xs text-subtle" id={`${idPrefix}-program-code-hint`}>
-            Öğrenci ve sertifika kodu için zorunlu (2–4 harf).
+            Öğrenci ve sertifika kodu için zorunlu (2–4 karakter; A–Z, 0–9).
           </p>
         </div>
       </FormSection>
