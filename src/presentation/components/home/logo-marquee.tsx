@@ -88,16 +88,14 @@ export function LogoMarquee({ logos = PARTNER_LOGOS }: { logos?: PartnerLogo[] }
   return (
     <section
       aria-labelledby="partner-logos-heading"
-      className="border-t border-border-surface bg-surface-base py-12 sm:py-14"
+      className="border-t border-border-surface bg-surface-base py-10 sm:py-12"
     >
-      <div className="mx-auto max-w-7xl px-4 text-center sm:px-6 lg:px-8">
-        <p className="text-sm font-semibold uppercase tracking-[0.18em] text-secondary">
-          Referanslar
-        </p>
-        <h2 id="partner-logos-heading" className="mt-2 text-2xl font-black text-navy-950 sm:text-3xl">
-          İş birliklerimiz
-        </h2>
-      </div>
+      <h2
+        id="partner-logos-heading"
+        className="text-center text-sm font-semibold uppercase tracking-[0.18em] text-secondary"
+      >
+        İş birliklerimiz
+      </h2>
 
       <ul className="sr-only">
         {logos.map((logo) => (
@@ -105,7 +103,7 @@ export function LogoMarquee({ logos = PARTNER_LOGOS }: { logos?: PartnerLogo[] }
         ))}
       </ul>
 
-      <div className="relative mt-8 overflow-hidden">
+      <div className="relative mt-5 overflow-hidden">
         <div
           aria-hidden
           className="pointer-events-none absolute inset-y-0 left-0 z-10 w-16 bg-gradient-to-r from-surface-base to-transparent sm:w-24"
