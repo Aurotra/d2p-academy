@@ -35,15 +35,15 @@ export function HeroSection() {
 
           <dl className="mt-10 grid grid-cols-3 gap-4 border-t border-border-surface pt-8">
             <div>
-              <dt className="text-2xl font-bold text-navy-950">400+</dt>
+              <dt className="text-2xl font-bold text-navy-950">500+</dt>
               <dd className="text-sm text-muted">Öğrenci</dd>
             </div>
             <div>
-              <dt className="text-2xl font-bold text-navy-950">3</dt>
+              <dt className="text-2xl font-bold text-navy-950">5</dt>
               <dd className="text-sm text-muted">Etkinlik</dd>
             </div>
             <div>
-              <dt className="text-2xl font-bold text-navy-950">4</dt>
+              <dt className="text-2xl font-bold text-navy-950">6</dt>
               <dd className="text-sm text-muted">Kurum İşbirliği</dd>
             </div>
           </dl>
