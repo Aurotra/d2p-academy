@@ -17,6 +17,11 @@ export const PARTNER_LOGOS: PartnerLogo[] = [
     url: "https://www.pau.edu.tr",
   },
   {
+    name: "Pamukkale Teknokent",
+    src: "/partners/pamukkale-teknokent.png",
+    url: "https://www.pauteknokent.com.tr",
+  },
+  {
     name: "Türkiye Kamu-Sen",
     src: "/partners/turkiye-kamu-sen.png",
     url: "https://www.kamusen.org.tr",
