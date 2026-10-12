@@ -2,6 +2,7 @@ import { CertificateVerificationBar } from "@/presentation/components/home/certi
 import { EventCalendarPreview } from "@/presentation/components/home/event-calendar-preview";
 import { GalleryHomePreview } from "@/presentation/components/home/gallery-home-preview";
 import { HeroSection } from "@/presentation/components/home/hero-section";
+import { LogoMarquee } from "@/presentation/components/home/logo-marquee";
 import { LearningValuesSection } from "@/presentation/components/home/learning-values-section";
 import { homePageMetadata } from "@/shared/seo/public-pages";
 
@@ -17,6 +18,7 @@ export default function HomePage() {
       <LearningValuesSection />
       <CertificateVerificationBar />
       <GalleryHomePreview />
+      <LogoMarquee />
     </>
   );
 }
