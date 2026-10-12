@@ -24,7 +24,7 @@ export const PARTNER_LOGOS: PartnerLogo[] = [
   {
     name: "Honaz Belediyesi",
     src: "/partners/honaz-belediyesi.png",
-    url: "/rehber/honaz-belediyesi-3d-yaz-kursu",
+    url: "https://www.honaz.bel.tr",
   },
   {
     name: "TMMOB Makina Mühendisleri Odası",
@@ -34,5 +34,6 @@ export const PARTNER_LOGOS: PartnerLogo[] = [
   {
     name: "3D teknomarket",
     src: "/partners/3d-teknomarket.png",
+    url: "https://www.3dteknomarket.com",
   },
 ];
