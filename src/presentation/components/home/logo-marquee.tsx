@@ -23,9 +23,12 @@ function buildSeamlessLoop(logos: PartnerLogo[]): PartnerLogo[] {
 function LogoMark({
   logo,
   interactive,
+  tabbable = true,
 }: {
   logo: PartnerLogo;
   interactive: boolean;
+  /** Only the first copy of each logo stays in the tab order. */
+  tabbable?: boolean;
 }) {
   const image = (
     // SVG/PNG wordmarks; next/image blocks SVG by default.
@@ -55,7 +58,8 @@ function LogoMark({
         href={logo.url}
         className={`${className} rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-secondary/40`}
         target="_blank"
-        rel="noreferrer"
+        rel="noopener noreferrer"
+        tabIndex={tabbable ? undefined : -1}
         title={logo.name}
         aria-label={logo.name}
       >
@@ -68,6 +72,7 @@ function LogoMark({
     <Link
       href={logo.url}
       className={`${className} rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-secondary/40`}
+      tabIndex={tabbable ? undefined : -1}
       title={logo.name}
       aria-label={logo.name}
     >
@@ -116,17 +121,15 @@ export function LogoMarquee({ logos = PARTNER_LOGOS }: { logos?: PartnerLogo[] }
         <ul className="logo-marquee-track flex w-max items-center motion-reduce:hidden">
           {loop.map((logo, index) => {
             const inSecondHalf = index >= halfLength;
-            const interactive = !inSecondHalf && Boolean(logo.url) && !linkedSrcs.has(logo.src);
-            if (interactive) {
+            const hasUrl = Boolean(logo.url);
+            const tabbable = hasUrl && !inSecondHalf && !linkedSrcs.has(logo.src);
+            if (tabbable) {
               linkedSrcs.add(logo.src);
             }
 
             return (
               <li key={`${logo.src}-${index}`} aria-hidden={inSecondHalf || undefined}>
-                <LogoMark
-                  logo={interactive ? logo : { ...logo, url: undefined }}
-                  interactive={interactive}
-                />
+                <LogoMark logo={logo} interactive={hasUrl} tabbable={tabbable} />
               </li>
             );
           })}
