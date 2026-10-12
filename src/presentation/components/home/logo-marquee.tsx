@@ -33,7 +33,7 @@ function LogoMark({
     <img
       src={logo.src}
       alt=""
-      className="h-10 w-auto max-w-[9.5rem] object-contain grayscale opacity-60 transition-all duration-300 group-hover:opacity-100 group-hover:grayscale-0 group-focus-visible:opacity-100 group-focus-visible:grayscale-0 sm:h-12 sm:max-w-[11rem]"
+      className="h-auto max-h-10 w-auto max-w-[8.75rem] object-contain grayscale opacity-60 transition-all duration-300 group-hover:opacity-100 group-hover:grayscale-0 group-focus-visible:opacity-100 group-focus-visible:grayscale-0 sm:max-h-12 sm:max-w-[10.5rem]"
       draggable={false}
     />
   );

@@ -7,29 +7,32 @@ export interface PartnerLogo {
 }
 
 /**
- * Homepage logo band. Replace `src` with official logo files (SVG/PNG).
- * Keep marks on a transparent background so grayscale + hover color works.
+ * Homepage logo band. Add a file under `public/partners/` and append it here.
+ * Prefer transparent PNG/SVG so the grayscale treatment stays clean.
  */
 export const PARTNER_LOGOS: PartnerLogo[] = [
   {
-    name: "ATH Mühendislik",
-    src: "/partners/ath-muhendislik.svg",
+    name: "Pamukkale Üniversitesi",
+    src: "/partners/pamukkale-universitesi.png",
+    url: "https://www.pau.edu.tr",
+  },
+  {
+    name: "Türkiye Kamu-Sen",
+    src: "/partners/turkiye-kamu-sen.png",
+    url: "https://www.kamusen.org.tr",
   },
   {
     name: "Honaz Belediyesi",
-    src: "/partners/honaz-belediyesi.svg",
+    src: "/partners/honaz-belediyesi.png",
     url: "/rehber/honaz-belediyesi-3d-yaz-kursu",
   },
   {
-    name: "Örnek Kurum",
-    src: "/partners/ornek-kurum.svg",
+    name: "TMMOB Makina Mühendisleri Odası",
+    src: "/partners/tmmob-mmo.png",
+    url: "https://www.mmo.org.tr",
   },
   {
-    name: "Örnek Belediye",
-    src: "/partners/ornek-belediye.svg",
-  },
-  {
-    name: "Örnek Firma",
-    src: "/partners/ornek-firma.svg",
+    name: "3D teknomarket",
+    src: "/partners/3d-teknomarket.png",
   },
 ];
