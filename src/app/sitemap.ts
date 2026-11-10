@@ -4,12 +4,14 @@ import { GUIDE_ARTICLES } from "@/shared/content/guides";
 import { SupabaseGalleryRepository } from "@/infrastructure/repositories/supabase-gallery-repository";
 import { SupabaseEventRepository } from "@/infrastructure/repositories/supabase-event-repository";
 import { tryCreateServiceRoleClient } from "@/infrastructure/supabase/create-service-role-client";
+import { STORE_PRODUCTS } from "@/shared/constants/store-products";
 import { absoluteUrl } from "@/shared/seo/metadata";
 import { SITE_URL } from "@/shared/constants/site";
 
 const PUBLIC_PATHS = [
   "/",
   "/etkinlikler",
+  "/magaza",
   "/hakkimizda",
   "/galeri",
   "/iletisim",
@@ -43,9 +45,16 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.6,
   }));
 
+  const storeEntries: MetadataRoute.Sitemap = STORE_PRODUCTS.map((product) => ({
+    url: absoluteUrl(`/magaza/${product.slug}`),
+    lastModified: now,
+    changeFrequency: "weekly",
+    priority: 0.8,
+  }));
+
   const client = tryCreateServiceRoleClient();
   if (!client) {
-    return [...staticEntries, ...guideEntries];
+    return [...staticEntries, ...guideEntries, ...storeEntries];
   }
 
   try {
@@ -71,8 +80,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.8,
     }));
 
-    return [...staticEntries, ...guideEntries, ...albumEntries, ...eventEntries];
+    return [...staticEntries, ...guideEntries, ...storeEntries, ...albumEntries, ...eventEntries];
   } catch {
-    return [...staticEntries, ...guideEntries];
+    return [...staticEntries, ...guideEntries, ...storeEntries];
   }
 }

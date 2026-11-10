@@ -38,6 +38,7 @@ function LockIcon({ className = "h-4 w-4" }: { className?: string }) {
 
 const discoverLinks = [
   { href: "/etkinlikler", label: "Etkinlikler" },
+  { href: "/magaza", label: "Mağaza" },
   { href: "/galeri", label: "Galeri" },
   { href: "/iletisim", label: "İletişim" },
   { href: PARENT_GUIDE_PATH, label: "Veli Rehberi" },

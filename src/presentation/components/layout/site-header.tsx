@@ -14,6 +14,7 @@ import { scrollToHash } from "@/shared/utils/scroll-to-hash";
 const navItems = [
   { href: "/#hero", label: "Ana Sayfa" },
   { href: "/etkinlikler", label: "Etkinlikler" },
+  { href: "/magaza", label: "Mağaza" },
   { href: "/hakkimizda", label: "Hakkımızda" },
   { href: PARENT_GUIDE_PATH, label: "Veli Rehberi" },
   { href: "/#certificate", label: "Sertifika Doğrula" },

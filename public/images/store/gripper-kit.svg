@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 480" role="img" aria-labelledby="gripTitle">
+  <title id="gripTitle">Biyonik Robotik K1skaç Mekanizmas1 Görünümü</title>
+  <defs>
+    <pattern id="grid2" width="20" height="20" patternUnits="userSpaceOnUse">
+      <path d="M20 0H0V20" fill="none" stroke="#d7e3ec" stroke-width="1"/>
+    </pattern>
+  </defs>
+  <rect width="640" height="480" fill="#f4f8fb"/>
+  <rect width="640" height="480" fill="url(#grid2)"/>
+  <rect x="24" y="24" width="592" height="432" fill="none" stroke="#0b3a5b" stroke-width="2"/>
+  <text x="40" y="52" fill="#0b3a5b" font-family="Segoe UI, Arial, sans-serif" font-size="16" font-weight="700">D2P / GRIPPER-KIT</text>
+  <text x="40" y="74" fill="#1f8a9a" font-family="Segoe UI, Arial, sans-serif" font-size="12">KINEMATIC VIEW · MG996R</text>
+  <rect x="270" y="280" width="100" height="70" rx="8" fill="#e8f4f7" stroke="#0b3a5b" stroke-width="2"/>
+  <circle cx="320" cy="250" r="28" fill="#ffffff" stroke="#1f8a9a" stroke-width="2"/>
+  <circle cx="320" cy="250" r="8" fill="#0b3a5b"/>
+  <path d="M300 235 L250 150 L220 160 L270 245 Z" fill="#dff3f6" stroke="#0b3a5b" stroke-width="2"/>
+  <path d="M340 235 L390 150 L420 160 L370 245 Z" fill="#dff3f6" stroke="#0b3a5b" stroke-width="2"/>
+  <path d="M235 155 L205 120 L185 135 L220 165" fill="#ffffff" stroke="#1f8a9a" stroke-width="2"/>
+  <path d="M405 155 L435 120 L455 135 L420 165" fill="#ffffff" stroke="#1f8a9a" stroke-width="2"/>
+  <rect x="295" y="350" width="50" height="40" rx="4" fill="#0b3a5b"/>
+  <text x="470" y="170" fill="#0b3a5b" font-family="Segoe UI, Arial, sans-serif" font-size="11" font-weight="700">FINGER LINK</text>
+  <text x="470" y="190" fill="#607789" font-family="Segoe UI, Arial, sans-serif" font-size="10">4× joint modules</text>
+  <text x="70" y="250" fill="#0b3a5b" font-family="Segoe UI, Arial, sans-serif" font-size="11" font-weight="700">GEAR PAIR</text>
+  <text x="70" y="270" fill="#607789" font-family="Segoe UI, Arial, sans-serif" font-size="10">1:1 sync drive</text>
+  <text x="70" y="360" fill="#0b3a5b" font-family="Segoe UI, Arial, sans-serif" font-size="11" font-weight="700">SERVO BASE</text>
+  <text x="70" y="380" fill="#607789" font-family="Segoe UI, Arial, sans-serif" font-size="10">metal gear torque</text>
+  <text x="40" y="430" fill="#607789" font-family="Segoe UI, Arial, sans-serif" font-size="11">SCALE 1:2 · PETG / CF-PLA · D2P ACADEMY</text>
+</svg>

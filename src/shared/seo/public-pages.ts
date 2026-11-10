@@ -103,6 +103,22 @@ export const institutionRequestPageMetadata = publicPageMetadata({
   ],
 });
 
+export const storePageMetadata = publicPageMetadata({
+  title: "Mağaza | D2P Academy - Eğitim Kitleri ve 3D Tasarım Parçaları",
+  description:
+    "D2P Academy mağaza: ultrasonik radar, robotik kıskaç, elektronik paket ve 3D baskı parçaları. Kit kodu ile dijital eğitim aktivasyonu.",
+  path: "/magaza",
+  keywords: [
+    "D2P Academy mağaza",
+    "eğitim kiti",
+    "3D tasarım parçaları",
+    "robotik kıskaç kiti",
+    "ultrasonik radar kiti",
+    "kit aktivasyon kodu",
+  ],
+  absoluteTitle: true,
+});
+
 export const privacyPageMetadata = publicPageMetadata({
   title: "Gizlilik Sözleşmesi ve KVKK",
   description:

@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 480" role="img" aria-labelledby="standTitle">
+  <title id="standTitle">Modüler Elektronik Prototipleme Stand1</title>
+  <defs>
+    <pattern id="grid3" width="20" height="20" patternUnits="userSpaceOnUse">
+      <path d="M20 0H0V20" fill="none" stroke="#d7e3ec" stroke-width="1"/>
+    </pattern>
+  </defs>
+  <rect width="640" height="480" fill="#f4f8fb"/>
+  <rect width="640" height="480" fill="url(#grid3)"/>
+  <rect x="24" y="24" width="592" height="432" fill="none" stroke="#0b3a5b" stroke-width="2"/>
+  <text x="40" y="52" fill="#0b3a5b" font-family="Segoe UI, Arial, sans-serif" font-size="16" font-weight="700">D2P / TEST-STAND</text>
+  <text x="40" y="74" fill="#1f8a9a" font-family="Segoe UI, Arial, sans-serif" font-size="12">ASSEMBLY PLATE · PETG</text>
+  <rect x="90" y="140" width="460" height="250" rx="12" fill="#e8f4f7" stroke="#0b3a5b" stroke-width="2"/>
+  <rect x="120" y="170" width="160" height="100" rx="6" fill="#ffffff" stroke="#1f8a9a" stroke-width="2"/>
+  <text x="145" y="225" fill="#0b3a5b" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="700">BOARD SLOT</text>
+  <text x="145" y="245" fill="#607789" font-family="Segoe UI, Arial, sans-serif" font-size="10">UNO / NANO / ESP32</text>
+  <rect x="310" y="170" width="200" height="100" rx="6" fill="#ffffff" stroke="#0b3a5b" stroke-width="2"/>
+  <path d="M330 190 H490 M330 210 H490 M330 230 H490 M330 250 H490" stroke="#c5d7e2" stroke-width="2"/>
+  <text x="360" y="280" fill="#0b3a5b" font-family="Segoe UI, Arial, sans-serif" font-size="11" font-weight="700">BREADBOARD FRAME</text>
+  <rect x="120" y="300" width="70" height="50" rx="4" fill="#dff3f6" stroke="#1f8a9a" stroke-width="1.5"/>
+  <rect x="210" y="300" width="70" height="50" rx="4" fill="#dff3f6" stroke="#1f8a9a" stroke-width="1.5"/>
+  <rect x="300" y="300" width="70" height="50" rx="4" fill="#dff3f6" stroke="#1f8a9a" stroke-width="1.5"/>
+  <text x="125" y="370" fill="#607789" font-family="Segoe UI, Arial, sans-serif" font-size="10">SENSOR ANGLE BRACKETS ×3</text>
+  <text x="40" y="430" fill="#607789" font-family="Segoe UI, Arial, sans-serif" font-size="11">SCALE 1:3 · INDUSTRIAL PETG · D2P ACADEMY</text>
+</svg>
