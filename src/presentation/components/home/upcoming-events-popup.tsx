@@ -6,7 +6,11 @@ import { useEffect, useId, useRef, useState } from "react";
 import type { EventPaymentMode, EventType } from "@/core/domain/event";
 import { EVENT_TYPE_LABELS } from "@/core/domain/event";
 import { EventEnrollButton } from "@/presentation/components/events/event-enroll-button";
-import { eventLocationLabel, formatEventDateRange } from "@/shared/utils/event-format";
+import {
+  eventLocationLabel,
+  formatEventDateRange,
+  formatEventTimeRange,
+} from "@/shared/utils/event-format";
 
 const STORAGE_KEY = "d2p_upcoming_events_popup_dismissed_at";
 const DISMISS_HOURS = 12;
@@ -160,7 +164,11 @@ export function UpcomingEventsPopup({ events }: UpcomingEventsPopupProps) {
         </div>
 
         <ul className="mt-5 space-y-3">
-          {events.map((event) => (
+          {events.map((event) => {
+            const startAt = new Date(event.startAt);
+            const endAt = new Date(event.endAt);
+
+            return (
             <li
               key={event.id}
               className="rounded-2xl border border-border-surface bg-surface-base p-4"
@@ -170,7 +178,7 @@ export function UpcomingEventsPopup({ events }: UpcomingEventsPopupProps) {
               </p>
               <h3 className="mt-1 text-base font-bold text-navy-950">{event.title}</h3>
               <p className="mt-1 text-sm text-muted">
-                {formatEventDateRange(new Date(event.startAt), new Date(event.endAt))}
+                {formatEventDateRange(startAt, endAt)} · {formatEventTimeRange(startAt, endAt)}
               </p>
               <p className="mt-0.5 text-sm text-subtle">
                 Yer: {eventLocationLabel(event)}
@@ -190,7 +198,8 @@ export function UpcomingEventsPopup({ events }: UpcomingEventsPopupProps) {
                 </Link>
               </div>
             </li>
-          ))}
+            );
+          })}
         </ul>
 
         <div className="mt-5 flex flex-col gap-2 sm:flex-row">
