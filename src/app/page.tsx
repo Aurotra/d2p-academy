@@ -4,6 +4,7 @@ import { GalleryHomePreview } from "@/presentation/components/home/gallery-home-
 import { HeroSection } from "@/presentation/components/home/hero-section";
 import { LogoMarquee } from "@/presentation/components/home/logo-marquee";
 import { LearningValuesSection } from "@/presentation/components/home/learning-values-section";
+import { UpcomingEventsPopupHost } from "@/presentation/components/home/upcoming-events-popup-host";
 import { homePageMetadata } from "@/shared/seo/public-pages";
 
 export const dynamic = "force-dynamic";
@@ -19,6 +20,7 @@ export default function HomePage() {
       <CertificateVerificationBar />
       <GalleryHomePreview />
       <LogoMarquee />
+      <UpcomingEventsPopupHost />
     </>
   );
 }
