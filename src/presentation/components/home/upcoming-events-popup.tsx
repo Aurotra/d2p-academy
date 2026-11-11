@@ -6,6 +6,7 @@ import { useEffect, useId, useRef, useState } from "react";
 import type { EventPaymentMode, EventType } from "@/core/domain/event";
 import { EVENT_TYPE_LABELS } from "@/core/domain/event";
 import { EventEnrollButton } from "@/presentation/components/events/event-enroll-button";
+import { eventLocationLabel, formatEventDateRange } from "@/shared/utils/event-format";
 
 const STORAGE_KEY = "d2p_upcoming_events_popup_dismissed_at";
 const DISMISS_HOURS = 12;
@@ -45,23 +46,6 @@ function wasDismissedRecently(): boolean {
   } catch {
     return false;
   }
-}
-
-function formatPopupDate(iso: string): string {
-  const date = new Date(iso);
-  if (Number.isNaN(date.getTime())) {
-    return "Tarih yakında";
-  }
-
-  return new Intl.DateTimeFormat("tr-TR", {
-    weekday: "short",
-    day: "numeric",
-    month: "long",
-    hour: "2-digit",
-    minute: "2-digit",
-    hour12: false,
-    timeZone: "Europe/Istanbul",
-  }).format(date);
 }
 
 export function UpcomingEventsPopup({ events }: UpcomingEventsPopupProps) {
@@ -185,9 +169,11 @@ export function UpcomingEventsPopup({ events }: UpcomingEventsPopupProps) {
                 {EVENT_TYPE_LABELS[event.eventType]}
               </p>
               <h3 className="mt-1 text-base font-bold text-navy-950">{event.title}</h3>
-              <p className="mt-1 text-sm text-muted">{formatPopupDate(event.startAt)}</p>
+              <p className="mt-1 text-sm text-muted">
+                {formatEventDateRange(new Date(event.startAt), new Date(event.endAt))}
+              </p>
               <p className="mt-0.5 text-sm text-subtle">
-                {event.isOnline ? "Online" : event.locationName?.trim() || "Konum yakında"}
+                Yer: {eventLocationLabel(event)}
               </p>
               <div className="mt-3 grid gap-2 sm:grid-cols-2">
                 <EventEnrollButton
