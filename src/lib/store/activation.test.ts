@@ -29,37 +29,24 @@ describe("store activation", () => {
   });
 
   it("normalizes and validates code format", () => {
-    expect(normalizeActivationCode("  d2p-radar-2026 ")).toBe("D2P-RADAR-2026");
-    expect(ACTIVATION_CODE_REGEX.test("D2P-RADAR-2026")).toBe(true);
+    expect(normalizeActivationCode("  d2p-demo-2026 ")).toBe("D2P-DEMO-2026");
+    expect(ACTIVATION_CODE_REGEX.test("D2P-DEMO-2026")).toBe(true);
     expect(ACTIVATION_CODE_REGEX.test("ABC-123")).toBe(false);
   });
 
-  it("activates radar kit and keeps progress on re-entry", () => {
-    const first = activateCode("d2p-radar-2026");
+  it("activates demo product and keeps progress on re-entry", () => {
+    const first = activateCode("d2p-demo-2026");
     expect(first.ok).toBe(true);
     if (!first.ok) return;
-    expect(first.primarySlug).toBe("masaustu-ultrasonik-radar-kiti");
+    expect(first.primarySlug).toBe("demo-urun");
     expect(first.alreadyActivated).toBe(false);
-    expect(isKitActivated("masaustu-ultrasonik-radar-kiti")).toBe(true);
+    expect(isKitActivated("demo-urun")).toBe(true);
 
-    const second = activateCode("D2P-RADAR-2026");
+    const second = activateCode("D2P-DEMO-2026");
     expect(second.ok).toBe(true);
     if (!second.ok) return;
     expect(second.alreadyActivated).toBe(true);
-    expect(Object.keys(readActivatedKits())).toEqual(["masaustu-ultrasonik-radar-kiti"]);
-  });
-
-  it("unlocks nested kits for full bundle code", () => {
-    const result = activateCode("D2P-FULL-2026");
-    expect(result.ok).toBe(true);
-    if (!result.ok) return;
-    expect(result.primarySlug).toBe("genc-muhendis-tam-donanim-bundle");
-    expect(result.unlockedSlugs).toEqual([
-      "genc-muhendis-tam-donanim-bundle",
-      "masaustu-ultrasonik-radar-kiti",
-      "biyonik-robotik-kiskac-kiti",
-    ]);
-    expect(result.unlockedBundleChildren).toBe(true);
+    expect(Object.keys(readActivatedKits())).toEqual(["demo-urun"]);
   });
 
   it("returns clear errors for invalid and unknown codes", () => {
@@ -75,7 +62,7 @@ describe("store activation", () => {
   });
 
   it("computes curriculum progress", () => {
-    const product = getStoreProductBySlug("masaustu-ultrasonik-radar-kiti");
+    const product = getStoreProductBySlug("demo-urun");
     expect(product).toBeTruthy();
     if (!product) return;
     expect(curriculumProgressPercent(product, [1, 2])).toBe(50);

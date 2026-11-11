@@ -13,27 +13,14 @@ export interface ActivatedKitProgress {
 
 export type ActivatedKitsMap = Record<string, ActivatedKitProgress>;
 
-export type ActivationCode =
-  | "D2P-RADAR-2026"
-  | "D2P-GRIP-2026"
-  | "D2P-FULL-2026";
+export type ActivationCode = "D2P-DEMO-2026";
 
-/** Exact code → product slug mapping. Bundle unlocks its nested education kits too. */
+/** Exact code → product slug mapping. */
 export const ACTIVATION_CODE_SLUGS: Record<ActivationCode, readonly string[]> = {
-  "D2P-RADAR-2026": ["masaustu-ultrasonik-radar-kiti"],
-  "D2P-GRIP-2026": ["biyonik-robotik-kiskac-kiti"],
-  "D2P-FULL-2026": [
-    "genc-muhendis-tam-donanim-bundle",
-    "masaustu-ultrasonik-radar-kiti",
-    "biyonik-robotik-kiskac-kiti",
-  ],
+  "D2P-DEMO-2026": ["demo-urun"],
 };
 
-export const TEST_ACTIVATION_CODES: readonly ActivationCode[] = [
-  "D2P-RADAR-2026",
-  "D2P-GRIP-2026",
-  "D2P-FULL-2026",
-];
+export const TEST_ACTIVATION_CODES: readonly ActivationCode[] = ["D2P-DEMO-2026"];
 
 export type ActivationResult =
   | {
@@ -54,7 +41,7 @@ function isBrowser(): boolean {
 }
 
 function isActivationCode(value: string): value is ActivationCode {
-  return value === "D2P-RADAR-2026" || value === "D2P-GRIP-2026" || value === "D2P-FULL-2026";
+  return value === "D2P-DEMO-2026";
 }
 
 export function normalizeActivationCode(raw: string): string {
@@ -162,7 +149,7 @@ export function activateCode(rawCode: string): ActivationResult {
     primarySlug,
     unlockedSlugs,
     alreadyActivated,
-    unlockedBundleChildren: code === "D2P-FULL-2026",
+    unlockedBundleChildren: unlockedSlugs.length > 1,
   };
 }
 
