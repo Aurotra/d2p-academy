@@ -85,7 +85,7 @@ export const STORE_PRODUCTS: readonly Product[] = [
     subtitle:
       "Type-C ile çalışan, Wi-Fi üzerinden konumunuzu girerek üstünüzden geçen uçakları sesli ve titreşimli ikazlarla canlı takip etmenizi sağlayan, %100 Fennec imzalı masaüstü radar cihazı.",
     description:
-      "Gökyüzündeki canlı trafiği masanıza taşıyın. Fennec PlaneSpotter, bulunduğunuz bölgenin üstünden geçen ticari uçakları ve hava araçlarını gerçek zamanlı olarak ekranına taşıyan akıllı bir masaüstü izleme cihazıdır. Kurulum veya teknik montaj gerektirmeyen Tam Çalıştır yapısı sayesinde kutudan çıktığı anda çalışma masanızın en dikkat çekici teknoloji objesi olmaya hazırdır.\n\nSesli ve titreşimli akıllı ikaz sistemi: Gözünüz sürekli ekranda olmasa bile gökyüzündeki hareketliliği kaçırmazsınız. PlaneSpotter, belirlediğiniz kapsama alanına yeni bir uçak girdiğinde dahili titreşim motoru ve sesli uyarı sistemi ile sizi anında haberdar eder.\n\nSaniyeler içinde konumunuzu tanımlayın: Cihazı standart bir Type-C kablo ile güce bağladıktan sonra dahili Wi-Fi arayüzü üzerinden kendi konumunuzu veya takip etmek istediğiniz bölge koordinatını kolayca girebilirsiniz. Belirlediğiniz yarıçap içerisindeki hava sahasını tarayarak uçuş kodu, irtifa, hız ve rota bilgilerini anlık olarak ekranına yansıtır.\n\n%100 Fennec tasarımı ve mühendisliği: Dış kabuk tasarımından gömülü radar yazılımına ve donanım mimarisine kadar her detay tamamen Fennec bünyesinde geliştirilmiş ve üretilmiştir.\n\nÖne çıkan özellikler: Gerçek zamanlı hava sahası takibi; sesli ve titreşimli ikaz; kolay Wi-Fi kurulumu; tak-çalıştır Type-C güç girişi; %100 Fennec imzası.",
+      "Gökyüzündeki canlı trafiği masanıza taşıyın. Fennec PlaneSpotter, bulunduğunuz bölgenin üstünden geçen ticari uçakları ve hava araçlarını gerçek zamanlı olarak ekranına taşıyan akıllı bir masaüstü izleme cihazıdır. Kurulum veya teknik montaj gerektirmeyen Tam Çalıştır yapısı sayesinde kutudan çıktığı anda çalışma masanızın en dikkat çekici teknoloji objesi olmaya hazırdır.\n\nSesli ve titreşimli akıllı ikaz sistemi: Gözünüz sürekli ekranda olmasa bile gökyüzündeki hareketliliği kaçırmazsınız. PlaneSpotter, belirlediğiniz kapsama alanına yeni bir uçak girdiğinde dahili titreşim motoru ve sesli uyarı sistemi ile sizi anında haberdar eder.\n\nSaniyeler içinde konumunuzu tanımlayın: Cihazı standart bir Type-C kablo ile güce bağladıktan sonra dahili Wi-Fi arayüzü üzerinden kendi konumunuzu veya takip etmek istediğiniz bölge koordinatını kolayca girebilirsiniz. Belirlediğiniz yarıçap içerisindeki hava sahasını tarayarak üzerinizden geçen uçakları anlık olarak ekranına yansıtır.\n\n%100 Fennec tasarımı ve mühendisliği: Dış kabuk tasarımından gömülü radar yazılımına ve donanım mimarisine kadar her detay tamamen Fennec bünyesinde geliştirilmiş ve üretilmiştir.\n\nÖne çıkan özellikler: Gerçek zamanlı hava sahası takibi; sesli ve titreşimli ikaz; kolay Wi-Fi kurulumu; tak-çalıştır Type-C güç girişi; %100 Fennec imzası.",
     price: 3450,
     currency: "TRY",
     stockStatus: "in_stock",
@@ -113,7 +113,7 @@ export const STORE_PRODUCTS: readonly Product[] = [
       digitalAccess: [
         "Hızlı başlangıç kılavuzu",
         "Wi-Fi web arayüzü ile konum / bölge (koordinat) ayarı",
-        "Canlı veri: çağrı kodu, kalkış-varış rotası, irtifa, hız, mesafe",
+        "Canlı uçak tespiti ve ekran bildirimi",
       ],
     },
     educationIntegration: {
