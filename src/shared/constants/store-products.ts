@@ -92,7 +92,7 @@ export const STORE_PRODUCTS: readonly Product[] = [
     category: "ready-device",
     images: [
       {
-        src: "/images/store/flight-radar-device.svg",
+        src: "/images/store/fennec-planespotter.jpg",
         alt: "Fennec PlaneSpotter canlı masaüstü uçak izleme radarı",
       },
     ],
