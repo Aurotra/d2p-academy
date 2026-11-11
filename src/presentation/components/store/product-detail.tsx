@@ -144,7 +144,7 @@ export function ProductDetail({ product }: ProductDetailProps) {
           </p>
           <h1 className="mt-2 text-3xl font-black text-navy-950 sm:text-4xl">{product.title}</h1>
           <p className="mt-2 text-base text-muted">{product.subtitle}</p>
-          <p className="mt-4 text-base leading-7 text-[var(--text-on-surface-soft)]">
+          <p className="mt-4 whitespace-pre-line text-base leading-7 text-[var(--text-on-surface-soft)]">
             {product.description}
           </p>
 

@@ -80,12 +80,12 @@ export const STORE_PRODUCTS: readonly Product[] = [
   },
   {
     id: "prod-fennec-planespotter",
-    slug: "fennec-planespotter",
-    title: "Fennec PlaneSpotter (Tak-Çalıştır)",
+    slug: "fennec-planespotter-masaustu-ucak-izleme-cihazi",
+    title: "Fennec PlaneSpotter — Canlı Masaüstü Uçak İzleme Radarı",
     subtitle:
-      "Fennec marka PlaneSpotter modeli: bölgenizdeki gerçek zamanlı hava trafiğini Wi-Fi üzerinden canlı izleyen masaüstü uçuş radarı.",
+      "Type-C ile çalışan, Wi-Fi üzerinden konumunuzu girerek üstünüzden geçen uçakları sesli ve titreşimli ikazlarla canlı takip etmenizi sağlayan, %100 Fennec imzalı masaüstü radar cihazı.",
     description:
-      "Fennec PlaneSpotter, montajı tamamlanmış ve yazılımı yüklenmiş hazır cihazdır. Type-C ile güç verip Wi-Fi üzerinden canlı uçuş verilerini ekranda takip edin. Kendin Yap (DIY) eğitim kiti versiyonu yakında eklenecektir.",
+      "Gökyüzündeki canlı trafiği masanıza taşıyın. Fennec PlaneSpotter, bulunduğunuz bölgenin üstünden geçen ticari uçakları ve hava araçlarını gerçek zamanlı olarak ekranına taşıyan akıllı bir masaüstü izleme cihazıdır. Kurulum veya teknik montaj gerektirmeyen Tam Çalıştır yapısı sayesinde kutudan çıktığı anda çalışma masanızın en dikkat çekici teknoloji objesi olmaya hazırdır.\n\nSesli ve titreşimli akıllı ikaz sistemi: Gözünüz sürekli ekranda olmasa bile gökyüzündeki hareketliliği kaçırmazsınız. PlaneSpotter, belirlediğiniz kapsama alanına yeni bir uçak girdiğinde dahili titreşim motoru ve sesli uyarı sistemi ile sizi anında haberdar eder.\n\nSaniyeler içinde konumunuzu tanımlayın: Cihazı standart bir Type-C kablo ile güce bağladıktan sonra dahili Wi-Fi arayüzü üzerinden kendi konumunuzu veya takip etmek istediğiniz bölge koordinatını kolayca girebilirsiniz. Belirlediğiniz yarıçap içerisindeki hava sahasını tarayarak uçuş kodu, irtifa, hız ve rota bilgilerini anlık olarak ekranına yansıtır.\n\n%100 Fennec tasarımı ve mühendisliği: Dış kabuk tasarımından gömülü radar yazılımına ve donanım mimarisine kadar her detay tamamen Fennec bünyesinde geliştirilmiş ve üretilmiştir.\n\nÖne çıkan özellikler: Gerçek zamanlı hava sahası takibi; sesli ve titreşimli ikaz; kolay Wi-Fi kurulumu; tak-çalıştır Type-C güç girişi; %100 Fennec imzası.",
     price: 2450,
     currency: "TRY",
     stockStatus: "in_stock",
@@ -93,33 +93,35 @@ export const STORE_PRODUCTS: readonly Product[] = [
     images: [
       {
         src: "/images/store/flight-radar-device.svg",
-        alt: "Fennec PlaneSpotter masaüstü uçuş radarı teknik görünümü",
+        alt: "Fennec PlaneSpotter canlı masaüstü uçak izleme radarı",
       },
     ],
     specs: {
       difficulty: "Başlangıç",
       ageGroup: "Genel / Havacılık Meraklıları",
-      assemblyTime: "Kurulumsuz (Tak-Çalıştır)",
-      material: "Özel Tasarım PLA+ / PETG Kasa",
-      microcontroller: "Dahili Wi-Fi SoC (ESP32 Tabanlı)",
+      assemblyTime: "Kurulumsuz (Tam Çalıştır / Plug & Play)",
+      material: "Fennec endüstriyel dış kabuk (özel üretim)",
+      microcontroller: "Dahili Wi-Fi 2.4 GHz + sesli/titreşimli ikaz ünitesi",
     },
     bomList: {
-      printedParts: ["Özel Tasarım Masaüstü Radar Monitör Kasası (Montajlı)"],
+      printedParts: ["1x Fennec PlaneSpotter (montajlı hazır cihaz)"],
       electronicParts: [
-        "Kurulu ve Test Edilmiş Radar Ünitesi (Entegre Ekran + Wi-Fi Modülü)",
-        "Type-C Güç ve Veri Kablosu",
+        "Dahili sesli uyarı ve titreşim (haptik) ikaz sistemi",
+        "USB Type-C güç girişi (5V DC sürekli besleme)",
+        "1x Type-C güç kablosu",
       ],
       digitalAccess: [
-        "Hızlı Wi-Fi ve Bölge (Koordinat) Ayar Kılavuzu",
-        "OTA (Kablosuz) Yazılım Güncelleme Desteği",
+        "Hızlı başlangıç kılavuzu",
+        "Wi-Fi web arayüzü ile konum / bölge (koordinat) ayarı",
+        "Canlı veri: çağrı kodu, kalkış-varış rotası, irtifa, hız, mesafe",
       ],
     },
     educationIntegration: {
       hasDigitalCourse: false,
-      kitVersionStatus: "coming_soon",
+      kitVersionStatus: "none",
       curriculumPreview: [],
     },
-    purchaseUrl: "https://www.shopier.com/d2p/fennec-planespotter",
+    purchaseUrl: "https://www.shopier.com/d2p/fennec-planespotter-masaustu-ucak-izleme-cihazi",
   },
 ] as const;
 
