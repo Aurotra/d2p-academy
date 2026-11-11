@@ -1,4 +1,11 @@
-export type ProductCategory = "education-kit" | "3d-design-part" | "electronics" | "bundle";
+export type ProductCategory =
+  | "education-kit"
+  | "ready-device"
+  | "3d-design-part"
+  | "electronics"
+  | "bundle";
+
+export type KitVersionStatus = "available" | "coming_soon" | "none";
 
 export type StockStatus = "in_stock" | "pre_order" | "out_of_stock";
 
@@ -37,6 +44,10 @@ export interface ProductEducationIntegration {
   courseId?: string;
   demoActivationCode?: string;
   curriculumPreview: CurriculumStep[];
+  /** Ready devices may later ship a DIY education-kit version. */
+  kitVersionStatus?: KitVersionStatus;
+  /** When kitVersionStatus is available, points at the DIY kit product slug. */
+  linkedKitSlug?: string;
 }
 
 export interface Product {

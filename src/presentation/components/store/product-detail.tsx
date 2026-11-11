@@ -60,6 +60,8 @@ export function ProductDetail({ product }: ProductDetailProps) {
   const tabsLabelId = useId();
   const image = product.images[0];
   const hasCourse = product.educationIntegration.hasDigitalCourse;
+  const isReadyDevice = product.category === "ready-device";
+  const kitComingSoon = product.educationIntegration.kitVersionStatus === "coming_soon";
   const activated = hydrated && isKitActivated(product.slug, kits);
   const completedSteps = activated ? getCompletedSteps(product.slug, kits) : [];
   const progress = curriculumProgressPercent(product, completedSteps);
@@ -145,6 +147,29 @@ export function ProductDetail({ product }: ProductDetailProps) {
           <p className="mt-4 text-base leading-7 text-[var(--text-on-surface-soft)]">
             {product.description}
           </p>
+
+          <div className="mt-4 flex flex-wrap gap-2">
+            {isReadyDevice ? (
+              <span className="rounded-full border border-navy-950/20 bg-navy-950/5 px-3 py-1 text-xs font-semibold text-navy-950">
+                Tak-Çalıştır Hazır Cihaz
+              </span>
+            ) : null}
+            {kitComingSoon ? (
+              <span className="rounded-full border border-accent-dark/30 bg-accent/20 px-3 py-1 text-xs font-semibold text-accent-dark">
+                DIY Eğitim Kiti yakında
+              </span>
+            ) : null}
+          </div>
+
+          {kitComingSoon ? (
+            <div className="mt-5 rounded-2xl border border-accent-dark/25 bg-accent/15 p-4">
+              <p className="text-sm font-bold text-navy-950">Kit versiyonu yakında</p>
+              <p className="mt-1 text-sm leading-6 text-accent-dark">
+                Bu ürün şu an kurulu ve kullanıma hazır cihaz olarak satılmaktadır. Kendin Yap
+                (DIY) Eğitim Kiti versiyonu yakında eklenecektir.
+              </p>
+            </div>
+          ) : null}
 
           <div className="mt-6 flex flex-wrap items-end gap-4">
             <p className="text-3xl font-black text-navy-950">{formatTryPrice(product.price)}</p>

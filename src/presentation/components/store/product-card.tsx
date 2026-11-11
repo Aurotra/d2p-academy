@@ -17,6 +17,8 @@ interface ProductCardProps {
 export function ProductCard({ product, isActivated }: ProductCardProps) {
   const image = product.images[0];
   const hasCourse = product.educationIntegration.hasDigitalCourse;
+  const isReadyDevice = product.category === "ready-device";
+  const kitComingSoon = product.educationIntegration.kitVersionStatus === "coming_soon";
 
   return (
     <article className={`${BRAND_SURFACE_FEATURE_CARD} flex h-full flex-col overflow-hidden`}>
@@ -45,6 +47,11 @@ export function ProductCard({ product, isActivated }: ProductCardProps) {
           >
             {product.specs.difficulty}
           </span>
+          {isReadyDevice ? (
+            <span className="rounded-full border border-navy-950/20 bg-navy-950/5 px-2.5 py-1 text-[11px] font-semibold text-navy-950">
+              Tak-Çalıştır Hazır Cihaz
+            </span>
+          ) : null}
           {hasCourse ? (
             <span className="rounded-full border border-document-primary/25 bg-document-primary/10 px-2.5 py-1 text-[11px] font-semibold text-document-primary">
               Dijital Eğitim &amp; Aktivasyon Dahil
@@ -55,12 +62,24 @@ export function ProductCard({ product, isActivated }: ProductCardProps) {
               Eğitiminiz Aktif
             </span>
           ) : null}
+          {kitComingSoon ? (
+            <span className="rounded-full border border-accent-dark/30 bg-accent/20 px-2.5 py-1 text-[11px] font-semibold text-accent-dark">
+              DIY Eğitim Kiti yakında
+            </span>
+          ) : null}
         </div>
 
         <div>
           <h3 className="text-lg font-bold leading-snug text-navy-950">{product.title}</h3>
           <p className="mt-1 text-sm text-muted">{product.subtitle}</p>
         </div>
+
+        {kitComingSoon ? (
+          <p className="rounded-xl border border-accent-dark/20 bg-accent/15 px-3 py-2 text-xs leading-5 text-accent-dark">
+            Bu ürün şu an kurulu ve kullanıma hazır cihaz olarak satılmaktadır. Kendin Yap (DIY)
+            Eğitim Kiti versiyonu yakında eklenecektir.
+          </p>
+        ) : null}
 
         <p className="text-xs font-medium text-subtle">Kurulum: {product.specs.assemblyTime}</p>
 

@@ -307,10 +307,54 @@ export const STORE_PRODUCTS: readonly Product[] = [
     },
     purchaseUrl: "https://www.shopier.com/d2p/genc-muhendis-tam-donanim-bundle",
   },
+  {
+    id: "prod-ucus-radari-cihaz",
+    slug: "masaustu-canli-ucus-izleme-radari",
+    title: "D2P AeroTrack Masaüstü Canlı Uçuş Radarı (Tak-Çalıştır)",
+    subtitle:
+      "Bölgenizdeki gerçek zamanlı hava trafiğini ve uçuş verilerini Wi-Fi üzerinden canlı izleyen, 3D baskı özel kasalı masaüstü radar istasyonu.",
+    description:
+      "Montajı tamamlanmış, yazılımı yüklenmiş masaüstü uçuş izleme radarı. Type-C ile güç verip Wi-Fi üzerinden bölgenizdeki gerçek zamanlı hava trafiğini canlı ekranda takip edin. Kendin Yap eğitim kiti versiyonu yakında eklenecektir.",
+    price: 2450,
+    currency: "TRY",
+    stockStatus: "in_stock",
+    category: "ready-device",
+    images: [
+      {
+        src: "/images/store/flight-radar-device.svg",
+        alt: "D2P AeroTrack Masaüstü Canlı Uçuş Radarı Teknik Görünümü",
+      },
+    ],
+    specs: {
+      difficulty: "Başlangıç",
+      ageGroup: "Genel / Havacılık Meraklıları",
+      assemblyTime: "Kurulumsuz (Tak-Çalıştır)",
+      material: "Özel Tasarım PLA+ / PETG Kasa",
+      microcontroller: "Dahili Wi-Fi SoC (ESP32 Tabanlı)",
+    },
+    bomList: {
+      printedParts: ["Özel Tasarım Masaüstü Radar Monitör Kasası (Montajlı)"],
+      electronicParts: [
+        "Kurulu ve Test Edilmiş Radar Ünitesi (Entegre Ekran + Wi-Fi Modülü)",
+        "Type-C Güç ve Veri Kablosu",
+      ],
+      digitalAccess: [
+        "Hızlı Wi-Fi ve Bölge (Koordinat) Ayar Kılavuzu",
+        "OTA (Kablosuz) Yazılım Güncelleme Desteği",
+      ],
+    },
+    educationIntegration: {
+      hasDigitalCourse: false,
+      kitVersionStatus: "coming_soon",
+      curriculumPreview: [],
+    },
+    purchaseUrl: "https://www.shopier.com/d2p/masaustu-canli-ucus-izleme-radari",
+  },
 ] as const;
 
 export const STORE_CATEGORY_LABELS: Record<ProductCategory, string> = {
   "education-kit": "Eğitim Kitleri",
+  "ready-device": "Hazır Cihazlar (Tak-Çalıştır)",
   "3d-design-part": "3D Tasarım Parçaları",
   electronics: "Elektronik & Modüller",
   bundle: "Avantajlı Setler (Bundle)",
