@@ -218,25 +218,27 @@ export function ActivationModal({
               spellCheck={false}
               className="w-full rounded-xl border border-border-surface bg-surface-base px-4 py-3 font-mono text-sm tracking-wide text-navy-950 outline-none ring-secondary/30 focus:ring-2"
             />
-            <p className="text-xs text-muted">
-              Test kodları:{" "}
-              {TEST_ACTIVATION_CODES.map((testCode, index) => (
-                <span key={testCode}>
-                  {index > 0 ? " | " : null}
-                  <button
-                    type="button"
-                    className="font-semibold text-document-primary underline-offset-2 hover:underline"
-                    onClick={() => {
-                      setCode(testCode);
-                      setError(null);
-                      inputRef.current?.focus();
-                    }}
-                  >
-                    {testCode}
-                  </button>
-                </span>
-              ))}
-            </p>
+            {TEST_ACTIVATION_CODES.length > 0 ? (
+              <p className="text-xs text-muted">
+                Test kodları:{" "}
+                {TEST_ACTIVATION_CODES.map((testCode, index) => (
+                  <span key={testCode}>
+                    {index > 0 ? " | " : null}
+                    <button
+                      type="button"
+                      className="font-semibold text-document-primary underline-offset-2 hover:underline"
+                      onClick={() => {
+                        setCode(testCode);
+                        setError(null);
+                        inputRef.current?.focus();
+                      }}
+                    >
+                      {testCode}
+                    </button>
+                  </span>
+                ))}
+              </p>
+            ) : null}
             {error ? (
               <p role="alert" aria-live="polite" className="rounded-xl bg-primary/10 px-3 py-2 text-sm text-primary">
                 {error}

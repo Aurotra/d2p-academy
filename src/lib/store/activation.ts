@@ -13,14 +13,12 @@ export interface ActivatedKitProgress {
 
 export type ActivatedKitsMap = Record<string, ActivatedKitProgress>;
 
-export type ActivationCode = "D2P-DEMO-2026";
+/** Exact code → product slug mapping. Add entries when activatable kits ship. */
+export const ACTIVATION_CODE_SLUGS: Record<string, readonly string[]> = {};
 
-/** Exact code → product slug mapping. */
-export const ACTIVATION_CODE_SLUGS: Record<ActivationCode, readonly string[]> = {
-  "D2P-DEMO-2026": ["demo-urun"],
-};
+export type ActivationCode = string;
 
-export const TEST_ACTIVATION_CODES: readonly ActivationCode[] = ["D2P-DEMO-2026"];
+export const TEST_ACTIVATION_CODES: readonly ActivationCode[] = [];
 
 export type ActivationResult =
   | {
@@ -41,7 +39,7 @@ function isBrowser(): boolean {
 }
 
 function isActivationCode(value: string): value is ActivationCode {
-  return value === "D2P-DEMO-2026";
+  return Object.prototype.hasOwnProperty.call(ACTIVATION_CODE_SLUGS, value);
 }
 
 export function normalizeActivationCode(raw: string): string {
