@@ -1,6 +1,7 @@
 import "server-only";
 
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { after } from "next/server";
 
 import {
   parseAdminNotificationEmails,
@@ -154,16 +155,32 @@ export async function notifyAdminOfParentEnrollment(
     const results = await Promise.allSettled(
       recipients.map((to) => sendParentEnrollmentAdminEmail(to, payload)),
     );
+    let sent = 0;
     for (const result of results) {
       if (result.status === "rejected") {
         console.error("[admin enrollment notify] send failed", result.reason);
+      } else {
+        sent += 1;
       }
+    }
+    if (sent > 0) {
+      console.info("[admin enrollment notify] sent", {
+        enrollmentId: input.enrollmentId,
+        recipients: recipients.length,
+        sent,
+        paymentLabel: input.paymentLabel,
+      });
     }
   } catch (error) {
     console.error("[admin enrollment notify]", error);
   }
 }
 
+/**
+ * Schedules admin mail after the HTTP response via Next.js `after()` so Vercel
+ * keeps the invocation alive. Prefer `await notifyAdminOfParentEnrollment` on
+ * payment webhooks where delivery must not race the response.
+ */
 export function scheduleAdminParentEnrollmentNotify(
   client: SupabaseClient,
   input: {
@@ -173,5 +190,13 @@ export function scheduleAdminParentEnrollmentNotify(
     alreadyPaid?: boolean;
   },
 ): void {
-  void notifyAdminOfParentEnrollment(client, input);
+  try {
+    after(() => notifyAdminOfParentEnrollment(client, input));
+  } catch (error) {
+    console.warn(
+      "[admin enrollment notify] after() unavailable; running inline",
+      error instanceof Error ? error.message : error,
+    );
+    void notifyAdminOfParentEnrollment(client, input);
+  }
 }

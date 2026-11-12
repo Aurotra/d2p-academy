@@ -1,6 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 
-import { scheduleAdminParentEnrollmentNotify } from "@/infrastructure/email/notify-admin-parent-enrollment";
+import { notifyAdminOfParentEnrollment } from "@/infrastructure/email/notify-admin-parent-enrollment";
 import { resolvePaidCheckoutReserveAction } from "@/infrastructure/enrollments/paid-reenrollment";
 import {
   CapacityFullError,
@@ -429,7 +429,9 @@ export async function finalizePaidPayment(params: {
   await recordCouponRedemptionForPayment(params.serviceClient, params.paymentId);
 
   if (!result.alreadyPaid) {
-    scheduleAdminParentEnrollmentNotify(params.serviceClient, {
+    // Await on payment callbacks — bare void promises are dropped when the
+    // serverless function freezes right after returning OK to PayTR/iyzico.
+    await notifyAdminOfParentEnrollment(params.serviceClient, {
       enrollmentId: result.enrollmentId,
       paymentLabel: "Kartla ödendi",
       alreadyPaid: false,

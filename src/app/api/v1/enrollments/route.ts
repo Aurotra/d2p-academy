@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { logMemberActivity } from "@/infrastructure/audit/log-member-activity";
+import { scheduleAdminParentEnrollmentNotify } from "@/infrastructure/email/notify-admin-parent-enrollment";
 import {
   CapacityFullError,
   tryReserveCapacityAndEnroll,
@@ -9,6 +10,7 @@ import {
   allowsStudentSelfEnroll,
   resolveEventPaymentMode,
 } from "@/infrastructure/events/event-payment-mode";
+import { createServiceRoleClient } from "@/infrastructure/supabase/create-service-role-client";
 import { createSupabaseServerClient } from "@/infrastructure/supabase/create-server-client";
 import { getEventEnrollmentBlockReason } from "@/shared/utils/event-enrollment-window";
 import { isStudentParticipantProfile } from "@/shared/utils/student-participant-profile";
@@ -132,6 +134,18 @@ export async function POST(request: Request) {
       eventTitle: event.title,
       enrollmentId: reserved.enrollmentId,
     });
+
+    try {
+      const serviceClient = createServiceRoleClient();
+      scheduleAdminParentEnrollmentNotify(serviceClient, {
+        enrollmentId: reserved.enrollmentId,
+        paymentLabel:
+          paymentMode === "external" ? "Kurum/okul tahsilatı" : "Ücretsiz kayıt",
+        alreadyEnrolled: false,
+      });
+    } catch (notifyError) {
+      console.error("[enrollments POST] admin notify skipped", notifyError);
+    }
 
     return NextResponse.json({
       data: {
