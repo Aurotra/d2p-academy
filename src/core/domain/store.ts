@@ -53,9 +53,14 @@ export interface ProductEducationIntegration {
 export interface Product {
   id: string;
   slug: string;
+  /** Product name shown as H1 on the detail page. */
   title: string;
+  /** Short sales tagline under the title. */
   subtitle: string;
+  /** Longer product story for the detail page body. */
   description: string;
+  /** Bullet benefits shown like typical e-commerce PDPs. */
+  highlights?: readonly string[];
   price: number;
   currency: "TRY";
   stockStatus: StockStatus;

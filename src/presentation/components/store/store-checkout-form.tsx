@@ -168,7 +168,7 @@ export function StoreCheckoutForm({ product }: StoreCheckoutFormProps) {
       <aside className="h-fit rounded-[1.5rem] border border-border-surface bg-surface-section p-5 sm:p-6">
         <p className="text-xs font-semibold uppercase tracking-[0.16em] text-secondary">Sipariş özeti</p>
         <h2 className="mt-2 text-lg font-bold text-navy-950">{product.title}</h2>
-        <p className="mt-1 text-sm text-muted">{product.subtitle}</p>
+        <p className="mt-1 text-sm font-medium text-document-primary">{product.subtitle}</p>
 
         <label className="mt-5 block text-sm font-semibold text-navy-950">
           Adet

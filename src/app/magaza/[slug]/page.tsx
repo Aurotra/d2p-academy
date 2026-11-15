@@ -26,16 +26,16 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
   const image = product.images[0];
   const metadata = publicPageMetadata({
-    title: `${product.title} | D2P Academy Mağaza`,
-    socialTitle: product.title,
-    description: product.description,
+    title: `${product.title} — ${product.subtitle} | D2P Academy Mağaza`,
+    socialTitle: `${product.title} — ${product.subtitle}`,
+    description: product.description.split(/\n\n+/)[0] ?? product.description,
     path: `/magaza/${product.slug}`,
     keywords: [
       product.title,
       product.subtitle,
       "D2P Academy mağaza",
-      "eğitim kiti",
-      "3D baskı kit",
+      "masaüstü radar",
+      "uçak izleme",
     ],
     absoluteTitle: true,
   });
@@ -80,8 +80,8 @@ export default async function StoreProductPage({ params }: PageProps) {
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "Product",
-    name: product.title,
-    description: product.description,
+    name: `${product.title} — ${product.subtitle}`,
+    description: product.description.split(/\n\n+/)[0] ?? product.description,
     image: image ? [absoluteUrl(image.src)] : [],
     sku: product.id,
     brand: {

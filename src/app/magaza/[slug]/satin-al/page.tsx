@@ -21,7 +21,7 @@ export async function generateMetadata({ params }: PageProps) {
 
   return publicPageMetadata({
     title: `Satın Al — ${product.title}`,
-    description: `${product.title} için güvenli PayTR ödeme ve teslimat bilgileri.`,
+    description: `${product.title} (${product.subtitle}) için güvenli PayTR ödeme ve teslimat bilgileri.`,
     path: `/magaza/${product.slug}/satin-al`,
   });
 }

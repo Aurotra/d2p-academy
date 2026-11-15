@@ -15,7 +15,6 @@ import { formatTryPrice } from "@/shared/utils/format-try";
 import { ActivationModal } from "@/presentation/components/store/activation-modal";
 import {
   curriculumTypeLabel,
-  difficultyClass,
   stockStatusClass,
   stockStatusLabel,
 } from "@/presentation/components/store/store-labels";
@@ -74,11 +73,13 @@ export function ProductDetail({ product }: ProductDetailProps) {
     );
   }
 
+  const hasCurriculum = product.educationIntegration.curriculumPreview.length > 0;
   const tabs: Array<{ id: DetailTab; label: string }> = [
     { id: "bom", label: "Kutu İçeriği" },
-    { id: "curriculum", label: "Eğitim Müfredatı" },
+    ...(hasCurriculum ? [{ id: "curriculum" as const, label: "Eğitim Müfredatı" }] : []),
     { id: "specs", label: "Teknik Özellikler" },
   ];
+  const highlights = product.highlights ?? [];
 
   return (
     <div>
@@ -100,7 +101,7 @@ export function ProductDetail({ product }: ProductDetailProps) {
         </ol>
       </nav>
 
-      <div className="mt-8 grid gap-8 lg:grid-cols-2">
+      <div className="mt-8 grid gap-8 lg:grid-cols-2 lg:items-start">
         <div>
           <div className={`${BRAND_SURFACE_CARD} overflow-hidden`}>
             <div className="aspect-[4/3] bg-surface-section">
@@ -115,51 +116,75 @@ export function ProductDetail({ product }: ProductDetailProps) {
               ) : null}
             </div>
           </div>
-          <div className="mt-4 flex flex-wrap gap-2">
-            <span
-              className={`rounded-full border px-3 py-1 text-xs font-semibold ${difficultyClass(product.specs.difficulty)}`}
-            >
-              {product.specs.difficulty}
-            </span>
-            <span className="rounded-full border border-border-surface bg-white px-3 py-1 text-xs font-semibold text-navy-900">
-              {product.specs.ageGroup}
-            </span>
-            <span className="rounded-full border border-border-surface bg-white px-3 py-1 text-xs font-semibold text-navy-900">
-              {product.specs.assemblyTime}
-            </span>
-            <span className="rounded-full border border-border-surface bg-white px-3 py-1 text-xs font-semibold text-navy-900">
-              {product.specs.material}
-            </span>
-            {product.specs.microcontroller ? (
-              <span className="rounded-full border border-border-surface bg-white px-3 py-1 text-xs font-semibold text-navy-900">
-                {product.specs.microcontroller}
-              </span>
-            ) : null}
-          </div>
         </div>
 
         <div>
-          <p className="text-sm font-semibold uppercase tracking-[0.18em] text-document-primary">
-            Ürün detayı
-          </p>
-          <h1 className="mt-2 text-3xl font-black text-navy-950 sm:text-4xl">{product.title}</h1>
-          <p className="mt-2 text-base text-muted">{product.subtitle}</p>
-          <p className="mt-4 whitespace-pre-line text-base leading-7 text-[var(--text-on-surface-soft)]">
-            {product.description}
-          </p>
-
-          <div className="mt-4 flex flex-wrap gap-2">
+          <div className="flex flex-wrap gap-2">
             {isReadyDevice ? (
               <span className="rounded-full border border-navy-950/20 bg-navy-950/5 px-3 py-1 text-xs font-semibold text-navy-950">
                 Tak-Çalıştır Hazır Cihaz
               </span>
             ) : null}
+            <span
+              className={`rounded-full border px-3 py-1 text-xs font-semibold ${stockStatusClass(product.stockStatus)}`}
+            >
+              {stockStatusLabel(product.stockStatus)}
+            </span>
             {kitComingSoon ? (
               <span className="rounded-full border border-accent-dark/30 bg-accent/20 px-3 py-1 text-xs font-semibold text-accent-dark">
                 DIY Eğitim Kiti yakında
               </span>
             ) : null}
           </div>
+
+          <h1 className="mt-3 text-3xl font-black tracking-tight text-navy-950 sm:text-4xl">
+            {product.title}
+          </h1>
+          <p className="mt-2 text-lg font-semibold leading-snug text-document-primary sm:text-xl">
+            {product.subtitle}
+          </p>
+
+          <div className="mt-5 flex flex-wrap items-end gap-3 border-y border-border-surface py-4">
+            <p className="text-3xl font-black text-navy-950 sm:text-4xl">
+              {formatTryPrice(product.price)}
+            </p>
+            <p className="pb-1 text-sm text-muted">KDV dahil · Güvenli PayTR ödeme</p>
+          </div>
+
+          <div className="mt-5 flex flex-col gap-3 sm:flex-row">
+            <Link
+              href={`/magaza/${product.slug}/satin-al`}
+              className="inline-flex min-h-[48px] flex-1 items-center justify-center rounded-full bg-primary px-6 py-3 text-sm font-bold text-white transition hover:brightness-105"
+            >
+              Satın Al
+            </Link>
+            <Link
+              href="/magaza"
+              className="inline-flex min-h-[48px] items-center justify-center rounded-full border border-border-surface bg-white px-6 py-3 text-sm font-semibold text-navy-950"
+            >
+              Tüm ürünler
+            </Link>
+          </div>
+
+          <div className="mt-6 space-y-3 text-base leading-7 text-[var(--text-on-surface-soft)]">
+            {product.description.split(/\n\n+/).map((paragraph) => (
+              <p key={paragraph.slice(0, 48)}>{paragraph}</p>
+            ))}
+          </div>
+
+          {highlights.length > 0 ? (
+            <ul className="mt-5 space-y-2.5 rounded-2xl border border-border-surface bg-surface-section/70 p-4">
+              {highlights.map((item) => (
+                <li key={item} className="flex gap-2.5 text-sm leading-6 text-navy-950">
+                  <span
+                    aria-hidden
+                    className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-secondary"
+                  />
+                  <span>{item}</span>
+                </li>
+              ))}
+            </ul>
+          ) : null}
 
           {kitComingSoon ? (
             <div className="mt-5 rounded-2xl border border-accent-dark/25 bg-accent/15 p-4">
@@ -170,15 +195,6 @@ export function ProductDetail({ product }: ProductDetailProps) {
               </p>
             </div>
           ) : null}
-
-          <div className="mt-6 flex flex-wrap items-end gap-4">
-            <p className="text-3xl font-black text-navy-950">{formatTryPrice(product.price)}</p>
-            <span
-              className={`rounded-full border px-3 py-1 text-xs font-semibold ${stockStatusClass(product.stockStatus)}`}
-            >
-              {stockStatusLabel(product.stockStatus)}
-            </span>
-          </div>
 
           {hasCourse ? (
             <div className="mt-5 rounded-2xl border border-document-primary/20 bg-document-primary/5 p-4">
@@ -198,21 +214,6 @@ export function ProductDetail({ product }: ProductDetailProps) {
               </button>
             </div>
           ) : null}
-
-          <div className="mt-6 flex flex-col gap-3 sm:flex-row">
-            <Link
-              href={`/magaza/${product.slug}/satin-al`}
-              className="inline-flex items-center justify-center rounded-full bg-primary px-6 py-3 text-sm font-bold text-white transition hover:brightness-105"
-            >
-              Satın Al
-            </Link>
-            <Link
-              href="/magaza"
-              className="inline-flex items-center justify-center rounded-full border border-border-surface bg-white px-6 py-3 text-sm font-semibold text-navy-950"
-            >
-              Tüm ürünler
-            </Link>
-          </div>
         </div>
       </div>
 
