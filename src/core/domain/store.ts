@@ -64,5 +64,6 @@ export interface Product {
   specs: ProductSpecs;
   bomList: ProductBomList;
   educationIntegration: ProductEducationIntegration;
-  purchaseUrl: string;
+  /** @deprecated Shopier dış link; yeni akış sitede PayTR checkout kullanır. */
+  purchaseUrl?: string;
 }

@@ -200,14 +200,12 @@ export function ProductDetail({ product }: ProductDetailProps) {
           ) : null}
 
           <div className="mt-6 flex flex-col gap-3 sm:flex-row">
-            <a
-              href={product.purchaseUrl}
-              target="_blank"
-              rel="noopener noreferrer"
+            <Link
+              href={`/magaza/${product.slug}/satin-al`}
               className="inline-flex items-center justify-center rounded-full bg-primary px-6 py-3 text-sm font-bold text-white transition hover:brightness-105"
             >
               Satın Al
-            </a>
+            </Link>
             <Link
               href="/magaza"
               className="inline-flex items-center justify-center rounded-full border border-border-surface bg-white px-6 py-3 text-sm font-semibold text-navy-950"

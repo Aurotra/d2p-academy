@@ -8,6 +8,10 @@ import {
   finalizePaidPayment,
   markPaymentFailed,
 } from "@/infrastructure/payments/start-paid-enrollment-checkout";
+import {
+  finalizeStoreOrderPaid,
+  markStoreOrderFailed,
+} from "@/infrastructure/store/finalize-store-order";
 import { createServiceRoleClient } from "@/infrastructure/supabase/create-service-role-client";
 
 function ok() {
@@ -74,37 +78,82 @@ export async function POST(request: Request) {
     .eq("provider_conversation_id", notification.merchantOid)
     .maybeSingle();
 
-  if (!payment) {
+  if (payment) {
+    if (payment.status === "paid") {
+      return ok();
+    }
+
+    if (notification.status === "success") {
+      try {
+        await finalizePaidPayment({
+          serviceClient,
+          paymentId: payment.id,
+          providerPaymentId: notification.merchantOid,
+          raw: notification.raw,
+        });
+      } catch (error) {
+        console.error("[paytr callback finalize]", error);
+        return fail("finalize failed", 500);
+      }
+      return ok();
+    }
+
+    try {
+      await markPaymentFailed({
+        serviceClient,
+        paymentId: payment.id,
+        raw: notification.raw,
+      });
+    } catch (error) {
+      console.error("[paytr callback mark failed]", error);
+    }
+
+    return ok();
+  }
+
+  const { data: storeOrder } = await serviceClient
+    .from("store_orders")
+    .select("id, status")
+    .eq("provider", "paytr")
+    .eq("provider_conversation_id", notification.merchantOid)
+    .maybeSingle();
+
+  if (!storeOrder) {
     return fail("payment not found");
   }
 
-  if (payment.status === "paid") {
+  if (
+    storeOrder.status === "paid" ||
+    storeOrder.status === "processing" ||
+    storeOrder.status === "shipped" ||
+    storeOrder.status === "completed"
+  ) {
     return ok();
   }
 
   if (notification.status === "success") {
     try {
-      await finalizePaidPayment({
+      await finalizeStoreOrderPaid({
         serviceClient,
-        paymentId: payment.id,
+        orderId: storeOrder.id,
         providerPaymentId: notification.merchantOid,
         raw: notification.raw,
       });
     } catch (error) {
-      console.error("[paytr callback finalize]", error);
-      return fail("finalize failed", 500);
+      console.error("[paytr callback store finalize]", error);
+      return fail("store finalize failed", 500);
     }
     return ok();
   }
 
   try {
-    await markPaymentFailed({
+    await markStoreOrderFailed({
       serviceClient,
-      paymentId: payment.id,
+      orderId: storeOrder.id,
       raw: notification.raw,
     });
   } catch (error) {
-    console.error("[paytr callback mark failed]", error);
+    console.error("[paytr callback store mark failed]", error);
   }
 
   return ok();

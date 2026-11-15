@@ -10,6 +10,7 @@ export interface AdminPendingCounts {
   courseDemandRequests: number;
   refundFollowupsOpen: number;
   stuckCardPayments: number;
+  storeOrdersPaid: number;
   programsMissingDuration: number;
   programsMissingDurationCodes: string[];
 }
@@ -22,6 +23,7 @@ export async function getAdminPendingCounts(
     courseDemandResult,
     refundFollowupsResult,
     stuckPaymentsResult,
+    storeOrdersPaidResult,
     programsResult,
   ] = await Promise.all([
       client
@@ -40,6 +42,10 @@ export async function getAdminPendingCounts(
         .from("payments")
         .select("id, created_at, status, provider, enrollments!inner(status)")
         .in("status", ["pending", "failed"]),
+      client
+        .from("store_orders")
+        .select("id", { count: "exact", head: true })
+        .eq("status", "paid"),
       client
         .from("programs")
         .select("program_code, duration_weeks, duration_hours")
@@ -71,11 +77,16 @@ export async function getAdminPendingCounts(
     });
   }).length;
 
+  if (storeOrdersPaidResult.error) {
+    console.error("[admin pending counts store orders]", storeOrdersPaidResult.error.message);
+  }
+
   return {
     institutionRequests: institutionRequestsResult.count ?? 0,
     courseDemandRequests: courseDemandResult.count ?? 0,
     refundFollowupsOpen: refundFollowupsResult.count ?? 0,
     stuckCardPayments,
+    storeOrdersPaid: storeOrdersPaidResult.error ? 0 : (storeOrdersPaidResult.count ?? 0),
     programsMissingDuration: programsMissingDuration.length,
     programsMissingDurationCodes: programsMissingDuration.map(
       (program) => program.program_code as string,

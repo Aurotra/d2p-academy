@@ -11,7 +11,12 @@ interface AdminCard {
   description: string;
   tone: string;
   badge: string;
-  pendingKey?: "institutionRequests" | "courseDemandRequests" | "refundFollowupsOpen" | "stuckCardPayments";
+  pendingKey?:
+    | "institutionRequests"
+    | "courseDemandRequests"
+    | "refundFollowupsOpen"
+    | "stuckCardPayments"
+    | "storeOrdersPaid";
 }
 
 interface AdminCategory {
@@ -61,6 +66,15 @@ const categories: AdminCategory[] = [
         tone: "border-emerald-200 bg-emerald-100 text-emerald-950 hover:bg-emerald-50",
         badge: "bg-emerald-200/70 text-emerald-800",
         pendingKey: "stuckCardPayments",
+      },
+      {
+        href: "/admin/store-orders",
+        title: "Mağaza Siparişleri",
+        description:
+          "PayTR ile alınan ürün siparişlerini görün; hazırlama, kargo ve tamamlanma durumunu güncelleyin.",
+        tone: "border-lime-200 bg-lime-100 text-lime-950 hover:bg-lime-50",
+        badge: "bg-lime-200/70 text-lime-900",
+        pendingKey: "storeOrdersPaid",
       },
       {
         href: "/admin/refund-followups",

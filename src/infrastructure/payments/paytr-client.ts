@@ -22,7 +22,11 @@ export interface PaytrCheckoutInitInput {
     email: string;
     phone?: string | null;
     ip: string;
+    address?: string | null;
   };
+  /** Defaults to enrollment PayTR success/fail pages. */
+  okUrl?: string;
+  failUrl?: string;
 }
 
 export interface PaytrCheckoutInitResult {
@@ -121,6 +125,9 @@ export async function initializePaytrCheckout(
     merchantKey,
   });
 
+  const userAddress =
+    input.buyer.address?.trim().slice(0, 200) || "Denizli";
+
   const body = new URLSearchParams({
     merchant_id: merchantId,
     merchant_key: merchantKey,
@@ -129,10 +136,10 @@ export async function initializePaytrCheckout(
     payment_amount: paymentAmount,
     merchant_oid: merchantOid,
     user_name: input.buyer.name.trim().slice(0, 60) || "Veli",
-    user_address: "Denizli",
+    user_address: userAddress,
     user_phone: digitsPhone(input.buyer.phone),
-    merchant_ok_url: buildPaytrOkUrl(input.paymentId),
-    merchant_fail_url: buildPaytrFailUrl(input.paymentId),
+    merchant_ok_url: input.okUrl ?? buildPaytrOkUrl(input.paymentId),
+    merchant_fail_url: input.failUrl ?? buildPaytrFailUrl(input.paymentId),
     user_basket: userBasket,
     user_ip: userIp,
     timeout_limit: "30",

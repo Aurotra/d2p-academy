@@ -44,7 +44,6 @@ export const STORE_PRODUCTS: readonly Product[] = [
       kitVersionStatus: "none",
       curriculumPreview: [],
     },
-    purchaseUrl: "https://www.shopier.com/d2p/fennec-planespotter-masaustu-ucak-izleme-cihazi",
   },
 ] as const;
 

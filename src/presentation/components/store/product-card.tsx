@@ -92,14 +92,12 @@ export function ProductCard({ product, isActivated }: ProductCardProps) {
           >
             Detay &amp; Kutu İçeriği
           </Link>
-          <a
-            href={product.purchaseUrl}
-            target="_blank"
-            rel="noopener noreferrer"
+          <Link
+            href={`/magaza/${product.slug}/satin-al`}
             className="inline-flex items-center justify-center rounded-full bg-primary px-4 py-2.5 text-sm font-bold text-white transition hover:brightness-105"
           >
             Satın Al
-          </a>
+          </Link>
         </div>
       </div>
     </article>
