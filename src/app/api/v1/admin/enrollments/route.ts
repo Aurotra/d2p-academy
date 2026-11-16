@@ -160,10 +160,70 @@ export async function POST(request: Request) {
         return NextResponse.json({ error: "Öğrenci bilgisi alınamadı." }, { status: 400 });
       }
       student = data;
+
+      // Veli e-postası yazıldıysa çocuk hesaplarını çöz.
+      if (!student) {
+        const { data: parentProfile, error: parentError } = await access.client
+          .from("profiles")
+          .select("id, full_name, role")
+          .eq("email", lookup)
+          .eq("is_active", true)
+          .maybeSingle();
+
+        if (parentError) {
+          logSupabaseError("[admin/enrollments POST parent lookup]", parentError);
+          return NextResponse.json({ error: "Öğrenci bilgisi alınamadı." }, { status: 400 });
+        }
+
+        if (parentProfile && (parentProfile.role === "parent" || parentProfile.role === "admin")) {
+          const { data: children, error: childrenError } = await access.client
+            .from("profiles")
+            .select(studentSelect)
+            .eq("role", "student")
+            .eq("is_active", true)
+            .eq("parent_id", parentProfile.id)
+            .order("full_name", { ascending: true });
+
+          if (childrenError) {
+            logSupabaseError("[admin/enrollments POST children lookup]", childrenError);
+            return NextResponse.json({ error: "Öğrenci bilgisi alınamadı." }, { status: 400 });
+          }
+
+          const childRows = children ?? [];
+          if (childRows.length === 1) {
+            student = childRows[0]!;
+          } else if (childRows.length > 1) {
+            const labels = childRows.map((child) => {
+              const handle = child.username ? `@${child.username}` : child.id.slice(0, 8);
+              return `${child.full_name} (${handle})`;
+            });
+            return NextResponse.json(
+              {
+                error: `Bu e-posta bir veli hesabına ait ve birden fazla çocuk var. Çocuğun kullanıcı adını yazın: ${labels.join(", ")}`,
+              },
+              { status: 409 },
+            );
+          } else {
+            return NextResponse.json(
+              {
+                error:
+                  "Bu e-posta bir veli hesabına ait ama altında öğrenci (çocuk) hesabı yok. Önce veli panelinden çocuk eklenmeli.",
+              },
+              { status: 404 },
+            );
+          }
+        }
+      }
     }
 
     if (!student) {
-      return NextResponse.json({ error: "Öğrenci bulunamadı." }, { status: 404 });
+      return NextResponse.json(
+        {
+          error:
+            "Öğrenci bulunamadı. E-postasız çocuklar için kullanıcı adını yazın (örn. ayşe_yılmaz15). Veli e-postası girdiyseniz çocuğun @kullanıcıadını kullanın.",
+        },
+        { status: 404 },
+      );
     }
 
     studentId = student.id;

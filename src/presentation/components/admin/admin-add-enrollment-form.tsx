@@ -108,15 +108,18 @@ export function AdminAddEnrollmentForm({
     >
       <p className="text-sm font-semibold text-navy-950">Öğrenci ekle — {eventTitle}</p>
       <p className="mt-1 text-xs text-muted">
-        Kullanıcı adı (e-postasız çocuk) veya e-posta adresi ile ekleyin. Havale geldiyse önce
-        bankayı kontrol edin, sonra burada işaretleyin.
+        E-postasız çocuk için <strong>kullanıcı adı</strong> yazın (veli panelinde @ ile görünür;
+        genelde adssoyad + doğum yılının son 2 hanesi, örn. <code>emreyılmaz15</code>). Öğrenci
+        e-postası da olur. Veli e-postasını yazarsanız tek çocuk varsa otomatik seçilir; birden
+        fazlaysa çocuğun @kullanıcıadı gerekir. Havale geldiyse önce bankayı kontrol edin, sonra
+        burada işaretleyin.
       </p>
       <div className="mt-3 grid gap-3 sm:grid-cols-2">
         <Input
           label="Kullanıcı adı veya e-posta"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder="ayse_2015 veya ogrenci@okul.com"
+          placeholder="emreyılmaz15 veya ogrenci@okul.com"
           required
         />
         <Select
