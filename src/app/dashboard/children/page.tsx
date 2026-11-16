@@ -14,6 +14,7 @@ import { resolveEventPaymentMode } from "@/infrastructure/events/event-payment-m
 import { createSupabaseServerClient } from "@/infrastructure/supabase/create-server-client";
 import { calculateProgress, profileProgressOptions } from "@/lib/utils/progress";
 import { ParentOnboardingGuide } from "@/presentation/components/dashboard/parent-onboarding-guide";
+import { PendingFormsReminderPopup } from "@/presentation/components/dashboard/pending-forms-reminder-popup";
 import {
   ChildrenStudentsClient,
   type ChildStudent,
@@ -24,6 +25,7 @@ import {
   buildAdminEventEnrollPath,
   isChildProfileReadyForEnrollment,
 } from "@/shared/utils/event-enrollment";
+import { buildPendingFormsReminders } from "@/shared/utils/pending-forms-reminder";
 
 export default async function DashboardChildrenPage({
   searchParams,
@@ -203,9 +205,26 @@ export default async function DashboardChildrenPage({
           : undefined)
       : undefined;
 
+  const pendingForms = buildPendingFormsReminders(
+    students.flatMap((student) =>
+      (student.progressPreview?.enrollments ?? []).map((item) => ({
+        childId: student.id,
+        childName: student.full_name,
+        enrollmentId: item.enrollmentId,
+        eventTitle: item.title,
+        status: item.status,
+        intakeCompleted: item.intakeCompleted,
+        consentsCompleted: item.consentsCompleted,
+        preTestCompleted: item.preTestCompleted,
+        requiresPreTest: item.requiresPreTest,
+      })),
+    ),
+  );
+
   return (
     <section className="bg-surface-section px-4 py-10 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-5xl">
+        <PendingFormsReminderPopup items={pendingForms} />
         <div
           className={`rounded-[2rem] border border-border-surface ${BRAND_SURFACE_GRADIENT} p-8 text-navy-950 shadow-xl`}
         >

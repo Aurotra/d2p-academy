@@ -9,10 +9,12 @@ import { BRAND_SURFACE_GRADIENT } from "@/shared/constants/brand-surfaces";
 import { Badge } from "@/presentation/components/ui/badge";
 import { DashboardEnrollHandler } from "@/presentation/components/dashboard/dashboard-enroll-handler";
 import { ParentOnboardingGuide } from "@/presentation/components/dashboard/parent-onboarding-guide";
+import { PendingFormsReminderPopup } from "@/presentation/components/dashboard/pending-forms-reminder-popup";
 import {
   PanelShortcutGroup,
   PanelShortcutLink,
 } from "@/presentation/components/dashboard/panel-shortcut-link";
+import { buildPendingFormsReminders } from "@/shared/utils/pending-forms-reminder";
 
 interface DashboardViewProps {
   data: StudentDashboardData;
@@ -86,9 +88,12 @@ export function DashboardView({
   showOnboarding,
   loadError = null,
 }: DashboardViewProps) {
+  const pendingForms = buildPendingFormsReminders(childrenEnrollments);
+
   return (
     <section className="bg-surface-section px-4 py-10 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-7xl">
+        <PendingFormsReminderPopup items={pendingForms} />
         <Suspense fallback={null}>
           <DashboardEnrollHandler />
         </Suspense>
