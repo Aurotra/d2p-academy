@@ -84,10 +84,12 @@ export function AdminAddEnrollmentForm({
       const name = payload.data?.student?.full_name ?? query;
       if (payload.data?.paymentMethod === "havale" && payload.data.amountTryCents) {
         setSuccess(
-          `${name} havale ile kaydedildi (${formatTryCentsDisplay(payload.data.amountTryCents)}).`,
+          `${name} havale ile kaydedildi (${formatTryCentsDisplay(payload.data.amountTryCents)}). Veliye formları (tanışma / onay) doldurmasını söyleyin — otomatik yönlendirme yok.`,
         );
       } else {
-        setSuccess(`${name} etkinliğe eklendi.`);
+        setSuccess(
+          `${name} etkinliğe eklendi. Veliye formları (tanışma / onay) doldurmasını söyleyin — otomatik yönlendirme yok.`,
+        );
       }
       setQuery("");
       setReceiptNo("");
