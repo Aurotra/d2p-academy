@@ -26,6 +26,7 @@ import {
   resolveRequiredLessonCount,
 } from "@/shared/utils/enrollment-attendance";
 import { normalizeTotalLessonCount } from "@/shared/utils/event-lesson-schedule";
+import { assignEnrollmentStudentCodeWithFallback } from "@/infrastructure/certificates/assign-enrollment-student-code";
 
 function asRecord(value: unknown): Record<string, unknown> {
   if (!value || typeof value !== "object" || Array.isArray(value)) {
@@ -525,18 +526,13 @@ export class SupabaseParticipantFormsRepository {
       }
     }
 
-    const { data: studentCode, error: codeError } = await this.client.rpc(
-      "assign_enrollment_student_code",
-      { p_enrollment_id: enrollmentId, p_actor_id: userId },
+    const studentCode = await assignEnrollmentStudentCodeWithFallback(
+      this.client,
+      enrollmentId,
+      userId,
     );
 
-    if (codeError || !studentCode) {
-      throw new Error(
-        `Öğrenci kodu oluşturulamadı: ${codeError?.message ?? "Bilinmeyen hata"}`,
-      );
-    }
-
-    return { ok: true, studentCode: String(studentCode) };
+    return { ok: true, studentCode };
   }
 
   async submitIntake(

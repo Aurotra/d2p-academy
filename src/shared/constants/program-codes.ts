@@ -13,6 +13,7 @@ export const PROGRAM_CODE_OPTIONS: ProgramCodeOption[] = [
   { code: "KYK", label: "Kış Yoğun Kamp (KYK)" },
   { code: "ADV", label: "İleri 3D (ADV)" },
   { code: "3DTY", label: "3D Tasarım (3DTY)" },
+  { code: "3DMO", label: "3D Yazıcı Teknolojileri (3DMO)" },
 ];
 
 export function getProgramCodeLabel(code: string): string {
