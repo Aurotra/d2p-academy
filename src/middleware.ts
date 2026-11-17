@@ -10,7 +10,10 @@ import {
   validateStudentSessionAgainstDb,
 } from "@/infrastructure/auth/validate-student-session-edge";
 import { profileHasInstructorCapability } from "@/infrastructure/auth/instructor-capability";
-import { buildContentSecurityPolicy } from "@/shared/config/security-headers";
+import {
+  buildContentSecurityPolicy,
+  isTasarimAppPath,
+} from "@/shared/config/security-headers";
 import { createCspNonce, CSP_NONCE_HEADER } from "@/shared/config/csp-nonce";
 import { isInstructorAppPath, resolvePostLoginPath } from "@/shared/utils/auth-redirect";
 
@@ -54,6 +57,7 @@ function isAuthProtectedPath(pathname: string): boolean {
     pathname.startsWith("/admin") ||
     pathname.startsWith("/instructor") ||
     pathname.startsWith("/student-dashboard") ||
+    isTasarimAppPath(pathname) ||
     pathname === "/login" ||
     pathname === "/register" ||
     pathname === "/instructor-login"
@@ -65,6 +69,50 @@ async function handleAuthMiddleware(
   nonce: string,
 ): Promise<NextResponse> {
   const pathname = request.nextUrl.pathname;
+
+  // D2P Tasarım: veli (Supabase) veya öğrenci (JWT) oturumu
+  if (isTasarimAppPath(pathname)) {
+    const token = request.cookies.get(STUDENT_SESSION_COOKIE)?.value;
+    const studentPayload = token ? await verifyStudentSession(token) : null;
+    const studentOk = studentPayload
+      ? await validateStudentSessionAgainstDb(studentPayload)
+      : false;
+    if (studentOk) {
+      return finalizeResponse(request, NextResponse.next(), nonce);
+    }
+
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+    if (supabaseUrl && supabaseAnonKey) {
+      const supabase = createServerClient(supabaseUrl, supabaseAnonKey, {
+        cookies: {
+          getAll() {
+            return request.cookies.getAll();
+          },
+          setAll() {
+            /* read-only gate */
+          },
+        },
+      });
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (user) {
+        return finalizeResponse(request, NextResponse.next(), nonce);
+      }
+    }
+
+    const from = request.nextUrl.searchParams.get("from");
+    const loginUrl = request.nextUrl.clone();
+    if (from === "student") {
+      loginUrl.pathname = "/student-login";
+      loginUrl.searchParams.set("redirectTo", "/tasarim?from=student");
+    } else {
+      loginUrl.pathname = "/login";
+      loginUrl.searchParams.set("redirectTo", "/tasarim");
+    }
+    return redirect(request, loginUrl, nonce);
+  }
 
   if (pathname.startsWith("/student-dashboard")) {
     const token = request.cookies.get(STUDENT_SESSION_COOKIE)?.value;

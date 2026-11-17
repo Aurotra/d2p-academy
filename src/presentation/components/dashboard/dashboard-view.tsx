@@ -188,6 +188,11 @@ export function DashboardView({
                   label="Not Raporum"
                   variant="outline"
                 />
+                <DashboardActionLink
+                  href="/tasarim"
+                  label="D2P Tasarım"
+                  variant="accent"
+                />
               </div>
             </div>
           </div>

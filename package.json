@@ -14,7 +14,9 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "check:env": "node scripts/check-production-env.mjs",
-    "generate:favicons": "node scripts/generate-favicons.mjs"
+    "generate:favicons": "node scripts/generate-favicons.mjs",
+    "sync:tasarim": "node scripts/sync-tasarim-vendor.mjs",
+    "postinstall": "node scripts/sync-tasarim-vendor.mjs"
   },
   "dependencies": {
     "@fontsource-variable/geist": "^5.3.0",
@@ -33,6 +35,9 @@
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
     "server-only": "^0.0.1",
+    "three": "^0.160.0",
+    "three-bvh-csg": "^0.0.16",
+    "three-mesh-bvh": "^0.7.3",
     "zod": "^4.4.3"
   },
   "devDependencies": {

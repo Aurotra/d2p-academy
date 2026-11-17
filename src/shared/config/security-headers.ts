@@ -29,6 +29,11 @@ export function isCardCheckoutPath(pathname: string): boolean {
   return pathname === "/odeme" || pathname.startsWith("/odeme/");
 }
 
+/** Members-only D2P Tasarım static app (ES modules + inline boot script). */
+export function isTasarimAppPath(pathname: string): boolean {
+  return pathname === "/tasarim" || pathname.startsWith("/tasarim/");
+}
+
 /** CSP with per-request nonce — set from middleware, not next.config. */
 export function buildContentSecurityPolicy(
   nonce: string,
@@ -36,14 +41,19 @@ export function buildContentSecurityPolicy(
 ): string {
   const supabase = getSupabaseCspOrigins();
   const isProd = process.env.NODE_ENV === "production";
-  const allowBankAcsFrames = isCardCheckoutPath(options?.pathname ?? "");
+  const pathname = options?.pathname ?? "";
+  const allowBankAcsFrames = isCardCheckoutPath(pathname);
+  const isTasarim = isTasarimAppPath(pathname);
 
-  const scriptSrc = [
-    "'self'",
-    `'nonce-${nonce}'`,
-    "'strict-dynamic'",
-    ...(isProd ? [] : ["'unsafe-eval'"]),
-  ];
+  // Static /tasarim HTML uses import maps + type=module without React nonces.
+  const scriptSrc = isTasarim
+    ? ["'self'", "'unsafe-inline'", ...(isProd ? [] : ["'unsafe-eval'"])]
+    : [
+        "'self'",
+        `'nonce-${nonce}'`,
+        "'strict-dynamic'",
+        ...(isProd ? [] : ["'unsafe-eval'"]),
+      ];
 
   // 3-D Secure ACS hosts are per-bank and cannot be allowlisted. Relax frames
   // only on /odeme so SMS/OTP challenge pages can load inside the PayTR iframe.
@@ -54,13 +64,14 @@ export function buildContentSecurityPolicy(
 
   const directives = [
     "default-src 'self'",
-    `script-src ${scriptSrc.join(" ")} https://www.paytr.com`,
+    `script-src ${scriptSrc.join(" ")}${isTasarim ? "" : " https://www.paytr.com"}`,
     "style-src 'self'",
     "style-src-elem 'self' 'unsafe-inline'",
     "style-src-attr 'unsafe-inline'",
     `img-src 'self' data: blob: ${supabase.https} https://www.paytr.com https://*.paytr.com`,
     "font-src 'self' data:",
     `connect-src 'self' ${supabase.https} ${supabase.wss} https://www.paytr.com`,
+    `worker-src 'self' blob:`,
     frameSrc,
     "object-src 'none'",
     "base-uri 'self'",

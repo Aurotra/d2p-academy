@@ -264,6 +264,12 @@ export function UsernameStudentDashboardView({
             >
               Profilim
             </Link>
+            <Link
+              href="/tasarim?from=student"
+              className="inline-flex items-center justify-center rounded-xl bg-navy-900 px-5 py-3 text-sm font-semibold text-white transition hover:bg-navy-900/90"
+            >
+              D2P Tasarım
+            </Link>
           </div>
         </div>
 
