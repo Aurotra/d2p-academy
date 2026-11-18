@@ -88,7 +88,7 @@ export default async function StoreProductPage({ params }: PageProps) {
     sku: product.id,
     brand: {
       "@type": "Brand",
-      name: "D2P Academy",
+      name: product.brand ?? "D2P Academy",
     },
     offers: {
       "@type": "Offer",

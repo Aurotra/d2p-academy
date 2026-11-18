@@ -2,19 +2,20 @@ import type { Product, ProductCategory, DifficultyLevel } from "@/core/domain/st
 
 export const STORE_PRODUCTS: readonly Product[] = [
   {
-    id: "prod-fennec-planespotter",
-    slug: "fennec-planespotter-masaustu-ucak-izleme-cihazi",
-    title: "Fennec PlaneSpotter",
+    id: "prod-ath-planespotter",
+    slug: "ath-planespotter-masaustu-ucak-izleme-cihazi",
+    brand: "ATH",
+    title: "ATH PlaneSpotter",
     subtitle: "Canlı Masaüstü Uçak İzleme Radarı",
     description:
-      "Gökyüzündeki canlı trafiği masanıza taşıyın. Fennec PlaneSpotter, bulunduğunuz bölgenin üstünden geçen ticari uçakları ve hava araçlarını gerçek zamanlı olarak ekranına taşıyan akıllı bir masaüstü izleme cihazıdır. Kurulum veya teknik montaj gerektirmeyen Tak Çalıştır yapısı sayesinde kutudan çıktığı anda çalışma masanızın en dikkat çekici teknoloji objesi olmaya hazırdır.\n\nSesli ve titreşimli akıllı ikaz sistemi: Gözünüz sürekli ekranda olmasa bile gökyüzündeki hareketliliği kaçırmazsınız. PlaneSpotter, belirlediğiniz kapsama alanına yeni bir uçak girdiğinde dahili titreşim motoru ve sesli uyarı sistemi ile sizi anında haberdar eder.\n\nSaniyeler içinde konumunuzu tanımlayın: Cihazı standart bir Type-C kablo ile güce bağladıktan sonra dahili Wi-Fi arayüzü üzerinden kendi konumunuzu veya takip etmek istediğiniz bölge koordinatını kolayca girebilirsiniz. Belirlediğiniz yarıçap içerisindeki hava sahasını tarayarak üzerinizden geçen uçakları anlık olarak ekranına yansıtır.\n\n%100 Fennec tasarımı ve mühendisliği: Dış kabuk tasarımından gömülü radar yazılımına ve donanım mimarisine kadar her detay tamamen Fennec bünyesinde geliştirilmiş ve üretilmiştir.",
+      "Gökyüzündeki canlı trafiği masanıza taşıyın. ATH PlaneSpotter, bulunduğunuz bölgenin üstünden geçen ticari uçakları ve hava araçlarını gerçek zamanlı olarak ekranına taşıyan akıllı bir masaüstü izleme cihazıdır. Kurulum veya teknik montaj gerektirmeyen Tak Çalıştır yapısı sayesinde kutudan çıktığı anda çalışma masanızın en dikkat çekici teknoloji objesi olmaya hazırdır.\n\nSesli ve titreşimli akıllı ikaz sistemi: Gözünüz sürekli ekranda olmasa bile gökyüzündeki hareketliliği kaçırmazsınız. PlaneSpotter, belirlediğiniz kapsama alanına yeni bir uçak girdiğinde dahili titreşim motoru ve sesli uyarı sistemi ile sizi anında haberdar eder.\n\nSaniyeler içinde konumunuzu tanımlayın: Cihazı standart bir Type-C kablo ile güce bağladıktan sonra dahili Wi-Fi arayüzü üzerinden kendi konumunuzu veya takip etmek istediğiniz bölge koordinatını kolayca girebilirsiniz. Belirlediğiniz yarıçap içerisindeki hava sahasını tarayarak üzerinizden geçen uçakları anlık olarak ekranına yansıtır.\n\n%100 ATH tasarımı ve mühendisliği: Dış kabuk tasarımından gömülü radar yazılımına ve donanım mimarisine kadar her detay tamamen ATH bünyesinde geliştirilmiş ve üretilmiştir.",
     highlights: [
       "Gerçek zamanlı hava sahası takibi",
       "Sesli ve titreşimli akıllı ikaz",
       "Wi-Fi ile kolay konum / bölge ayarı",
       "Type-C tak-çalıştır güç girişi",
       "Kurulumsuz, kullanıma hazır cihaz",
-      "%100 Fennec tasarım ve mühendislik",
+      "%100 ATH tasarım ve mühendislik",
     ],
     price: 3450,
     currency: "TRY",
@@ -22,27 +23,27 @@ export const STORE_PRODUCTS: readonly Product[] = [
     category: "ready-device",
     images: [
       {
-        src: "/images/store/fennec-planespotter-military.jpg",
-        alt: "Fennec PlaneSpotter askeri yeşil masaüstü uçak izleme radarı",
+        src: "/images/store/ath-planespotter-military.jpg",
+        alt: "ATH PlaneSpotter askeri yeşil masaüstü uçak izleme radarı",
       },
       {
-        src: "/images/store/fennec-planespotter-navy.jpg",
-        alt: "Fennec PlaneSpotter lacivert masaüstü uçak izleme radarı",
+        src: "/images/store/ath-planespotter-navy.jpg",
+        alt: "ATH PlaneSpotter lacivert masaüstü uçak izleme radarı",
       },
       {
-        src: "/images/store/fennec-planespotter-white.jpg",
-        alt: "Fennec PlaneSpotter beyaz masaüstü uçak izleme radarı",
+        src: "/images/store/ath-planespotter-white.jpg",
+        alt: "ATH PlaneSpotter beyaz masaüstü uçak izleme radarı",
       },
     ],
     specs: {
       difficulty: "Başlangıç",
       ageGroup: "Genel / Havacılık Meraklıları",
       assemblyTime: "Kurulumsuz (Tak Çalıştır / Plug & Play)",
-      material: "Fennec endüstriyel dış kabuk (özel üretim)",
+      material: "ATH endüstriyel dış kabuk (özel üretim)",
       microcontroller: "Dahili Wi-Fi 2.4 GHz + sesli/titreşimli ikaz ünitesi",
     },
     bomList: {
-      printedParts: ["1x Fennec PlaneSpotter (montajlı hazır cihaz)"],
+      printedParts: ["1x ATH PlaneSpotter (montajlı hazır cihaz)"],
       electronicParts: [
         "Dahili sesli uyarı ve titreşim (haptik) ikaz sistemi",
         "USB Type-C güç girişi (5V DC sürekli besleme)",
@@ -63,6 +64,7 @@ export const STORE_PRODUCTS: readonly Product[] = [
   {
     id: "prod-ath-360-doner-tabla",
     slug: "ath-360-doner-sergileme-tablasi",
+    brand: "ATH",
     title: "ATH 360° Döner Sergileme Tablası",
     subtitle: "210 mm Tam Tur Sunum Standı",
     description:
@@ -117,6 +119,7 @@ export const STORE_PRODUCTS: readonly Product[] = [
   {
     id: "prod-ath-y-karistirici",
     slug: "ath-y-tipi-laboratuvar-karistirici",
+    brand: "ATH",
     title: "ATH Y-Tipi Laboratuvar Karıştırıcı",
     subtitle: "Masaüstü Toz ve Granül Homojen Karıştırıcı",
     description:

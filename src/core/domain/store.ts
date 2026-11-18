@@ -55,6 +55,8 @@ export interface ProductEducationIntegration {
 export interface Product {
   id: string;
   slug: string;
+  /** Brand shown in schema / merchandising (defaults to D2P Academy). */
+  brand?: string;
   /** Product name shown as H1 on the detail page. */
   title: string;
   /** Short sales tagline under the title. */

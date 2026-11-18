@@ -60,6 +60,16 @@ const nextConfig: NextConfig = {
         destination: "/gizlilik-sozlesmesi",
         permanent: true,
       },
+      {
+        source: "/magaza/fennec-planespotter-masaustu-ucak-izleme-cihazi",
+        destination: "/magaza/ath-planespotter-masaustu-ucak-izleme-cihazi",
+        permanent: true,
+      },
+      {
+        source: "/magaza/fennec-planespotter-masaustu-ucak-izleme-cihazi/satin-al",
+        destination: "/magaza/ath-planespotter-masaustu-ucak-izleme-cihazi/satin-al",
+        permanent: true,
+      },
     ];
   },
 };export default nextConfig;
