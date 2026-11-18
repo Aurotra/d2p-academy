@@ -41,19 +41,45 @@ html = html.replace(
   ".tb{flex:none;display:inline-flex;align-items:center;gap:6px;height:42px;padding:0 11px;border-radius:12px;border:1px solid transparent;background:transparent;font-weight:800;font-size:14px;white-space:nowrap;color:inherit;text-decoration:none}",
 );
 
+// Site logo branding (replaces text badge)
+html = html.replace(
+  /\.brand\{display:flex;align-items:center;gap:9px;margin-right:8px;flex:none;white-space:nowrap\}\n\.badge\{[\s\S]*?\.brand-tx span\{display:block;font-size:12px;font-weight:700;color:var\(--muted\)\}/,
+  `.brand{display:flex;align-items:center;gap:10px;margin-right:10px;padding:2px 4px 2px 2px;flex:none;white-space:nowrap}
+.brand-logo{display:block;height:42px;width:auto;max-width:118px;object-fit:contain;object-position:left center;flex:none}
+.brand-tx{display:flex;flex-direction:column;justify-content:center;gap:1px;padding-left:10px;border-left:1px solid var(--line);min-width:0}
+.brand-tx b{display:block;font-weight:900;font-size:16px;line-height:1.1;letter-spacing:.01em}
+.brand-tx span{display:block;font-size:11.5px;font-weight:700;color:var(--muted)}`,
+);
+html = html.replace(
+  /@media \(max-width: 420px\)\{ \.brand-tx\{display:none\} \}/,
+  `@media (max-width: 560px){ .brand-tx{display:none} .brand-logo{height:36px;max-width:96px} }
+@media (max-width: 420px){ .brand{margin-right:4px;padding:0} .brand-logo{height:32px;max-width:86px} }`,
+);
+html = html.replace(
+  /<div class="brand">\s*<span class="badge"[^>]*>D2P<\/span>\s*<span class="brand-tx"><b>D2P Tasarım<\/b><span>Tasarımdan üretime<\/span><\/span>\s*<\/div>/,
+  `<div class="brand" title="D2P Tasarım">
+    <img class="brand-logo" src="/d2p-logo.svg" alt="D2P" width="118" height="71" decoding="async">
+    <span class="brand-tx"><b>Tasarım</b><span>Tasarımdan üretime</span></span>
+  </div>`,
+);
+
 // Panel back link after brand
 if (!html.includes('id="btn-panel"')) {
   html = html.replace(
-    `<div class="brand">
-    <span class="badge" aria-hidden="true">D2P</span>
-    <span class="brand-tx"><b>D2P Tasarım</b><span>Tasarımdan üretime</span></span>
-  </div>`,
-    `<div class="brand">
-    <span class="badge" aria-hidden="true">D2P</span>
-    <span class="brand-tx"><b>D2P Tasarım</b><span>Tasarımdan üretime</span></span>
-  </div>
-  <a class="tb" id="btn-panel" href="/dashboard" title="Panele dön"><svg viewBox="0 0 24 24"><path d="M15 18 9 12l6-6"/></svg><span class="lb">Panel</span></a>`,
+    `</div>
+  <details class="menu" id="menu">`,
+    `</div>
+  <a class="tb" id="btn-panel" href="/dashboard" title="Panele dön"><svg viewBox="0 0 24 24"><path d="M15 18 9 12l6-6"/></svg><span class="lb">Panel</span></a>
+  <details class="menu" id="menu">`,
   );
+  // Fallback: after brand block if menu markup differs
+  if (!html.includes('id="btn-panel"')) {
+    html = html.replace(
+      /(<div class="brand"[^>]*>[\s\S]*?<\/div>)/,
+      `$1
+  <a class="tb" id="btn-panel" href="/dashboard" title="Panele dön"><svg viewBox="0 0 24 24"><path d="M15 18 9 12l6-6"/></svg><span class="lb">Panel</span></a>`,
+    );
+  }
 }
 
 // Boot + panel href script before importmap
@@ -291,6 +317,7 @@ html = html.replace(
   color-scheme:dark;
 }`,
 );
+// badge styles may already be replaced by logo branding above
 html = html.replace(
   ".badge{display:grid;place-items:center;width:40px;height:34px;border-radius:10px;background:var(--accent);color:#fff;",
   ".badge{display:grid;place-items:center;width:40px;height:34px;border-radius:10px;background:var(--brand);color:#fff;",
@@ -348,6 +375,8 @@ const checks = [
   ["fonts.googleapis", false],
   ["--brand:#E63946", true],
   ["--accent:#2A9D8F", true],
+  ["/d2p-logo.svg", true],
+  ["brand-logo", true],
 ];
 let ok = true;
 for (const [needle, want] of checks) {
