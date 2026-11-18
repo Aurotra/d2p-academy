@@ -23,14 +23,14 @@ export function ProductCard({ product, isActivated }: ProductCardProps) {
 
   return (
     <article className={`${BRAND_SURFACE_FEATURE_CARD} flex h-full flex-col overflow-hidden`}>
-      <div className="relative aspect-[4/3] shrink-0 bg-surface-section">
+      <div className="relative aspect-[4/3] shrink-0 overflow-hidden bg-surface-section">
         {image ? (
-          // Local technical SVGs; next/image blocks SVG by default.
+          // Local store photos / SVGs; next/image blocks SVG by default.
           // eslint-disable-next-line @next/next/no-img-element
           <img
             src={image.src}
             alt={image.alt}
-            className="h-full w-full object-contain p-3"
+            className="absolute inset-0 h-full w-full object-cover object-center"
             draggable={false}
           />
         ) : null}

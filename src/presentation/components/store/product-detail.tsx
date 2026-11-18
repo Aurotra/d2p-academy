@@ -105,13 +105,13 @@ export function ProductDetail({ product }: ProductDetailProps) {
       <div className="mt-8 grid gap-8 lg:grid-cols-2 lg:items-start">
         <div>
           <div className={`${BRAND_SURFACE_CARD} overflow-hidden`}>
-            <div className="aspect-[4/3] bg-surface-section">
+            <div className="relative aspect-[4/3] overflow-hidden bg-surface-section">
               {image ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img
                   src={image.src}
                   alt={image.alt}
-                  className="h-full w-full object-contain p-4"
+                  className="absolute inset-0 h-full w-full object-cover object-center"
                   draggable={false}
                 />
               ) : null}
