@@ -73,12 +73,8 @@ export const STORE_PRODUCTS: readonly Product[] = [
     category: "display-presentation",
     images: [
       {
-        src: "/images/store/ath-360-doner-tabla-afis.jpg",
-        alt: "ATH 360 derece döner sergileme tablası afiş görseli",
-      },
-      {
         src: "/images/store/ath-360-doner-tabla-beyaz.jpg",
-        alt: "ATH beyaz döner sergileme tablası üzerinde parfüm ve saat",
+        alt: "ATH beyaz 360 derece döner sergileme tablası",
       },
       {
         src: "/images/store/ath-360-doner-tabla-siyah.jpg",
