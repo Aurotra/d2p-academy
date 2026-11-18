@@ -7,10 +7,12 @@
 <meta name="robots" content="noindex, nofollow">
 <style>
 :root{
-  --ink:#1C2740; --muted:#5D6880; --paper:#EEF1F6; --panel:#FFFFFF; --panel-2:#F4F6FB; --line:#D8DEEA;
-  --accent:#2F5BFF; --accent-soft:#E3E9FF; --sun:#FFC23D; --sun-ink:#2A1E00;
-  --ok:#1E9E5A; --ok-soft:#DDF5E7; --warn:#C77700; --warn-soft:#FFF0D1; --danger:#C93636;
-  --scene:#E4E9F2; --plane:#FFFFFF; --grid-minor:#E6EAF2; --grid-major:#B4BFD4;
+  /* D2P logo palette: d=red, 2=yellow, p=green */
+  --ink:#1C1917; --muted:#5C534D; --paper:#FAF8F5; --panel:#FFFFFF; --panel-2:#F5F1EC; --line:#D8E8E5;
+  --brand:#E63946; --brand-soft:#FCE8EA;
+  --accent:#2A9D8F; --accent-soft:#E6F5F3; --sun:#FFB703; --sun-ink:#2A1E00;
+  --ok:#2A9D8F; --ok-soft:#E6F5F3; --warn:#D99B03; --warn-soft:#FFF6D9; --danger:#E63946;
+  --scene:#F0EBE4; --plane:#FFFFFF; --grid-minor:#E8E1D8; --grid-major:#B8AFA4;
   color-scheme:light;
   box-sizing:border-box;
   padding-top:env(safe-area-inset-top,0px);
@@ -18,16 +20,18 @@
 }
 @media (prefers-color-scheme: dark){
   :root:not([data-theme="light"]){
-    --ink:#E4E9F4; --muted:#97A2BB; --paper:#111726; --panel:#182032; --panel-2:#1F2941; --line:#2B3651;
-    --accent:#7090FF; --accent-soft:#25325A; --ok:#4CD38A; --ok-soft:#173A2A; --warn:#FFB54A; --warn-soft:#3D2E12; --danger:#FF7A7A;
-    --scene:#0E1421; --plane:#1A2339; --grid-minor:#222C45; --grid-major:#3C496B;
+    --ink:#F5F0EB; --muted:#A89F96; --paper:#1A1714; --panel:#221E1A; --panel-2:#2A2520; --line:#3D3832;
+    --brand:#F0525E; --brand-soft:#3A1C1F;
+    --accent:#33B5A5; --accent-soft:#1A3D38; --ok:#33B5A5; --ok-soft:#1A3D38; --warn:#FFB703; --warn-soft:#3D2E12; --danger:#F0525E;
+    --scene:#14110F; --plane:#221E1A; --grid-minor:#2A2520; --grid-major:#4A433C;
     color-scheme:dark;
   }
 }
 :root[data-theme="dark"]{
-  --ink:#E4E9F4; --muted:#97A2BB; --paper:#111726; --panel:#182032; --panel-2:#1F2941; --line:#2B3651;
-  --accent:#7090FF; --accent-soft:#25325A; --ok:#4CD38A; --ok-soft:#173A2A; --warn:#FFB54A; --warn-soft:#3D2E12; --danger:#FF7A7A;
-  --scene:#0E1421; --plane:#1A2339; --grid-minor:#222C45; --grid-major:#3C496B;
+  --ink:#F5F0EB; --muted:#A89F96; --paper:#1A1714; --panel:#221E1A; --panel-2:#2A2520; --line:#3D3832;
+  --brand:#F0525E; --brand-soft:#3A1C1F;
+  --accent:#33B5A5; --accent-soft:#1A3D38; --ok:#33B5A5; --ok-soft:#1A3D38; --warn:#FFB703; --warn-soft:#3D2E12; --danger:#F0525E;
+  --scene:#14110F; --plane:#221E1A; --grid-minor:#2A2520; --grid-major:#4A433C;
   color-scheme:dark;
 }
 *,*::before,*::after{box-sizing:inherit}
@@ -47,7 +51,7 @@ button{cursor:pointer}
 .bar{display:flex;align-items:center;gap:4px;padding:8px 10px;background:var(--panel);border-bottom:1px solid var(--line);overflow-x:auto;scrollbar-width:none;min-width:0}
 .bar::-webkit-scrollbar{display:none}
 .brand{display:flex;align-items:center;gap:9px;margin-right:8px;flex:none;white-space:nowrap}
-.badge{display:grid;place-items:center;width:40px;height:34px;border-radius:10px;background:var(--accent);color:#fff;font-weight:900;font-size:14px;letter-spacing:.02em;position:relative}
+.badge{display:grid;place-items:center;width:40px;height:34px;border-radius:10px;background:var(--brand);color:#fff;font-weight:900;font-size:14px;letter-spacing:.02em;position:relative}
 .badge::after{content:"";position:absolute;right:-4px;bottom:-4px;width:12px;height:12px;border-radius:50%;background:var(--sun);border:2px solid var(--panel)}
 .brand-tx b{display:block;font-weight:900;font-size:17px;line-height:1.1}
 .brand-tx span{display:block;font-size:12px;font-weight:700;color:var(--muted)}
@@ -66,7 +70,7 @@ button{cursor:pointer}
 .status.warn{background:var(--warn-soft);border-color:transparent;color:var(--warn)} .status.warn i{background:var(--warn)}
 .stl{flex:none;display:inline-flex;align-items:center;gap:6px;height:42px;padding:0 15px;border:0;border-radius:12px;background:var(--sun);color:var(--sun-ink);font-weight:900;font-size:14.5px;white-space:nowrap;box-shadow:inset 0 -3px 0 rgba(0,0,0,.14)}
 .stl svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
-.stl:hover:not(:disabled){background:#FFB71A}
+.stl:hover:not(:disabled){background:#D99B03;color:#1C1400}
 .stl:disabled{opacity:.5;cursor:default}
 details.menu{position:relative;flex:none}
 details.menu summary{list-style:none}
@@ -141,7 +145,7 @@ kbd{font:inherit;font-weight:800;font-size:12px;color:var(--ink);background:var(
 .steps{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:5px}
 .steps div{display:grid;grid-template-columns:1fr 1fr;gap:4px}
 .step{height:30px;border-radius:8px;border:1px solid var(--line);background:var(--panel);font-weight:900;font-size:16px;line-height:1;padding:0}
-.cx{color:#E5484D}.cy{color:#2FA866}.cz{color:#3F6BFF}
+.cx{color:#E63946}.cy{color:#2A9D8F}.cz{color:#2563EB}
 #lock{height:28px;padding:0 9px;border-radius:8px;border:1px solid var(--line);background:var(--panel-2);font-size:12px;font-weight:900;color:var(--muted)}
 #lock[aria-pressed="true"]{background:var(--accent-soft);color:var(--accent);border-color:var(--accent)}
 .txt{width:100%;border:1px solid var(--line);border-radius:10px;background:var(--panel-2);padding:10px;font-weight:900;font-size:17px}
@@ -278,7 +282,7 @@ body.tut #empty,body.tut #toast{display:none!important}
   body.sheet-open .fab{display:none}
   .fab .dot{width:11px;height:11px;border-radius:50%;background:var(--sun-ink);opacity:.35}
   .fab.ok .dot{background:var(--ok);opacity:1;box-shadow:0 0 0 2px #fff}
-  .fab.warn .dot{background:#E5484D;opacity:1;box-shadow:0 0 0 2px #fff}
+  .fab.warn .dot{background:#E63946;opacity:1;box-shadow:0 0 0 2px #fff}
 }
 @media (max-width: 420px){ .brand-tx{display:none} }
 @media (prefers-reduced-motion: reduce){ *{transition:none!important} }
@@ -369,7 +373,7 @@ body.tut #empty,body.tut #toast{display:none!important}
       </ol>
       <button class="act primary" data-templates style="width:100%">Hazır şablonla başla</button>
     </div>
-    <div class="axes" aria-hidden="true"><span><i style="background:#E5484D"></i>X</span><span><i style="background:#2FA866"></i>Y</span><span><i style="background:#3F6BFF"></i>Z (yukarı)</span></div>
+    <div class="axes" aria-hidden="true"><span><i style="background:#E63946"></i>X</span><span><i style="background:#2A9D8F"></i>Y</span><span><i style="background:#2563EB"></i>Z (yukarı)</span></div>
     <div id="toast" role="status" aria-live="polite"></div>
     <div id="coach" hidden data-mode="intro" role="region" aria-label="Eğitim" aria-live="polite">
       <div class="coach-bar"><i id="coach-bar"></i></div>
@@ -543,10 +547,10 @@ body.tut #empty,body.tut #toast{display:none!important}
 <script>
 window.__d2pBootTimer = setTimeout(function () {
   if (window.__d2pReady) return;
-  document.body.innerHTML = '<main style="font:600 16px/1.5 system-ui,sans-serif;max-width:420px;margin:12vh auto;padding:24px;color:#1C2740">'
+  document.body.innerHTML = '<main style="font:600 16px/1.5 system-ui,sans-serif;max-width:420px;margin:12vh auto;padding:24px;color:#1C1917">'
     + '<h1 style="font-size:22px;margin:0 0 12px">D2P Tasarım açılamadı</h1>'
-    + '<p style="color:#5D6880;margin:0 0 12px">3D kütüphanesi yüklenemedi. Sayfayı yenileyin. Sorun sürerse eğitmene haber verin.</p>'
-    + '<button type="button" onclick="location.reload()" style="height:44px;padding:0 16px;border:0;border-radius:12px;background:#2F5BFF;color:#fff;font:800 15px system-ui">Yenile</button>'
+    + '<p style="color:#5C534D;margin:0 0 12px">3D kütüphanesi yüklenemedi. Sayfayı yenileyin. Sorun sürerse eğitmene haber verin.</p>'
+    + '<button type="button" onclick="location.reload()" style="height:44px;padding:0 16px;border:0;border-radius:12px;background:#2A9D8F;color:#fff;font:800 15px system-ui">Yenile</button>'
     + '</main>';
 }, 12000);
 (function () {
@@ -755,7 +759,7 @@ function meshVolume(geo) {
 }
 
 /* ---------- Hazır şablonlar (mm, Y yukarı, +Z ön) ---------- */
-const TC = { blue: '#3F6BFF', yellow: '#F5C542', red: '#E5484D', green: '#34B36B', teal: '#1FA3B3', purple: '#8B5CF6', pink: '#E255A1', orange: '#F28C28' };
+const TC = { blue: '#2563EB', yellow: '#FFB703', red: '#E63946', green: '#2A9D8F', teal: '#1FA3B3', purple: '#8B5CF6', pink: '#E255A1', orange: '#F28C28' };
 function fitText(text, h, thick, maxW) {
   const n = buildGeometry('text', { text }).natural;
   let w = h * n.x / n.z;
@@ -835,7 +839,7 @@ const $ = s => document.querySelector(s);
 const $$ = s => [...document.querySelectorAll(s)];
 setFont(JSON.parse(document.getElementById('fontdata').textContent));
 
-const COLORS = ['#E5484D', '#F28C28', '#F5C542', '#34B36B', '#1FA3B3', '#3F6BFF', '#8B5CF6', '#E255A1', '#F4F4F2', '#5B6577'];
+const COLORS = ['#E63946', '#FFB703', '#2A9D8F', '#F28C28', '#2563EB', '#34B36B', '#8B5CF6', '#E255A1', '#F4F4F2', '#5B6577'];
 const LABELS = { box: 'Kutu', cylinder: 'Silindir', sphere: 'Küre', cone: 'Koni', pyramid: 'Piramit', torus: 'Halka', tube: 'Tüp', wedge: 'Kama', star: 'Yıldız', heart: 'Kalp', text: 'Yazı', group: 'Grup' };
 const DEFAULT_SCALE = { box: [20, 20, 20], cylinder: [20, 20, 20], sphere: [20, 20, 20], cone: [20, 20, 20], pyramid: [20, 20, 20], torus: [24, 6, 24], tube: [20, 20, 20], wedge: [20, 20, 20], star: [30, 6, 30], heart: [30, 6, 27] };
 const BEDS = { s: { w: 180, d: 180, h: 180 }, m: { w: 220, d: 220, h: 250 }, l: { w: 256, d: 256, h: 256 } };
@@ -858,7 +862,7 @@ const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera(38, 1, 1, 6000);
 camera.position.set(170, 150, 220);
 
-scene.add(new THREE.HemisphereLight(0xffffff, 0x7d8aa3, 1.15));
+scene.add(new THREE.HemisphereLight(0xfffaf5, 0xa89f96, 1.15));
 const sun = new THREE.DirectionalLight(0xffffff, 1.7);
 sun.position.set(110, 280, 90);
 sun.castShadow = true;
@@ -924,7 +928,7 @@ let multiMode = false;
 let lockRatio = false;
 const helpers = new Map();
 
-const holeMat = () => new THREE.MeshStandardMaterial({ color: 0x8b95a7, transparent: true, opacity: 0.42, depthWrite: false, roughness: 0.5 });
+const holeMat = () => new THREE.MeshStandardMaterial({ color: 0xa89f96, transparent: true, opacity: 0.42, depthWrite: false, roughness: 0.5 });
 const solidMat = c => new THREE.MeshStandardMaterial({ color: c, roughness: 0.5, metalness: 0.02 });
 
 function styleMesh(m) {
@@ -945,7 +949,7 @@ function makeMesh(spec) {
   m.scale.fromArray(spec.scale);
   const id = spec.id ?? nextId++;
   if (id >= nextId) nextId = id + 1;
-  m.userData = { id, kind: spec.kind, params: { ...(spec.params || {}) }, hole: !!spec.hole, color: spec.color || COLORS[5], name: spec.name || LABELS[spec.kind], natural, children: spec.children || null };
+  m.userData = { id, kind: spec.kind, params: { ...(spec.params || {}) }, hole: !!spec.hole, color: spec.color || COLORS[2], name: spec.name || LABELS[spec.kind], natural, children: spec.children || null };
   styleMesh(m);
   return m;
 }
@@ -1401,7 +1405,7 @@ async function groupSel() {
     const inv = T0.clone().invert();
     const children = selected.map(m => ({ spec: specOf(m), rel: inv.clone().multiply(m.matrixWorld).toArray() }));
     const solid = selected.find(m => !m.userData.hole);
-    const g = makeMesh({ kind: 'group', geo: res.geo, natural: size, hole: res.hole, color: solid ? solid.userData.color : COLORS[5], name: 'Grup', pos: center.toArray(), rot: [0, 0, 0], scale: [size.x, size.y, size.z], children });
+    const g = makeMesh({ kind: 'group', geo: res.geo, natural: size, hole: res.hole, color: solid ? solid.userData.color : COLORS[2], name: 'Grup', pos: center.toArray(), rot: [0, 0, 0], scale: [size.x, size.y, size.z], children });
     selected.forEach(removeMesh);
     addMesh(g); setSelection([g]); commit();
     toast('Gruplandı');

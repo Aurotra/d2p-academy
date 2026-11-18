@@ -60,10 +60,10 @@ if (!html.includes('id="btn-panel"')) {
 const bootScript = `<script>
 window.__d2pBootTimer = setTimeout(function () {
   if (window.__d2pReady) return;
-  document.body.innerHTML = '<main style="font:600 16px/1.5 system-ui,sans-serif;max-width:420px;margin:12vh auto;padding:24px;color:#1C2740">'
+  document.body.innerHTML = '<main style="font:600 16px/1.5 system-ui,sans-serif;max-width:420px;margin:12vh auto;padding:24px;color:#1C1917">'
     + '<h1 style="font-size:22px;margin:0 0 12px">D2P Tasarım açılamadı</h1>'
-    + '<p style="color:#5D6880;margin:0 0 12px">3D kütüphanesi yüklenemedi. Sayfayı yenileyin. Sorun sürerse eğitmene haber verin.</p>'
-    + '<button type="button" onclick="location.reload()" style="height:44px;padding:0 16px;border:0;border-radius:12px;background:#2F5BFF;color:#fff;font:800 15px system-ui">Yenile</button>'
+    + '<p style="color:#5C534D;margin:0 0 12px">3D kütüphanesi yüklenemedi. Sayfayı yenileyin. Sorun sürerse eğitmene haber verin.</p>'
+    + '<button type="button" onclick="location.reload()" style="height:44px;padding:0 16px;border:0;border-radius:12px;background:#2A9D8F;color:#fff;font:800 15px system-ui">Yenile</button>'
     + '</main>';
 }, 12000);
 (function () {
@@ -260,6 +260,77 @@ clearTimeout(window.__d2pBootTimer);
 </script>`,
 );
 
+// Apply D2P brand theme (logo: d=red, 2=yellow, p=green)
+html = html.replace(
+  /:root\{[\s\S]*?--scene:[^;]+; --plane:[^;]+; --grid-minor:[^;]+; --grid-major:[^;]+;\s*color-scheme:light;/,
+  `:root{
+  /* D2P logo palette: d=red, 2=yellow, p=green */
+  --ink:#1C1917; --muted:#5C534D; --paper:#FAF8F5; --panel:#FFFFFF; --panel-2:#F5F1EC; --line:#D8E8E5;
+  --brand:#E63946; --brand-soft:#FCE8EA;
+  --accent:#2A9D8F; --accent-soft:#E6F5F3; --sun:#FFB703; --sun-ink:#2A1E00;
+  --ok:#2A9D8F; --ok-soft:#E6F5F3; --warn:#D99B03; --warn-soft:#FFF6D9; --danger:#E63946;
+  --scene:#F0EBE4; --plane:#FFFFFF; --grid-minor:#E8E1D8; --grid-major:#B8AFA4;
+  color-scheme:light;`,
+);
+html = html.replace(
+  /@media \(prefers-color-scheme: dark\)\{\s*:root:not\(\[data-theme="light"\]\)\{[\s\S]*?color-scheme:dark;\s*\}\s*\}\s*:root\[data-theme="dark"\]\{[\s\S]*?color-scheme:dark;\s*\}/,
+  `@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --ink:#F5F0EB; --muted:#A89F96; --paper:#1A1714; --panel:#221E1A; --panel-2:#2A2520; --line:#3D3832;
+    --brand:#F0525E; --brand-soft:#3A1C1F;
+    --accent:#33B5A5; --accent-soft:#1A3D38; --ok:#33B5A5; --ok-soft:#1A3D38; --warn:#FFB703; --warn-soft:#3D2E12; --danger:#F0525E;
+    --scene:#14110F; --plane:#221E1A; --grid-minor:#2A2520; --grid-major:#4A433C;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --ink:#F5F0EB; --muted:#A89F96; --paper:#1A1714; --panel:#221E1A; --panel-2:#2A2520; --line:#3D3832;
+  --brand:#F0525E; --brand-soft:#3A1C1F;
+  --accent:#33B5A5; --accent-soft:#1A3D38; --ok:#33B5A5; --ok-soft:#1A3D38; --warn:#FFB703; --warn-soft:#3D2E12; --danger:#F0525E;
+  --scene:#14110F; --plane:#221E1A; --grid-minor:#2A2520; --grid-major:#4A433C;
+  color-scheme:dark;
+}`,
+);
+html = html.replace(
+  ".badge{display:grid;place-items:center;width:40px;height:34px;border-radius:10px;background:var(--accent);color:#fff;",
+  ".badge{display:grid;place-items:center;width:40px;height:34px;border-radius:10px;background:var(--brand);color:#fff;",
+);
+html = html.replace(/\.stl:hover:not\(:disabled\)\{background:[^}]+\}/, ".stl:hover:not(:disabled){background:#D99B03;color:#1C1400}");
+html = html.replace(
+  /\.cx\{color:[^}]+\}\.cy\{color:[^}]+\}\.cz\{color:[^}]+\}/,
+  ".cx{color:#E63946}.cy{color:#2A9D8F}.cz{color:#2563EB}",
+);
+html = html.replace(
+  /const TC = \{ blue: '[^']+', yellow: '[^']+', red: '[^']+', green: '[^']+', teal: '[^']+', purple: '[^']+', pink: '[^']+', orange: '[^']+' \};/,
+  "const TC = { blue: '#2563EB', yellow: '#FFB703', red: '#E63946', green: '#2A9D8F', teal: '#1FA3B3', purple: '#8B5CF6', pink: '#E255A1', orange: '#F28C28' };",
+);
+html = html.replace(
+  /const COLORS = \[[^\]]+\];/,
+  "const COLORS = ['#E63946', '#FFB703', '#2A9D8F', '#F28C28', '#2563EB', '#34B36B', '#8B5CF6', '#E255A1', '#F4F4F2', '#5B6577'];",
+);
+html = html.replace(/color: spec\.color \|\| COLORS\[\d+\]/g, "color: spec.color || COLORS[2]");
+html = html.replace(/color: solid \? solid\.userData\.color : COLORS\[\d+\]/g, "color: solid ? solid.userData.color : COLORS[2]");
+html = html.replace(
+  "scene.add(new THREE.HemisphereLight(0xffffff, 0x7d8aa3, 1.15));",
+  "scene.add(new THREE.HemisphereLight(0xfffaf5, 0xa89f96, 1.15));",
+);
+html = html.replace(
+  /const holeMat = \(\) => new THREE\.MeshStandardMaterial\(\{ color: 0x[0-9a-fA-F]+,/,
+  "const holeMat = () => new THREE.MeshStandardMaterial({ color: 0xa89f96,",
+);
+html = html.replace(
+  /background:#E5484D/g,
+  "background:#E63946",
+);
+html = html.replace(
+  /background:#2FA866/g,
+  "background:#2A9D8F",
+);
+html = html.replace(
+  /background:#3F6BFF/g,
+  "background:#2563EB",
+);
+
 const out = path.join(root, "public", "tasarim", "index.html");
 fs.writeFileSync(out, html, "utf8");
 console.log("Wrote", out, `(${html.length} bytes)`);
@@ -275,6 +346,8 @@ const checks = [
   ["tutOffer", true],
   ["window.claude", false],
   ["fonts.googleapis", false],
+  ["--brand:#E63946", true],
+  ["--accent:#2A9D8F", true],
 ];
 let ok = true;
 for (const [needle, want] of checks) {
