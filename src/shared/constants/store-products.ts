@@ -22,8 +22,16 @@ export const STORE_PRODUCTS: readonly Product[] = [
     category: "ready-device",
     images: [
       {
-        src: "/images/store/fennec-planespotter.jpg",
-        alt: "Fennec PlaneSpotter canlı masaüstü uçak izleme radarı",
+        src: "/images/store/fennec-planespotter-military.jpg",
+        alt: "Fennec PlaneSpotter askeri yeşil masaüstü uçak izleme radarı",
+      },
+      {
+        src: "/images/store/fennec-planespotter-navy.jpg",
+        alt: "Fennec PlaneSpotter lacivert masaüstü uçak izleme radarı",
+      },
+      {
+        src: "/images/store/fennec-planespotter-white.jpg",
+        alt: "Fennec PlaneSpotter beyaz masaüstü uçak izleme radarı",
       },
     ],
     specs: {
