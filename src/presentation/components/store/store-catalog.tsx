@@ -197,9 +197,9 @@ export function StoreCatalog({ products }: StoreCatalogProps) {
           </button>
         </div>
       ) : (
-        <ul className="mt-8 grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
+        <ul className="mt-8 grid items-stretch gap-6 sm:grid-cols-2 xl:grid-cols-3">
           {filtered.map((product) => (
-            <li key={product.id}>
+            <li key={product.id} className="h-full">
               <ProductCard
                 product={product}
                 isActivated={

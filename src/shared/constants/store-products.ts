@@ -176,6 +176,17 @@ export const STORE_CATEGORY_LABELS: Record<ProductCategory, string> = {
   bundle: "Avantajlı Setler (Bundle)",
 };
 
+/** Compact labels for product card badges. */
+export const STORE_CATEGORY_CARD_LABELS: Record<ProductCategory, string> = {
+  "education-kit": "Eğitim Kiti",
+  "ready-device": "Tak-Çalıştır",
+  "lab-equipment": "Laboratuvar",
+  "display-presentation": "Sunum",
+  "3d-design-part": "3D Parça",
+  electronics: "Elektronik",
+  bundle: "Set",
+};
+
 export const STORE_DIFFICULTY_LEVELS: readonly DifficultyLevel[] = [
   "Başlangıç",
   "Orta",
