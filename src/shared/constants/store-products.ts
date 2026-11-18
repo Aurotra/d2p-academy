@@ -7,7 +7,7 @@ export const STORE_PRODUCTS: readonly Product[] = [
     title: "Fennec PlaneSpotter",
     subtitle: "Canlı Masaüstü Uçak İzleme Radarı",
     description:
-      "Gökyüzündeki canlı trafiği masanıza taşıyın. Fennec PlaneSpotter, bulunduğunuz bölgenin üstünden geçen ticari uçakları ve hava araçlarını gerçek zamanlı olarak ekranına taşıyan akıllı bir masaüstü izleme cihazıdır. Kurulum veya teknik montaj gerektirmeyen Tam Çalıştır yapısı sayesinde kutudan çıktığı anda çalışma masanızın en dikkat çekici teknoloji objesi olmaya hazırdır.\n\nSesli ve titreşimli akıllı ikaz sistemi: Gözünüz sürekli ekranda olmasa bile gökyüzündeki hareketliliği kaçırmazsınız. PlaneSpotter, belirlediğiniz kapsama alanına yeni bir uçak girdiğinde dahili titreşim motoru ve sesli uyarı sistemi ile sizi anında haberdar eder.\n\nSaniyeler içinde konumunuzu tanımlayın: Cihazı standart bir Type-C kablo ile güce bağladıktan sonra dahili Wi-Fi arayüzü üzerinden kendi konumunuzu veya takip etmek istediğiniz bölge koordinatını kolayca girebilirsiniz. Belirlediğiniz yarıçap içerisindeki hava sahasını tarayarak üzerinizden geçen uçakları anlık olarak ekranına yansıtır.\n\n%100 Fennec tasarımı ve mühendisliği: Dış kabuk tasarımından gömülü radar yazılımına ve donanım mimarisine kadar her detay tamamen Fennec bünyesinde geliştirilmiş ve üretilmiştir.",
+      "Gökyüzündeki canlı trafiği masanıza taşıyın. Fennec PlaneSpotter, bulunduğunuz bölgenin üstünden geçen ticari uçakları ve hava araçlarını gerçek zamanlı olarak ekranına taşıyan akıllı bir masaüstü izleme cihazıdır. Kurulum veya teknik montaj gerektirmeyen Tak Çalıştır yapısı sayesinde kutudan çıktığı anda çalışma masanızın en dikkat çekici teknoloji objesi olmaya hazırdır.\n\nSesli ve titreşimli akıllı ikaz sistemi: Gözünüz sürekli ekranda olmasa bile gökyüzündeki hareketliliği kaçırmazsınız. PlaneSpotter, belirlediğiniz kapsama alanına yeni bir uçak girdiğinde dahili titreşim motoru ve sesli uyarı sistemi ile sizi anında haberdar eder.\n\nSaniyeler içinde konumunuzu tanımlayın: Cihazı standart bir Type-C kablo ile güce bağladıktan sonra dahili Wi-Fi arayüzü üzerinden kendi konumunuzu veya takip etmek istediğiniz bölge koordinatını kolayca girebilirsiniz. Belirlediğiniz yarıçap içerisindeki hava sahasını tarayarak üzerinizden geçen uçakları anlık olarak ekranına yansıtır.\n\n%100 Fennec tasarımı ve mühendisliği: Dış kabuk tasarımından gömülü radar yazılımına ve donanım mimarisine kadar her detay tamamen Fennec bünyesinde geliştirilmiş ve üretilmiştir.",
     highlights: [
       "Gerçek zamanlı hava sahası takibi",
       "Sesli ve titreşimli akıllı ikaz",
@@ -29,7 +29,7 @@ export const STORE_PRODUCTS: readonly Product[] = [
     specs: {
       difficulty: "Başlangıç",
       ageGroup: "Genel / Havacılık Meraklıları",
-      assemblyTime: "Kurulumsuz (Tam Çalıştır / Plug & Play)",
+      assemblyTime: "Kurulumsuz (Tak Çalıştır / Plug & Play)",
       material: "Fennec endüstriyel dış kabuk (özel üretim)",
       microcontroller: "Dahili Wi-Fi 2.4 GHz + sesli/titreşimli ikaz ünitesi",
     },
