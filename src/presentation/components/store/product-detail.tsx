@@ -57,7 +57,9 @@ export function ProductDetail({ product }: ProductDetailProps) {
   const [modalOpen, setModalOpen] = useState(false);
   const activateRef = useRef<HTMLButtonElement>(null);
   const tabsLabelId = useId();
-  const image = product.images[0];
+  const gallery = product.images.slice(0, 3);
+  const [activeImageIndex, setActiveImageIndex] = useState(0);
+  const image = gallery[activeImageIndex] ?? gallery[0];
   const hasCourse = product.educationIntegration.hasDigitalCourse;
   const isReadyDevice = product.category === "ready-device";
   const kitComingSoon = product.educationIntegration.kitVersionStatus === "coming_soon";
@@ -109,6 +111,7 @@ export function ProductDetail({ product }: ProductDetailProps) {
               {image ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img
+                  key={image.src}
                   src={image.src}
                   alt={image.alt}
                   className="absolute inset-0 h-full w-full object-cover object-center"
@@ -116,6 +119,39 @@ export function ProductDetail({ product }: ProductDetailProps) {
                 />
               ) : null}
             </div>
+            {gallery.length > 1 ? (
+              <div
+                className={`grid gap-2 border-t border-border-surface bg-white p-3 ${
+                  gallery.length === 2 ? "grid-cols-2" : "grid-cols-3"
+                }`}
+              >
+                {gallery.map((img, index) => {
+                  const selected = index === activeImageIndex;
+                  return (
+                    <button
+                      key={img.src}
+                      type="button"
+                      onClick={() => setActiveImageIndex(index)}
+                      aria-label={`Ürün görseli ${index + 1}`}
+                      aria-pressed={selected}
+                      className={`relative aspect-[4/3] overflow-hidden rounded-xl border transition ${
+                        selected
+                          ? "border-secondary ring-2 ring-secondary/30"
+                          : "border-border-surface hover:border-secondary/40"
+                      }`}
+                    >
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={img.src}
+                        alt=""
+                        className="absolute inset-0 h-full w-full object-cover object-center"
+                        draggable={false}
+                      />
+                    </button>
+                  );
+                })}
+              </div>
+            ) : null}
           </div>
         </div>
 
