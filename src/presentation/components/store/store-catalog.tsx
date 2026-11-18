@@ -20,6 +20,8 @@ const CATEGORY_TABS: Array<{ id: CategoryFilter; label: string }> = [
   { id: "all", label: "Tümü" },
   { id: "education-kit", label: STORE_CATEGORY_LABELS["education-kit"] },
   { id: "ready-device", label: STORE_CATEGORY_LABELS["ready-device"] },
+  { id: "lab-equipment", label: STORE_CATEGORY_LABELS["lab-equipment"] },
+  { id: "display-presentation", label: STORE_CATEGORY_LABELS["display-presentation"] },
   { id: "3d-design-part", label: STORE_CATEGORY_LABELS["3d-design-part"] },
   { id: "electronics", label: STORE_CATEGORY_LABELS.electronics },
   { id: "bundle", label: STORE_CATEGORY_LABELS.bundle },

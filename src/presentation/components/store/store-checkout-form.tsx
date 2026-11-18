@@ -26,10 +26,12 @@ export function StoreCheckoutForm({ product }: StoreCheckoutFormProps) {
 
   const total = product.price * quantity;
   const outOfStock = product.stockStatus === "out_of_stock";
+  const comingSoon = product.stockStatus === "coming_soon";
+  const checkoutBlocked = outOfStock || comingSoon;
 
   async function handleSubmit(event: React.FormEvent) {
     event.preventDefault();
-    if (outOfStock || submitting) {
+    if (checkoutBlocked || submitting) {
       return;
     }
 
@@ -155,7 +157,7 @@ export function StoreCheckoutForm({ product }: StoreCheckoutFormProps) {
 
         <button
           type="submit"
-          disabled={outOfStock || submitting}
+          disabled={checkoutBlocked || submitting}
           className="inline-flex w-full items-center justify-center rounded-full bg-primary px-5 py-3.5 text-sm font-bold text-white transition hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-60"
         >
           {submitting ? "PayTR açılıyor..." : "Ödemeye geç"}
@@ -177,7 +179,7 @@ export function StoreCheckoutForm({ product }: StoreCheckoutFormProps) {
             min={1}
             max={20}
             value={quantity}
-            disabled={outOfStock}
+            disabled={checkoutBlocked}
             onChange={(event) =>
               setQuantity(Math.min(20, Math.max(1, Number(event.target.value) || 1)))
             }
@@ -187,7 +189,9 @@ export function StoreCheckoutForm({ product }: StoreCheckoutFormProps) {
 
         <div className="mt-5 flex items-end justify-between border-t border-border-surface pt-4">
           <span className="text-sm font-semibold text-muted">Toplam</span>
-          <span className="text-2xl font-black text-navy-950">{formatTryPrice(total)}</span>
+          <span className="text-2xl font-black text-navy-950">
+            {comingSoon ? "Yakında" : formatTryPrice(total)}
+          </span>
         </div>
         <p className="mt-3 text-xs leading-5 text-subtle">
           Ödeme PayTR 256-bit SSL ile alınır. Kart bilgileriniz D2P sunucularında saklanmaz.
@@ -195,6 +199,11 @@ export function StoreCheckoutForm({ product }: StoreCheckoutFormProps) {
         {outOfStock ? (
           <p className="mt-3 rounded-xl bg-primary/10 px-3 py-2 text-sm text-primary">
             Bu ürün şu an stokta yok.
+          </p>
+        ) : null}
+        {comingSoon ? (
+          <p className="mt-3 rounded-xl border border-accent-dark/25 bg-accent/15 px-3 py-2 text-sm text-accent-dark">
+            Bu ürün yakında satışa çıkacak. Şimdilik sipariş alınmıyor.
           </p>
         ) : null}
       </aside>

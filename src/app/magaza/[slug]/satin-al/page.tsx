@@ -33,6 +33,25 @@ export default async function StoreCheckoutPage({ params }: PageProps) {
     notFound();
   }
 
+  if (product.stockStatus === "coming_soon") {
+    return (
+      <PublicPageShell>
+        <div className="mx-auto max-w-xl px-4 py-16 sm:px-6 lg:px-8">
+          <h1 className="text-2xl font-black text-navy-950">{product.title}</h1>
+          <p className="mt-3 text-base leading-7 text-muted">
+            Bu ürün yakında satışa çıkacak. Şimdilik sipariş alınmıyor.
+          </p>
+          <Link
+            href={`/magaza/${product.slug}`}
+            className="mt-6 inline-flex font-semibold text-document-primary hover:underline"
+          >
+            Ürün detayına dön
+          </Link>
+        </div>
+      </PublicPageShell>
+    );
+  }
+
   return (
     <PublicPageShell>
       <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6 lg:px-8">

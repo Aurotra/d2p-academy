@@ -6,6 +6,8 @@ export function stockStatusLabel(status: StockStatus): string {
       return "Stokta";
     case "pre_order":
       return "Ön Sipariş";
+    case "coming_soon":
+      return "Yakında";
     case "out_of_stock":
       return "Tükendi";
   }
@@ -16,6 +18,8 @@ export function stockStatusClass(status: StockStatus): string {
     case "in_stock":
       return "border-secondary/30 bg-secondary/10 text-secondary";
     case "pre_order":
+      return "border-accent-dark/30 bg-accent/20 text-accent-dark";
+    case "coming_soon":
       return "border-accent-dark/30 bg-accent/20 text-accent-dark";
     case "out_of_stock":
       return "border-border-surface bg-surface-section text-subtle";

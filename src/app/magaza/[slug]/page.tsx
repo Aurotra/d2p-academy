@@ -64,6 +64,8 @@ function availabilityUrl(status: string): string {
       return "https://schema.org/InStock";
     case "pre_order":
       return "https://schema.org/PreOrder";
+    case "coming_soon":
+      return "https://schema.org/PreOrder";
     default:
       return "https://schema.org/OutOfStock";
   }

@@ -61,6 +61,7 @@ export function ProductDetail({ product }: ProductDetailProps) {
   const hasCourse = product.educationIntegration.hasDigitalCourse;
   const isReadyDevice = product.category === "ready-device";
   const kitComingSoon = product.educationIntegration.kitVersionStatus === "coming_soon";
+  const productComingSoon = product.stockStatus === "coming_soon";
   const activated = hydrated && isKitActivated(product.slug, kits);
   const completedSteps = activated ? getCompletedSteps(product.slug, kits) : [];
   const progress = curriculumProgressPercent(product, completedSteps);
@@ -146,18 +147,28 @@ export function ProductDetail({ product }: ProductDetailProps) {
 
           <div className="mt-5 flex flex-wrap items-end gap-3 border-y border-border-surface py-4">
             <p className="text-3xl font-black text-navy-950 sm:text-4xl">
-              {formatTryPrice(product.price)}
+              {productComingSoon ? "Yakında" : formatTryPrice(product.price)}
             </p>
-            <p className="pb-1 text-sm text-muted">KDV dahil · Güvenli PayTR ödeme</p>
+            <p className="pb-1 text-sm text-muted">
+              {productComingSoon
+                ? "Satışa çıktığında buradan sipariş verebileceksiniz"
+                : "KDV dahil · Güvenli PayTR ödeme"}
+            </p>
           </div>
 
           <div className="mt-5 flex flex-col gap-3 sm:flex-row">
-            <Link
-              href={`/magaza/${product.slug}/satin-al`}
-              className="inline-flex min-h-[48px] flex-1 items-center justify-center rounded-full bg-primary px-6 py-3 text-sm font-bold text-white transition hover:brightness-105"
-            >
-              Satın Al
-            </Link>
+            {productComingSoon ? (
+              <span className="inline-flex min-h-[48px] flex-1 items-center justify-center rounded-full border border-accent-dark/30 bg-accent/20 px-6 py-3 text-sm font-bold text-accent-dark">
+                Yakında satışa çıkacak
+              </span>
+            ) : (
+              <Link
+                href={`/magaza/${product.slug}/satin-al`}
+                className="inline-flex min-h-[48px] flex-1 items-center justify-center rounded-full bg-primary px-6 py-3 text-sm font-bold text-white transition hover:brightness-105"
+              >
+                Satın Al
+              </Link>
+            )}
             <Link
               href="/magaza"
               className="inline-flex min-h-[48px] items-center justify-center rounded-full border border-border-surface bg-white px-6 py-3 text-sm font-semibold text-navy-950"

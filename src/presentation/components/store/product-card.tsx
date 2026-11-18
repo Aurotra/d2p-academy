@@ -19,6 +19,7 @@ export function ProductCard({ product, isActivated }: ProductCardProps) {
   const hasCourse = product.educationIntegration.hasDigitalCourse;
   const isReadyDevice = product.category === "ready-device";
   const kitComingSoon = product.educationIntegration.kitVersionStatus === "coming_soon";
+  const productComingSoon = product.stockStatus === "coming_soon";
 
   return (
     <article className={`${BRAND_SURFACE_FEATURE_CARD} flex h-full flex-col overflow-hidden`}>
@@ -83,7 +84,9 @@ export function ProductCard({ product, isActivated }: ProductCardProps) {
 
         <p className="text-xs font-medium text-subtle">Kurulum: {product.specs.assemblyTime}</p>
 
-        <p className="mt-auto text-2xl font-black text-navy-950">{formatTryPrice(product.price)}</p>
+        <p className="mt-auto text-2xl font-black text-navy-950">
+          {productComingSoon ? "Yakında" : formatTryPrice(product.price)}
+        </p>
 
         <div className="grid gap-2 sm:grid-cols-2">
           <Link
@@ -92,12 +95,18 @@ export function ProductCard({ product, isActivated }: ProductCardProps) {
           >
             Detay &amp; Kutu İçeriği
           </Link>
-          <Link
-            href={`/magaza/${product.slug}/satin-al`}
-            className="inline-flex items-center justify-center rounded-full bg-primary px-4 py-2.5 text-sm font-bold text-white transition hover:brightness-105"
-          >
-            Satın Al
-          </Link>
+          {productComingSoon ? (
+            <span className="inline-flex items-center justify-center rounded-full border border-accent-dark/30 bg-accent/20 px-4 py-2.5 text-sm font-bold text-accent-dark">
+              Yakında satışa çıkacak
+            </span>
+          ) : (
+            <Link
+              href={`/magaza/${product.slug}/satin-al`}
+              className="inline-flex items-center justify-center rounded-full bg-primary px-4 py-2.5 text-sm font-bold text-white transition hover:brightness-105"
+            >
+              Satın Al
+            </Link>
+          )}
         </div>
       </div>
     </article>

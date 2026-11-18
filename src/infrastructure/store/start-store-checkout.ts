@@ -52,6 +52,9 @@ export async function startStoreCheckout(input: StartStoreCheckoutInput): Promis
   if (product.stockStatus === "out_of_stock") {
     throw new Error("Bu ürün şu an stokta yok.");
   }
+  if (product.stockStatus === "coming_soon") {
+    throw new Error("Bu ürün yakında satışa çıkacak.");
+  }
 
   const quantity = Math.min(20, Math.max(1, Math.floor(input.quantity ?? 1)));
   const unitPriceTryCents = productPriceToTryCents(product.price);

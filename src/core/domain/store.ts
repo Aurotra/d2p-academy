@@ -1,13 +1,15 @@
 export type ProductCategory =
   | "education-kit"
   | "ready-device"
+  | "lab-equipment"
+  | "display-presentation"
   | "3d-design-part"
   | "electronics"
   | "bundle";
 
 export type KitVersionStatus = "available" | "coming_soon" | "none";
 
-export type StockStatus = "in_stock" | "pre_order" | "out_of_stock";
+export type StockStatus = "in_stock" | "pre_order" | "out_of_stock" | "coming_soon";
 
 export type DifficultyLevel = "Başlangıç" | "Orta" | "İleri";
 
