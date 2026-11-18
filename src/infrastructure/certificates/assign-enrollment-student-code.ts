@@ -139,7 +139,11 @@ export async function assignEnrollmentStudentCodeWithFallback(
     return enrollment.student_code.trim();
   }
 
-  const event = enrollment.events as { program_code: string | null } | null;
+  const eventsRel = enrollment.events as
+    | { program_code: string | null }
+    | { program_code: string | null }[]
+    | null;
+  const event = Array.isArray(eventsRel) ? eventsRel[0] : eventsRel;
   const programCode = event?.program_code?.trim() ?? "";
   if (!programCode) {
     throw new Error(
