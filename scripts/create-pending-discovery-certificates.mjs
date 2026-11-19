@@ -199,3 +199,23 @@ for (const person of PENDING) {
     console.error("FAIL", person.name, person.code, e.message || e);
   }
 }
+
+const maxSeq = Math.max(
+  0,
+  ...PENDING.map((p) => Number((p.code.match(/-(\d{5})$/) || [])[1] || 0)),
+);
+const year = new Date().getFullYear();
+const { data: seq } = await sb
+  .from("certificate_code_sequences")
+  .select("last_value")
+  .eq("program_code", "3DMO")
+  .eq("issue_year", year)
+  .maybeSingle();
+if (seq && Number(seq.last_value) < maxSeq) {
+  await sb
+    .from("certificate_code_sequences")
+    .update({ last_value: maxSeq })
+    .eq("program_code", "3DMO")
+    .eq("issue_year", year);
+  console.log(`bumped sequence 3DMO/${year} -> ${maxSeq}`);
+}

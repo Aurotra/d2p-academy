@@ -230,6 +230,37 @@ for (const row of certs) {
   }
 }
 
+// Keep sequence ahead of manually inserted PDF codes to avoid unique collisions.
+const maxSeq = Math.max(
+  0,
+  ...certs
+    .map((c) => Number((String(c.code).match(/-(\d{5})$/) || [])[1] || 0))
+    .filter(Boolean),
+);
+if (maxSeq > 0) {
+  const year = new Date().getFullYear();
+  const { data: seq } = await sb
+    .from("certificate_code_sequences")
+    .select("last_value")
+    .eq("program_code", "3DMO")
+    .eq("issue_year", year)
+    .maybeSingle();
+  if (!seq) {
+    await sb.from("certificate_code_sequences").insert({
+      program_code: "3DMO",
+      issue_year: year,
+      last_value: maxSeq,
+    });
+  } else if (Number(seq.last_value) < maxSeq) {
+    await sb
+      .from("certificate_code_sequences")
+      .update({ last_value: maxSeq })
+      .eq("program_code", "3DMO")
+      .eq("issue_year", year);
+  }
+  console.log(`sequence 3DMO/${year} >= ${maxSeq}`);
+}
+
 fs.writeFileSync(path.join(root, ".tmp-discovery-sync-result.json"), JSON.stringify(summary, null, 2));
 const ok = summary.filter((s) => s.verify).length;
 const fail = summary.filter((s) => !s.verify).length;
