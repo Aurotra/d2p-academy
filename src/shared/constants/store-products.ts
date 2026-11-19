@@ -79,7 +79,7 @@ export const STORE_PRODUCTS: readonly Product[] = [
     ],
     price: 2500,
     currency: "TRY",
-    stockStatus: "coming_soon",
+    stockStatus: "in_stock",
     category: "display-presentation",
     images: [
       {
@@ -134,7 +134,7 @@ export const STORE_PRODUCTS: readonly Product[] = [
     ],
     price: 4800,
     currency: "TRY",
-    stockStatus: "coming_soon",
+    stockStatus: "in_stock",
     category: "lab-equipment",
     images: [
       {
