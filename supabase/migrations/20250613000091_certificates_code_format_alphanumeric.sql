@@ -19,20 +19,35 @@ as $$
 declare
   v_code text := upper(trim(p_certificate_code));
   v_program text;
-  v_yy text;
-  v_seq bigint;
   v_year integer;
+  v_seq bigint;
+  v_yy integer;
 begin
+  -- New format: D2P-{CODE}-{YY}-{#####} (CODE may include digits, e.g. 3DMO)
   if v_code ~ '^D2P-[A-Z0-9]{2,4}-[0-9]{2}-[0-9]{5}$' then
-    v_program := split_part(v_code, '-', 2);
-    v_yy := split_part(v_code, '-', 3);
-    v_seq := split_part(v_code, '-', 4)::bigint;
-    v_year := 2000 + v_yy::integer;
+    v_program := (regexp_match(v_code, '^D2P-([A-Z0-9]{2,4})-'))[1];
+    v_yy := ((regexp_match(v_code, '-([0-9]{2})-[0-9]{5}$'))[1])::integer;
+    v_seq := ((regexp_match(v_code, '-([0-9]{5})$'))[1])::bigint;
+    v_year := 2000 + v_yy;
 
-    update public.certificate_code_sequences
-    set last_value = greatest(last_value, v_seq)
-    where program_code = v_program
-      and issue_year = v_year;
+    update public.certificate_code_sequences s
+    set last_value = greatest(v_seq - 1, 99)
+    where s.program_code = v_program
+      and s.issue_year = v_year
+      and s.last_value = v_seq;
+    return;
+  end if;
+
+  -- Legacy format: D2P-{YYYY}-{####+}
+  if v_code ~ '^D2P-[0-9]{4}-[0-9]{4,}$' then
+    v_year := ((regexp_match(v_code, '^D2P-([0-9]{4})-'))[1])::integer;
+    v_seq := ((regexp_match(v_code, '-([0-9]{4,})$'))[1])::bigint;
+
+    update public.certificate_code_sequences s
+    set last_value = greatest(v_seq - 1, 0)
+    where s.program_code = 'LEGACY'
+      and s.issue_year = v_year
+      and s.last_value = v_seq;
   end if;
 end;
 $$;
