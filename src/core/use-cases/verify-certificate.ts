@@ -9,7 +9,7 @@ export interface CertificateRepository {
 
 /** Legacy: D2P-YYYY-####(+) and program: D2P-CODE-YY-##### */
 const LEGACY_CERTIFICATE_CODE_PATTERN = /^D2P-\d{4}-\d{4,}$/i;
-const PROGRAM_CERTIFICATE_CODE_PATTERN = /^D2P-[A-Z]{2,4}-\d{2}-\d{5}$/i;
+const PROGRAM_CERTIFICATE_CODE_PATTERN = /^D2P-[A-Z0-9]{2,4}-\d{2}-\d{5}$/i;
 
 export function normalizeCertificateCode(code: string): string {
   return code.trim().toUpperCase();
