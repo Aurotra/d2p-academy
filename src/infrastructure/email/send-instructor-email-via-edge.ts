@@ -41,7 +41,9 @@ export async function invokeSupabaseEdgeFunction<TResponse>(
   }
 
   if (
-    (functionName === "send-instructor-email" || functionName === "send-event-instructor-assignment") &&
+    (functionName === "send-instructor-email" ||
+      functionName === "send-event-instructor-assignment" ||
+      functionName === "send-transactional-email") &&
     payload?.ok !== true
   ) {
     throw new Error(

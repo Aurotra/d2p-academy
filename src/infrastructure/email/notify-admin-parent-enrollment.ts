@@ -8,7 +8,6 @@ import {
   shouldNotifyAdminOfEnrollment,
 } from "@/infrastructure/email/admin-enrollment-notify";
 import { sendParentEnrollmentAdminEmail } from "@/infrastructure/email/parent-enrollment-admin-email";
-import { isResendConfigured } from "@/infrastructure/email/send-resend-email";
 
 async function resolveAdminNotificationEmails(client: SupabaseClient): Promise<string[]> {
   const fromEnv = parseAdminNotificationEmails(process.env.ADMIN_EMAIL);
@@ -39,6 +38,7 @@ function unwrapOne<T>(value: T | T[] | null | undefined): T | null {
 /**
  * Fire-and-forget admin mail after a parent (or parent's child) is confirmed on a course.
  * Never throws to the caller — enrollment/payment must not fail if mail fails.
+ * Idempotent via enrollments.admin_notified_at so PayTR retries can recover missed sends.
  */
 export async function notifyAdminOfParentEnrollment(
   client: SupabaseClient,
@@ -50,19 +50,23 @@ export async function notifyAdminOfParentEnrollment(
   },
 ): Promise<void> {
   try {
-    if (!shouldNotifyAdminOfEnrollment(input)) {
+    // alreadyPaid must NOT skip mail — payment may already be marked paid while
+    // the first notify attempt failed (Vercel freeze / missing RESEND on host).
+    if (input.alreadyEnrolled) {
       return;
     }
 
-    if (!isResendConfigured()) {
-      console.warn("[admin enrollment notify] RESEND_API_KEY missing; skipped");
-      return;
-    }
-
-    const { data: enrollment, error: enrollmentError } = await client
-      .from("enrollments")
-      .select(
-        `
+    const enrollmentSelectWithFlag = `
+        id,
+        status,
+        enrollment_source,
+        user_id,
+        event_id,
+        admin_notified_at,
+        events ( id, title ),
+        profiles ( id, full_name, email, parent_id, parent_phone, username )
+      `;
+    const enrollmentSelectBase = `
         id,
         status,
         enrollment_source,
@@ -70,16 +74,40 @@ export async function notifyAdminOfParentEnrollment(
         event_id,
         events ( id, title ),
         profiles ( id, full_name, email, parent_id, parent_phone, username )
-      `,
-      )
+      `;
+
+    let enrollmentQuery = await client
+      .from("enrollments")
+      .select(enrollmentSelectWithFlag)
       .eq("id", input.enrollmentId)
       .maybeSingle();
+
+    // Migration may not be applied yet — still send mail without idempotency flag.
+    if (
+      enrollmentQuery.error &&
+      /admin_notified_at/i.test(enrollmentQuery.error.message)
+    ) {
+      enrollmentQuery = await client
+        .from("enrollments")
+        .select(enrollmentSelectBase)
+        .eq("id", input.enrollmentId)
+        .maybeSingle();
+    }
+
+    const { data: enrollment, error: enrollmentError } = enrollmentQuery;
 
     if (enrollmentError || !enrollment) {
       console.error(
         "[admin enrollment notify] enrollment lookup failed",
         enrollmentError?.message ?? "missing row",
       );
+      return;
+    }
+
+    if (
+      "admin_notified_at" in enrollment &&
+      (enrollment as { admin_notified_at?: string | null }).admin_notified_at
+    ) {
       return;
     }
 
@@ -164,6 +192,14 @@ export async function notifyAdminOfParentEnrollment(
       }
     }
     if (sent > 0) {
+      const { error: markError } = await client
+        .from("enrollments")
+        .update({ admin_notified_at: new Date().toISOString() })
+        .eq("id", input.enrollmentId)
+        .is("admin_notified_at", null);
+      if (markError) {
+        console.error("[admin enrollment notify] mark notified failed", markError.message);
+      }
       console.info("[admin enrollment notify] sent", {
         enrollmentId: input.enrollmentId,
         recipients: recipients.length,

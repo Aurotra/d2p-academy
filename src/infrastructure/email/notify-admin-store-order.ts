@@ -6,7 +6,6 @@ import { after } from "next/server";
 import { isStoreOrderStatus } from "@/core/domain/store-order";
 import { parseAdminNotificationEmails } from "@/infrastructure/email/admin-enrollment-notify";
 import { sendStoreOrderAdminEmail } from "@/infrastructure/email/store-order-admin-email";
-import { isResendConfigured } from "@/infrastructure/email/send-resend-email";
 import { mapStoreOrderRow, type StoreOrderRow } from "@/infrastructure/store/map-store-order";
 
 async function resolveAdminNotificationEmails(client: SupabaseClient): Promise<string[]> {
@@ -33,11 +32,6 @@ export async function notifyAdminOfStoreOrder(
   orderId: string,
 ): Promise<void> {
   try {
-    if (!isResendConfigured()) {
-      console.warn("[admin store order notify] RESEND_API_KEY missing; skipped");
-      return;
-    }
-
     const { data, error } = await client
       .from("store_orders")
       .select("*")

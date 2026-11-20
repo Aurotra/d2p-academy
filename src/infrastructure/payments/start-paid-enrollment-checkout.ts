@@ -428,15 +428,14 @@ export async function finalizePaidPayment(params: {
   // Increment coupon used_count only after successful payment confirmation.
   await recordCouponRedemptionForPayment(params.serviceClient, params.paymentId);
 
-  if (!result.alreadyPaid) {
-    // Await on payment callbacks — bare void promises are dropped when the
-    // serverless function freezes right after returning OK to PayTR/iyzico.
-    await notifyAdminOfParentEnrollment(params.serviceClient, {
-      enrollmentId: result.enrollmentId,
-      paymentLabel: "Kartla ödendi",
-      alreadyPaid: false,
-    });
-  }
+  // Always attempt notify (idempotent via enrollments.admin_notified_at).
+  // Await on payment callbacks — bare void promises are dropped when the
+  // serverless function freezes right after returning OK to PayTR/iyzico.
+  await notifyAdminOfParentEnrollment(params.serviceClient, {
+    enrollmentId: result.enrollmentId,
+    paymentLabel: "Kartla ödendi",
+    alreadyPaid: result.alreadyPaid,
+  });
 
   return {
     enrollmentId: result.enrollmentId,

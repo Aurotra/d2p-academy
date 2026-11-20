@@ -30,7 +30,7 @@ describe("shouldNotifyAdminOfEnrollment", () => {
     ).toBe(true);
   });
 
-  it("skips checkout holds, duplicates, paid idempotency, and admin-manual seats", () => {
+  it("skips checkout holds, duplicates, and admin-manual seats", () => {
     expect(
       shouldNotifyAdminOfEnrollment({
         alreadyEnrolled: true,
@@ -38,8 +38,9 @@ describe("shouldNotifyAdminOfEnrollment", () => {
         status: "registered",
       }),
     ).toBe(false);
+    // alreadyPaid alone must still notify (retry after missed first send)
     expect(shouldNotifyAdminOfEnrollment({ alreadyPaid: true, enrollmentSource: "parent" })).toBe(
-      false,
+      true,
     );
     expect(
       shouldNotifyAdminOfEnrollment({

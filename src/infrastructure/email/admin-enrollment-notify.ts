@@ -11,13 +11,15 @@ export function parseAdminNotificationEmails(raw: string | undefined | null): st
 
 export function shouldNotifyAdminOfEnrollment(input: {
   alreadyEnrolled?: boolean;
+  /** @deprecated Prefer enrollments.admin_notified_at for payment-callback idempotency. */
   alreadyPaid?: boolean;
   enrollmentSource?: string | null;
   status?: string | null;
 }): boolean {
-  if (input.alreadyEnrolled || input.alreadyPaid) {
+  if (input.alreadyEnrolled) {
     return false;
   }
+  // alreadyPaid no longer blocks: PayTR may retry after a failed first notify.
   if (input.status === "pending_payment") {
     return false;
   }

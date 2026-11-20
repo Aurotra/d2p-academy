@@ -4,6 +4,7 @@ import {
   parsePaytrNotification,
   verifyPaytrNotification,
 } from "@/infrastructure/payments/paytr-client";
+import { notifyAdminOfParentEnrollment } from "@/infrastructure/email/notify-admin-parent-enrollment";
 import {
   finalizePaidPayment,
   markPaymentFailed,
@@ -73,13 +74,25 @@ export async function POST(request: Request) {
 
   const { data: payment } = await serviceClient
     .from("payments")
-    .select("id, status")
+    .select("id, status, enrollment_id")
     .eq("provider", "paytr")
     .eq("provider_conversation_id", notification.merchantOid)
     .maybeSingle();
 
   if (payment) {
     if (payment.status === "paid") {
+      // Recover missed admin mail if the first finalize froze before Resend finished.
+      if (payment.enrollment_id && notification.status === "success") {
+        try {
+          await notifyAdminOfParentEnrollment(serviceClient, {
+            enrollmentId: payment.enrollment_id,
+            paymentLabel: "Kartla ödendi",
+            alreadyPaid: true,
+          });
+        } catch (error) {
+          console.error("[paytr callback notify recovery]", error);
+        }
+      }
       return ok();
     }
 
