@@ -34,6 +34,7 @@ const navItems: NavItem[] = [
   { href: "/admin/certificates", label: "Sertifikalar" },
   { href: "/admin/logs", label: "İşlem Logları" },
   { href: "/admin/gallery", label: "Galeri" },
+  { href: "/admin/presentations", label: "Sunumlar" },
   { href: "/admin/documents", label: "Dökümanlar" },
   {
     href: "/admin/institution-requests",

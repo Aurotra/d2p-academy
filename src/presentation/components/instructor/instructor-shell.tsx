@@ -63,6 +63,12 @@ export function InstructorShell({ profile, isAdmin, children }: InstructorShellP
               >
                 Etkinliklerim
               </Link>
+              <Link
+                href="/instructor/presentations"
+                className="text-sm font-semibold text-navy-900 hover:underline"
+              >
+                Sunumlarım
+              </Link>
               <LogoutButton />
             </div>
           </div>
