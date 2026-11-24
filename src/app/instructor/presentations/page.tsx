@@ -82,7 +82,10 @@ export default function InstructorPresentationsPage() {
               <div className="flex aspect-[16/10] items-center justify-center bg-gradient-to-br from-slate-100 to-slate-200">
                 <div className="rounded-2xl border border-white/70 bg-white/80 px-5 py-4 text-center shadow-sm">
                   <p className="text-xs font-semibold uppercase tracking-[0.16em] text-document-primary">
-                    PDF
+                    {item.fileName.toLowerCase().endsWith(".pptx") ||
+                    item.fileName.toLowerCase().endsWith(".ppt")
+                      ? "PPTX"
+                      : "PDF"}
                   </p>
                   <p className="mt-1 text-2xl font-bold text-navy-950">
                     {item.pageCount > 0 ? item.pageCount : "—"}

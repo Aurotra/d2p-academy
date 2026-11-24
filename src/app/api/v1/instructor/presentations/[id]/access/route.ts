@@ -25,11 +25,17 @@ export async function GET(_request: Request, context: RouteContext) {
       return NextResponse.json({ error: "Sunum bulunamadı." }, { status: 404 });
     }
 
-    if (!presentation.mimeType.includes("pdf") && !presentation.fileName.toLowerCase().endsWith(".pdf")) {
+    const playable =
+      presentation.mimeType.includes("pdf") ||
+      presentation.fileName.toLowerCase().endsWith(".pdf") ||
+      // PPTX uploads are converted to PDF on ingest; storage mime is application/pdf.
+      presentation.storagePath.toLowerCase().endsWith(".pdf");
+
+    if (!playable) {
       return NextResponse.json(
         {
           error:
-            "Bu dosya formatı tarayıcıda oynatılamıyor. Lütfen adminin PDF sürümünü yüklemesini isteyin.",
+            "Bu sunum henüz oynatılamıyor. Admin panelinden PowerPoint (.pptx) olarak yeniden yükleyin.",
         },
         { status: 415 },
       );

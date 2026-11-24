@@ -11,8 +11,8 @@ export default function AdminPresentationsPage() {
         </p>
         <h1 className="mt-2 text-3xl font-bold text-navy-950">Sunumlar</h1>
         <p className="mt-2 max-w-2xl text-sm text-muted">
-          Eğitmen paneline atanacak PDF sunumlarını yükleyin. Dosyalar özel depoda tutulur;
-          eğitmenler yalnızca imzalı erişimle tam ekran sunum yapabilir.
+          PowerPoint (.pptx) sunumlarını yükleyin. Dosyalar özel depoda tutulur; eğitmenler
+          indirmeden tarayıcıda tam ekran sunum yapar.
         </p>
       </div>
       <AdminPresentationsManager />

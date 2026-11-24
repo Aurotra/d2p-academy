@@ -3,7 +3,6 @@
 import { useCallback, useEffect, useState, type FormEvent } from "react";
 
 import type { PresentationWithAssignments } from "@/core/domain/presentation";
-import { countPdfPages } from "@/lib/presentations/count-pdf-pages";
 import { Button } from "@/presentation/components/ui/button";
 import { Input } from "@/presentation/components/ui/input";
 import { Textarea } from "@/presentation/components/ui/textarea";
@@ -79,27 +78,25 @@ export function AdminPresentationsManager() {
 
     const form = event.currentTarget;
     const formData = new FormData(form);
-    const file = formData.get("file");
 
     try {
-      if (file instanceof File && file.size > 0) {
-        const pages = await countPdfPages(file);
-        formData.set("pageCount", String(pages));
-      }
       formData.set("instructorIds", selectedInstructors.join(","));
 
       const response = await fetch("/api/v1/admin/presentations", {
         method: "POST",
         body: formData,
       });
-      const json = (await response.json()) as { error?: string };
+      const json = (await response.json()) as {
+        error?: string;
+        meta?: { message?: string };
+      };
       if (!response.ok) {
         throw new Error(json.error ?? "Yükleme başarısız.");
       }
 
       form.reset();
       setSelectedInstructors([]);
-      setSuccess("Sunum yüklendi.");
+      setSuccess(json.meta?.message ?? "Sunum yüklendi.");
       await load();
     } catch (createError) {
       setError(createError instanceof Error ? createError.message : "Yükleme hatası");
@@ -193,10 +190,10 @@ export function AdminPresentationsManager() {
         <p className="text-sm font-semibold uppercase tracking-[0.18em] text-document-primary">
           Yeni sunum
         </p>
-        <h2 className="mt-2 text-2xl font-bold text-navy-950">PDF sunum yükle</h2>
+        <h2 className="mt-2 text-2xl font-bold text-navy-950">PowerPoint sunum yükle</h2>
         <p className="mt-2 text-sm text-muted">
-          Eğitmenler dosyayı indirmeden tarayıcıda tam ekran sunabilir. Oynatıcı için PDF
-          kullanın.
+          .pptx yükleyin; sistem güvenli tam ekran oynatıcı için otomatik hazırlar. İsterseniz
+          PDF de kabul edilir.
         </p>
 
         <form onSubmit={handleCreate} className="mt-6 grid gap-4">
@@ -204,11 +201,13 @@ export function AdminPresentationsManager() {
           <Input name="category" placeholder="Kategori / ders (ör. 3D Yazıcı)" />
           <Textarea name="description" placeholder="Kısa açıklama" rows={3} />
           <div>
-            <label className="mb-2 block text-sm font-semibold text-navy-950">PDF dosyası</label>
+            <label className="mb-2 block text-sm font-semibold text-navy-950">
+              PowerPoint dosyası (.pptx)
+            </label>
             <input
               name="file"
               type="file"
-              accept="application/pdf,.pdf"
+              accept=".pptx,.ppt,application/vnd.openxmlformats-officedocument.presentationml.presentation,application/pdf,.pdf"
               required
               className="block w-full text-sm text-muted file:mr-4 file:rounded-xl file:border-0 file:bg-document-primary file:px-4 file:py-2 file:text-sm file:font-semibold file:text-white"
             />

@@ -6,9 +6,22 @@ const nextConfig: NextConfig = {
   reactStrictMode: true,
   poweredByHeader: false,
   output: "standalone",
-  serverExternalPackages: ["@sparticuz/chromium-min", "puppeteer-core"],
+  serverExternalPackages: [
+    "@sparticuz/chromium-min",
+    "puppeteer-core",
+    "officetopdf-js",
+    "officetopdf-linux-x64",
+    "officetopdf-linux-x64-musl",
+    "officetopdf-windows-x64",
+  ],
   outputFileTracingIncludes: {
     "/api/v1/admin/certificates": ["./src/lib/certificates/**/*"],
+    "/api/v1/admin/presentations": [
+      "./node_modules/officetopdf-js/**/*",
+      "./node_modules/officetopdf-linux-x64/**/*",
+      "./node_modules/officetopdf-linux-x64-musl/**/*",
+      "./node_modules/officetopdf-windows-x64/**/*",
+    ],
   },
   images: {
     remotePatterns: [
