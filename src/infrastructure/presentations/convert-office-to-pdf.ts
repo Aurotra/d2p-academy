@@ -17,26 +17,24 @@ export function isPdfUpload(fileName: string, mimeType: string): boolean {
 
 /**
  * Convert PowerPoint bytes to PDF for the secure browser viewer.
- * Uses officetopdf-js (no LibreOffice / Chromium required).
+ * Pure JS (pptx-to-pdf) — no native glibc binaries, works on Vercel.
  */
 export async function convertPptxToPdf(input: {
   bytes: Uint8Array;
   fileName: string;
 }): Promise<{ pdfBytes: Uint8Array; warnings: string[] }> {
-  const { pptxToPdf } = await import("officetopdf-js");
+  const { convert } = await import("pptx-to-pdf");
   const warnings: string[] = [];
 
-  const pdf = await pptxToPdf(input.bytes, {
-    // Landscape decks are common for classroom presentations.
-    landscape: true,
-    onWarning: (warning: { message?: string }) => {
-      if (warning?.message) {
-        warnings.push(warning.message);
+  const pdf = await convert(Buffer.from(input.bytes), {
+    onWarning: (message: string) => {
+      if (message) {
+        warnings.push(message);
       }
     },
   });
 
-  return { pdfBytes: pdf, warnings };
+  return { pdfBytes: new Uint8Array(pdf), warnings };
 }
 
 /** Lightweight page estimate for freshly generated PDFs (no pdfjs worker on server). */
