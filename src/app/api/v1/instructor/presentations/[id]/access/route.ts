@@ -4,13 +4,25 @@ import {
   isPdfUpload,
   isPptxUpload,
 } from "@/infrastructure/presentations/convert-office-to-pdf";
+import { signPresentationFileToken } from "@/infrastructure/presentations/presentation-file-token";
 import { requireInstructorApiAccess } from "@/infrastructure/auth/require-instructor-api-access";
 import { SupabasePresentationRepository } from "@/infrastructure/repositories/supabase-presentation-repository";
 import { createServiceRoleClient } from "@/infrastructure/supabase/create-service-role-client";
 
 type RouteContext = { params: Promise<{ id: string }> };
 
-export async function GET(_request: Request, context: RouteContext) {
+function getPublicOrigin(request: Request): string {
+  const configured = process.env.NEXT_PUBLIC_SITE_URL?.trim().replace(/\/$/, "");
+  if (configured) return configured;
+
+  const forwardedHost = request.headers.get("x-forwarded-host");
+  const host = forwardedHost || request.headers.get("host");
+  const proto = request.headers.get("x-forwarded-proto") || "https";
+  if (host) return `${proto}://${host}`;
+  return "https://www.d2p.com.tr";
+}
+
+export async function GET(request: Request, context: RouteContext) {
   const access = await requireInstructorApiAccess();
   if (access.response) return access.response;
 
@@ -49,10 +61,17 @@ export async function GET(_request: Request, context: RouteContext) {
 
     const signedUrl = await repo.createSignedUrl(presentation.storagePath);
     const viewerKind = isPdf ? "pdf" : "office";
-    const officeEmbedUrl =
-      viewerKind === "office"
-        ? `https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(signedUrl)}`
-        : null;
+
+    let officeEmbedUrl: string | null = null;
+    if (viewerKind === "office") {
+      const fileToken = await signPresentationFileToken({
+        presentationId: presentation.id,
+        instructorId: access.profile.id,
+      });
+      // Same-origin proxy — Office Online cannot reliably fetch private Supabase signed URLs.
+      const fileUrl = `${getPublicOrigin(request)}/api/v1/presentations/file/${fileToken}`;
+      officeEmbedUrl = `https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(fileUrl)}`;
+    }
 
     return NextResponse.json({
       data: {
