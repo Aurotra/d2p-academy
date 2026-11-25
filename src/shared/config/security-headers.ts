@@ -34,11 +34,6 @@ export function isTasarimAppPath(pathname: string): boolean {
   return pathname === "/tasarim" || pathname.startsWith("/tasarim/");
 }
 
-/** Admin presentation upload uses LibreOffice WASM (SharedArrayBuffer). */
-export function isAdminPresentationsPath(pathname: string): boolean {
-  return pathname === "/admin/presentations" || pathname.startsWith("/admin/presentations/");
-}
-
 /** CSP with per-request nonce — set from middleware, not next.config. */
 export function buildContentSecurityPolicy(
   nonce: string,
@@ -49,27 +44,16 @@ export function buildContentSecurityPolicy(
   const pathname = options?.pathname ?? "";
   const allowBankAcsFrames = isCardCheckoutPath(pathname);
   const isTasarim = isTasarimAppPath(pathname);
-  const isPresentationsAdmin = isAdminPresentationsPath(pathname);
 
   // Static /tasarim HTML uses import maps + type=module without React nonces.
-  // Admin presentations needs wasm/CDN scripts for LibreOffice conversion.
   const scriptSrc = isTasarim
     ? ["'self'", "'unsafe-inline'", ...(isProd ? [] : ["'unsafe-eval'"])]
-    : isPresentationsAdmin
-      ? [
-          "'self'",
-          `'nonce-${nonce}'`,
-          "'strict-dynamic'",
-          "'wasm-unsafe-eval'",
-          "https://cdn.jsdelivr.net",
-          ...(isProd ? [] : ["'unsafe-eval'"]),
-        ]
-      : [
-          "'self'",
-          `'nonce-${nonce}'`,
-          "'strict-dynamic'",
-          ...(isProd ? [] : ["'unsafe-eval'"]),
-        ];
+    : [
+        "'self'",
+        `'nonce-${nonce}'`,
+        "'strict-dynamic'",
+        ...(isProd ? [] : ["'unsafe-eval'"]),
+      ];
 
   // 3-D Secure ACS hosts are per-bank and cannot be allowlisted. Relax frames
   // only on /odeme so SMS/OTP challenge pages can load inside the PayTR iframe.
@@ -86,10 +70,7 @@ export function buildContentSecurityPolicy(
     "style-src-attr 'unsafe-inline'",
     `img-src 'self' data: blob: ${supabase.https} https://www.paytr.com https://*.paytr.com`,
     "font-src 'self' data:",
-    `connect-src 'self' ${supabase.https} ${supabase.wss} https://www.paytr.com${
-      isPresentationsAdmin ? " https://cdn.jsdelivr.net" : ""
-    }`,
-    // LibreOffice pthread/browser workers are same-origin under /libreoffice/
+    `connect-src 'self' ${supabase.https} ${supabase.wss} https://www.paytr.com`,
     `worker-src 'self' blob:`,
     frameSrc,
     "object-src 'none'",

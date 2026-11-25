@@ -10,7 +10,8 @@ import {
 import { SupabasePresentationRepository } from "@/infrastructure/repositories/supabase-presentation-repository";
 import { createServiceRoleClient } from "@/infrastructure/supabase/create-service-role-client";
 
-export const maxDuration = 60;
+/** LibreOffice WASM cold start + convert can exceed 60s on first invocation. */
+export const maxDuration = 300;
 
 const ALLOWED_MIME = new Set([
   "application/pdf",
@@ -95,7 +96,6 @@ export async function POST(request: Request) {
     let conversionNote = "";
     let convertedFromPptx = Boolean(originalFileName && isPptxUpload(originalFileName, ""));
 
-    // Prefer browser-converted PDF. Only convert on server as a rare fallback.
     if (isPptx) {
       try {
         const converted = await convertPptxToPdf({
@@ -115,7 +115,9 @@ export async function POST(request: Request) {
         return NextResponse.json(
           {
             error:
-              "PowerPoint sunucu tarafında dönüştürülemedi. Sayfayı yenileyip tekrar deneyin; tarayıcı dönüşümü kullanılacak.",
+              convertError instanceof Error
+                ? `PowerPoint dönüştürülemedi: ${convertError.message}`
+                : "PowerPoint sunucu tarafında dönüştürülemedi.",
           },
           { status: 500 },
         );

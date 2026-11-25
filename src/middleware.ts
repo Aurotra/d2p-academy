@@ -12,7 +12,6 @@ import {
 import { profileHasInstructorCapability } from "@/infrastructure/auth/instructor-capability";
 import {
   buildContentSecurityPolicy,
-  isAdminPresentationsPath,
   isTasarimAppPath,
 } from "@/shared/config/security-headers";
 import { createCspNonce, CSP_NONCE_HEADER } from "@/shared/config/csp-nonce";
@@ -45,12 +44,6 @@ function finalizeResponse(
   });
 
   nextResponse.headers.set("Content-Security-Policy", csp);
-
-  // LibreOffice WASM in the browser needs cross-origin isolation.
-  if (isAdminPresentationsPath(request.nextUrl.pathname)) {
-    nextResponse.headers.set("Cross-Origin-Opener-Policy", "same-origin");
-    nextResponse.headers.set("Cross-Origin-Embedder-Policy", "credentialless");
-  }
 
   return nextResponse;
 }
@@ -248,10 +241,6 @@ async function handleAuthMiddleware(
     "Content-Security-Policy",
     buildContentSecurityPolicy(nonce, { pathname }),
   );
-  if (isAdminPresentationsPath(pathname)) {
-    supabaseResponse.headers.set("Cross-Origin-Opener-Policy", "same-origin");
-    supabaseResponse.headers.set("Cross-Origin-Embedder-Policy", "credentialless");
-  }
   return supabaseResponse;
 }
 
@@ -268,10 +257,8 @@ export async function middleware(request: NextRequest) {
 export const config = {
   matcher: [
     {
-      // Skip static LibreOffice/pdf.js workers — CSP/COEP on those responses
-      // must come from next.config, not this middleware.
       source:
-        "/((?!_next/static|_next/image|favicon.ico|libreoffice/|pdfjs/|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)",
+        "/((?!_next/static|_next/image|favicon.ico|pdfjs/|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)",
     },
   ],
 };

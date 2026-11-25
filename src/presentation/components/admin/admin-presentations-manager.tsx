@@ -3,7 +3,6 @@
 import { useCallback, useEffect, useState, type FormEvent } from "react";
 
 import type { PresentationWithAssignments } from "@/core/domain/presentation";
-import { convertPptxInBrowser } from "@/lib/presentations/convert-pptx-in-browser";
 import { Button } from "@/presentation/components/ui/button";
 import { Input } from "@/presentation/components/ui/input";
 import { Textarea } from "@/presentation/components/ui/textarea";
@@ -94,11 +93,12 @@ export function AdminPresentationsManager() {
           rawFile.type.includes("powerpoint");
 
         if (isPptx) {
-          setProgress("PowerPoint dönüştürülüyor… İlk seferde bir kez yükleme sürebilir.");
-          const pdfFile = await convertPptxInBrowser(rawFile, setProgress);
-          formData.set("file", pdfFile);
           formData.set("originalFileName", rawFile.name);
-          setProgress("Dönüşüm bitti, sunum kaydediliyor…");
+          setProgress(
+            "PowerPoint sunucuda PDF’e dönüştürülüyor… İlk yüklemede 1–2 dakika sürebilir, sayfayı kapatmayın.",
+          );
+        } else {
+          setProgress("Sunum kaydediliyor…");
         }
       }
 
@@ -213,8 +213,8 @@ export function AdminPresentationsManager() {
         </p>
         <h2 className="mt-2 text-2xl font-bold text-navy-950">PowerPoint sunum yükle</h2>
         <p className="mt-2 text-sm text-muted">
-          .pptx yükleyin. Tarayıcıda LibreOffice ile yüksek kaliteli PDF’e çevrilir; eğitmen
-          indirmeden tam ekran sunar. Hazır PDF de yükleyebilirsiniz.
+          .pptx yükleyin; sunucu LibreOffice ile PDF’e çevirir. Eğitmen siteye girip indirmeden
+          tam ekran sunar. İsterseniz hazır PDF de yükleyebilirsiniz.
         </p>
 
         <form onSubmit={handleCreate} className="mt-6 grid gap-4">
