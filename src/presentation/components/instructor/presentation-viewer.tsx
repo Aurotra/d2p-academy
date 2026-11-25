@@ -316,7 +316,15 @@ export function PresentationViewer({ presentationId }: { presentationId: string 
   return (
     <div
       ref={containerRef}
-      className="relative flex min-h-[70vh] flex-col items-center justify-center overflow-hidden rounded-[1.75rem] bg-black text-white"
+      className={
+        isOffice
+          ? `relative overflow-hidden bg-black text-white ${
+              isFullscreen
+                ? "h-[100dvh] w-full rounded-none"
+                : "h-[calc(100dvh-7rem)] min-h-[70vh] w-full rounded-[1.75rem]"
+            }`
+          : "relative flex min-h-[70vh] flex-col items-center justify-center overflow-hidden rounded-[1.75rem] bg-black text-white"
+      }
       onContextMenu={(event) => event.preventDefault()}
       onMouseMove={bumpControls}
       onClick={(event) => {
@@ -327,12 +335,12 @@ export function PresentationViewer({ presentationId }: { presentationId: string 
         else goPrev();
       }}
     >
-      <div className={`relative ${isOffice ? "h-full min-h-[70vh] w-full" : "max-h-full max-w-full"}`}>
+      <div className={isOffice ? "absolute inset-0" : "relative max-h-full max-w-full"}>
         {isOffice && officeEmbedUrl ? (
           <iframe
             title={title}
             src={officeEmbedUrl}
-            className="h-[min(100dvh,900px)] min-h-[70vh] w-full border-0 bg-white"
+            className="h-full w-full border-0 bg-white"
             allow="fullscreen"
           />
         ) : (
