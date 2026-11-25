@@ -1,13 +1,16 @@
 import "server-only";
 
 import { createRequire } from "node:module";
-import { existsSync } from "node:fs";
+import { copyFileSync, existsSync } from "node:fs";
 import { mkdir, stat, writeFile } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 
 const LO_VERSION = "2.7.2";
-const LO_CDN = `https://cdn.jsdelivr.net/npm/@matbee/libreoffice-converter@${LO_VERSION}/wasm`;
+
+/** Dedicated mirror (jsDelivr returns 403 for this oversized npm package). */
+const LO_CDN_PRIMARY = "https://erseco.github.io/libreoffice-document-converter/wasm";
+const LO_CDN_FALLBACK = `https://unpkg.com/@matbee/libreoffice-converter@${LO_VERSION}/wasm`;
 
 /** Binaries + loader that must sit together so loader.cjs `__dirname` resolves assets. */
 const WASM_ASSETS = [
@@ -18,7 +21,6 @@ const WASM_ASSETS = [
   "soffice.data",
   "soffice.worker.js",
   "soffice.worker.cjs",
-  "soffice.data.js.metadata",
 ] as const;
 
 export function isPptxUpload(fileName: string, mimeType: string): boolean {
@@ -40,12 +42,47 @@ function wasmCacheDir(): string {
   return path.join(os.tmpdir(), `libreoffice-wasm-${LO_VERSION}`);
 }
 
+function packageWasmDir(): string {
+  return path.join(
+    process.cwd(),
+    "node_modules",
+    "@matbee",
+    "libreoffice-converter",
+    "wasm",
+  );
+}
+
 async function downloadToFile(url: string, destPath: string): Promise<void> {
   const response = await fetch(url);
   if (!response.ok) {
     throw new Error(`WASM indirilemedi (${response.status}): ${url}`);
   }
   await writeFile(destPath, Buffer.from(await response.arrayBuffer()));
+}
+
+async function materializeAsset(name: (typeof WASM_ASSETS)[number], dest: string): Promise<void> {
+  const localSource = path.join(packageWasmDir(), name);
+  if (existsSync(localSource)) {
+    const info = await stat(localSource);
+    if (info.size > 0) {
+      copyFileSync(localSource, dest);
+      return;
+    }
+  }
+
+  const urls = [`${LO_CDN_PRIMARY}/${name}`, `${LO_CDN_FALLBACK}/${name}`];
+  let lastError: Error | null = null;
+  for (const url of urls) {
+    try {
+      console.info(`[pptx-convert] downloading ${name} from ${url}`);
+      await downloadToFile(url, dest);
+      return;
+    } catch (error) {
+      lastError = error instanceof Error ? error : new Error(String(error));
+      console.warn(`[pptx-convert] ${name} failed:`, lastError.message);
+    }
+  }
+  throw lastError ?? new Error(`${name} indirilemedi.`);
 }
 
 async function ensureWasmAssets(): Promise<string> {
@@ -63,8 +100,7 @@ async function ensureWasmAssets(): Promise<string> {
       const info = await stat(dest);
       if (info.size > 0) continue;
     }
-    console.info(`[pptx-convert] downloading ${name}…`);
-    await downloadToFile(`${LO_CDN}/${name}`, dest);
+    await materializeAsset(name, dest);
   }
 
   const wasmStat = await stat(path.join(dir, "soffice.wasm"));
@@ -87,10 +123,9 @@ export async function convertPptxToPdf(input: {
 }): Promise<{ pdfBytes: Uint8Array; warnings: string[] }> {
   const wasmPath = await ensureWasmAssets();
   const requireFromWasm = createRequire(path.join(wasmPath, "loader.cjs"));
-  // loader.cjs binds __dirname to /tmp cache so large CDN binaries resolve correctly.
+  // loader.cjs binds __dirname to /tmp cache so large binaries resolve correctly.
   const wasmLoader = requireFromWasm(path.join(wasmPath, "loader.cjs"));
 
-  // Main-thread converter so our /tmp wasmLoader (not package __dirname) is used.
   const { createConverter } = await import("@matbee/libreoffice-converter/server");
   const converter = await createConverter({
     wasmPath,
