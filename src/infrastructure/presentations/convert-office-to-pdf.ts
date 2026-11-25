@@ -156,8 +156,9 @@ function loadCreateConverter(): (options: Record<string, unknown>) => Promise<{
   destroy?: () => Promise<void>;
 }> {
   const req = rootRequire();
-  // Prefer CJS build — more reliable under Next serverless externals than ESM dynamic import.
-  const server = req("@matbee/libreoffice-converter/dist/server.cjs") as Record<string, unknown> & {
+  // Must use package export "./server" — "./dist/server.cjs" is not in "exports"
+  // and resolves to an empty module under Next (→ "(void 0) is not a function").
+  const server = req("@matbee/libreoffice-converter/server") as Record<string, unknown> & {
     default?: Record<string, unknown>;
   };
   const createConverter =
