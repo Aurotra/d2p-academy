@@ -268,8 +268,10 @@ export async function middleware(request: NextRequest) {
 export const config = {
   matcher: [
     {
+      // Skip static LibreOffice/pdf.js workers — CSP/COEP on those responses
+      // must come from next.config, not this middleware.
       source:
-        "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)",
+        "/((?!_next/static|_next/image|favicon.ico|libreoffice/|pdfjs/|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)",
     },
   ],
 };

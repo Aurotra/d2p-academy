@@ -3,9 +3,24 @@
 const LO_WASM_CDN =
   "https://cdn.jsdelivr.net/npm/@matbee/libreoffice-converter@2.7.2/wasm/";
 
-/** Same-origin worker scripts (browsers block cross-origin `new Worker(cdnUrl)`). */
+/** Same-origin worker scripts under /libreoffice (see next.config COEP headers). */
 const LO_BROWSER_WORKER = "/libreoffice/browser.worker.global.js";
 const LO_PTHREAD_WORKER = "/libreoffice/soffice.worker.js";
+
+/**
+ * Browsers block `new Worker(crossOriginUrl)`. Even same-origin workers created
+ * from a COEP page must themselves be served with COEP — we also boot via blob
+ * URL so a stale/missing worker header cannot silently hang on "Starting worker…".
+ */
+async function createBlobWorkerUrl(scriptUrl: string): Promise<string> {
+  const response = await fetch(scriptUrl, { cache: "force-cache" });
+  if (!response.ok) {
+    throw new Error(`Dönüştürücü worker yüklenemedi (${response.status}).`);
+  }
+  const source = await response.text();
+  const blob = new Blob([source], { type: "application/javascript" });
+  return URL.createObjectURL(blob);
+}
 
 /**
  * Convert PPTX → PDF in the admin browser via LibreOffice WASM.
@@ -21,10 +36,12 @@ export async function convertPptxInBrowser(
     "@matbee/libreoffice-converter/browser"
   );
 
+  const browserWorkerJs = await createBlobWorkerUrl(LO_BROWSER_WORKER);
+
   const converter = new WorkerBrowserConverter({
     ...createWasmPaths(LO_WASM_CDN),
     sofficeWorkerJs: LO_PTHREAD_WORKER,
-    browserWorkerJs: LO_BROWSER_WORKER,
+    browserWorkerJs,
     onProgress: (info: { percent?: number; message?: string; phase?: string }) => {
       const pct = typeof info.percent === "number" ? `${Math.round(info.percent)}% ` : "";
       onProgress?.(`${pct}${info.message || info.phase || "Dönüştürülüyor…"}`);
@@ -39,11 +56,20 @@ export async function convertPptxInBrowser(
     const pdfName = file.name.replace(/\.(pptx|ppt)$/i, "") + ".pdf";
     const pdfBytes = Uint8Array.from(result.data);
     return new File([pdfBytes], pdfName, { type: "application/pdf" });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    if (/timeout|Worker|COEP|SharedArrayBuffer|SecurityError/i.test(message)) {
+      throw new Error(
+        `${message} — Alternatif: PowerPoint’te Dosya → PDF olarak kaydet, sonra PDF yükle.`,
+      );
+    }
+    throw error;
   } finally {
     try {
       await converter.destroy?.();
     } catch {
       /* ignore */
     }
+    URL.revokeObjectURL(browserWorkerJs);
   }
 }

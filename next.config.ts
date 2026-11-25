@@ -43,6 +43,34 @@ const nextConfig: NextConfig = {
         source: "/_next/static/:path*",
         headers: getStaticAssetCorsHeaders(),
       },
+      // LibreOffice WASM workers: COEP page requires matching COEP on the worker script.
+      {
+        source: "/libreoffice/:path*",
+        headers: [
+          { key: "Cross-Origin-Embedder-Policy", value: "credentialless" },
+          { key: "Cross-Origin-Resource-Policy", value: "same-origin" },
+          {
+            key: "Content-Security-Policy",
+            value:
+              "default-src 'none'; script-src 'self' 'unsafe-eval' 'wasm-unsafe-eval' https://cdn.jsdelivr.net blob:; connect-src 'self' https://cdn.jsdelivr.net blob: data:; worker-src 'self' blob:;",
+          },
+          { key: "Cache-Control", value: "public, max-age=31536000, immutable" },
+        ],
+      },
+      {
+        source: "/admin/presentations",
+        headers: [
+          { key: "Cross-Origin-Opener-Policy", value: "same-origin" },
+          { key: "Cross-Origin-Embedder-Policy", value: "credentialless" },
+        ],
+      },
+      {
+        source: "/admin/presentations/:path*",
+        headers: [
+          { key: "Cross-Origin-Opener-Policy", value: "same-origin" },
+          { key: "Cross-Origin-Embedder-Policy", value: "credentialless" },
+        ],
+      },
       {
         source: "/:path*",
         headers: getSecurityHeaders(),
