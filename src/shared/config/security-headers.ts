@@ -34,12 +34,13 @@ export function isTasarimAppPath(pathname: string): boolean {
   return pathname === "/tasarim" || pathname.startsWith("/tasarim/");
 }
 
-/** Instructor presentation player embeds Microsoft Office Online for PPTX. */
-export function isInstructorPresentationsPath(pathname: string): boolean {
-  return (
-    pathname === "/instructor/presentations" ||
-    pathname.startsWith("/instructor/presentations/")
-  );
+/**
+ * Instructor app may client-navigate into the PPTX player without a full reload,
+ * so Office Online must be allowed on the whole /instructor shell CSP — not only
+ * /instructor/presentations/* document responses.
+ */
+export function isInstructorAppShellPath(pathname: string): boolean {
+  return pathname === "/instructor" || pathname.startsWith("/instructor/");
 }
 
 /** CSP with per-request nonce — set from middleware, not next.config. */
@@ -52,7 +53,7 @@ export function buildContentSecurityPolicy(
   const pathname = options?.pathname ?? "";
   const allowBankAcsFrames = isCardCheckoutPath(pathname);
   const isTasarim = isTasarimAppPath(pathname);
-  const isInstructorPresentations = isInstructorPresentationsPath(pathname);
+  const allowOfficeFrames = isInstructorAppShellPath(pathname);
 
   // Static /tasarim HTML uses import maps + type=module without React nonces.
   const scriptSrc = isTasarim
@@ -66,10 +67,10 @@ export function buildContentSecurityPolicy(
 
   // 3-D Secure ACS hosts are per-bank and cannot be allowlisted. Relax frames
   // only on /odeme so SMS/OTP challenge pages can load inside the PayTR iframe.
-  // Instructor PPTX player needs Office Online embed frames.
+  // Instructor PPTX player embeds Microsoft Office Online.
   const frameSrc = allowBankAcsFrames
     ? "frame-src 'self' https:"
-    : isInstructorPresentations
+    : allowOfficeFrames
       ? "frame-src 'self' https://view.officeapps.live.com https://*.officeapps.live.com https://*.office.com https://www.paytr.com https://*.paytr.com https://www.google.com https://maps.google.com https://www.google.com.tr"
       : "frame-src 'self' https://www.paytr.com https://*.paytr.com https://www.google.com https://maps.google.com https://www.google.com.tr";
   const formAction = allowBankAcsFrames ? "form-action 'self' https:" : "form-action 'self'";
