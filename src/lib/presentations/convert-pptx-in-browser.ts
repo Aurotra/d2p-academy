@@ -1,11 +1,15 @@
 "use client";
 
-const LO_WASM_BASE =
+const LO_WASM_CDN =
   "https://cdn.jsdelivr.net/npm/@matbee/libreoffice-converter@2.7.2/wasm/";
 
+/** Same-origin worker scripts (browsers block cross-origin `new Worker(cdnUrl)`). */
+const LO_BROWSER_WORKER = "/libreoffice/browser.worker.global.js";
+const LO_PTHREAD_WORKER = "/libreoffice/soffice.worker.js";
+
 /**
- * Convert PPTX → PDF in the admin browser via LibreOffice WASM (CDN).
- * Avoids Vercel glibc/native binary issues and keeps slide layout faithful.
+ * Convert PPTX → PDF in the admin browser via LibreOffice WASM.
+ * Large WASM/data stay on CDN; workers are served from this origin.
  */
 export async function convertPptxInBrowser(
   file: File,
@@ -18,8 +22,9 @@ export async function convertPptxInBrowser(
   );
 
   const converter = new WorkerBrowserConverter({
-    ...createWasmPaths(LO_WASM_BASE),
-    browserWorkerJs: `${LO_WASM_BASE}soffice.worker.js`,
+    ...createWasmPaths(LO_WASM_CDN),
+    sofficeWorkerJs: LO_PTHREAD_WORKER,
+    browserWorkerJs: LO_BROWSER_WORKER,
     onProgress: (info: { percent?: number; message?: string; phase?: string }) => {
       const pct = typeof info.percent === "number" ? `${Math.round(info.percent)}% ` : "";
       onProgress?.(`${pct}${info.message || info.phase || "Dönüştürülüyor…"}`);

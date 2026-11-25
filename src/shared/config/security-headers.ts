@@ -89,7 +89,8 @@ export function buildContentSecurityPolicy(
     `connect-src 'self' ${supabase.https} ${supabase.wss} https://www.paytr.com${
       isPresentationsAdmin ? " https://cdn.jsdelivr.net" : ""
     }`,
-    `worker-src 'self' blob:${isPresentationsAdmin ? " https://cdn.jsdelivr.net" : ""}`,
+    // LibreOffice pthread/browser workers are same-origin under /libreoffice/
+    `worker-src 'self' blob:`,
     frameSrc,
     "object-src 'none'",
     "base-uri 'self'",
