@@ -239,6 +239,17 @@ export class SupabaseAdminEventRepository implements AdminEventRepository {
   }
 
   async listAll(): Promise<AdminEventRecord[]> {
+    // Public listings already hide by end_at; persist status so admin archive matches.
+    const { error: completeError } = await this.client
+      .from("events")
+      .update({ status: "completed" satisfies EventStatus })
+      .eq("status", "published")
+      .lt("end_at", new Date().toISOString());
+
+    if (completeError) {
+      console.error("[admin events] past event auto-complete failed:", completeError.message);
+    }
+
     const { data, error } = await this.client
       .from("events")
       .select(EVENT_SELECT)

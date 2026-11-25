@@ -300,15 +300,28 @@ function compareArchivedEvents(a: AdminEventRecord, b: AdminEventRecord): number
   return b.endAt.getTime() - a.endAt.getTime();
 }
 
+function isEventEnded(event: AdminEventRecord, nowMs = Date.now()): boolean {
+  return event.endAt.getTime() < nowMs;
+}
+
 function partitionAdminEvents(events: AdminEventRecord[]): {
   activeEvents: AdminEventRecord[];
   archivedEvents: AdminEventRecord[];
 } {
+  const nowMs = Date.now();
   const activeEvents = events
-    .filter((event) => event.status === "published" || event.status === "draft")
+    .filter((event) => {
+      if (event.status === "draft") return true;
+      if (event.status === "published") return !isEventEnded(event, nowMs);
+      return false;
+    })
     .sort(compareActiveEvents);
   const archivedEvents = events
-    .filter((event) => event.status === "completed" || event.status === "cancelled")
+    .filter((event) => {
+      if (event.status === "completed" || event.status === "cancelled") return true;
+      if (event.status === "published" && isEventEnded(event, nowMs)) return true;
+      return false;
+    })
     .sort(compareArchivedEvents);
 
   return { activeEvents, archivedEvents };
@@ -429,7 +442,7 @@ function EventActionBar({
             >
               Yayından kaldır
             </Button>
-          ) : (
+          ) : event.status === "draft" ? (
             <Button
               type="button"
               variant="secondary"
@@ -438,7 +451,7 @@ function EventActionBar({
             >
               Yayınla
             </Button>
-          )}
+          ) : null}
           <Button
             type="button"
             variant="ghost"
