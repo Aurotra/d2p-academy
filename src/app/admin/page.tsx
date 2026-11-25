@@ -104,7 +104,7 @@ const categories: AdminCategory[] = [
   },
   {
     title: "Öğrenciler & İçerik",
-    description: "Öğrenci profilleri ve paylaşılan ders materyalleri.",
+    description: "Öğrenci/eğitmen profilleri, galeri, sunumlar ve ders materyalleri.",
     cards: [
       {
         href: "/admin/students",
@@ -112,6 +112,13 @@ const categories: AdminCategory[] = [
         description: "Öğrenci profillerini ve tamamlanma oranlarını görüntüleyin.",
         tone: "border-amber-200 bg-amber-100 text-amber-950 hover:bg-amber-50",
         badge: "bg-amber-200/70 text-amber-900",
+      },
+      {
+        href: "/admin/instructors",
+        title: "Eğitmenler",
+        description: "Eğitmen yetkisi verin, hesapları ve atölye atamalarını yönetin.",
+        tone: "border-blue-200 bg-blue-100 text-blue-950 hover:bg-blue-50",
+        badge: "bg-blue-200/70 text-blue-900",
       },
       {
         href: "/admin/parents",
@@ -126,6 +133,20 @@ const categories: AdminCategory[] = [
         description: "Siteye kayıt olan veli ve üye hesaplarını listeleyin.",
         tone: "border-cyan-200 bg-cyan-100 text-cyan-950 hover:bg-cyan-50",
         badge: "bg-cyan-200/70 text-cyan-900",
+      },
+      {
+        href: "/admin/gallery",
+        title: "Galeri",
+        description: "Site galerisine fotoğraf ekleyin, sıralayın veya kaldırın.",
+        tone: "border-pink-200 bg-pink-100 text-pink-950 hover:bg-pink-50",
+        badge: "bg-pink-200/70 text-pink-900",
+      },
+      {
+        href: "/admin/presentations",
+        title: "Sunumlar",
+        description: "Eğitmenlere PowerPoint sunumu yükleyin ve atayın.",
+        tone: "border-slate-200 bg-slate-100 text-slate-950 hover:bg-slate-50",
+        badge: "bg-slate-200/70 text-slate-800",
       },
       {
         href: "/admin/documents",
