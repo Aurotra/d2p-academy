@@ -6,10 +6,16 @@ const nextConfig: NextConfig = {
   reactStrictMode: true,
   poweredByHeader: false,
   output: "standalone",
-  serverExternalPackages: ["@sparticuz/chromium-min", "puppeteer-core", "pptx-to-pdf"],
+  serverExternalPackages: [
+    "@sparticuz/chromium-min",
+    "puppeteer-core",
+    "@matbee/libreoffice-converter",
+  ],
   outputFileTracingIncludes: {
     "/api/v1/admin/certificates": ["./src/lib/certificates/**/*"],
-    "/api/v1/admin/presentations": ["./node_modules/pptx-to-pdf/**/*"],
+  },
+  outputFileTracingExcludes: {
+    "*": ["./node_modules/@matbee/libreoffice-converter/wasm/**"],
   },
   images: {
     remotePatterns: [

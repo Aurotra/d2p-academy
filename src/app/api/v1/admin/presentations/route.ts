@@ -54,6 +54,7 @@ export async function POST(request: Request) {
       .split(",")
       .map((id) => id.trim())
       .filter(Boolean);
+    const originalFileName = String(form.get("originalFileName") ?? "").trim();
     const file = form.get("file");
 
     if (!title) {
@@ -69,15 +70,12 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Dosya boyutu 50 MB'ı aşamaz." }, { status: 400 });
     }
 
+    const displayName = originalFileName || file.name;
     const incomingMime = file.type || "application/octet-stream";
     const isPptx = isPptxUpload(file.name, incomingMime);
     const isPdf = isPdfUpload(file.name, incomingMime);
 
-    if (
-      !ALLOWED_MIME.has(incomingMime) &&
-      !isPptx &&
-      !isPdf
-    ) {
+    if (!ALLOWED_MIME.has(incomingMime) && !isPptx && !isPdf) {
       return NextResponse.json(
         { error: "Yalnızca PowerPoint (.pptx) veya PDF yüklenebilir." },
         { status: 400 },
@@ -95,7 +93,9 @@ export async function POST(request: Request) {
     let viewerMime = isPdf ? "application/pdf" : incomingMime;
     let viewerExt = isPdf ? ".pdf" : sanitizeFileName(file.name).replace(/^.*(\.[^.]+)$/, "$1");
     let conversionNote = "";
+    let convertedFromPptx = Boolean(originalFileName && isPptxUpload(originalFileName, ""));
 
+    // Prefer browser-converted PDF. Only convert on server as a rare fallback.
     if (isPptx) {
       try {
         const converted = await convertPptxToPdf({
@@ -105,6 +105,7 @@ export async function POST(request: Request) {
         viewerBytes = new Uint8Array(converted.pdfBytes);
         viewerMime = "application/pdf";
         viewerExt = ".pdf";
+        convertedFromPptx = true;
         if (converted.warnings.length > 0) {
           conversionNote = ` (dönüşüm uyarıları: ${converted.warnings.slice(0, 2).join("; ")})`;
           console.warn("[admin presentations pptx convert]", converted.warnings);
@@ -114,9 +115,7 @@ export async function POST(request: Request) {
         return NextResponse.json(
           {
             error:
-              convertError instanceof Error
-                ? `PowerPoint dönüştürülemedi: ${convertError.message}`
-                : "PowerPoint PDF’e dönüştürülemedi.",
+              "PowerPoint sunucu tarafında dönüştürülemedi. Sayfayı yenileyip tekrar deneyin; tarayıcı dönüşümü kullanılacak.",
           },
           { status: 500 },
         );
@@ -155,7 +154,7 @@ export async function POST(request: Request) {
       description,
       category,
       storagePath,
-      fileName: file.name,
+      fileName: displayName,
       mimeType: viewerMime,
       byteSize: viewerBytes.byteLength,
       pageCount,
@@ -168,8 +167,8 @@ export async function POST(request: Request) {
       {
         data: presentation,
         meta: {
-          convertedFromPptx: isPptx,
-          message: isPptx
+          convertedFromPptx,
+          message: convertedFromPptx
             ? `PowerPoint yüklendi ve sunum oynatıcı için hazırlandı.${conversionNote}`
             : "PDF sunumu yüklendi.",
         },

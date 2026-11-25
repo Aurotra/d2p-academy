@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState, type FormEvent } from "react";
 
 import type { PresentationWithAssignments } from "@/core/domain/presentation";
+import { convertPptxInBrowser } from "@/lib/presentations/convert-pptx-in-browser";
 import { Button } from "@/presentation/components/ui/button";
 import { Input } from "@/presentation/components/ui/input";
 import { Textarea } from "@/presentation/components/ui/textarea";
@@ -22,6 +23,7 @@ export function AdminPresentationsManager() {
   const [instructors, setInstructors] = useState<InstructorOption[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [progress, setProgress] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [selectedInstructors, setSelectedInstructors] = useState<string[]>([]);
@@ -78,9 +80,27 @@ export function AdminPresentationsManager() {
 
     const form = event.currentTarget;
     const formData = new FormData(form);
+    const rawFile = formData.get("file");
 
     try {
       formData.set("instructorIds", selectedInstructors.join(","));
+
+      if (rawFile instanceof File && rawFile.size > 0) {
+        const lower = rawFile.name.toLowerCase();
+        const isPptx =
+          lower.endsWith(".pptx") ||
+          lower.endsWith(".ppt") ||
+          rawFile.type.includes("presentation") ||
+          rawFile.type.includes("powerpoint");
+
+        if (isPptx) {
+          setProgress("PowerPoint dönüştürülüyor… İlk seferde bir kez yükleme sürebilir.");
+          const pdfFile = await convertPptxInBrowser(rawFile, setProgress);
+          formData.set("file", pdfFile);
+          formData.set("originalFileName", rawFile.name);
+          setProgress("Dönüşüm bitti, sunum kaydediliyor…");
+        }
+      }
 
       const response = await fetch("/api/v1/admin/presentations", {
         method: "POST",
@@ -101,6 +121,7 @@ export function AdminPresentationsManager() {
     } catch (createError) {
       setError(createError instanceof Error ? createError.message : "Yükleme hatası");
     } finally {
+      setProgress(null);
       setSaving(false);
     }
   }
@@ -192,8 +213,8 @@ export function AdminPresentationsManager() {
         </p>
         <h2 className="mt-2 text-2xl font-bold text-navy-950">PowerPoint sunum yükle</h2>
         <p className="mt-2 text-sm text-muted">
-          .pptx yükleyin; sistem güvenli tam ekran oynatıcı için otomatik hazırlar. İsterseniz
-          PDF de kabul edilir.
+          .pptx yükleyin. Tarayıcıda LibreOffice ile yüksek kaliteli PDF’e çevrilir; eğitmen
+          indirmeden tam ekran sunar. Hazır PDF de yükleyebilirsiniz.
         </p>
 
         <form onSubmit={handleCreate} className="mt-6 grid gap-4">
@@ -241,8 +262,9 @@ export function AdminPresentationsManager() {
             </div>
           </div>
           <Button type="submit" disabled={saving}>
-            {saving ? "Yükleniyor…" : "Sunumu Kaydet"}
+            {saving ? progress || "Yükleniyor…" : "Sunumu Kaydet"}
           </Button>
+          {progress ? <p className="text-sm font-medium text-document-primary">{progress}</p> : null}
         </form>
       </section>
 
