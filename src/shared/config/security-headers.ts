@@ -34,6 +34,14 @@ export function isTasarimAppPath(pathname: string): boolean {
   return pathname === "/tasarim" || pathname.startsWith("/tasarim/");
 }
 
+/** Instructor presentation player embeds Microsoft Office Online for PPTX. */
+export function isInstructorPresentationsPath(pathname: string): boolean {
+  return (
+    pathname === "/instructor/presentations" ||
+    pathname.startsWith("/instructor/presentations/")
+  );
+}
+
 /** CSP with per-request nonce — set from middleware, not next.config. */
 export function buildContentSecurityPolicy(
   nonce: string,
@@ -44,6 +52,7 @@ export function buildContentSecurityPolicy(
   const pathname = options?.pathname ?? "";
   const allowBankAcsFrames = isCardCheckoutPath(pathname);
   const isTasarim = isTasarimAppPath(pathname);
+  const isInstructorPresentations = isInstructorPresentationsPath(pathname);
 
   // Static /tasarim HTML uses import maps + type=module without React nonces.
   const scriptSrc = isTasarim
@@ -57,9 +66,12 @@ export function buildContentSecurityPolicy(
 
   // 3-D Secure ACS hosts are per-bank and cannot be allowlisted. Relax frames
   // only on /odeme so SMS/OTP challenge pages can load inside the PayTR iframe.
+  // Instructor PPTX player needs Office Online embed frames.
   const frameSrc = allowBankAcsFrames
     ? "frame-src 'self' https:"
-    : "frame-src 'self' https://www.paytr.com https://*.paytr.com https://www.google.com https://maps.google.com https://www.google.com.tr";
+    : isInstructorPresentations
+      ? "frame-src 'self' https://view.officeapps.live.com https://*.officeapps.live.com https://*.office.com https://www.paytr.com https://*.paytr.com https://www.google.com https://maps.google.com https://www.google.com.tr"
+      : "frame-src 'self' https://www.paytr.com https://*.paytr.com https://www.google.com https://maps.google.com https://www.google.com.tr";
   const formAction = allowBankAcsFrames ? "form-action 'self' https:" : "form-action 'self'";
 
   const directives = [

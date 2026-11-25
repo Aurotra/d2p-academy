@@ -4,12 +4,15 @@ import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 type ToolMode = "none" | "laser" | "pen";
+type ViewerKind = "pdf" | "office";
 
 interface AccessPayload {
   id: string;
   title: string;
   pageCount: number;
   signedUrl: string;
+  viewerKind?: ViewerKind;
+  officeEmbedUrl?: string | null;
 }
 
 export function PresentationViewer({ presentationId }: { presentationId: string }) {
@@ -26,12 +29,16 @@ export function PresentationViewer({ presentationId }: { presentationId: string 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [title, setTitle] = useState("Sunum");
+  const [viewerKind, setViewerKind] = useState<ViewerKind>("pdf");
+  const [officeEmbedUrl, setOfficeEmbedUrl] = useState<string | null>(null);
   const [page, setPage] = useState(1);
   const [pageCount, setPageCount] = useState(0);
   const [controlsVisible, setControlsVisible] = useState(true);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [tool, setTool] = useState<ToolMode>("none");
   const [laserPos, setLaserPos] = useState<{ x: number; y: number } | null>(null);
+
+  const isOffice = viewerKind === "office";
 
   const bumpControls = useCallback(() => {
     setControlsVisible(true);
@@ -48,13 +55,24 @@ export function PresentationViewer({ presentationId }: { presentationId: string 
     ctx?.clearRect(0, 0, canvas.width, canvas.height);
   }, []);
 
+  const syncOverlaySize = useCallback(() => {
+    const container = containerRef.current;
+    const drawCanvas = drawCanvasRef.current;
+    if (!container || !drawCanvas) return;
+    const width = Math.max(1, Math.floor(container.clientWidth));
+    const height = Math.max(1, Math.floor(container.clientHeight));
+    if (drawCanvas.width !== width || drawCanvas.height !== height) {
+      drawCanvas.width = width;
+      drawCanvas.height = height;
+    }
+  }, []);
+
   const renderPage = useCallback(async (pageNumber: number) => {
     const doc = pdfDocRef.current;
     const canvas = canvasRef.current;
     const drawCanvas = drawCanvasRef.current;
     if (!doc || !canvas) return;
 
-    // pdfjs page typing is loose across versions
     const pdfPage = (await doc.getPage(pageNumber)) as {
       getViewport: (opts: { scale: number }) => { width: number; height: number };
       render: (opts: {
@@ -101,29 +119,41 @@ export function PresentationViewer({ presentationId }: { presentationId: string 
         if (cancelled) return;
 
         setTitle(json.data.title);
-        const pdfjs = await import("pdfjs-dist");
-        pdfjs.GlobalWorkerOptions.workerSrc = "/pdfjs/pdf.worker.min.mjs";
+        const kind: ViewerKind = json.data.viewerKind === "office" ? "office" : "pdf";
+        setViewerKind(kind);
 
-        const loadingTask = pdfjs.getDocument({ url: json.data.signedUrl });
-        const doc = await loadingTask.promise;
-        if (cancelled) {
-          await doc.destroy();
-          return;
+        if (kind === "office") {
+          if (!json.data.officeEmbedUrl) {
+            throw new Error("PowerPoint görüntüleyici adresi oluşturulamadı.");
+          }
+          setOfficeEmbedUrl(json.data.officeEmbedUrl);
+          setPageCount(0);
+          setPage(1);
+          requestAnimationFrame(() => syncOverlaySize());
+        } else {
+          const pdfjs = await import("pdfjs-dist");
+          pdfjs.GlobalWorkerOptions.workerSrc = "/pdfjs/pdf.worker.min.mjs";
+          const loadingTask = pdfjs.getDocument({ url: json.data.signedUrl });
+          const doc = await loadingTask.promise;
+          if (cancelled) {
+            await doc.destroy();
+            return;
+          }
+          pdfDocRef.current = doc as unknown as {
+            numPages: number;
+            getPage: (n: number) => Promise<unknown>;
+          };
+          setPageCount(doc.numPages);
+          setPage(1);
+          await renderPage(1);
         }
-        pdfDocRef.current = doc as unknown as {
-          numPages: number;
-          getPage: (n: number) => Promise<unknown>;
-        };
-        setPageCount(doc.numPages);
-        setPage(1);
-        await renderPage(1);
-        // Best-effort fullscreen after user gesture from "Sunumu Başlat" navigation.
+
         try {
           if (containerRef.current && !document.fullscreenElement) {
             await containerRef.current.requestFullscreen();
           }
         } catch {
-          /* browsers may require a fresh gesture; toolbar still has Tam ekran */
+          /* toolbar still has Tam ekran */
         }
       } catch (loadError) {
         if (!cancelled) {
@@ -138,36 +168,41 @@ export function PresentationViewer({ presentationId }: { presentationId: string 
     return () => {
       cancelled = true;
       if (hideTimerRef.current) window.clearTimeout(hideTimerRef.current);
-      void pdfDocRef.current;
     };
-  }, [presentationId, renderPage]);
+  }, [presentationId, renderPage, syncOverlaySize]);
 
   useEffect(() => {
-    if (!pdfDocRef.current || loading) return;
+    if (isOffice || !pdfDocRef.current || loading) return;
     void renderPage(page);
     clearDrawing();
-  }, [page, loading, renderPage, clearDrawing]);
+  }, [page, loading, renderPage, clearDrawing, isOffice]);
 
   useEffect(() => {
     function onResize() {
+      if (isOffice) {
+        syncOverlaySize();
+        return;
+      }
       if (pdfDocRef.current) void renderPage(page);
     }
     window.addEventListener("resize", onResize);
     return () => window.removeEventListener("resize", onResize);
-  }, [page, renderPage]);
+  }, [page, renderPage, isOffice, syncOverlaySize]);
 
   const goNext = useCallback(() => {
+    if (isOffice) return;
     setPage((current) => {
       const max = pageCount > 0 ? pageCount : current + 1;
       return Math.min(max, current + 1);
     });
     bumpControls();
-  }, [pageCount, bumpControls]);
+  }, [pageCount, bumpControls, isOffice]);
 
   const goPrev = useCallback(() => {
+    if (isOffice) return;
     setPage((current) => Math.max(1, current - 1));
     bumpControls();
-  }, [bumpControls]);
+  }, [bumpControls, isOffice]);
 
   const enterFullscreen = useCallback(async () => {
     const el = containerRef.current;
@@ -196,13 +231,21 @@ export function PresentationViewer({ presentationId }: { presentationId: string 
     function onFsChange() {
       setIsFullscreen(Boolean(document.fullscreenElement));
       bumpControls();
+      if (isOffice) syncOverlaySize();
     }
     document.addEventListener("fullscreenchange", onFsChange);
     return () => document.removeEventListener("fullscreenchange", onFsChange);
-  }, [bumpControls]);
+  }, [bumpControls, isOffice, syncOverlaySize]);
 
   useEffect(() => {
     function onKeyDown(event: KeyboardEvent) {
+      if (isOffice) {
+        if (event.key === "Escape") void exitFullscreen();
+        if ((event.ctrlKey || event.metaKey) && (event.key === "p" || event.key === "s")) {
+          event.preventDefault();
+        }
+        return;
+      }
       if (event.key === "ArrowRight" || event.key === " " || event.key === "PageDown") {
         event.preventDefault();
         goNext();
@@ -217,7 +260,7 @@ export function PresentationViewer({ presentationId }: { presentationId: string 
     }
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-  }, [goNext, goPrev, exitFullscreen]);
+  }, [goNext, goPrev, exitFullscreen, isOffice]);
 
   function pointerToCanvas(event: React.PointerEvent<HTMLCanvasElement>) {
     const canvas = drawCanvasRef.current;
@@ -277,18 +320,29 @@ export function PresentationViewer({ presentationId }: { presentationId: string 
       onContextMenu={(event) => event.preventDefault()}
       onMouseMove={bumpControls}
       onClick={(event) => {
-        if (tool !== "none") return;
+        if (isOffice || tool !== "none") return;
         const rect = (event.currentTarget as HTMLDivElement).getBoundingClientRect();
         const x = event.clientX - rect.left;
         if (x > rect.width / 2) goNext();
         else goPrev();
       }}
     >
-      <div className="relative max-h-full max-w-full">
-        <canvas ref={canvasRef} className="max-h-[100dvh] max-w-full object-contain" />
+      <div className={`relative ${isOffice ? "h-full min-h-[70vh] w-full" : "max-h-full max-w-full"}`}>
+        {isOffice && officeEmbedUrl ? (
+          <iframe
+            title={title}
+            src={officeEmbedUrl}
+            className="h-[min(100dvh,900px)] min-h-[70vh] w-full border-0 bg-white"
+            allow="fullscreen"
+          />
+        ) : (
+          <canvas ref={canvasRef} className="max-h-[100dvh] max-w-full object-contain" />
+        )}
         <canvas
           ref={drawCanvasRef}
-          className={`absolute inset-0 h-full w-full ${tool === "none" ? "pointer-events-none" : "pointer-events-auto"}`}
+          className={`absolute inset-0 h-full w-full ${
+            tool === "none" ? "pointer-events-none" : "pointer-events-auto"
+          }`}
           style={{ touchAction: "none" }}
           onPointerDown={(event) => {
             if (tool !== "pen") return;
@@ -324,23 +378,31 @@ export function PresentationViewer({ presentationId }: { presentationId: string 
       >
         <div className="mx-auto flex max-w-4xl flex-wrap items-center justify-between gap-3 rounded-2xl border border-white/15 bg-black/55 px-4 py-3 backdrop-blur">
           <div className="flex flex-wrap items-center gap-2">
-            <button
-              type="button"
-              className="rounded-xl bg-white/10 px-3 py-2 text-sm font-semibold hover:bg-white/20"
-              onClick={goPrev}
-            >
-              Önceki
-            </button>
-            <button
-              type="button"
-              className="rounded-xl bg-white/10 px-3 py-2 text-sm font-semibold hover:bg-white/20"
-              onClick={goNext}
-            >
-              Sonraki
-            </button>
-            <span className="px-2 text-sm text-white/80">
-              Sayfa {page} / {pageCount || "—"}
-            </span>
+            {!isOffice ? (
+              <>
+                <button
+                  type="button"
+                  className="rounded-xl bg-white/10 px-3 py-2 text-sm font-semibold hover:bg-white/20"
+                  onClick={goPrev}
+                >
+                  Önceki
+                </button>
+                <button
+                  type="button"
+                  className="rounded-xl bg-white/10 px-3 py-2 text-sm font-semibold hover:bg-white/20"
+                  onClick={goNext}
+                >
+                  Sonraki
+                </button>
+                <span className="px-2 text-sm text-white/80">
+                  Sayfa {page} / {pageCount || "—"}
+                </span>
+              </>
+            ) : (
+              <span className="px-2 text-sm text-white/80">
+                PowerPoint · slayt geçişi sunum içinde
+              </span>
+            )}
           </div>
           <div className="flex flex-wrap items-center gap-2">
             <button

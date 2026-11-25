@@ -2,7 +2,6 @@ import { NextResponse } from "next/server";
 
 import { requireAdminApiAccess } from "@/infrastructure/auth/require-admin-api-access";
 import {
-  convertPptxToPdf,
   countPdfPagesFromBytes,
   isPdfUpload,
   isPptxUpload,
@@ -10,8 +9,7 @@ import {
 import { SupabasePresentationRepository } from "@/infrastructure/repositories/supabase-presentation-repository";
 import { createServiceRoleClient } from "@/infrastructure/supabase/create-service-role-client";
 
-/** LibreOffice WASM cold start + convert can exceed 60s on first invocation. */
-export const maxDuration = 300;
+export const maxDuration = 60;
 
 const ALLOWED_MIME = new Set([
   "application/pdf",
@@ -20,7 +18,7 @@ const ALLOWED_MIME = new Set([
 ]);
 
 function sanitizeFileName(fileName: string): string {
-  return fileName.replace(/[^a-zA-Z0-9._-]/g, "_").slice(0, 120) || "presentation.pdf";
+  return fileName.replace(/[^a-zA-Z0-9._-]/g, "_").slice(0, 120) || "presentation.pptx";
 }
 
 export async function GET() {
@@ -73,10 +71,16 @@ export async function POST(request: Request) {
 
     const displayName = originalFileName || file.name;
     const incomingMime = file.type || "application/octet-stream";
-    const isPptx = isPptxUpload(file.name, incomingMime);
+    const isPptx = isPptxUpload(file.name, incomingMime) || isPptxUpload(displayName, "");
     const isPdf = isPdfUpload(file.name, incomingMime);
 
     if (!ALLOWED_MIME.has(incomingMime) && !isPptx && !isPdf) {
+      return NextResponse.json(
+        { error: "Yalnızca PowerPoint (.pptx) veya PDF yüklenebilir." },
+        { status: 400 },
+      );
+    }
+    if (!isPptx && !isPdf) {
       return NextResponse.json(
         { error: "Yalnızca PowerPoint (.pptx) veya PDF yüklenebilir." },
         { status: 400 },
@@ -88,60 +92,28 @@ export async function POST(request: Request) {
     } = await access.client.auth.getUser();
 
     const service = createServiceRoleClient();
-    const originalBytes = new Uint8Array(await file.arrayBuffer());
+    const bytes = new Uint8Array(await file.arrayBuffer());
 
-    let viewerBytes = originalBytes;
-    let viewerMime = isPdf ? "application/pdf" : incomingMime;
-    let viewerExt = isPdf ? ".pdf" : sanitizeFileName(file.name).replace(/^.*(\.[^.]+)$/, "$1");
-    let conversionNote = "";
-    let convertedFromPptx = Boolean(originalFileName && isPptxUpload(originalFileName, ""));
-
-    if (isPptx) {
-      try {
-        const converted = await convertPptxToPdf({
-          bytes: originalBytes,
-          fileName: file.name,
-        });
-        viewerBytes = new Uint8Array(converted.pdfBytes);
-        viewerMime = "application/pdf";
-        viewerExt = ".pdf";
-        convertedFromPptx = true;
-        if (converted.warnings.length > 0) {
-          conversionNote = ` (dönüşüm uyarıları: ${converted.warnings.slice(0, 2).join("; ")})`;
-          console.warn("[admin presentations pptx convert]", converted.warnings);
-        }
-      } catch (convertError) {
-        console.error("[admin presentations pptx convert]", convertError);
-        return NextResponse.json(
-          {
-            error:
-              convertError instanceof Error
-                ? `PowerPoint dönüştürülemedi: ${convertError.message}`
-                : "PowerPoint sunucu tarafında dönüştürülemedi.",
-          },
-          { status: 500 },
-        );
-      }
-    } else if (!isPdf) {
-      return NextResponse.json(
-        { error: "Yalnızca PowerPoint (.pptx) veya PDF yüklenebilir." },
-        { status: 400 },
-      );
-    }
+    const viewerMime = isPdf
+      ? "application/pdf"
+      : "application/vnd.openxmlformats-officedocument.presentationml.presentation";
+    const viewerExt = isPdf ? ".pdf" : ".pptx";
 
     let pageCount = 0;
-    try {
-      pageCount = await countPdfPagesFromBytes(viewerBytes);
-    } catch (pageError) {
-      console.warn("[admin presentations page count]", pageError);
+    if (isPdf) {
+      try {
+        pageCount = await countPdfPagesFromBytes(bytes);
+      } catch (pageError) {
+        console.warn("[admin presentations page count]", pageError);
+      }
     }
 
-    const baseName = sanitizeFileName(file.name).replace(/\.[^.]+$/, "") || "presentation";
+    const baseName = sanitizeFileName(displayName).replace(/\.[^.]+$/, "") || "presentation";
     const storagePath = `${user?.id ?? "admin"}/${Date.now()}-${baseName}${viewerExt}`;
 
     const { error: uploadError } = await service.storage
       .from("presentations")
-      .upload(storagePath, Buffer.from(viewerBytes), {
+      .upload(storagePath, Buffer.from(bytes), {
         contentType: viewerMime,
         upsert: false,
         cacheControl: "3600",
@@ -158,7 +130,7 @@ export async function POST(request: Request) {
       storagePath,
       fileName: displayName,
       mimeType: viewerMime,
-      byteSize: viewerBytes.byteLength,
+      byteSize: bytes.byteLength,
       pageCount,
       createdBy: user?.id ?? null,
       instructorIds,
@@ -169,9 +141,8 @@ export async function POST(request: Request) {
       {
         data: presentation,
         meta: {
-          convertedFromPptx,
-          message: convertedFromPptx
-            ? `PowerPoint yüklendi ve sunum oynatıcı için hazırlandı.${conversionNote}`
+          message: isPptx
+            ? "PowerPoint yüklendi. Eğitmenler tarayıcıda indirmeden sunabilir."
             : "PDF sunumu yüklendi.",
         },
       },

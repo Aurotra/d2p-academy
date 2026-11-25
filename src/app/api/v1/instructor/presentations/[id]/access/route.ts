@@ -1,5 +1,9 @@
 import { NextResponse } from "next/server";
 
+import {
+  isPdfUpload,
+  isPptxUpload,
+} from "@/infrastructure/presentations/convert-office-to-pdf";
 import { requireInstructorApiAccess } from "@/infrastructure/auth/require-instructor-api-access";
 import { SupabasePresentationRepository } from "@/infrastructure/repositories/supabase-presentation-repository";
 import { createServiceRoleClient } from "@/infrastructure/supabase/create-service-role-client";
@@ -25,23 +29,30 @@ export async function GET(_request: Request, context: RouteContext) {
       return NextResponse.json({ error: "Sunum bulunamadı." }, { status: 404 });
     }
 
-    const playable =
-      presentation.mimeType.includes("pdf") ||
-      presentation.fileName.toLowerCase().endsWith(".pdf") ||
-      // PPTX uploads are converted to PDF on ingest; storage mime is application/pdf.
+    const isPdf =
+      isPdfUpload(presentation.fileName, presentation.mimeType) ||
       presentation.storagePath.toLowerCase().endsWith(".pdf");
+    const isPptx =
+      isPptxUpload(presentation.fileName, presentation.mimeType) ||
+      presentation.storagePath.toLowerCase().endsWith(".pptx") ||
+      presentation.storagePath.toLowerCase().endsWith(".ppt");
 
-    if (!playable) {
+    if (!isPdf && !isPptx) {
       return NextResponse.json(
         {
           error:
-            "Bu sunum henüz oynatılamıyor. Admin panelinden PowerPoint (.pptx) olarak yeniden yükleyin.",
+            "Bu sunum oynatılamıyor. Admin panelinden PowerPoint (.pptx) veya PDF olarak yeniden yükleyin.",
         },
         { status: 415 },
       );
     }
 
     const signedUrl = await repo.createSignedUrl(presentation.storagePath);
+    const viewerKind = isPdf ? "pdf" : "office";
+    const officeEmbedUrl =
+      viewerKind === "office"
+        ? `https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(signedUrl)}`
+        : null;
 
     return NextResponse.json({
       data: {
@@ -52,7 +63,9 @@ export async function GET(_request: Request, context: RouteContext) {
         pageCount: presentation.pageCount,
         fileName: presentation.fileName,
         mimeType: presentation.mimeType,
+        viewerKind,
         signedUrl,
+        officeEmbedUrl,
         expiresInSeconds: 3600,
       },
     });

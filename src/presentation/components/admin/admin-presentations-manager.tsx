@@ -94,12 +94,8 @@ export function AdminPresentationsManager() {
 
         if (isPptx) {
           formData.set("originalFileName", rawFile.name);
-          setProgress(
-            "PowerPoint sunucuda PDF’e dönüştürülüyor… İlk yüklemede 1–2 dakika sürebilir, sayfayı kapatmayın.",
-          );
-        } else {
-          setProgress("Sunum kaydediliyor…");
         }
+        setProgress("Sunum kaydediliyor…");
       }
 
       const response = await fetch("/api/v1/admin/presentations", {
@@ -213,8 +209,8 @@ export function AdminPresentationsManager() {
         </p>
         <h2 className="mt-2 text-2xl font-bold text-navy-950">PowerPoint sunum yükle</h2>
         <p className="mt-2 text-sm text-muted">
-          .pptx yükleyin; sunucu LibreOffice ile PDF’e çevirir. Eğitmen siteye girip indirmeden
-          tam ekran sunar. İsterseniz hazır PDF de yükleyebilirsiniz.
+          .pptx yükleyin. Eğitmen siteye girip indirmeden tarayıcıda tam ekran sunar. İsterseniz
+          hazır PDF de yükleyebilirsiniz.
         </p>
 
         <form onSubmit={handleCreate} className="mt-6 grid gap-4">
