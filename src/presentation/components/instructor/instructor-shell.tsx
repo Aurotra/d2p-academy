@@ -1,4 +1,3 @@
-import Link from "next/link";
 import type { ReactNode } from "react";
 
 import type { Profile } from "@/core/domain/auth";
@@ -8,6 +7,7 @@ import {
   PanelShortcutGroup,
   PanelShortcutLink,
 } from "@/presentation/components/dashboard/panel-shortcut-link";
+import { InstructorNavLinks } from "@/presentation/components/instructor/instructor-nav-links";
 
 interface InstructorShellProps {
   profile: Profile;
@@ -57,18 +57,7 @@ export function InstructorShell({ profile, isAdmin, children }: InstructorShellP
               />
             </PanelShortcutGroup>
             <div className="flex flex-wrap items-center gap-3">
-              <Link
-                href="/instructor"
-                className="text-sm font-semibold text-navy-900 hover:underline"
-              >
-                Etkinliklerim
-              </Link>
-              <Link
-                href="/instructor/presentations"
-                className="text-sm font-semibold text-navy-900 hover:underline"
-              >
-                Sunumlarım
-              </Link>
+              <InstructorNavLinks />
               <LogoutButton />
             </div>
           </div>
