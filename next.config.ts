@@ -14,11 +14,13 @@ const nextConfig: NextConfig = {
   outputFileTracingIncludes: {
     "/api/v1/admin/certificates": ["./src/lib/certificates/**/*"],
     "/api/v1/admin/presentations": [
+      "./node_modules/@matbee/libreoffice-converter/dist/**/*",
       "./node_modules/@matbee/libreoffice-converter/wasm/loader.cjs",
       "./node_modules/@matbee/libreoffice-converter/wasm/soffice.js",
       "./node_modules/@matbee/libreoffice-converter/wasm/soffice.cjs",
       "./node_modules/@matbee/libreoffice-converter/wasm/soffice.worker.js",
       "./node_modules/@matbee/libreoffice-converter/wasm/soffice.worker.cjs",
+      "./node_modules/@matbee/libreoffice-converter/package.json",
     ],
   },
   // Keep ~240MB binaries out of the deploy; they are fetched to /tmp at runtime.

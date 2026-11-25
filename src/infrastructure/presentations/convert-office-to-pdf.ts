@@ -7,6 +7,7 @@ import os from "node:os";
 import path from "node:path";
 
 const LO_VERSION = "2.7.2";
+const CACHE_TAG = "v2";
 
 /** Dedicated mirror (jsDelivr returns 403 for this oversized npm package). */
 const LO_CDN_PRIMARY = "https://erseco.github.io/libreoffice-document-converter/wasm";
@@ -22,6 +23,10 @@ const WASM_ASSETS = [
   "soffice.worker.js",
   "soffice.worker.cjs",
 ] as const;
+
+type WasmLoader = {
+  createModule: (config: Record<string, unknown>) => Promise<unknown>;
+};
 
 export function isPptxUpload(fileName: string, mimeType: string): boolean {
   const lower = fileName.toLowerCase();
@@ -39,7 +44,7 @@ export function isPdfUpload(fileName: string, mimeType: string): boolean {
 }
 
 function wasmCacheDir(): string {
-  return path.join(os.tmpdir(), `libreoffice-wasm-${LO_VERSION}`);
+  return path.join(os.tmpdir(), `libreoffice-wasm-${LO_VERSION}-${CACHE_TAG}`);
 }
 
 function packageWasmDir(): string {
@@ -50,6 +55,10 @@ function packageWasmDir(): string {
     "libreoffice-converter",
     "wasm",
   );
+}
+
+function rootRequire() {
+  return createRequire(path.join(process.cwd(), "package.json"));
 }
 
 async function downloadToFile(url: string, destPath: string): Promise<void> {
@@ -90,7 +99,7 @@ async function ensureWasmAssets(): Promise<string> {
   await mkdir(dir, { recursive: true });
 
   const readyMarker = path.join(dir, ".ready");
-  if (existsSync(readyMarker)) {
+  if (existsSync(readyMarker) && existsSync(path.join(dir, "loader.cjs"))) {
     return dir;
   }
 
@@ -113,6 +122,57 @@ async function ensureWasmAssets(): Promise<string> {
   return dir;
 }
 
+function loadWasmLoader(wasmPath: string): WasmLoader {
+  const loaderPath = path.join(wasmPath, "loader.cjs");
+  const requireFromLoader = createRequire(loaderPath);
+  const raw = requireFromLoader(loaderPath) as Record<string, unknown> & {
+    default?: Record<string, unknown>;
+  };
+  const candidate = (
+    typeof raw.createModule === "function"
+      ? raw
+      : typeof raw.default?.createModule === "function"
+        ? raw.default
+        : null
+  ) as WasmLoader | null;
+
+  if (!candidate) {
+    throw new Error(
+      `wasmLoader.createModule bulunamadı (${loaderPath}). exports=${Object.keys(raw ?? {}).join(",")}`,
+    );
+  }
+
+  return {
+    createModule: candidate.createModule.bind(candidate),
+  };
+}
+
+function loadCreateConverter(): (options: Record<string, unknown>) => Promise<{
+  convert: (
+    input: Uint8Array,
+    options: { outputFormat: string },
+    filename?: string,
+  ) => Promise<{ data: Uint8Array }>;
+  destroy?: () => Promise<void>;
+}> {
+  const req = rootRequire();
+  // Prefer CJS build — more reliable under Next serverless externals than ESM dynamic import.
+  const server = req("@matbee/libreoffice-converter/dist/server.cjs") as Record<string, unknown> & {
+    default?: Record<string, unknown>;
+  };
+  const createConverter =
+    (typeof server.createConverter === "function" && server.createConverter) ||
+    (typeof server.default?.createConverter === "function" && server.default.createConverter);
+
+  if (typeof createConverter !== "function") {
+    throw new Error(
+      `createConverter bulunamadı. exports=${Object.keys(server ?? {}).join(",")}`,
+    );
+  }
+
+  return createConverter as ReturnType<typeof loadCreateConverter>;
+}
+
 /**
  * Server-side PPTX→PDF via LibreOffice WASM.
  * Large binaries are cached under os.tmpdir() (Vercel /tmp) so the deploy bundle stays small.
@@ -122,20 +182,20 @@ export async function convertPptxToPdf(input: {
   fileName: string;
 }): Promise<{ pdfBytes: Uint8Array; warnings: string[] }> {
   const wasmPath = await ensureWasmAssets();
-  const requireFromWasm = createRequire(path.join(wasmPath, "loader.cjs"));
-  // loader.cjs binds __dirname to /tmp cache so large binaries resolve correctly.
-  const wasmLoader = requireFromWasm(path.join(wasmPath, "loader.cjs"));
+  const wasmLoader = loadWasmLoader(wasmPath);
+  const createConverter = loadCreateConverter();
 
-  const { createConverter } = await import("@matbee/libreoffice-converter/server");
   const converter = await createConverter({
     wasmPath,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- CJS loader shape
-    wasmLoader: wasmLoader as any,
-    verbose: process.env.NODE_ENV !== "production",
+    wasmLoader,
+    verbose: true,
   });
 
   try {
     const result = await converter.convert(input.bytes, { outputFormat: "pdf" }, input.fileName);
+    if (!result?.data) {
+      throw new Error("Dönüşüm sonucu boş döndü.");
+    }
     return {
       pdfBytes: new Uint8Array(result.data),
       warnings: [],
