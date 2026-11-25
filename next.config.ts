@@ -51,10 +51,11 @@ const nextConfig: NextConfig = {
           { key: "Cross-Origin-Resource-Policy", value: "same-origin" },
           {
             key: "Content-Security-Policy",
+            // No strict-dynamic here — worker importScripts/fetch must reach jsDelivr WASM assets.
             value:
-              "default-src 'none'; script-src 'self' 'unsafe-eval' 'wasm-unsafe-eval' https://cdn.jsdelivr.net blob:; connect-src 'self' https://cdn.jsdelivr.net blob: data:; worker-src 'self' blob:;",
+              "default-src 'none'; script-src 'self' 'unsafe-eval' 'wasm-unsafe-eval' blob:; connect-src 'self' https://cdn.jsdelivr.net blob: data:; worker-src 'self' blob:;",
           },
-          { key: "Cache-Control", value: "public, max-age=31536000, immutable" },
+          { key: "Cache-Control", value: "public, max-age=86400" },
         ],
       },
       {

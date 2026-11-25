@@ -6,9 +6,11 @@ const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 const outDir = join(root, "public", "libreoffice");
 const pkg = join(root, "node_modules", "@matbee", "libreoffice-converter");
 
+/** Scripts that must be same-origin (importScripts / new Worker). Large .wasm/.data stay on CDN. */
 const files = [
   ["dist/browser.worker.global.js", "browser.worker.global.js"],
   ["wasm/soffice.worker.js", "soffice.worker.js"],
+  ["wasm/soffice.js", "soffice.js"],
 ];
 
 if (!existsSync(join(pkg, "package.json"))) {
@@ -20,4 +22,4 @@ mkdirSync(outDir, { recursive: true });
 for (const [fromRel, toName] of files) {
   copyFileSync(join(pkg, fromRel), join(outDir, toName));
 }
-console.log("[sync-libreoffice-workers] copied worker scripts to public/libreoffice");
+console.log("[sync-libreoffice-workers] copied scripts to public/libreoffice");
